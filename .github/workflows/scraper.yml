@@ -1,0 +1,23 @@
+name: Scrape RF4 Records
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - run: pip install requests beautifulsoup4
+      - run: python scraper.py
+      - name: Commit records.json
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add records.json
+          git diff --cached --quiet || git commit -m "Update records"
+          git push
