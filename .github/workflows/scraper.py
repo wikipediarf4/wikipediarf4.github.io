@@ -1,32 +1,36 @@
-import requests
-from bs4 import BeautifulSoup
 import json
 from datetime import datetime
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+import time
 
-headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    'Accept-Language': 'en-US,en;q=0.9',
-    'Referer': 'https://rf4game.com/'
-}
+options = Options()
+options.add_argument('--headless')
+options.add_argument('--no-sandbox')
+options.add_argument('--disable-dev-shm-usage')
 
 records = []
-
 try:
-    url = 'https://rf4game.com/records/weekly/region/EN/'
-    res = requests.get(url, headers=headers, timeout=15)
-    soup = BeautifulSoup(res.text, 'html.parser')
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    driver.get('https://rf4game.com/records/weekly/region/EN/')
+    time.sleep(5)
     
-    rows = soup.select('table tr')
+    rows = driver.find_elements(By.CSS_SELECTOR, '.records .row:not(.header)')
     for row in rows:
-        cols = row.find_all('td')
-        if len(cols) >= 4:
+        cols = row.find_elements(By.CSS_SELECTOR, '.cell')
+        if len(cols) >= 5:
             records.append({
-                'jugador': cols[0].get_text(strip=True),
-                'pez':     cols[1].get_text(strip=True),
-                'peso':    cols[2].get_text(strip=True),
-                'carnada': cols[3].get_text(strip=True),
-                'mapa':    cols[4].get_text(strip=True) if len(cols) > 4 else '—'
+                'pez':       cols[0].text.strip(),
+                'peso':      cols[1].text.strip(),
+                'ubicacion': cols[2].text.strip(),
+                'señuelo':   cols[3].text.strip(),
+                'jugador':   cols[4].text.strip(),
+                'fecha':     cols[5].text.strip() if len(cols) > 5 else '—'
             })
+    driver.quit()
 except Exception as e:
     print(f'Error: {e}')
 
