@@ -6094,7 +6094,7 @@ async function renderWeeklyRecords(){
   tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--muted);">⏳ Cargando records...</td></tr>`;
 
   try{
-    const res = await fetch('https://raw.githubusercontent.com/Ruizgustavo12/chatrf4/main/records.json?nocache=' + Date.now());
+    const res = await fetch('https://raw.githubusercontent.com/Ruizgustavo12/chatrf4/main/registros.json?nocache=' + Date.now());
     if(!res.ok) throw new Error('No se pudo cargar');
     const data = await res.json();
     const records = (data.records || []).filter(r => r.pez !== 'Fish');
