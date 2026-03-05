@@ -6113,7 +6113,7 @@ async function renderWeeklyRecords(){
           onmouseover="this.style.background='var(--bg4)'"
           onmouseout="this.style.background='${i%2===0?'var(--bg2)':'var(--bg3)'}'">
      <td style="padding:9px 8px;text-align:center;border-bottom:1px solid var(--border);color:var(--muted);font-weight:700;font-size:.75rem;">${i+1}</td>
-<td style="padding:9px 8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;">${r.img_pez ? `<img src="https://images.weserv.nl/?url=${encodeURIComponent(r.img_pez)}" style="width:32px;height:32px;object-fit:contain;" onerror="this.style.display='none'">` : '🐟'} ${r.pez}</td><td style="padding:9px 8px;text-align:center;border-bottom:1px solid var(--border);font-weight:700;color:var(--gold);">${r.peso}</td>
+<td style="padding:9px 8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;">${r.img_pez ? `<img src="https://images.weserv.nl/?url=${r.img_pez}" style="width:32px;height:32px;object-fit:contain;" onerror="this.style.display='none'">` : '🐟'} ${r.pez}</td><td style="padding:9px 8px;text-align:center;border-bottom:1px solid var(--border);font-weight:700;color:var(--gold);">${r.peso}</td>
 <td style="padding:9px 8px;border-bottom:1px solid var(--border);color:var(--muted);">${r.ubicacion}</td>
 <td style="padding:9px 8px;text-align:center;border-bottom:1px solid var(--border);">${r.img_senuelo ? `<img src="https://images.weserv.nl/?url=${r.img_senuelo}" style="width:32px;height:32px;object-fit:contain;">` : '—'}</td>
 <td style="padding:9px 8px;border-bottom:1px solid var(--border);color:var(--accent);font-weight:700;">${r.jugador}</td>
