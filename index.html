@@ -1554,7 +1554,8 @@ select.fi option{background:var(--bg2);}
   <!-- PANEL CALCULADORA -->
   <div id="pecesPanelCalc" style="display:none;">
     <div style="font-family:'Orbitron',monospace;font-size:.85rem;color:var(--accent);margin-bottom:4px;">🏆 Records Semanales RF4</div>
-    <div style="font-size:.78rem;color:var(--muted);margin-bottom:16px;">Los mejores registros de la semana: jugador, pez, peso, carnada y mapa. Fuente: <a href="https://rf4game.com/records/" target="_blank" style="color:var(--accent);">rf4game.com/records</a></div>
+    <div style="font-size:.78rem;color:var(--muted);margin-bottom:4px;">Los mejores registros de la semana. Fuente: <a href="https://rf4game.com/records/" target="_blank" style="color:var(--accent);">rf4game.com/records</a></div>
+    <div id="weeklyRecordsUpdated" style="font-size:.72rem;color:var(--muted);margin-bottom:16px;"></div>
 
     <!-- Tabla Records -->
     <div style="overflow-x:auto;">
@@ -1562,11 +1563,11 @@ select.fi option{background:var(--bg2);}
         <thead>
           <tr style="background:var(--bg3);">
             <th style="padding:10px 8px;text-align:center;border-bottom:2px solid var(--accent);color:var(--accent);font-size:.68rem;text-transform:uppercase;letter-spacing:.5px;">#</th>
-            <th style="padding:10px 8px;text-align:left;border-bottom:2px solid var(--accent);color:var(--accent);font-size:.68rem;text-transform:uppercase;letter-spacing:.5px;">🧑 Jugador</th>
             <th style="padding:10px 8px;text-align:left;border-bottom:2px solid var(--accent);color:var(--accent);font-size:.68rem;text-transform:uppercase;letter-spacing:.5px;">🐟 Pez</th>
             <th style="padding:10px 8px;text-align:center;border-bottom:2px solid var(--accent);color:var(--accent);font-size:.68rem;text-transform:uppercase;letter-spacing:.5px;">⚖️ Peso</th>
-            <th style="padding:10px 8px;text-align:left;border-bottom:2px solid var(--accent);color:var(--accent);font-size:.68rem;text-transform:uppercase;letter-spacing:.5px;">🪱 Carnada</th>
-            <th style="padding:10px 8px;text-align:left;border-bottom:2px solid var(--accent);color:var(--accent);font-size:.68rem;text-transform:uppercase;letter-spacing:.5px;">🗺️ Mapa</th>
+            <th style="padding:10px 8px;text-align:left;border-bottom:2px solid var(--accent);color:var(--accent);font-size:.68rem;text-transform:uppercase;letter-spacing:.5px;">🗺️ Ubicación</th>
+            <th style="padding:10px 8px;text-align:left;border-bottom:2px solid var(--accent);color:var(--accent);font-size:.68rem;text-transform:uppercase;letter-spacing:.5px;">🧑 Jugador</th>
+            <th style="padding:10px 8px;text-align:center;border-bottom:2px solid var(--accent);color:var(--accent);font-size:.68rem;text-transform:uppercase;letter-spacing:.5px;">📅 Fecha</th>
           </tr>
         </thead>
         <tbody id="weeklyRecordsTbody">
@@ -6090,105 +6091,39 @@ async function renderWeeklyRecords(){
   const tbody = document.getElementById('weeklyRecordsTbody');
   if(!tbody) return;
 
-  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--muted);">⏳ Cargando records desde rf4game.com...</td></tr>`;
-
-  const proxies = [
-    url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-    url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-    url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
-  ];
-
-  const targetURL = 'https://rf4game.com/records/weekly/region/EN/';
-  let html = null;
-
-  for(const proxyFn of proxies){
-    try{
-      const res = await fetch(proxyFn(targetURL), {signal: AbortSignal.timeout(8000)});
-      if(!res.ok) continue;
-      const data = await res.json().catch(()=>null) || await res.text().catch(()=>null);
-      html = typeof data === 'string' ? data : data?.contents;
-      if(html && html.length > 500) break;
-    } catch(e){ continue; }
-  }
-
-  if(!html){
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--red);">
-      ❌ No se pudo cargar. <a href="https://rf4game.com/records/" target="_blank" style="color:var(--accent);">Ver en rf4game.com</a>
-    </td></tr>`;
-    return;
-  }
+  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--muted);">⏳ Cargando records...</td></tr>`;
 
   try{
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
-
-    // Buscar filas de la tabla de records
-    const rows = doc.querySelectorAll('table tr, .record-row, .records-table tr');
-    const records = [];
-
-    rows.forEach(row => {
-      const cells = row.querySelectorAll('td');
-      if(cells.length >= 4){
-        // Intentar extraer: jugador, pez, peso, carnada, mapa
-        const texts = Array.from(cells).map(c => c.textContent.trim()).filter(t => t);
-        if(texts.length >= 4 && !texts[0].match(/^(player|jugador|#|name)/i)){
-          records.push({
-            jugador: texts[0] || '—',
-            pez:     texts[1] || '—',
-            peso:    texts[2] || '—',
-            carnada: texts[3] || '—',
-            mapa:    texts[4] || '—',
-          });
-        }
-      }
-    });
+    const res = await fetch('https://raw.githubusercontent.com/Ruizgustavo12/chatrf4/main/records.json?nocache=' + Date.now());
+    if(!res.ok) throw new Error('No se pudo cargar');
+    const data = await res.json();
+    const records = (data.records || []).filter(r => r.pez !== 'Fish');
 
     if(records.length === 0){
-      // Fallback: buscar cualquier estructura con datos de pesca
-      const allTables = doc.querySelectorAll('table');
-      allTables.forEach(table => {
-        table.querySelectorAll('tr').forEach(row => {
-          const cells = row.querySelectorAll('td');
-          if(cells.length >= 3){
-            const texts = Array.from(cells).map(c => c.textContent.trim());
-            if(texts.some(t => t.match(/kg|lb/i))){
-              records.push({
-                jugador: texts[0] || '—',
-                pez:     texts[1] || '—',
-                peso:    texts.find(t=>t.match(/\d+.*kg/i)) || texts[2] || '—',
-                carnada: texts[3] || '—',
-                mapa:    texts[4] || '—',
-              });
-            }
-          }
-        });
-      });
-    }
-
-    if(records.length === 0){
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--muted);">
-        ⚠️ No se pudieron parsear los records. 
-        <a href="https://rf4game.com/records/" target="_blank" style="color:var(--accent);">Ver en rf4game.com →</a>
-      </td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--muted);">⚠️ No hay records disponibles aún.</td></tr>`;
       return;
     }
 
-    tbody.innerHTML = records.slice(0,20).map((r,i)=>`
+    // Mostrar fecha de actualización
+    const updEl = document.getElementById('weeklyRecordsUpdated');
+    if(updEl && data.updated) updEl.textContent = '🕐 Actualizado: ' + data.updated;
+
+    tbody.innerHTML = records.map((r,i)=>`
       <tr style="background:${i%2===0?'var(--bg2)':'var(--bg3)'};transition:background .15s;"
           onmouseover="this.style.background='var(--bg4)'"
           onmouseout="this.style.background='${i%2===0?'var(--bg2)':'var(--bg3)'}'">
         <td style="padding:9px 8px;text-align:center;border-bottom:1px solid var(--border);color:var(--muted);font-weight:700;font-size:.75rem;">${i+1}</td>
-        <td style="padding:9px 8px;border-bottom:1px solid var(--border);color:var(--accent);font-weight:700;">${r.jugador}</td>
         <td style="padding:9px 8px;border-bottom:1px solid var(--border);">🐟 ${r.pez}</td>
         <td style="padding:9px 8px;text-align:center;border-bottom:1px solid var(--border);font-weight:700;color:var(--gold);">${r.peso}</td>
-        <td style="padding:9px 8px;border-bottom:1px solid var(--border);color:var(--text);">🪱 ${r.carnada}</td>
-        <td style="padding:9px 8px;border-bottom:1px solid var(--border);color:var(--text);">🗺️ ${r.mapa}</td>
+        <td style="padding:9px 8px;border-bottom:1px solid var(--border);color:var(--muted);">${r.ubicacion}</td>
+        <td style="padding:9px 8px;border-bottom:1px solid var(--border);color:var(--accent);font-weight:700;">${r.jugador}</td>
+        <td style="padding:9px 8px;text-align:center;border-bottom:1px solid var(--border);color:var(--muted);font-size:.75rem;">${r.fecha}</td>
       </tr>
     `).join('');
 
   } catch(e){
     tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--red);">
-      ❌ Error al procesar los datos. <a href="https://rf4game.com/records/" target="_blank" style="color:var(--accent);">Ver en rf4game.com</a>
+      ❌ Error al cargar los records. <a href="https://rf4game.com/records/" target="_blank" style="color:var(--accent);">Ver en rf4game.com</a>
     </td></tr>`;
   }
 }
