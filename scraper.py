@@ -18,19 +18,40 @@ try:
     time.sleep(5)
     rows = driver.find_elements(By.CSS_SELECTOR, '.records .row')
     print(f"Filas encontradas: {len(rows)}")
-    if rows:
-        first = rows[0]
-        cols = first.find_elements(By.CSS_SELECTOR, '.col')
-        print(f"Columnas en fila 0: {len(cols)}")
-        for i, col in enumerate(cols):
-            print(f"  col[{i}]: '{col.text.strip()}'")
-            imgs = col.find_elements(By.TAG_NAME, 'img')
-            for img in imgs:
-                print(f"    img src: {img.get_attribute('src')}")
+    for row in rows:
+        cols = row.find_elements(By.CSS_SELECTOR, '.col')
+        if len(cols) >= 5:
+            pez = cols[0].text.strip()
+            if pez in ('', 'Fish'):
+                continue
+            try:
+                img_pez = cols[0].find_element(By.TAG_NAME, 'img').get_attribute('src')
+            except:
+                img_pez = ''
+            try:
+                img_senuelo = cols[3].find_element(By.TAG_NAME, 'img').get_attribute('src')
+            except:
+                img_senuelo = ''
+            records.append({
+                'pez':         pez,
+                'img_pez':     img_pez,
+                'peso':        cols[1].text.strip(),
+                'ubicacion':   cols[2].text.strip(),
+                'señuelo':     cols[3].text.strip(),
+                'img_senuelo': img_senuelo,
+                'jugador':     cols[4].text.strip(),
+                'fecha':       cols[5].text.strip() if len(cols) > 5 else '—'
+            })
     driver.quit()
 except Exception as e:
     print(f'Error: {e}')
 
-print('Guardados 0 records (modo debug)')
+output = {
+    'updated': datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC'),
+    'records': records
+}
+
 with open('records.json', 'w', encoding='utf-8') as f:
-    json.dump({'updated': datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC'), 'records': []}, f)
+    json.dump(output, f, ensure_ascii=False, indent=2)
+
+print(f'Guardados {len(records)} records')
