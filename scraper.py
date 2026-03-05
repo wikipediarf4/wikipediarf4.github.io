@@ -30,22 +30,22 @@ try:
             if key in seen:
                 continue
             seen.add(key)
-            # Imagen pez
             try:
                 div = cols[0].find_element(By.CSS_SELECTOR, '.item_icon')
                 style = div.get_attribute('style')
                 img_pez = 'https:' + re.search(r"url\('(.+?)'\)", style).group(1)
-            except:
+            except Exception as e1:
                 img_pez = ''
-            # Señuelo e imagen
+                print(f"Error img_pez: {e1}")
             try:
                 div = cols[3].find_element(By.CSS_SELECTOR, '.bait_icon')
                 senuelo = div.get_attribute('title').split(';')[0].strip()
                 style = div.get_attribute('style')
                 img_senuelo = 'https:' + re.search(r"url\('(.+?)'\)", style).group(1)
-            except:
+            except Exception as e2:
                 senuelo = ''
                 img_senuelo = ''
+                print(f"Error senuelo: {e2}")
             records.append({
                 'pez':         pez,
                 'img_pez':     img_pez,
