@@ -15,7 +15,7 @@ try:
     driver = webdriver.Chrome(options=options)
     driver.get('https://rf4game.com/records/weekly/region/EN/')
     time.sleep(5)
-
+print(driver.page_source[:3000])
     rows = driver.find_elements(By.CSS_SELECTOR, '.records .row.header')
     print(f"Filas encontradas: {len(rows)}")
 
