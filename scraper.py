@@ -14,6 +14,10 @@ options.add_argument('--disable-dev-shm-usage')
 records = []
 seen = set()
 
+def extraer_url(style):
+    match = re.search(r"url\(['\"]?(.+?)['\"]?\)", style)
+    return 'https:' + match.group(1) if match else ''
+
 try:
     driver = webdriver.Chrome(options=options)
     driver.get('https://rf4game.com/records/weekly/region/EN/')
@@ -32,20 +36,16 @@ try:
             seen.add(key)
             try:
                 div = cols[0].find_element(By.CSS_SELECTOR, '.item_icon')
-                style = div.get_attribute('style')
-                img_pez = 'https:' + re.search(r"url\('(.+?)'\)", style).group(1)
-            except Exception as e1:
+                img_pez = extraer_url(div.get_attribute('style'))
+            except:
                 img_pez = ''
-                print(f"Error img_pez: {e1}")
             try:
                 div = cols[3].find_element(By.CSS_SELECTOR, '.bait_icon')
                 senuelo = div.get_attribute('title').split(';')[0].strip()
-                style = div.get_attribute('style')
-                img_senuelo = 'https:' + re.search(r"url\('(.+?)'\)", style).group(1)
-            except Exception as e2:
+                img_senuelo = extraer_url(div.get_attribute('style'))
+            except:
                 senuelo = ''
                 img_senuelo = ''
-                print(f"Error senuelo: {e2}")
             records.append({
                 'pez':         pez,
                 'img_pez':     img_pez,
