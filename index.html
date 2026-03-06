@@ -437,11 +437,17 @@ select.fi option{background:#fff;}
     <div class="feed">
       <!-- Stories -->
       <div class="stories-row" id="storiesRow">
-        <div class="story-card story-add" onclick="om('mAddStory')">
-          <div class="story-card-bg">
-            <div class="story-add-icon">+</div>
-            <div class="story-name" style="color:var(--muted)">Crear historia</div>
+        <div onclick="om('mAddStory')" style="border:none;border-radius:12px;overflow:hidden;cursor:pointer;position:relative;width:115px;height:200px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.15);transition:transform .2s,box-shadow .2s;" onmouseover="this.style.transform='scale(1.03)';this.style.boxShadow='0 4px 14px rgba(0,0,0,.22)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 2px 8px rgba(0,0,0,.15)'">
+          <!-- Top ~66%: user photo background -->
+          <div id="storyAddPhoto" style="position:absolute;top:0;left:0;right:0;height:66%;background:var(--bg3);overflow:hidden;display:flex;align-items:center;justify-content:center;">
+            <span id="storyAddPhotoInner" style="font-size:4rem;opacity:.3;">👤</span>
           </div>
+          <!-- Bottom ~34%: white panel -->
+          <div style="position:absolute;bottom:0;left:0;right:0;height:37%;background:var(--bg2);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:11px;">
+            <div style="font-size:.7rem;font-weight:700;color:var(--text);text-align:center;line-height:1.2;margin-top:20px;">Crear historia</div>
+          </div>
+          <!-- Blue + circle straddling the boundary -->
+          <div style="position:absolute;bottom:calc(37% - 20px);left:50%;transform:translateX(-50%);width:40px;height:40px;border-radius:50%;background:#1877f2;border:3px solid var(--bg2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:900;color:#fff;z-index:3;box-shadow:0 2px 8px rgba(24,119,242,.5);">+</div>
         </div>
         <!-- Stories se renderizan con JS -->
       </div>
@@ -2024,6 +2030,19 @@ function onLogin(){
   loadAds();
   loadPezSemana();
   loadXPLevels();
+  // Update "Crear historia" card with user photo
+  const storyPhoto = document.getElementById('storyAddPhoto');
+  const storyPhotoInner = document.getElementById('storyAddPhotoInner');
+  if(storyPhoto && window.CU){
+    if(window.CU.photo){
+      storyPhoto.innerHTML = `<img src="${window.CU.photo}" style="width:100%;height:100%;object-fit:cover;">`;
+    } else if(storyPhotoInner){
+      storyPhotoInner.textContent = (window.CU.nick||'?')[0].toUpperCase();
+      storyPhotoInner.style.opacity = '0.6';
+      storyPhotoInner.style.fontSize = '3.5rem';
+      storyPhotoInner.style.fontWeight = '800';
+    }
+  }
   loadRealFriends().then(()=>{
     renderProfile();
     renderSidebarFriends();
@@ -2159,6 +2178,10 @@ function closeSV(){
   document.getElementById('storyViewer').classList.remove('open');
   if(_svAutoTimer){clearTimeout(_svAutoTimer);_svAutoTimer=null;}
 }
+// ESC para cerrar historias
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){ const sv=document.getElementById('storyViewer'); if(sv&&sv.classList.contains('open')) closeSV(); }
+});
 function svNav(dir){
   _svIdx=Math.max(0,Math.min(_stories.length-1,_svIdx+dir));
   renderSV(); _svStartTimer();
