@@ -2353,7 +2353,7 @@ async function submitStory(){
   if(!window.CU){ toast('Inicia sesión primero','err'); return; }
   const text = document.getElementById('storyText').value.trim();
   const yt = document.getElementById('storyYT')?.value.trim()||'';
-if(!text && !_storyImgData && !yt){ toast('Escribe algo, sube una imagen o pega un video de YouTube','err'); return; }
+console.log('text:', text, 'img:', _storyImgData, 'yt:', yt); if(!text && !_storyImgData && !yt){ toast('Escribe algo, sube una imagen o pega un video de YouTube','err'); return; }
   toast('Publicando historia...','inf');
   let imgUrl = '';
   if(_storyImgData) imgUrl = await uploadImage(_storyImgData, 'stories');
