@@ -2588,14 +2588,15 @@ async function submitPost(){
   const map = document.getElementById('tagMap').value;
   const tech = document.getElementById('tagTech').value;
   const linkUrl = document.getElementById('postLinkInput')?.value.trim()||'';
-  if(!text && !fish && !_postMediaFiles.length && !linkUrl){ toast('Escribe algo para publicar','err'); return; }
+  const videoUrl0 = document.getElementById('ytUrlInput')?.value.trim() || '';
+  if(!text && !fish && !_postMediaFiles.length && !linkUrl && !videoUrl0){ toast('Escribe algo o agrega un video para publicar','err'); return; }
 
   toast('Publicando...','inf');
   const mediaUrls = [];
   for(const m of _postMediaFiles){
     if(m.type==='image') mediaUrls.push(await uploadImage(m.file,'posts'));
   }
-  const videoUrl = document.getElementById('ytUrlInput')?.value.trim() || '';
+  const videoUrl = videoUrl0;
 
   const postMentionEl = document.getElementById('mention_postText');
   if(postMentionEl) postMentionEl.style.display='none';
