@@ -1093,7 +1093,7 @@ select.fi option{background:#fff;}
       <div style="display:flex;border-top:1px solid var(--border);" id="chatTabsRow">
         <button id="chatTab-all" onclick="switchChatTab('all')" style="flex:1;background:none;border:none;border-bottom:2px solid var(--accent);color:var(--accent);font-family:'Exo 2',sans-serif;font-size:.8rem;font-weight:700;padding:8px 4px;cursor:pointer;">Todos</button>
         <button id="chatTab-unread" onclick="switchChatTab('unread')" style="flex:1;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:'Exo 2',sans-serif;font-size:.8rem;font-weight:600;padding:8px 4px;cursor:pointer;position:relative;">No leídos<span id="unreadChatBadge" style="display:none;position:absolute;top:5px;right:6px;background:var(--accent);color:#fff;border-radius:100px;font-size:.58rem;font-weight:700;padding:1px 5px;min-width:16px;text-align:center;"></span></button>
-        <button id="chatTab-groups" onclick="switchChatTab('groups')" style="flex:1;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:'Exo 2',sans-serif;font-size:.8rem;font-weight:600;padding:8px 4px;cursor:pointer;">Grupos</button>
+
       </div>
     </div>
     <!-- Content (list or chat) -->
@@ -4958,7 +4958,7 @@ let _chatLastMsgs = {};
 
 function switchChatTab(tab){
   _currentChatTab = tab;
-  ['all','unread','groups'].forEach(t=>{
+  ['all','unread'].forEach(t=>{
     const btn = document.getElementById('chatTab-'+t);
     if(!btn) return;
     const active = t===tab;
@@ -5014,14 +5014,7 @@ function renderMessengerList(){
     // Filter based on tab
     let showFriends = friends;
     if(_currentChatTab === 'unread') showFriends = friends.filter(f=>_chatLastMsgs[f.id]?.unread);
-    if(_currentChatTab === 'groups'){
-      list.innerHTML = '<div style="text-align:center;padding:32px 16px;color:var(--muted);font-size:.82rem;line-height:1.7;">Los grupos de chat estarán disponibles próximamente 🎣</div>';
-      list.onclick = null;
-      // Cache avatars
-      if(!window._chatUserAvCache) window._chatUserAvCache = {};
-      friends.forEach(f=>{ if(f.av) window._chatUserAvCache[f.id]=f.av; });
-      return;
-    }
+
 
     const friendItems = showFriends.map(f=>{
       const isOnline = onlineIds.has(f.id);
@@ -5088,14 +5081,14 @@ function openChatWith(uid, nick){
     // Try to find avatar from friends list or online users
   const chatAv = window._chatUserAvCache && window._chatUserAvCache[uid] ? window._chatUserAvCache[uid] : '';
   const avHtml = chatAv
-    ? `<img src="${chatAv}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);flex-shrink:0;">`
-    : `<div style="width:36px;height:36px;border-radius:50%;background:var(--accent);color:#000;font-weight:700;font-size:.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${(nick||'?')[0].toUpperCase()}</div>`;
+    ? `<img src="${chatAv}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);flex-shrink:0;cursor:pointer;" onclick="cm('mMessenger');openUserProfile('${uid}','${esc(nick)}')">`
+    : `<div style="width:36px;height:36px;border-radius:50%;background:var(--accent);color:#000;font-weight:700;font-size:.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;" onclick="cm('mMessenger');openUserProfile('${uid}','${esc(nick)}')">${(nick||'?')[0].toUpperCase()}</div>`;
   chatWin.innerHTML = `
       <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--bg3);">
         <button onclick="backToMessengerList()" style="background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;padding:0 4px;">‹</button>
         ${avHtml}
         <div>
-          <div style="font-size:.88rem;font-weight:700;">${esc(nick)}</div>
+          <div style="font-size:.88rem;font-weight:700;cursor:pointer;" onclick="cm('mMessenger');openUserProfile('${uid}','${esc(nick)}')">${esc(nick)}</div>
           <div style="font-size:.68rem;color:var(--green);" id="chatOnlineStatus">•</div>
         </div>
       </div>
