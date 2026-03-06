@@ -66,12 +66,13 @@ button{font-family:'Exo 2',sans-serif;cursor:pointer;}
 .tb-nav-btn{background:none;border:none;color:var(--muted);padding:8px 18px;border-radius:var(--rs);font-size:1.1rem;
   transition:all .2s;position:relative;}
 .tb-nav-btn:hover,.tb-nav-btn.on{color:var(--accent);background:rgba(0,198,255,.07);border-bottom:2px solid var(--accent);}
-.tb-right{display:flex;align-items:center;gap:8px;}
-.tb-icon-btn{width:36px;height:36px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);
-  display:flex;align-items:center;justify-content:center;font-size:.9rem;color:var(--text);cursor:pointer;transition:all .2s;position:relative;}
-.tb-icon-btn:hover{background:var(--bg4);border-color:var(--accent);}
-.tb-avatar{width:36px;height:36px;border-radius:50%;border:2px solid var(--accent);overflow:hidden;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;background:var(--bg3);font-size:.9rem;font-weight:700;color:var(--accent);}
+.tb-right{display:flex;align-items:center;gap:6px;}
+.tb-icon-btn{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.13);border:none;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .18s;position:relative;}
+.tb-icon-btn:hover{background:rgba(255,255,255,.22);}
+.tb-icon-btn svg{width:20px;height:20px;fill:#fff;display:block;}
+.tb-avatar{width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,255,255,.25);overflow:hidden;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.15);font-size:.9rem;font-weight:700;color:#fff;}
 .tb-avatar img{width:100%;height:100%;object-fit:cover;}
 .notif-dot{position:absolute;top:2px;right:2px;width:8px;height:8px;background:var(--red);border-radius:50%;border:2px solid var(--bg2);}
 
@@ -332,8 +333,16 @@ select.fi option{background:var(--bg2);}
   </div>
   <div class="tb-right">
     <div id="installPwaBtn" onclick="installPwa()" title="Instalar App" style="display:none;align-items:center;gap:5px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;border:none;padding:6px 12px;border-radius:100px;font-size:.75rem;font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;">📲 Instalar App</div>
-    <div class="tb-icon-btn" onclick="om('mNotif')" title="Notificaciones" style="position:relative;">🔔<div id="notifDot" style="display:none;position:absolute;top:-3px;right:-3px;min-width:18px;height:18px;background:var(--red);border-radius:100px;border:2px solid var(--bg2);font-size:.6rem;font-weight:800;color:#fff;align-items:center;justify-content:center;padding:0 3px;">0</div></div>
-    <div class="tb-icon-btn" onclick="openMessenger()" title="Mensajes" style="position:relative;">💬<div id="msgBadge" style="display:none;position:absolute;top:-3px;right:-3px;min-width:18px;height:18px;background:var(--red);border-radius:100px;border:2px solid var(--bg2);font-size:.6rem;font-weight:800;color:#fff;align-items:center;justify-content:center;padding:0 3px;">0</div></div>
+    <!-- Notificaciones -->
+    <div class="tb-icon-btn" onclick="om('mNotif')" title="Notificaciones" style="position:relative;">
+      <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6V11c0-3.07-1.64-5.64-4.5-6.32V4a1.5 1.5 0 00-3 0v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+      <div id="notifDot" style="display:none;position:absolute;top:2px;right:2px;min-width:16px;height:16px;background:var(--red);border-radius:100px;border:2px solid var(--bg2);font-size:.55rem;font-weight:800;color:#fff;align-items:center;justify-content:center;padding:0 3px;">0</div>
+    </div>
+    <!-- Mensajes -->
+    <div class="tb-icon-btn" onclick="openMessenger()" title="Mensajes" style="position:relative;">
+      <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
+      <div id="msgBadge" style="display:none;position:absolute;top:2px;right:2px;min-width:16px;height:16px;background:var(--red);border-radius:100px;border:2px solid var(--bg2);font-size:.55rem;font-weight:800;color:#fff;align-items:center;justify-content:center;padding:0 3px;">0</div>
+    </div>
     <div style="position:relative;">
       <div class="tb-avatar" id="navAv" onclick="toggleUserMenu()">👤</div>
       <div id="userMenu" style="display:none;position:absolute;right:0;top:44px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:999;overflow:hidden;">
@@ -838,8 +847,18 @@ select.fi option{background:var(--bg2);}
       <button class="btn btn-s" style="font-size:.8rem" onclick="insertEmoji()">😊 Emoji</button>
       <button class="btn btn-s" style="font-size:.8rem" onclick="insertFishTag()">🎣 Etiqueta pez</button>
       <button class="btn btn-s" style="font-size:.8rem" onclick="focusPostTextAndAt()">🏷️ Etiquetar persona</button>
+      <button class="btn btn-s" style="font-size:.8rem" onclick="toggleLinkInput()">🔗 Link</button>
     </div>
 
+    <!-- Link preview section -->
+    <div id="linkInputRow" style="display:none;margin-bottom:10px;">
+      <div style="display:flex;gap:6px;align-items:center;">
+        <input class="fi" id="postLinkInput" placeholder="Pegá el link: https://..." style="font-size:.82rem;flex:1;"
+          oninput="debounceLinkPreview(this.value)">
+        <button onclick="clearPostLink()" style="background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;padding:4px;">✕</button>
+      </div>
+      <div id="linkPreviewBox" style="margin-top:8px;display:none;"></div>
+    </div>
     <div id="fishTagRow" style="display:none;margin-bottom:12px">
       <div class="frow">
         <div class="fg"><label class="fl">Pez capturado</label><input class="fi" id="tagFish" placeholder="Ej: Catfish, Bream..."></div>
@@ -891,10 +910,7 @@ select.fi option{background:var(--bg2);}
         <span style="font-size:1.6rem;cursor:pointer" onclick="pickStoryEmoji('🦈')">🦈</span>
       </div>
     </div>
-    <div class="fg">
-      <label class="fl">🎵 Música de fondo - Spotify (opcional)</label>
-      <input class="fi" id="storyYT" placeholder="https://open.spotify.com/track/...">
-    </div>
+
     <button class="btn btn-p btn-full" onclick="submitStory()">Publicar Historia</button>
   </div>
 </div>
@@ -2033,10 +2049,7 @@ function renderSV(){
   if(!s) return;
   const bg = document.getElementById('svBg');
   if(s.img){ bg.innerHTML = `<img src="${s.img}" style="width:100%;height:100%;object-fit:cover">`; }
-  else if(s.yt){
-    const spId = s.yt.match(/track\/([a-zA-Z0-9]+)/)?.[1] || '';
-    bg.innerHTML = spId ? `<iframe src="https://open.spotify.com/embed/track/${spId}?utm_source=generator" style="width:100%;height:100%;border:none" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>` : `<div style="font-size:5rem">${s.emoji||'🎣'}</div>`;
-  }
+
   else { bg.innerHTML = `<div style="width:100%;height:100%;background:linear-gradient(135deg,#0a2a4a,#0077b6);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px"><span style="font-size:5rem">${s.emoji||'🎣'}</span></div>`; }
   document.getElementById('svAv').innerHTML = s.userAv ? `<img src="${s.userAv}">` : s.userNick[0];
   document.getElementById('svName').textContent = s.userNick;
@@ -2143,18 +2156,16 @@ async function deleteMyStory(){
 async function submitStory(){
   if(!window.CU){ toast('Inicia sesión primero','err'); return; }
   const text = document.getElementById('storyText').value.trim();
-  const yt = document.getElementById('storyYT')?.value.trim()||'';
-  if(!text && !_storyImgData && !yt){ toast('Escribe algo, sube una imagen o pega un link de Spotify','err'); return; }
+  if(!text && !_storyImgData){ toast('Escribe algo o sube una imagen','err'); return; }
   toast('Publicando historia...','inf');
   let imgUrl = '';
   if(_storyImgData) imgUrl = await uploadImage(_storyImgData, 'stories');
   await addDoc(collection(db, 'stories'), {
     userId:window.CU.id, userNick:window.CU.nick, userAv:window.CU.av||'',
-    text, emoji:_storyEmojiPick||'🎣', img:imgUrl, yt, time:serverTimestamp()
+    text, emoji:_storyEmojiPick||'🎣', img:imgUrl, yt:'', time:serverTimestamp()
   });
   _storyImgData = null; _storyEmojiPick = '';
   document.getElementById('storyText').value='';
-  document.getElementById('storyYT').value='';
   document.getElementById('storyImgPrev').innerHTML='';
   cm('mAddStory');
   toast('Historia publicada 📖','ok');
@@ -2202,6 +2213,14 @@ function postHTML(p){
     }
   }
   const sharedHTML = p.sharedFrom ? `<div style="font-size:.72rem;color:var(--muted);margin-bottom:6px;padding:0 14px;">🔁 Compartido de <strong>${esc(p.sharedFrom)}</strong></div>` : '';
+  const linkHTML = p.link ? `<a href="${esc(p.link.url)}" target="_blank" rel="noopener" style="display:block;text-decoration:none;margin:0 14px 10px;border-radius:var(--rs);overflow:hidden;border:1px solid var(--border);background:var(--bg3);transition:border-color .2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+    ${p.link.img ? `<img src="${esc(p.link.img)}" style="width:100%;max-height:220px;object-fit:cover;display:block;" loading="lazy" onerror="this.style.display='none'">` : ''}
+    <div style="padding:10px 12px;">
+      <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">${esc(p.link.site||'')}</div>
+      <div style="font-size:.88rem;font-weight:700;color:var(--text);margin-bottom:4px;line-height:1.3;">${esc(p.link.title||p.link.url)}</div>
+      ${p.link.desc ? `<div style="font-size:.78rem;color:var(--muted);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${esc(p.link.desc)}</div>` : ''}
+    </div>
+  </a>` : '';
   const isMyPost = window.CU && p.userId === window.CU.id;
   const cmtsHTML = (p.comments||[]).map(c=>`
     <div class="comment-item">
@@ -2228,6 +2247,7 @@ function postHTML(p){
       </div>
     </div>
     ${sharedHTML}
+    ${linkHTML}
     ${p.text?`<div class="post-text">${renderCommentText(p.text)}</div>`:''}
     ${fishTag}
     ${imgHTML}
@@ -2267,6 +2287,62 @@ function postHTML(p){
   </div>`;
 }
 
+// ── Link preview helpers ──
+let _linkDebounceTimer = null;
+function toggleLinkInput(){
+  const row = document.getElementById('linkInputRow');
+  if(!row) return;
+  row.style.display = row.style.display === 'none' ? 'block' : 'none';
+  if(row.style.display === 'block') document.getElementById('postLinkInput').focus();
+}
+function clearPostLink(){
+  const inp = document.getElementById('postLinkInput');
+  const box = document.getElementById('linkPreviewBox');
+  if(inp) inp.value = '';
+  if(box){ box.style.display='none'; box.innerHTML=''; }
+  window._pendingLinkData = null;
+}
+function debounceLinkPreview(val){
+  clearTimeout(_linkDebounceTimer);
+  if(!val.trim()){ clearPostLink(); return; }
+  _linkDebounceTimer = setTimeout(()=>fetchLinkPreview(val.trim()), 700);
+}
+async function fetchLinkPreview(url){
+  if(!url.startsWith('http')) url = 'https://' + url;
+  const box = document.getElementById('linkPreviewBox');
+  if(!box) return;
+  box.style.display = 'block';
+  box.innerHTML = '<div style="color:var(--muted);font-size:.8rem;padding:8px;">Cargando vista previa...</div>';
+  try {
+    const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(url);
+    const resp = await fetch(proxyUrl);
+    const json = await resp.json();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(json.contents, 'text/html');
+    const getMeta = (p) => doc.querySelector(`meta[property="${p}"]`)?.getAttribute('content') ||
+                           doc.querySelector(`meta[name="${p}"]`)?.getAttribute('content') || '';
+    const title = getMeta('og:title') || doc.querySelector('title')?.textContent || url;
+    const desc  = getMeta('og:description') || getMeta('description') || '';
+    const img   = getMeta('og:image') || '';
+    const site  = getMeta('og:site_name') || new URL(url).hostname;
+    window._pendingLinkData = { url, title, desc, img, site };
+    box.innerHTML = `<a href="${url}" target="_blank" rel="noopener" style="display:block;text-decoration:none;border-radius:var(--rs);overflow:hidden;border:1px solid var(--border);background:var(--bg3);">
+      ${img ? `<img src="${img}" style="width:100%;max-height:200px;object-fit:cover;display:block;" loading="lazy" onerror="this.style.display='none'">` : ''}
+      <div style="padding:10px 12px;">
+        <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">${site}</div>
+        <div style="font-size:.88rem;font-weight:700;color:var(--text);margin-bottom:4px;">${title}</div>
+        ${desc ? `<div style="font-size:.78rem;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${desc}</div>` : ''}
+      </div>
+    </a>`;
+    // Update input with cleaned URL
+    document.getElementById('postLinkInput').value = url;
+    document.getElementById('postLinkInput').dataset.linkData = JSON.stringify(window._pendingLinkData);
+  } catch(e){
+    box.innerHTML = '<div style="color:var(--muted);font-size:.78rem;padding:8px;">No se pudo cargar la vista previa del link.</div>';
+    window._pendingLinkData = { url, title:url, desc:'', img:'', site:'' };
+  }
+}
+
 async function submitPost(){
   if(!window.CU){ toast('Inicia sesión primero','err'); return; }
   const text = document.getElementById('postText').value.trim();
@@ -2274,7 +2350,8 @@ async function submitPost(){
   const weight = parseFloat(document.getElementById('tagWeight').value)||0;
   const map = document.getElementById('tagMap').value;
   const tech = document.getElementById('tagTech').value;
-  if(!text && !fish && !_postMediaFiles.length){ toast('Escribe algo para publicar','err'); return; }
+  const linkUrl = document.getElementById('postLinkInput')?.value.trim()||'';
+  if(!text && !fish && !_postMediaFiles.length && !linkUrl){ toast('Escribe algo para publicar','err'); return; }
 
   toast('Publicando...','inf');
   const mediaUrls = [];
@@ -2286,11 +2363,13 @@ async function submitPost(){
   const postMentionEl = document.getElementById('mention_postText');
   if(postMentionEl) postMentionEl.style.display='none';
 
+  const linkData = (linkUrl && window._pendingLinkData) ? window._pendingLinkData : (linkUrl ? { url:linkUrl, title:linkUrl, desc:'', img:'', site:'' } : null);
   const newPostRef = await addDoc(collection(db,'posts'),{
     userId:window.CU.id, userNick:window.CU.nick, userAv:window.CU.av||'', userXp:window.CU.xp||0,
     text, fish, weight, map, tech,
     images: mediaUrls,
     video: videoUrl,
+    link: linkData,
     time: serverTimestamp(),
     likes:0, comments:[], reactions:{}, reactionCounts:{}
   });
@@ -2321,7 +2400,9 @@ async function submitPost(){
   document.getElementById('tagTech').value='';
   document.getElementById('fishTagRow').style.display='none';
   clearYtInput();
+  clearPostLink();
   document.getElementById('postMediaPreview').style.display='none';
+  document.getElementById('linkInputRow').style.display='none';
   cm('mCreatePost');
   addNotif('📝 Publicaste una nueva captura'+(fish?`: ${fish} ${weight?weight+'kg':''}`:''));
   addXP(10,'publicación');
@@ -5281,7 +5362,7 @@ function renderTrofeoSidebar(items){
 // ===== EXPOSE TO HTML — sobreescribe los stubs =====
 const _expose = {
   doLogin,doReg,showReg,showLogin,showTerms,closeTerms,acceptTermsAndRegister,
-  submitPost,submitStory,submitComment,handleMentionInput,insertMention,searchMentionedUser,handlePostMentionInput,insertPostMention,focusPostTextAndAt,
+  submitPost,submitStory,submitComment,toggleLinkInput,clearPostLink,debounceLinkPreview,fetchLinkPreview,handleMentionInput,insertMention,searchMentionedUser,handlePostMentionInput,insertPostMention,focusPostTextAndAt,
   doReact,quickReact,
   saveProfile,openEditProfile,
   changeCover,changeAvatar,
