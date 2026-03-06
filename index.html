@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es"> 
+<html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://storage.googleapis.com wss://*.firebaseio.com https://api.imgbb.com https://i.ibb.co data: blob:; connect-src 'self' https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://storage.googleapis.com wss://*.firebaseio.com https://api.imgbb.com https://i.ibb.co https://api.allorigins.win https://corsproxy.io https://api.codetabs.com https://raw.githubusercontent.com data: blob:; frame-src https://www.youtube.com https://*.youtube.com https://*.firebaseapp.com; img-src * data: blob:;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://storage.googleapis.com wss://*.firebaseio.com https://api.imgbb.com https://i.ibb.co data: blob:; connect-src 'self' https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://storage.googleapis.com wss://*.firebaseio.com https://api.imgbb.com https://i.ibb.co data: blob:; frame-src https://www.youtube.com https://*.youtube.com https://*.firebaseapp.com; img-src 'self' data: blob: https: http:;">
 <title>RF4 Latam</title>
 
   <meta name="theme-color" content="#00c6ff">
@@ -16,7 +16,7 @@
   <script>
     if('serviceWorker' in navigator){
       window.addEventListener('load', ()=>{
-       
+        navigator.serviceWorker.register('/sw.js').catch(err=>console.log('SW error:', err));
       });
     }
     let _deferredPrompt;
@@ -32,10 +32,6 @@
       _deferredPrompt = null;
     });
     function installPwa(){
-     function goToProfile(){
-  const nick = window.CU?.nickLower || window.CU?.nick || '';
-  if(nick) window.location.href = '#?u=' + nick;
-}
       if(_deferredPrompt){
         _deferredPrompt.prompt();
         _deferredPrompt.userChoice.then(()=>{ _deferredPrompt=null; });
@@ -100,37 +96,25 @@ button{font-family:'Exo 2',sans-serif;cursor:pointer;}
 /* ===== FEED ===== */
 .feed{padding:16px;max-width:680px;margin:0 auto;}
 
-/* ===== STORIES - Facebook style circular ===== */
-.stories-row{display:flex;gap:14px;margin-bottom:16px;overflow-x:auto;padding:4px 2px 8px;align-items:flex-start;}
+/* ===== STORIES ===== */
+.stories-row{display:flex;gap:10px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px;}
 .stories-row::-webkit-scrollbar{height:3px;}
-/* Each card is a column: circle + name */
-.story-card{flex-shrink:0;width:56px;cursor:pointer;position:relative;transition:transform .18s;
-  display:flex;flex-direction:column;align-items:center;gap:5px;background:none;border:none;padding:0;}
-.story-card:hover{transform:scale(1.07);}
-/* The circle image wrapper */
-.story-ring{width:56px;height:56px;border-radius:50%;padding:2.5px;
-  background:linear-gradient(135deg,var(--accent),#0047ab);
-  box-shadow:0 2px 10px rgba(0,198,255,.3);position:relative;flex-shrink:0;}
-.story-card.story-add .story-ring{background:var(--bg3);border:2px dashed var(--border);box-shadow:none;padding:0;}
-.story-ring-inner{width:100%;height:100%;border-radius:50%;overflow:hidden;border:2px solid var(--bg);
-  background:linear-gradient(135deg,#0a2a4a,#0077b6);display:flex;align-items:center;justify-content:center;}
-.story-ring-inner img{width:100%;height:100%;object-fit:cover;display:block;}
-/* Plus badge for add story */
-.story-add-badge{position:absolute;bottom:0;right:0;width:18px;height:18px;border-radius:50%;
-  background:var(--accent);border:2px solid var(--bg);display:flex;align-items:center;justify-content:center;
-  font-size:.75rem;font-weight:900;color:#000;line-height:1;}
-/* Name label */
-.story-name{font-size:.6rem;font-weight:600;text-align:center;color:var(--text);
-  width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.2;}
-/* Legacy classes kept for compat */
+.story-card{flex-shrink:0;width:80px;height:140px;border-radius:var(--r);overflow:hidden;cursor:pointer;position:relative;
+  background:var(--bg3);border:1px solid var(--border);transition:transform .2s;}
+.story-card:hover{transform:scale(1.03);}
 .story-card img{width:100%;height:100%;object-fit:cover;}
-.story-card-bg{width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
-.story-av{display:none;}
-.story-user-av{display:none;}
-.story-gradient{display:none;}
-.story-bottom-name{display:none;}
-.story-add{background:none;}
-.story-add-icon{display:none;}
+.story-card-bg{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,var(--bg3),var(--bg4));}
+.story-av{width:32px;height:32px;border-radius:50%;border:2px solid var(--accent);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:var(--accent);background:var(--bg);flex-shrink:0;}
+.story-av img{width:100%;height:100%;object-fit:cover;}
+.story-name{font-size:.58rem;font-weight:700;margin-top:4px;text-align:center;padding:0 3px;}
+.story-user-av{position:absolute;top:6px;left:6px;width:26px;height:26px;border-radius:50%;border:2px solid var(--accent);overflow:hidden;}
+.story-user-av img{width:100%;height:100%;object-fit:cover;}
+.story-gradient{position:absolute;bottom:0;left:0;right:0;height:60px;background:linear-gradient(transparent,rgba(0,0,0,.8));}
+.story-bottom-name{position:absolute;bottom:8px;left:8px;font-size:.65rem;font-weight:700;}
+.story-add{background:var(--bg3);border:2px dashed var(--border);}
+.story-add-icon{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:#000;font-weight:900;}
 
 /* ===== POST BOX ===== */
 .post-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:16px;}
@@ -171,23 +155,16 @@ button{font-family:'Exo 2',sans-serif;cursor:pointer;}
 .post-action-btn:hover{background:var(--bg3);color:var(--text);}
 .post-action-btn.active{color:var(--accent);}
 
-/* REACTION POPUP - Facebook style floating animated */
+/* REACTION POPUP */
 .rxn-wrap{position:relative;}
-.rxn-popup{display:none;position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);
-  background:var(--bg2);border:1px solid var(--border);border-radius:100px;
-  padding:8px 12px;gap:2px;align-items:center;z-index:600;
-  box-shadow:0 8px 32px rgba(0,0,0,.9),0 2px 8px rgba(0,198,255,.15);white-space:nowrap;}
-.rxn-popup::after{content:'';position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);
-  width:12px;height:6px;background:var(--bg2);clip-path:polygon(0 0,100% 0,50% 100%);}
-.rxn-popup.show{display:flex;animation:rxnPop .2s cubic-bezier(.34,1.56,.64,1);}
-@keyframes rxnPop{from{opacity:0;transform:translateX(-50%) scale(.4) translateY(10px)}to{opacity:1;transform:translateX(-50%) scale(1) translateY(0)}}
-.rxn-btn{background:none;border:none;font-size:1.5rem;cursor:pointer;padding:3px 4px;border-radius:50%;
-  transition:transform .18s cubic-bezier(.34,1.56,.64,1);line-height:1;position:relative;display:flex;align-items:center;justify-content:center;}
-.rxn-btn:hover{transform:scale(1.7) translateY(-8px);}
-.rxn-btn:hover .rxn-tooltip{opacity:1!important;transform:translateX(-50%) translateY(-2px)!important;}
-.rxn-tooltip{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%) translateY(4px);
-  background:rgba(0,0,0,.9);color:#fff;font-size:.58rem;white-space:nowrap;padding:2px 7px;
-  border-radius:4px;pointer-events:none;opacity:0;transition:opacity .15s,transform .15s;font-weight:700;}
+.rxn-popup{display:none;position:absolute;bottom:calc(100% + 6px);left:0;
+  background:var(--bg3);border:1px solid var(--border);border-radius:100px;
+  padding:6px 10px;gap:4px;align-items:center;z-index:600;box-shadow:0 6px 22px rgba(0,0,0,.8);white-space:nowrap;}
+.rxn-popup.show{display:flex;animation:rxnPop .16s ease;}
+@keyframes rxnPop{from{opacity:0;transform:scale(.6) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.rxn-btn{background:none;border:none;font-size:1.4rem;cursor:pointer;padding:2px 4px;border-radius:50%;transition:transform .13s;line-height:1;position:relative;}
+.rxn-btn:hover{transform:scale(1.6) translateY(-6px);}
+.rxn-btn:hover .rxn-tooltip{opacity:1!important;}
 
 /* COMMENTS */
 .comments-section{padding:8px 14px;display:none;}
@@ -302,16 +279,6 @@ select.fi option{background:var(--bg2);}
   width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:transform .2s;}
 .sv-emoji-btn:hover{transform:scale(1.3);}
 
-/* Story viewer reaction buttons - animated floating */
-.sv-rxn-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);
-  font-size:1.3rem;cursor:pointer;border-radius:50%;width:42px;height:42px;
-  display:flex;align-items:center;justify-content:center;
-  transition:transform .2s cubic-bezier(.34,1.56,.64,1),background .15s,box-shadow .15s;
-  backdrop-filter:blur(4px);position:relative;animation:svRxnIn .3s cubic-bezier(.34,1.56,.64,1) both;}
-.sv-rxn-btn:hover{transform:scale(1.45) translateY(-6px);background:rgba(255,255,255,.25);box-shadow:0 6px 18px rgba(0,0,0,.5);}
-.sv-rxn-btn:active{transform:scale(.9);}
-@keyframes svRxnIn{from{opacity:0;transform:scale(0) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
-
 /* ===== TOAST ===== */
 .toast-ct{position:fixed;top:70px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:6px;}
 .toast{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);padding:10px 16px;font-size:.83rem;
@@ -361,7 +328,6 @@ select.fi option{background:var(--bg2);}
     <button class="tb-nav-btn" onclick="gp('spots');setNav(this)" title="Spots">📍</button>
     <button class="tb-nav-btn" onclick="gp('trofeos-feed');setNav(this)" title="Feed de Trofeos Aprobados" style="color:var(--gold);font-size:.75rem;font-weight:700;">🥇 Trofeos</button>
     <button class="tb-nav-btn" id="pezSemanalNavBtn" onclick="openPezSemanalModal();setNav(this)" title="Pez de la Semana" style="color:var(--green);font-size:.75rem;font-weight:700;">🐟 Pez Semanal</button>
-    <button class="tb-nav-btn" onclick="gp('peces');setNav(this)" title="Base de Peces Trofeo" style="color:#00e5ff;font-size:.75rem;font-weight:700;">🐟 Peces</button>
     <button class="tb-nav-btn" id="adminNavBtn" style="display:none;color:var(--red);font-size:.75rem;font-weight:700;" onclick="gp('admin');setNav(this)" title="Panel Admin">🛡️ Admin</button>
   </div>
   <div class="tb-right">
@@ -393,12 +359,12 @@ select.fi option{background:var(--bg2);}
   <div class="layout">
     <!-- LEFT -->
     <div class="sidebar-left">
-      <div class="sl-profile" onclick="window.location.href='/chatrf4/#?u='+(window.CU?.nickLower||window.CU?.nick||'')">
+      <div class="sl-profile" onclick="gp('profile')">
         <div class="sl-av" id="slAv">👤</div>
         <div class="sl-name" id="slName">Mi Perfil</div>
       </div>
       <div class="divider"></div>
-    <div class="sl-item" onclick="gp('profile')"><span class="sl-item-icon">👤</span> Mi Perfil</div>
+      <div class="sl-item" onclick="gp('profile')"><span class="sl-item-icon">👤</span> Mi Perfil</div>
       <div class="sl-item"><span class="sl-item-icon">👥</span> Amigos</div>
       <div class="sl-item"><span class="sl-item-icon">📸</span> Fotos</div>
       <div class="sl-item" onclick="gp('spots')"><span class="sl-item-icon">📍</span> Compartir Spot</div>
@@ -408,7 +374,6 @@ select.fi option{background:var(--bg2);}
       <div class="sl-item" onclick="gp('videos');loadVideos()"><span class="sl-item-icon">📹</span> Videos</div>
       <div class="sl-item"><span class="sl-item-icon">🔖</span> Guardados</div>
       <div class="sl-item" onclick="gp('parches')"><span class="sl-item-icon">🔧</span> Parches y Actualizaciones</div>
-      <div class="sl-item" onclick="gp('peces')"><span class="sl-item-icon">🐟</span> Base de Peces</div>
       <div class="divider"></div>
       <div class="sl-section-title">Amigos</div>
       <div id="friendsListSidebar"></div>
@@ -436,13 +401,10 @@ select.fi option{background:var(--bg2);}
       <!-- Stories -->
       <div class="stories-row" id="storiesRow">
         <div class="story-card story-add" onclick="om('mAddStory')">
-          <div class="story-ring">
-            <div class="story-ring-inner">
-              <div id="storyAddAv" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:var(--accent);">👤</div>
-            </div>
-            <div class="story-add-badge">+</div>
+          <div class="story-card-bg">
+            <div class="story-add-icon">+</div>
+            <div class="story-name" style="color:var(--muted)">Crear historia</div>
           </div>
-          <div class="story-name" style="color:var(--muted)">Tu historia</div>
         </div>
         <!-- Stories se renderizan con JS -->
       </div>
@@ -629,7 +591,7 @@ select.fi option{background:var(--bg2);}
 
 <!-- STORY VIEWER -->
 <div class="story-viewer" id="storyViewer">
-  <button class="sv-close" onclick="closeSV()" style="z-index:20;">✕</button>
+  <button class="sv-close" onclick="closeSV()">✕</button>
   <button class="sv-nav sv-prev" onclick="svNav(-1)">‹</button>
   <div class="sv-inner">
     <div style="width:100%;height:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:5rem" id="svBg">🐟</div>
@@ -637,44 +599,33 @@ select.fi option{background:var(--bg2);}
     <div class="sv-progress" id="svProgress"></div>
     <div class="sv-header">
       <div class="story-av" id="svAv">👤</div>
-      <div style="flex:1;">
+      <div>
         <div style="font-size:.85rem;font-weight:700" id="svName"></div>
         <div style="font-size:.7rem;color:rgba(255,255,255,.7)" id="svTime"></div>
       </div>
-      <!-- Delete button (own stories only) -->
-      <div id="svDeleteBtn" style="display:none;">
-        <button onclick="deleteMyStory()" title="Eliminar mi historia"
-          style="background:rgba(255,68,68,.5);border:1px solid rgba(255,68,68,.7);color:#fff;border-radius:8px;padding:5px 10px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px;font-family:'Exo 2',sans-serif;white-space:nowrap;backdrop-filter:blur(4px);">
-          🗑 Borrar
-        </button>
-      </div>
     </div>
     <div class="sv-text" id="svText"></div>
-    <!-- Bottom bar: reactions + comment -->
-    <div style="position:absolute;bottom:0;left:0;right:0;padding:10px 12px 12px;background:linear-gradient(transparent,rgba(0,0,0,.75));display:flex;flex-direction:column;gap:8px;">
-      <!-- Reactions row -->
-      <div id="svReactionsRow" style="display:flex;justify-content:center;gap:6px;">
-        <!-- These are the animated reaction buttons - always visible -->
-        <button onclick="reactStory('❤️')" class="sv-rxn-btn" style="animation-delay:0s">❤️</button>
-        <button onclick="reactStory('😮')" class="sv-rxn-btn" style="animation-delay:.04s">😮</button>
-        <button onclick="reactStory('😂')" class="sv-rxn-btn" style="animation-delay:.08s">😂</button>
-        <button onclick="reactStory('🎣')" class="sv-rxn-btn" style="animation-delay:.12s">🎣</button>
-        <button onclick="reactStory('🔥')" class="sv-rxn-btn" style="animation-delay:.16s">🔥</button>
-        <button onclick="reactStory('👏')" class="sv-rxn-btn" style="animation-delay:.20s">👏</button>
-        <button onclick="reactStory('😍')" class="sv-rxn-btn" style="animation-delay:.24s">😍</button>
+    <!-- Delete button (own stories) -->
+    <div id="svDeleteBtn" style="display:none;position:absolute;top:10px;right:52px;z-index:10;">
+      <button onclick="deleteMyStory()" title="Eliminar historia" style="background:rgba(255,68,68,.4);border:1px solid rgba(255,68,68,.6);color:#fff;border-radius:50%;width:32px;height:32px;font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">🗑</button>
+    </div>
+    <!-- Comment + React bar -->
+    <div style="position:absolute;bottom:10px;left:12px;right:12px;display:flex;gap:8px;align-items:center;">
+      <!-- React button with floating popup -->
+      <div style="position:relative;" id="svReactWrap"
+        onmouseenter="document.getElementById('svReactPop').style.display='flex'"
+        onmouseleave="document.getElementById('svReactPop').style.display='none'">
+        <button id="svReactBtn" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:50%;width:36px;height:36px;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">👍</button>
+        <!-- Floating reaction popup -->
+        <div id="svReactPop" style="display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:rgba(30,40,55,.97);border:1px solid rgba(255,255,255,.15);border-radius:100px;padding:6px 10px;gap:6px;align-items:center;box-shadow:0 4px 20px rgba(0,0,0,.6);white-space:nowrap;z-index:100;"
+          onmouseenter="this.style.display='flex'" onmouseleave="this.style.display='none'">
+          ${['❤️','😮','😂','🎣','👏','🔥','😍'].map(em=>`
+            <button onclick="reactStory('${em}')" title="${em}" style="background:none;border:none;font-size:1.5rem;cursor:pointer;transition:transform .15s;border-radius:50%;padding:2px;" onmouseover="this.style.transform='scale(1.4) translateY(-4px)'" onmouseout="this.style.transform='scale(1) translateY(0)'">${em}</button>
+          `).join('')}
+        </div>
       </div>
-      <!-- Comment row -->
-      <div id="svCommentRow" style="display:flex;gap:8px;align-items:center;">
-        <input id="svCommentInput" placeholder="💬 Comentar esta historia..."
-          style="flex:1;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:100px;padding:8px 14px;color:#fff;font-size:.8rem;outline:none;font-family:'Exo 2',sans-serif;backdrop-filter:blur(6px);"
-          onkeypress="if(event.key==='Enter')submitStoryComment()"
-          onfocus="this.style.background='rgba(255,255,255,.2)';this.style.borderColor='rgba(0,198,255,.7)'"
-          onblur="this.style.background='rgba(255,255,255,.12)';this.style.borderColor='rgba(255,255,255,.25)'">
-        <button onclick="submitStoryComment()"
-          style="background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:50%;width:34px;height:34px;color:#000;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:900;transition:transform .15s;"
-          onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">➤</button>
-      </div>
-      <div style="font-size:.65rem;color:rgba(255,255,255,.5);text-align:center;">Tu comentario se enviará como mensaje privado</div>
+      <input id="svCommentInput" placeholder="Comentar historia..." style="flex:1;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:8px 14px;color:#fff;font-size:.82rem;outline:none;font-family:'Exo 2',sans-serif;" onkeypress="if(event.key==='Enter')submitStoryComment()">
+      <button onclick="submitStoryComment()" style="background:var(--accent);border:none;border-radius:50%;width:34px;height:34px;color:#000;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">➤</button>
     </div>
   </div>
   <button class="sv-nav sv-next" onclick="svNav(1)">›</button>
@@ -862,7 +813,7 @@ select.fi option{background:var(--bg2);}
     <!-- YouTube - siempre visible -->
     <div style="margin-bottom:10px;background:rgba(255,40,40,.06);border:1px solid rgba(255,40,40,.2);border-radius:var(--rs);padding:10px;">
       <div style="font-size:.72rem;color:#ff6666;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:5px;">▶️ Link de YouTube <span style="color:var(--muted);font-weight:400;">(opcional)</span></div>
-      <input class="fi" id="ytUrlInput" placeholder="Pegá el link: https://soundcloud.com/..." style="font-size:.82rem;margin-bottom:0;" oninput="previewYtEmbed(this.value)">
+      <input class="fi" id="ytUrlInput" placeholder="Pegá el link: https://www.youtube.com/watch?v=..." style="font-size:.82rem;margin-bottom:0;" oninput="previewYtEmbed(this.value)">
       <div id="ytPreview" style="margin-top:8px;border-radius:var(--rs);overflow:hidden;display:none;"></div>
     </div>
 
@@ -931,11 +882,7 @@ select.fi option{background:var(--bg2);}
         <span style="font-size:1.6rem;cursor:pointer" onclick="pickStoryEmoji('🦈')">🦈</span>
       </div>
     </div>
-    <div class="fg">
-  <label class="fl">🎵 Música de fondo SoundCloud (opcional)</label>
-  <input class="fi" <div class="fg">   <label class="fl">🎵 Música de fondo (Spotify, opcional)</label>   <input class="fi" id="storyYT" placeholder="https://open.spotify.com/track/..."> </div> placeholder="https://www.youtube.com/watch?v=...">
-</div>
-<button class="btn btn-p btn-full" onclick="submitStory()">Publicar Historia</button>
+    <button class="btn btn-p btn-full" onclick="submitStory()">Publicar Historia</button>
   </div>
 </div>
 
@@ -1497,108 +1444,6 @@ select.fi option{background:var(--bg2);}
   </div>
 </div>
 
-<!-- PAGE: PECES -->
-<div class="page" id="page-peces" style="max-width:1100px;margin:0 auto;padding:24px 16px 80px;">
-  <div style="margin-bottom:20px;">
-    <div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:var(--accent);text-shadow:0 0 20px rgba(0,198,255,.3);margin-bottom:4px;">🐟 Base de Peces — Trofeos</div>
-    <div style="font-size:.8rem;color:var(--muted);margin-bottom:14px;">Consultá pesos de trofeo y súper trofeo de todos los peces del juego. Hacé click en dos peces para compararlos.</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:3px 12px;font-size:.7rem;color:var(--muted);">🐟 <strong id="fishTotalCount" style="color:var(--accent)">0</strong> peces</div>
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:3px 12px;font-size:.7rem;color:var(--muted);">🏆 Trofeo + ⭐ Súper Trofeo</div>
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:3px 12px;font-size:.7rem;color:var(--muted);">⚡ Comparador</div>
-    </div>
-  </div>
-
-  <!-- TABS -->
-  <div style="display:flex;gap:4px;margin-bottom:18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:4px;">
-    <button id="pecesTab1" onclick="swPecesTab(1)" style="flex:1;padding:9px;border-radius:var(--rs);border:none;font-family:'Exo 2',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;transition:all .2s;">🐟 Base de Peces</button>
-    <button id="pecesTab2" onclick="swPecesTab(2)" style="flex:1;padding:9px;border-radius:var(--rs);border:none;font-family:'Exo 2',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;background:none;color:var(--muted);transition:all .2s;">🏆 Records Semanales</button>
-  </div>
-
-  <!-- PANEL DB -->
-  <div id="pecesPanelDB">
-
-  <!-- TOOLBAR -->
-  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-    <div style="flex:1;min-width:180px;position:relative;">
-      <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;">🔍</span>
-      <input id="fishSearchQ" placeholder="Buscar pez..." oninput="renderFishDB()"
-        style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:9px 14px 9px 38px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.85rem;outline:none;transition:border .2s;"
-        onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
-    </div>
-    <select id="fishSortSel" onchange="renderFishDB()"
-      style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:9px 12px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.82rem;outline:none;cursor:pointer;">
-      <option value="az">A → Z</option>
-      <option value="za">Z → A</option>
-      <option value="td">Mayor trofeo primero</option>
-      <option value="ta">Menor trofeo primero</option>
-      <option value="sd">Mayor súper trofeo</option>
-    </select>
-  </div>
-
-  <!-- COMPARE BAR -->
-  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-    <div style="font-size:.72rem;font-weight:700;color:var(--muted);white-space:nowrap;">⚡ COMPARAR:</div>
-    <div style="display:flex;gap:8px;flex:1;flex-wrap:wrap;">
-      <div id="fishSlotA" style="background:rgba(0,198,255,.06);border:1px solid rgba(0,198,255,.4);border-radius:var(--rs);padding:7px 11px;font-size:.75rem;min-width:140px;display:flex;align-items:center;gap:7px;">
-        <span style="font-size:.62rem;font-weight:700;padding:1px 6px;border-radius:100px;background:rgba(0,198,255,.2);color:var(--accent);">A</span>
-        <span id="fishSlotAName" style="flex:1;font-weight:600;color:var(--muted);font-style:italic;">Elegí un pez</span>
-        <span id="fishClearA" style="display:none;cursor:pointer;color:var(--muted);" onclick="fishClr('A')">✕</span>
-      </div>
-      <div id="fishSlotB" style="background:rgba(255,215,0,.06);border:1px solid rgba(255,215,0,.4);border-radius:var(--rs);padding:7px 11px;font-size:.75rem;min-width:140px;display:flex;align-items:center;gap:7px;">
-        <span style="font-size:.62rem;font-weight:700;padding:1px 6px;border-radius:100px;background:rgba(255,215,0,.18);color:var(--gold);">B</span>
-        <span id="fishSlotBName" style="flex:1;font-weight:600;color:var(--muted);font-style:italic;">Elegí un pez</span>
-        <span id="fishClearB" style="display:none;cursor:pointer;color:var(--muted);" onclick="fishClr('B')">✕</span>
-      </div>
-    </div>
-    <button id="fishCmpBtn" style="display:none;padding:8px 16px;border-radius:var(--rs);font-family:'Exo 2',sans-serif;font-size:.8rem;font-weight:700;cursor:pointer;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;" onclick="fishOpenCmp()">⚡ Comparar</button>
-    <button style="padding:8px 16px;border-radius:var(--rs);font-family:'Exo 2',sans-serif;font-size:.8rem;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--text);" onclick="fishClrAll()">✕ Limpiar</button>
-  </div>
-
-  <div id="fishRcount" style="font-size:.72rem;color:var(--muted);margin-bottom:10px;"></div>
-  <div id="fishGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px;"></div>
-  </div><!-- /pecesPanelDB -->
-
-  <!-- PANEL CALCULADORA -->
-  <div id="pecesPanelCalc" style="display:none;">
-    <div style="font-family:'Orbitron',monospace;font-size:.85rem;color:var(--accent);margin-bottom:4px;">🏆 Records Semanales RF4</div>
-    <div style="font-size:.78rem;color:var(--muted);margin-bottom:4px;">Los mejores registros de la semana. Fuente: <a href="https://rf4game.com/records/" target="_blank" style="color:var(--accent);">rf4game.com/records</a></div>
-    <div id="weeklyRecordsUpdated" style="font-size:.72rem;color:var(--muted);margin-bottom:16px;"></div>
-
-    <!-- Tabla Records -->
-    <div style="overflow-x:auto;">
-      <table style="width:100%;border-collapse:collapse;font-family:'Exo 2',sans-serif;font-size:.82rem;">
-        <thead>
-          <tr style="background:var(--bg3);">
-            <th style="padding:10px 8px;text-align:center;border-bottom:2px solid var(--accent);color:var(--accent);font-size:.68rem;text-transform:uppercase;letter-spacing:.5px;">#</th>
-            <th style="padding:10px 8px;text-align:left;border-bottom:2px solid var(--accent);color:var(--accent);font-size:.68rem;text-transform:uppercase;letter-spacing:.5px;">🐟 Pez</th>
-            <th style="padding:10px 8px;text-align:center;border-bottom:2px solid var(--accent);color:var(--accent);font-size:.68rem;text-transform:uppercase;letter-spacing:.5px;">⚖️ Peso</th>
-            <th style="padding:10px 8px;text-align:left;border-bottom:2px solid var(--accent);color:var(--accent);font-size:.68rem;text-transform:uppercase;letter-spacing:.5px;">🗺️ Ubicación</th>
-            <th style="padding:10px 8px;text-align:left;border-bottom:2px solid var(--accent);color:var(--accent);font-size:.68rem;text-transform:uppercase;letter-spacing:.5px;">🧑 Jugador</th>
-            <th style="padding:10px 8px;text-align:center;border-bottom:2px solid var(--accent);color:var(--accent);font-size:.68rem;text-transform:uppercase;letter-spacing:.5px;">📅 Fecha</th>
-          </tr>
-        </thead>
-        <tbody id="weeklyRecordsTbody">
-          <tr><td colspan="6" style="text-align:center;padding:28px;color:var(--muted);">⏳ Cargando records...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div><!-- /pecesPanelCalc -->
-
-</div>
-
-<!-- FISH COMPARE MODAL -->
-<div id="fishCmpModal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.9);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:14px;">
-  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);width:100%;max-width:660px;max-height:92vh;overflow-y:auto;animation:moIn .2s ease;">
-    <div style="padding:16px 18px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-      <div style="font-family:'Orbitron',monospace;font-size:.85rem;color:var(--accent);">⚡ Comparación de Peces</div>
-      <div onclick="fishCloseCmp()" style="background:var(--bg3);border:1px solid var(--border);color:var(--muted);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.9rem;">✕</div>
-    </div>
-    <div id="fishCmpGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:18px;"></div>
-    <div id="fishCmpVerd" style="margin:0 18px 18px;background:var(--bg3);border-radius:var(--r);padding:14px;"></div>
-  </div>
-</div>
-
 <!-- CREATE SPOT MODAL -->
 <div class="mo" id="mCreateSpot">
   <div class="modal modal-md">
@@ -1779,10 +1624,6 @@ window.CU = null;
 let _posts = [];
 let _stories = [];
 let _svIdx = 0;
-let _svUserStories = [];   // stories del usuario actual en el viewer
-let _svUserIdx = 0;        // índice dentro de _svUserStories
-let _svTimer = null;       // timer auto-advance
-const SV_DURATION = 5000;  // ms por historia
 let _storyEmojiPick = '';
 let _postImgData = null;
 let _storyImgData = null;
@@ -2113,7 +1954,6 @@ window.gp = id => {
   if(id==='trofeos-feed') { listenTrofeosFeed(); document.getElementById('trofeoFeedBadge').style.display='inline-flex'; }
   if(id==='parches') loadParches();
   if(id==='torneos') loadTorneos();
-  if(id==='peces') { renderFishDB(); }
 };
 function setNav(el){ document.querySelectorAll('.tb-nav-btn').forEach(b=>b.classList.remove('on')); el.classList.add('on'); }
 window.setNav = setNav;
@@ -2136,142 +1976,56 @@ document.querySelectorAll('.mo').forEach(m=>m.addEventListener('click',e=>{ if(e
 // ===== STORIES =====
 function renderStories(){
   const row = document.getElementById('storiesRow');
+  // keep add button
   const addBtn = row.children[0];
   row.innerHTML = '';
   row.appendChild(addBtn);
-  // Update add button avatar
-  const addAv = document.getElementById('storyAddAv');
-  if(addAv && window.CU){
-    addAv.innerHTML = window.CU.av
-      ? `<img src="${window.CU.av}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
-      : `<span style="font-size:1.1rem;font-weight:700;color:var(--accent);">${(window.CU.nick||'?')[0]}</span>`;
-  }
-  // GROUP stories by userId → 1 card per user
-  const userMap = new Map();
   _stories.forEach((s,i)=>{
-    if(!userMap.has(s.userId)){
-      userMap.set(s.userId, {stories:[], firstIdx:i, userNick:s.userNick, userAv:s.userAv});
-    }
-    userMap.get(s.userId).stories.push({story:s, origIdx:i});
-  });
-  userMap.forEach((data, uid)=>{
-    const first = data.stories[0].story;
-    const count = data.stories.length;
     const div = document.createElement('div');
-    div.className = 'story-card has-story';
-    div.onclick = () => openSVForUser(uid);
-    const innerContent = first.img
-      ? `<img src="${first.img}" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.display='none'">`
-      : `<span style="font-size:1.6rem;">${first.emoji||'🎣'}</span>`;
-    const countBadge = count > 1
-      ? `<div style="position:absolute;top:2px;right:2px;background:var(--accent);color:#000;border-radius:50%;width:18px;height:18px;font-size:.65rem;font-weight:900;display:flex;align-items:center;justify-content:center;z-index:2;">${count}</div>`
-      : '';
+    div.className = 'story-card';
+    div.onclick = () => openSV(i);
+    const bg = s.img
+      ? `<img src="${s.img}" style="width:100%;height:100%;object-fit:cover">`
+      : `<div style="width:100%;height:100%;background:linear-gradient(135deg,#0a2a4a,#0077b6);display:flex;align-items:center;justify-content:center;font-size:3.5rem">${s.emoji||'🎣'}</div>`;
     div.innerHTML = `
-      <div class="story-ring" style="position:relative;">
-        ${countBadge}
-        <div class="story-ring-inner">${innerContent}</div>
-      </div>
-      <div class="story-name">${esc(data.userNick)}</div>`;
+      ${bg}
+      <div class="sv-gradient"></div>
+      <div class="story-user-av"><div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent);background:var(--bg3);font-size:.85rem">${s.userNick[0]}</div></div>
+      <div class="story-gradient"></div>
+      <div class="story-bottom-name">${s.userNick}</div>`;
     row.appendChild(div);
   });
 }
 
-function openSVForUser(uid){
-  // Gather all stories from this user in order
-  _svUserStories = _stories.map((s,i)=>({...s, origIdx:i})).filter(s=>s.userId===uid);
-  _svUserIdx = 0;
-  if(!_svUserStories.length) return;
-  _svIdx = _svUserStories[0].origIdx;
-  clearSVTimer();
+function openSV(idx){
+  _svIdx = idx;
   renderSV();
   document.getElementById('storyViewer').classList.add('open');
-  startSVTimer();
 }
-
-function openSV(idx){
-  // Legacy: open by global index, group by that user
-  const s = _stories[idx];
-  if(s) openSVForUser(s.userId);
-}
-function clearSVTimer(){
-  if(_svTimer){ clearInterval(_svTimer); _svTimer=null; }
-}
-function startSVTimer(){
-  clearSVTimer();
-  // Reset and animate the current progress bar
-  renderSVBars(0);
-  let elapsed = 0;
-  const step = 50;
-  _svTimer = setInterval(()=>{
-    elapsed += step;
-    const pct = Math.min(100, (elapsed/SV_DURATION)*100);
-    renderSVBars(pct);
-    if(elapsed >= SV_DURATION){ svNav(1); }
-  }, step);
-}
-function renderSVBars(pct){
-  const prog = document.getElementById('svProgress');
-  if(!prog || !_svUserStories.length) return;
-  prog.innerHTML = _svUserStories.map((_,i)=>{
-    let w = i < _svUserIdx ? 100 : (i === _svUserIdx ? pct : 0);
-    return `<div class="sv-prog-bar"><div class="sv-prog-fill" style="width:${w}%;transition:${i===_svUserIdx?'none':'none'}"></div></div>`;
-  }).join('');
-}
-function closeSV(){
-  clearSVTimer();
-  document.getElementById('storyViewer').classList.remove('open');
-}
-function svNav(dir){
-  const newIdx = _svUserIdx + dir;
-  if(newIdx < 0){
-    // go to prev user
-    clearSVTimer();
-    closeSV();
-    return;
-  }
-  if(newIdx >= _svUserStories.length){
-    // finished all stories of this user → close
-    clearSVTimer();
-    closeSV();
-    return;
-  }
-  _svUserIdx = newIdx;
-  _svIdx = _svUserStories[_svUserIdx].origIdx;
-  clearSVTimer();
-  renderSV();
-  startSVTimer();
-}
+function closeSV(){ document.getElementById('storyViewer').classList.remove('open'); }
+function svNav(dir){ _svIdx = Math.max(0, Math.min(_stories.length-1, _svIdx+dir)); renderSV(); }
 function renderSV(){
-  const s = _svUserStories.length ? _svUserStories[_svUserIdx] : _stories[_svIdx];
+  const s = _stories[_svIdx];
   if(!s) return;
   const bg = document.getElementById('svBg');
-  if(s.img){ 
-    bg.innerHTML = `<img src="${s.img}" style="width:100%;height:100%;object-fit:cover">`;
-  } else if(s.yt){
-    const spId = s.yt.match(/track\/([a-zA-Z0-9]+)/)?.[1] || '';
-    bg.innerHTML = spId ? `<iframe src="https://open.spotify.com/embed/track/${spId}" style="width:100%;height:100%;border:none" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>` : `<div style="font-size:5rem">${s.emoji||'🎣'}</div>`;
-  } else {
-    bg.innerHTML = `<div style="font-size:5rem">${s.emoji||'🎣'}</div>`;
-  }
-
-}
+  if(s.img){ bg.innerHTML = `<img src="${s.img}" style="width:100%;height:100%;object-fit:cover">`; }
+  else { bg.innerHTML = `<div style="width:100%;height:100%;background:linear-gradient(135deg,#0a2a4a,#0077b6);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px"><span style="font-size:5rem">${s.emoji||'🎣'}</span></div>`; }
   document.getElementById('svAv').innerHTML = s.userAv ? `<img src="${s.userAv}">` : s.userNick[0];
   document.getElementById('svName').textContent = s.userNick;
   document.getElementById('svTime').textContent = fmtT(s.time);
   document.getElementById('svText').textContent = s.text||'';
+  // Show delete button only for own stories
   const delBtn = document.getElementById('svDeleteBtn');
-  if(delBtn) delBtn.style.display = (window.CU && s.userId === window.CU.id) ? 'flex' : 'none';
-  const cmtRow = document.getElementById('svCommentRow');
-  if(cmtRow) cmtRow.style.display = (window.CU && s.userId === window.CU.id) ? 'none' : 'flex';
-  const hintEl = cmtRow?.nextElementSibling;
-  if(hintEl) hintEl.style.display = (window.CU && s.userId === window.CU.id) ? 'none' : 'block';
+  if(delBtn) delBtn.style.display = (window.CU && s.userId === window.CU.id) ? 'block' : 'none';
+  // Clear comment input
   const cinp = document.getElementById('svCommentInput');
   if(cinp) cinp.value = '';
-  // Progress bars (one per story of this user)
-  renderSVBars(0);
+  // progress bars
+  const prog = document.getElementById('svProgress');
+  prog.innerHTML = _stories.map((_,i)=>`<div class="sv-prog-bar"><div class="sv-prog-fill" style="width:${i<_svIdx?100:i===_svIdx?50:0}%"></div></div>`).join('');
 }
 async function reactStory(em){
-  const s = _svUserStories.length ? _svUserStories[_svUserIdx] : _stories[_svIdx];
+  const s = _stories[_svIdx];
   if(!s || !window.CU) return;
   // Update reaction button
   const btn = document.getElementById('svReactBtn');
@@ -2300,7 +2054,7 @@ async function reactStory(em){
 
 async function submitStoryComment(){
   if(!window.CU){ toast('Inicia sesión primero','err'); return; }
-  const s = _svUserStories.length ? _svUserStories[_svUserIdx] : _stories[_svIdx];
+  const s = _stories[_svIdx];
   if(!s) return;
   if(s.userId === window.CU.id){ toast('No podés comentar tu propia historia','err'); return; }
   const input = document.getElementById('svCommentInput');
@@ -2308,35 +2062,29 @@ async function submitStoryComment(){
   if(!text){ toast('Escribe un comentario','err'); return; }
   input.value = '';
   try {
-    const storyPreview = s.text ? s.text.slice(0,50) : (s.img ? '📸 imagen' : '🎣');
-    // Build rich message: includes story preview + comment
-    const msgText = `📖 Comentó tu historia`;
+    const storyPreview = s.text ? s.text.slice(0,40) : (s.img ? '📸 imagen' : '🎣');
+    const msgText = `📖 Comentó tu historia "${storyPreview}":
+${text}`;
     const chatId = [window.CU.id, s.userId].sort().join('_');
     await addDoc(collection(db,'chats',chatId,'messages'),{
       uid: window.CU.id,
       nick: window.CU.nick,
-      av: window.CU.av || '',
-      text: text,
+      text: msgText,
       storyComment: true,
-      storyPreview: storyPreview,
       storyImg: s.img || '',
-      storyAuthor: s.userNick,
       time: serverTimestamp()
     });
-    // Send notification with story preview embedded
-    sendNotifToUserWithStory(s.userId, `💬 ${window.CU.nick} comentó tu historia: "${text.slice(0,40)}"`, storyPreview, s.img||'');
-    // Animate send button feedback
-    const btn = input?.nextElementSibling;
-    if(btn){ btn.style.transform='scale(1.3)'; setTimeout(()=>btn.style.transform='scale(1)',200); }
-    toast(`Comentario enviado a ${s.userNick} 💬`,'ok');
+    // Also send chat notification
+    sendNotifToUser(s.userId, `💬 ${window.CU.nick} comentó tu historia`);
+    toast(`Mensaje enviado a ${s.userNick} 💬`,'ok');
   } catch(e){
     console.error('Error enviando comentario:', e);
     toast('Error al enviar comentario','err');
   }
 }
-  
+
 async function deleteMyStory(){
-  const s = _svUserStories.length ? _svUserStories[_svUserIdx] : _stories[_svIdx];
+  const s = _stories[_svIdx];
   if(!s || !window.CU || s.userId !== window.CU.id){ toast('No podés eliminar esta historia','err'); return; }
   if(!confirm('¿Eliminar esta historia?')) return;
   try {
@@ -2351,16 +2099,13 @@ async function deleteMyStory(){
 async function submitStory(){
   if(!window.CU){ toast('Inicia sesión primero','err'); return; }
   const text = document.getElementById('storyText').value.trim();
-  const yt = document.getElementById('storyYT')?.value.trim()||'';
-console.log('text:', text, 'img:', _storyImgData, 'yt:', yt); if(!text && !_storyImgData && !yt){ toast('Escribe algo, sube una imagen o pega un video de YouTube','err'); return; }
+  if(!text && !_storyImgData){ toast('Escribe algo o sube una imagen','err'); return; }
   toast('Publicando historia...','inf');
   let imgUrl = '';
   if(_storyImgData) imgUrl = await uploadImage(_storyImgData, 'stories');
   await addDoc(collection(db, 'stories'), {
     userId:window.CU.id, userNick:window.CU.nick, userAv:window.CU.av||'',
-   text, emoji:_storyEmojiPick||'🎣', img:imgUrl, 
-yt: document.getElementById('storyYT')?.value.trim()||'',
-time:serverTimestamp()
+    text, emoji:_storyEmojiPick||'🎣', img:imgUrl, time:serverTimestamp()
   });
   _storyImgData = null; _storyEmojiPick = '';
   document.getElementById('storyText').value='';
@@ -4214,17 +3959,6 @@ async function sendNotifToUserWithPost(uid, text, postId){
   } catch(e){ console.error('notif error',e); }
 }
 
-async function sendNotifToUserWithStory(uid, text, storyPreview, storyImg){
-  if(!uid || uid===window.CU?.id) return;
-  try {
-    const snap = await getDoc(doc(db,'users',uid));
-    if(!snap.exists()) return;
-    const notifs = snap.data().notifs || [];
-    notifs.unshift({text, time:Date.now(), read:false, storyComment:true, storyPreview: storyPreview||'', storyImg: storyImg||''});
-    await updateDoc(doc(db,'users',uid), {notifs: notifs.slice(0,30)});
-  } catch(e){ console.error('notif error',e); }
-}
-
 // ===== USER PROFILE MODAL =====
 async function openUserProfile(uid, nick){
   // If no uid but we have a nick, search Firestore by nick
@@ -4661,18 +4395,8 @@ function openChatWith(uid, nick){
             const time = m.time?.toMillis ? fmtT(m.time.toMillis()) : '';
             const isStoryComment = m.storyComment;
             const storyImg = m.storyImg || '';
-            const storyPreview = m.storyPreview || '';
-            const storyAuthor = m.storyAuthor || '';
-            const storyCard = isStoryComment ? `
-              <div style="max-width:200px;border-radius:${mine?'12px 12px 4px 12px':'12px 12px 12px 4px'};overflow:hidden;border:1.5px solid rgba(0,198,255,.4);background:rgba(0,198,255,.07);margin-bottom:3px;">
-                ${storyImg ? `<img src="${storyImg}" style="width:100%;max-height:100px;object-fit:cover;display:block;">` : `<div style="height:40px;background:linear-gradient(135deg,rgba(0,198,255,.15),rgba(0,119,182,.1));display:flex;align-items:center;justify-content:center;font-size:1.4rem;">🎣</div>`}
-                <div style="padding:5px 8px;">
-                  <div style="font-size:.58rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;">📖 Historia${storyAuthor?' de '+storyAuthor:''}</div>
-                  ${storyPreview?`<div style="font-size:.68rem;color:rgba(255,255,255,.7);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(storyPreview)}</div>`:''}
-                </div>
-              </div>` : '';
-            return `<div style="display:flex;flex-direction:column;align-items:${mine?'flex-end':'flex-start'};gap:2px;margin-bottom:8px;">
-              ${storyCard}
+            return `<div style="display:flex;flex-direction:column;align-items:${mine?'flex-end':'flex-start'};gap:2px;">
+              ${isStoryComment && storyImg ? `<div style="max-width:75%;border-radius:${mine?'12px 12px 4px 12px':'12px 12px 12px 4px'};overflow:hidden;border:2px solid rgba(0,198,255,.3);"><img src="${storyImg}" style="width:100%;max-height:120px;object-fit:cover;display:block;"></div>` : ''}
               <div style="max-width:75%;padding:8px 12px;border-radius:${mine?'16px 16px 4px 16px':'16px 16px 16px 4px'};background:${isStoryComment?(mine?'var(--accent2)':'rgba(0,198,255,.12)'):(mine?'var(--accent)':'var(--bg3)')};color:${mine?'#fff':'var(--text)'};font-size:.84rem;line-height:1.5;word-break:break-word;${isStoryComment?'border:1px solid rgba(0,198,255,.3);':''}">${esc(m.text)}</div>
               <div style="font-size:.65rem;color:var(--muted);padding:0 4px;">${time}</div>
             </div>`;
@@ -5508,646 +5232,6 @@ function renderTrofeoSidebar(items){
   }).join('');
 }
 
-// ===== BASE DE PECES =====
-const FISH_DB = [
-  {name:"Caballa Atlántica",img:"https://en.rf4-stat.ru/images/rf4game/makrel.png",trophy:"2 kg",sup:"2.800 kg"},
-  {name:"Chancharro",img:"https://en.rf4-stat.ru/images/rf4game/sebastes_n.png",trophy:"9 kg",sup:"11 kg"},
-  {name:"Saurio del Atlántico",img:"https://en.rf4-stat.ru/images/rf4game/s_saurus.png",trophy:"600 g",sup:"750 g"},
-  {name:"Pez lobo del Atlántico",img:"https://en.rf4-stat.ru/images/rf4game/p_zubatka.png",trophy:"14.500 kg",sup:"19 kg"},
-  {name:"Atlantic Wreckfish",img:"https://en.rf4-stat.ru/images/rf4game/polyprion.png",trophy:"60 kg",sup:"75 kg"},
-  {name:"Omul Baikal",img:"https://en.rf4-stat.ru/images/rf4game/b_omul.png",trophy:"6 kg",sup:"7 kg"},
-  {name:"Esturión del Báltico",img:"https://en.rf4-stat.ru/images/rf4game/osetr_balt.png",trophy:"200 kg",sup:"300 kg"},
-  {name:"Tiburón peregrino",img:"https://en.rf4-stat.ru/images/rf4game/cetorhinus_m.png",trophy:"1.300 kg",sup:"2.500 kg"},
-  {name:"Esturión bastardo",img:"https://en.rf4-stat.ru/images/rf4game/osetr_ship.png",trophy:"50 kg",sup:"70 kg"},
-  {name:"Gallineta Nórdica",img:"https://en.rf4-stat.ru/images/rf4game/sebastes_n.png",trophy:"5.500 kg",sup:"7 kg"},
-  {name:"Salmón Blanco",img:"https://en.rf4-stat.ru/images/rf4game/wfish.png",trophy:"15 kg",sup:"25 kg"},
-  {name:"Beluga",img:"https://en.rf4-stat.ru/images/rf4game/beluga.png",trophy:"500 kg",sup:"1.000 kg"},
-  {name:"Carpa de cabeza grande",img:"https://en.rf4-stat.ru/images/rf4game/bh_carp.png",trophy:"30 kg",sup:"45 kg"},
-  {name:"Búfalo negro",img:"https://en.rf4-stat.ru/images/rf4game/bl_buffalo.png",trophy:"15 kg",sup:"20 kg"},
-  {name:"Carpa negra",img:"https://en.rf4-stat.ru/images/rf4game/b_carp.png",trophy:"28 kg",sup:"40 kg"},
-  {name:"Beluga del Mar Negro",img:"https://en.rf4-stat.ru/images/rf4game/ch_beluga.png",trophy:"500 kg",sup:"1.000 kg"},
-  {name:"Kutum del Mar Negro",img:"https://en.rf4-stat.ru/images/rf4game/vyrezub.png",trophy:"5.500 kg",sup:"7.500 kg"},
-  {name:"Shemaya del Mar Negro",img:"https://en.rf4-stat.ru/images/rf4game/shemaya_cha.png",trophy:"500 g",sup:"700 g"},
-  {name:"Rufo Negro",img:"https://en.rf4-stat.ru/images/rf4game/centroloph_n.png",trophy:"24 kg",sup:"29 kg"},
-  {name:"Coregono negro",img:"https://en.rf4-stat.ru/images/rf4game/sig_black.png",trophy:"3.500 kg",sup:"5 kg"},
-  {name:"Alosa caspia",img:"https://en.rf4-stat.ru/images/rf4game/c_herring.png",trophy:"250 g",sup:"340 g"},
-  {name:"Alburno",img:"https://en.rf4-stat.ru/images/rf4game/c_bleak.png",trophy:"110 g",sup:"160 g"},
-  {name:"Zope",img:"https://en.rf4-stat.ru/images/rf4game/b_bream.png",trophy:"750 g",sup:"1.100 kg"},
-  {name:"Maruca azul",img:"https://en.rf4-stat.ru/images/rf4game/molva.png",trophy:"25 kg",sup:"35 kg"},
-  {name:"Bacaladilla",img:"https://en.rf4-stat.ru/images/rf4game/poutassou.png",trophy:"900 g",sup:"1.200 kg"},
-  {name:"Lenok de hocico romo",img:"https://en.rf4-stat.ru/images/rf4game/lenok_t.png",trophy:"7.500 kg",sup:"9 kg"},
-  {name:"Arenque Brazhnikov",img:"https://en.rf4-stat.ru/images/rf4game/b_herring.png",trophy:"700 g",sup:"1 kg"},
-  {name:"Brema",img:"https://en.rf4-stat.ru/images/rf4game/bream.png",trophy:"4.400 kg",sup:"7 kg"},
-  {name:"Coregonus Nasus",img:"https://en.rf4-stat.ru/images/rf4game/chir.png",trophy:"7 kg",sup:"10 kg"},
-  {name:"Trucha marrón",img:"https://en.rf4-stat.ru/images/rf4game/riv_brown_trout.png",trophy:"3 kg",sup:"5 kg"},
-  {name:"Búfalo",img:"https://en.rf4-stat.ru/images/rf4game/buffalo.png",trophy:"15 kg",sup:"20 kg"},
-  {name:"Lota",img:"https://en.rf4-stat.ru/images/rf4game/burbot.png",trophy:"9 kg",sup:"14 kg"},
-  {name:"C2 SuperFreak",img:"https://en.rf4-stat.ru/images/rf4game/s_freaks.png",trophy:"30 kg",sup:"40 kg"},
-  {name:"Salmón de Mar Negro",img:"https://en.rf4-stat.ru/images/rf4game/k_salmon.png",trophy:"30 kg",sup:"50 kg"},
-  {name:"Kutum del Caspio",img:"https://en.rf4-stat.ru/images/rf4game/kutum.png",trophy:"5 kg",sup:"7 kg"},
-  {name:"Lamprea del Caspio",img:"https://en.rf4-stat.ru/images/rf4game/c_lamprey.png",trophy:"150 g",sup:"200 g"},
-  {name:"Rutilus Caspicus",img:"https://en.rf4-stat.ru/images/rf4game/vobla.png",trophy:"500 g",sup:"800 g"},
-  {name:"Siluro",img:"https://en.rf4-stat.ru/images/rf4game/w_catfish.png",trophy:"100 kg",sup:"200 kg"},
-  {name:"Salvelino de arroyo",img:"https://en.rf4-stat.ru/images/rf4game/salvel_l.png",trophy:"5 kg",sup:"7.600 kg"},
-  {name:"Rotan",img:"https://en.rf4-stat.ru/images/rf4game/a.sleeper.png",trophy:"400 g",sup:"700 g"},
-  {name:"Salmón Real",img:"https://en.rf4-stat.ru/images/rf4game/chavycha.png",trophy:"40 kg",sup:"60 kg"},
-  {name:"Cachuelo",img:"https://en.rf4-stat.ru/images/rf4game/e.chub.png",trophy:"4 kg",sup:"7 kg"},
-  {name:"Salmón Keta",img:"https://en.rf4-stat.ru/images/rf4game/keta.png",trophy:"8 kg",sup:"10 kg"},
-  {name:"Clupeonella",img:"https://en.rf4-stat.ru/images/rf4game/tiulka.png",trophy:"24 g",sup:"28 g"},
-  {name:"Salmón Plateado",img:"https://en.rf4-stat.ru/images/rf4game/kijuch.png",trophy:"5.500 kg",sup:"7 kg"},
-  {name:"Barbo común",img:"https://en.rf4-stat.ru/images/rf4game/c_barbel.png",trophy:"8 kg",sup:"12 kg"},
-  {name:"Carpa común",img:"https://en.rf4-stat.ru/images/rf4game/carp.png",trophy:"20 kg",sup:"30 kg"},
-  {name:"Carpa fantasma común",img:"https://en.rf4-stat.ru/images/rf4game/carp_ghost.png",trophy:"20 kg",sup:"30 kg"},
-  {name:"Piscardo común",img:"https://en.rf4-stat.ru/images/rf4game/golyan.png",trophy:"100 g",sup:"160 g"},
-  {name:"Rutilo",img:"https://en.rf4-stat.ru/images/rf4game/c.roach.png",trophy:"1.200 kg",sup:"2 kg"},
-  {name:"Carpa común Albino",img:"https://en.rf4-stat.ru/images/rf4game/carp_albino.png",trophy:"20 kg",sup:"30 kg"},
-  {name:"Maruca común",img:"https://en.rf4-stat.ru/images/rf4game/m_molva.png",trophy:"30 kg",sup:"40 kg"},
-  {name:"Congrio",img:"https://en.rf4-stat.ru/images/rf4game/conger.png",trophy:"60 kg",sup:"75 kg"},
-  {name:"Carpa cruciana",img:"https://en.rf4-stat.ru/images/rf4game/c.carp.png",trophy:"1.800 kg",sup:"2.900 kg"},
-  {name:"Cusk",img:"https://en.rf4-stat.ru/images/rf4game/menek.png",trophy:"18 kg",sup:"24 kg"},
-  {name:"Alburno shemaya",img:"https://en.rf4-stat.ru/images/rf4game/dace.png",trophy:"250 g",sup:"390 g"},
-  {name:"Carpa cuero Dinks",img:"https://en.rf4-stat.ru/images/rf4game/din_n_carp.png",trophy:"35 kg",sup:"45 kg"},
-  {name:"Carpa espejo Dinks",img:"https://en.rf4-stat.ru/images/rf4game/din_l_carp.png",trophy:"35 kg",sup:"45 kg"},
-  {name:"Carpa espejo Dinks B",img:"https://en.rf4-stat.ru/images/rf4game/din_m_carp.png",trophy:"35 kg",sup:"45 kg"},
-  {name:"Trucha Dolly Varden",img:"https://en.rf4-stat.ru/images/rf4game/malma.png",trophy:"7.500 kg",sup:"10 kg"},
-  {name:"Acerina Donet",img:"https://en.rf4-stat.ru/images/rf4game/ruffe_n.png",trophy:"250 g",sup:"350 g"},
-  {name:"Salvelino Dryagin",img:"https://en.rf4-stat.ru/images/rf4game/dr_char.png",trophy:"10 kg",sup:"14 kg"},
-  {name:"Tímalo de Siberia Oriental",img:"https://en.rf4-stat.ru/images/rf4game/os_grayling.png",trophy:"2 kg",sup:"2.500 kg"},
-  {name:"Esturión de Siberia Oriental",img:"https://en.rf4-stat.ru/images/rf4game/zs_sturgeon.png",trophy:"100 kg",sup:"150 kg"},
-  {name:"Brema Oriental",img:"https://en.rf4-stat.ru/images/rf4game/e_bream.png",trophy:"4.400 kg",sup:"7 kg"},
-  {name:"Cangrejo Mar",img:"https://en.rf4-stat.ru/images/rf4game/ed_crab.png",trophy:"1.800 kg",sup:"2.200 kg"},
-  {name:"Anguila",img:"https://en.rf4-stat.ru/images/rf4game/eel.png",trophy:"4 kg",sup:"7.500 kg"},
-  {name:"Lycodes esmarkii",img:"https://en.rf4-stat.ru/images/rf4game/lycodes_e.png",trophy:"2.500 kg",sup:"3.300 kg"},
-  {name:"Pez Pescador",img:"https://en.rf4-stat.ru/images/rf4game/lophius_p.png",trophy:"35 kg",sup:"45 kg"},
-  {name:"Quimera europea",img:"https://en.rf4-stat.ru/images/rf4game/chimaera.png",trophy:"1.500 kg",sup:"—"},
-  {name:"Merluza europea",img:"https://en.rf4-stat.ru/images/rf4game/merluza.png",trophy:"9 kg",sup:"12 kg"},
-  {name:"Platija europea",img:"https://en.rf4-stat.ru/images/rf4game/sea_kambala.png",trophy:"4.500 kg",sup:"5.500 kg"},
-  {name:"Calamar común",img:"https://en.rf4-stat.ru/images/rf4game/c_squid.png",trophy:"2 kg",sup:"2.400 kg"},
-  {name:"F1",img:"https://en.rf4-stat.ru/images/rf4game/karasekarp.png",trophy:"3 kg",sup:"4 kg"},
-  {name:"Lamprea de arroyo del Lejano Oriente",img:"https://en.rf4-stat.ru/images/rf4game/fe_lamprey.png",trophy:"40 g",sup:"—"},
-  {name:"Carpa espejo enmarcado fantasma",img:"https://en.rf4-stat.ru/images/rf4game/r_carp_ghost.png",trophy:"25 kg",sup:"40 kg"},
-  {name:"Carpa espejo enmarcado albino",img:"https://en.rf4-stat.ru/images/rf4game/r_carp_albino.png",trophy:"25 kg",sup:"40 kg"},
-  {name:"Carpa espejo enmarcado",img:"https://en.rf4-stat.ru/images/rf4game/r_carp.png",trophy:"25 kg",sup:"40 kg"},
-  {name:"Cangrejo de río",img:"https://en.rf4-stat.ru/images/rf4game/crawfish.png",trophy:"200 g",sup:"330 g"},
-  {name:"Tiburón Serpiente",img:"https://en.rf4-stat.ru/images/rf4game/c_anguineus.png",trophy:"50 kg",sup:"70 kg"},
-  {name:"Rana",img:"https://en.rf4-stat.ru/images/rf4game/frog.png",trophy:"190 g",sup:"250 g"},
-  {name:"Carpa Gibel",img:"https://en.rf4-stat.ru/images/rf4game/crucian.png",trophy:"1.900 kg",sup:"3.200 kg"},
-  {name:"Tenca Oro",img:"https://en.rf4-stat.ru/images/rf4game/g_tench.png",trophy:"4 kg",sup:"6 kg"},
-  {name:"Carpa herbívora",img:"https://en.rf4-stat.ru/images/rf4game/g_carp.png",trophy:"28 kg",sup:"40 kg"},
-  {name:"Salvelino gris",img:"https://en.rf4-stat.ru/images/rf4game/palia_kr.png",trophy:"3 kg",sup:"4.500 kg"},
-  {name:"Tímalo",img:"https://en.rf4-stat.ru/images/rf4game/a_grayling.png",trophy:"3.200 kg",sup:"5.500 kg"},
-  {name:"Fletán negro",img:"https://en.rf4-stat.ru/images/rf4game/halibut_b.png",trophy:"25 kg",sup:"32 kg"},
-  {name:"Tiburón de Groenlandia",img:"https://en.rf4-stat.ru/images/rf4game/somniosus_m.png",trophy:"600 kg",sup:"900 kg"},
-  {name:"Gobio",img:"https://en.rf4-stat.ru/images/rf4game/gudgeon.png",trophy:"100 g",sup:"160 g"},
-  {name:"Eglefino",img:"https://en.rf4-stat.ru/images/rf4game/piksha.png",trophy:"11 kg",sup:"13 kg"},
-  {name:"Hi Utsuri",img:"https://en.rf4-stat.ru/images/rf4game/hi_utsri.png",trophy:"25 kg",sup:"35 kg"},
-  {name:"Coregonus de pidschian",img:"https://en.rf4-stat.ru/images/rf4game/sig_p.png",trophy:"4.500 kg",sup:"6 kg"},
-  {name:"Viera islandesa",img:"https://en.rf4-stat.ru/images/rf4game/chlamys_isl.png",trophy:"350 g",sup:"450 g"},
-  {name:"Ide",img:"https://en.rf4-stat.ru/images/rf4game/s.orfe.png",trophy:"4 kg",sup:"6.500 kg"},
-  {name:"Kaluga",img:"https://en.rf4-stat.ru/images/rf4game/kaluga.png",trophy:"500 kg",sup:"1.000 kg"},
-  {name:"Trucha arcoíris de Kamchatka",img:"https://en.rf4-stat.ru/images/rf4game/mikija.png",trophy:"8 kg",sup:"10 kg"},
-  {name:"Arenque de Kessler",img:"https://en.rf4-stat.ru/images/rf4game/k_herring.png",trophy:"1.200 kg",sup:"1.700 kg"},
-  {name:"Kohaku",img:"https://en.rf4-stat.ru/images/rf4game/kohaku.png",trophy:"25 kg",sup:"35 kg"},
-  {name:"Salvelino Kuori",img:"https://en.rf4-stat.ru/images/rf4game/chartus_kuoriius.png",trophy:"22 kg",sup:"30 kg"},
-  {name:"Pescado blanco Kuori",img:"https://en.rf4-stat.ru/images/rf4game/sig_kuor.png",trophy:"3.500 kg",sup:"5 kg"},
-  {name:"Tenca de Kvolsdorfsky",img:"https://en.rf4-stat.ru/images/rf4game/kw_tench.png",trophy:"4 kg",sup:"6 kg"},
-  {name:"Pescado blanco del lago Ladoga",img:"https://en.rf4-stat.ru/images/rf4game/sig_o_l.png",trophy:"3 kg",sup:"4 kg"},
-  {name:"Salmón Ladoga",img:"https://en.rf4-stat.ru/images/rf4game/l_salmon.png",trophy:"14 kg",sup:"20 kg"},
-  {name:"Esturión de Ladoga",img:"https://en.rf4-stat.ru/images/rf4game/l_sturgeon.png",trophy:"60 kg",sup:"—"},
-  {name:"Piscardo del Lago",img:"https://en.rf4-stat.ru/images/rf4game/l_minnow.png",trophy:"100 g",sup:"160 g"},
-  {name:"Reo",img:"https://en.rf4-stat.ru/images/rf4game/gc_smelt.png",trophy:"10 kg",sup:"15 kg"},
-  {name:"Carpa de cuero",img:"https://en.rf4-stat.ru/images/rf4game/n_carp.png",trophy:"30 kg",sup:"45 kg"},
-  {name:"El Char de Levanidov",img:"https://en.rf4-stat.ru/images/rf4game/golets_lev.png",trophy:"1.600 kg",sup:"2.100 kg"},
-  {name:"Carpa espejo Fantasma",img:"https://en.rf4-stat.ru/images/rf4game/l_carp_ghost.png",trophy:"25 kg",sup:"40 kg"},
-  {name:"Carpa espejo albino",img:"https://en.rf4-stat.ru/images/rf4game/l_carp_albino.png",trophy:"25 kg",sup:"40 kg"},
-  {name:"Carpa linear",img:"https://en.rf4-stat.ru/images/rf4game/l_carp.png",trophy:"25 kg",sup:"40 kg"},
-  {name:"Musgurnus Fosilis",img:"https://en.rf4-stat.ru/images/rf4game/vjun.png",trophy:"200 g",sup:"250 g"},
-  {name:"Longear Eelpout",img:"https://en.rf4-stat.ru/images/rf4game/lycodes_s.png",trophy:"1.200 kg",sup:"1.500 kg"},
-  {name:"Longhead dab",img:"https://en.rf4-stat.ru/images/rf4game/lh_kambala.png",trophy:"3 kg",sup:"4 kg"},
-  {name:"Costatumus",img:"https://en.rf4-stat.ru/images/rf4game/chukuchan.png",trophy:"1.800 kg",sup:"2.200 kg"},
-  {name:"Ludoga Whitefish",img:"https://en.rf4-stat.ru/images/rf4game/sig_ludoga.png",trophy:"3 kg",sup:"5 kg"},
-  {name:"Lumpo",img:"https://en.rf4-stat.ru/images/rf4game/pinagor.png",trophy:"6 kg",sup:"7.500 kg"},
-  {name:"Mameshibori Goshiki",img:"https://en.rf4-stat.ru/images/rf4game/m_goshiki.png",trophy:"25 kg",sup:"35 kg"},
-  {name:"Masu",img:"https://en.rf4-stat.ru/images/rf4game/onkor_m.png",trophy:"6.500 kg",sup:"8 kg"},
-  {name:"Masu sedentario",img:"https://en.rf4-stat.ru/images/rf4game/onkor_mg.png",trophy:"5 kg",sup:"6.500 kg"},
-  {name:"Carpa espejo albino M",img:"https://en.rf4-stat.ru/images/rf4game/m_carp_albino.png",trophy:"25 kg",sup:"40 kg"},
-  {name:"Carpa espejo",img:"https://en.rf4-stat.ru/images/rf4game/m_carp.png",trophy:"25 kg",sup:"40 kg"},
-  {name:"Carpa fantasma espejo",img:"https://en.rf4-stat.ru/images/rf4game/m_carp_ghost.png",trophy:"25 kg",sup:"40 kg"},
-  {name:"Mongolia Redfin",img:"https://en.rf4-stat.ru/images/rf4game/chan_m.png",trophy:"2.500 kg",sup:"3.200 kg"},
-  {name:"Muksun",img:"https://en.rf4-stat.ru/images/rf4game/w_muksun.png",trophy:"6 kg",sup:"9 kg"},
-  {name:"Mejillón Mar",img:"https://en.rf4-stat.ru/images/rf4game/mytilus_ed.png",trophy:"130 g",sup:"150 g"},
-  {name:"Narumi Asagi",img:"https://en.rf4-stat.ru/images/rf4game/n_asagi.png",trophy:"25 kg",sup:"35 kg"},
-  {name:"Pez Narizón",img:"https://en.rf4-stat.ru/images/rf4game/c_nase.png",trophy:"800 g",sup:"1.200 kg"},
-  {name:"Neiva",img:"https://en.rf4-stat.ru/images/rf4game/neiva.png",trophy:"1.400 kg",sup:"1.700 kg"},
-  {name:"Nelma",img:"https://en.rf4-stat.ru/images/rf4game/nelma.png",trophy:"25 kg",sup:"30 kg"},
-  {name:"Espinoso de nueve espinas",img:"https://en.rf4-stat.ru/images/rf4game/stickleback_ninesp.png",trophy:"70 g",sup:"90 g"},
-  {name:"Pez lobo del norte",img:"https://en.rf4-stat.ru/images/rf4game/d_zubatka.png",trophy:"13 kg",sup:"17 kg"},
-  {name:"Opa",img:"https://en.rf4-stat.ru/images/rf4game/lampris_g.png",trophy:"140 kg",sup:"200 kg"},
-  {name:"Orenji Ogon",img:"https://en.rf4-stat.ru/images/rf4game/w_orenji_ogon.png",trophy:"25 kg",sup:"35 kg"},
-  {name:"Ostra",img:"https://en.rf4-stat.ru/images/rf4game/ostrea_ed.png",trophy:"300 g",sup:"370 g"},
-  {name:"Peled",img:"https://en.rf4-stat.ru/images/rf4game/peled.png",trophy:"3 kg",sup:"4 kg"},
-  {name:"Perca de río",img:"https://en.rf4-stat.ru/images/rf4game/perch.png",trophy:"1.600 kg",sup:"2.700 kg"},
-  {name:"Esturión persa",img:"https://en.rf4-stat.ru/images/rf4game/p_sturgeon.png",trophy:"100 kg",sup:"150 kg"},
-  {name:"Lucio",img:"https://en.rf4-stat.ru/images/rf4game/n.pike.png",trophy:"12 kg",sup:"20 kg"},
-  {name:"Salmón rosado",img:"https://en.rf4-stat.ru/images/rf4game/gorbusha.png",trophy:"3 kg",sup:"4 kg"},
-  {name:"Abadejo",img:"https://en.rf4-stat.ru/images/rf4game/pollachius.png",trophy:"11 kg",sup:"14 kg"},
-  {name:"Sábalo póntico",img:"https://en.rf4-stat.ru/images/rf4game/cha_herring.png",trophy:"650 g",sup:"900 g"},
-  {name:"Majarro sardinero",img:"https://en.rf4-stat.ru/images/rf4game/lamna_n.png",trophy:"140 kg",sup:"200 kg"},
-  {name:"Perca del Sol",img:"https://en.rf4-stat.ru/images/rf4game/pumps_sunfish.png",trophy:"450 g",sup:"600 g"},
-  {name:"Trucha arcoíris",img:"https://en.rf4-stat.ru/images/rf4game/riv_rb_trout.png",trophy:"10 kg",sup:"13 kg"},
-  {name:"Salvelino rojo",img:"https://en.rf4-stat.ru/images/rf4game/palia_lud.png",trophy:"5 kg",sup:"7.600 kg"},
-  {name:"Carpa común oro",img:"https://en.rf4-stat.ru/images/rf4game/carp_red.png",trophy:"20 kg",sup:"30 kg"},
-  {name:"Cangrejo real rojo",img:"https://en.rf4-stat.ru/images/rf4game/rk_crab.png",trophy:"7.500 kg",sup:"9 kg"},
-  {name:"Ripus",img:"https://en.rf4-stat.ru/images/rf4game/ripus.png",trophy:"1.200 kg",sup:"1.700 kg"},
-  {name:"Mejillón de río",img:"https://en.rf4-stat.ru/images/rf4game/freshwater_mussel.png",trophy:"190 g",sup:"280 g"},
-  {name:"Granadero de cabeza dura",img:"https://en.rf4-stat.ru/images/rf4game/macrourus_b.png",trophy:"3 kg",sup:"—"},
-  {name:"Round Whitefish",img:"https://en.rf4-stat.ru/images/rf4game/valyok.png",trophy:"1.200 kg",sup:"1.600 kg"},
-  {name:"Gardi",img:"https://en.rf4-stat.ru/images/rf4game/rudd.png",trophy:"1.500 kg",sup:"2 kg"},
-  {name:"Acerina",img:"https://en.rf4-stat.ru/images/rf4game/ruffe.png",trophy:"140 g",sup:"220 g"},
-  {name:"Esturión ruso",img:"https://en.rf4-stat.ru/images/rf4game/r_sturgeon.png",trophy:"50 kg",sup:"100 kg"},
-  {name:"Carbonero",img:"https://en.rf4-stat.ru/images/rf4game/coalfish.png",trophy:"19 kg",sup:"25 kg"},
-  {name:"Sardina",img:"https://en.rf4-stat.ru/images/rf4game/sardina_p.png",trophy:"180 g",sup:"240 g"},
-  {name:"Carpa de cuero albino",img:"https://en.rf4-stat.ru/images/rf4game/n_carp_albino.png",trophy:"30 kg",sup:"45 kg"},
-  {name:"Carpa de cuero fantasma",img:"https://en.rf4-stat.ru/images/rf4game/n_carp_ghost.png",trophy:"30 kg",sup:"45 kg"},
-  {name:"Trucha de Sevan",img:"https://en.rf4-stat.ru/images/rf4game/sevan_trout.png",trophy:"9 kg",sup:"15 kg"},
-  {name:"Lenok de hocico agudo",img:"https://en.rf4-stat.ru/images/rf4game/w_sharp_snouted_lenok.png",trophy:"5.500 kg",sup:"7 kg"},
-  {name:"Shemaya",img:"https://en.rf4-stat.ru/images/rf4game/shemaya.png",trophy:"600 g",sup:"900 g"},
-  {name:"Caspian Barbel",img:"https://en.rf4-stat.ru/images/rf4game/sh_barbel.png",trophy:"13 kg",sup:"18 kg"},
-  {name:"Myoxocephalus scorpius",img:"https://en.rf4-stat.ru/images/rf4game/m_scorpius.png",trophy:"3 kg",sup:"4 kg"},
-  {name:"Barbula toni",img:"https://en.rf4-stat.ru/images/rf4game/barb_toni.png",trophy:"60 g",sup:"80 g"},
-  {name:"Leusisco siberiano",img:"https://en.rf4-stat.ru/images/rf4game/syb_gudgeon.png",trophy:"250 g",sup:"390 g"},
-  {name:"Gobio siberiano",img:"https://en.rf4-stat.ru/images/rf4game/syb_gudgeon.png",trophy:"150 g",sup:"200 g"},
-  {name:"Lamprea siberiana",img:"https://en.rf4-stat.ru/images/rf4game/s_lamprey.png",trophy:"40 g",sup:"—"},
-  {name:"Rutilo siberiano",img:"https://en.rf4-stat.ru/images/rf4game/syb_roach.png",trophy:"600 g",sup:"700 g"},
-  {name:"Sardina siberiana Cisco",img:"https://en.rf4-stat.ru/images/rf4game/syb_vendace.png",trophy:"800 g",sup:"1.100 kg"},
-  {name:"Cavilat siberiano",img:"https://en.rf4-stat.ru/images/rf4game/bullhead_syb.png",trophy:"45 g",sup:"55 g"},
-  {name:"Esterlete siberiano",img:"https://en.rf4-stat.ru/images/rf4game/syb_sterlet.png",trophy:"9 kg",sup:"14 kg"},
-  {name:"Pelecus",img:"https://en.rf4-stat.ru/images/rf4game/sabrefish.png",trophy:"1.500 kg",sup:"2 kg"},
-  {name:"Carpa plateada",img:"https://en.rf4-stat.ru/images/rf4game/s_carp.png",trophy:"25 kg",sup:"40 kg"},
-  {name:"Espinoso sureño de nueve espinas",img:"https://en.rf4-stat.ru/images/rf4game/stickleback_ss.png",trophy:"70 g",sup:"90 g"},
-  {name:"Galineta pequeña",img:"https://en.rf4-stat.ru/images/rf4game/red_fish.png",trophy:"3 kg",sup:"4 kg"},
-  {name:"Eperlano",img:"https://en.rf4-stat.ru/images/rf4game/e_smelt.png",trophy:"130 g",sup:"200 g"},
-  {name:"Salmón rojo",img:"https://en.rf4-stat.ru/images/rf4game/nerka.png",trophy:"4.500 kg",sup:"6 kg"},
-  {name:"Mielga",img:"https://en.rf4-stat.ru/images/rf4game/katran.png",trophy:"7 kg",sup:"10 kg"},
-  {name:"Pez lobo Manchado",img:"https://en.rf4-stat.ru/images/rf4game/m_zubatka.png",trophy:"17 kg",sup:"22 kg"},
-  {name:"Carpa espejo oro",img:"https://en.rf4-stat.ru/images/rf4game/m_carp_red.png",trophy:"25 kg",sup:"40 kg"},
-  {name:"Esturión estrellado",img:"https://en.rf4-stat.ru/images/rf4game/st_sturgeon.png",trophy:"50 kg",sup:"70 kg"},
-  {name:"Esterlete",img:"https://en.rf4-stat.ru/images/rf4game/sterlet.png",trophy:"9 kg",sup:"14 kg"},
-  {name:"Pescado blanco Svir",img:"https://en.rf4-stat.ru/images/rf4game/sv_sig.png",trophy:"3.500 kg",sup:"5 kg"},
-  {name:"Pez espada",img:"https://en.rf4-stat.ru/images/rf4game/x_gladius.png",trophy:"300 kg",sup:"450 kg"},
-  {name:"Taiman",img:"https://en.rf4-stat.ru/images/rf4game/taimen.png",trophy:"50 kg",sup:"80 kg"},
-  {name:"Rutilo hackelli",img:"https://en.rf4-stat.ru/images/rf4game/taran.png",trophy:"1.300 kg",sup:"1.800 kg"},
-  {name:"Tenca",img:"https://en.rf4-stat.ru/images/rf4game/tench.png",trophy:"4 kg",sup:"6 kg"},
-  {name:"Raya espinosa",img:"https://en.rf4-stat.ru/images/rf4game/ambl_r.png",trophy:"11 kg",sup:"14 kg"},
-  {name:"Espinoso de tres espinas",img:"https://en.rf4-stat.ru/images/rf4game/stickleback_threesp.png",trophy:"70 g",sup:"90 g"},
-  {name:"Tugun",img:"https://en.rf4-stat.ru/images/rf4game/tugun.png",trophy:"60 g",sup:"70 g"},
-  {name:"Rodaballo",img:"https://en.rf4-stat.ru/images/rf4game/turbot.png",trophy:"14 kg",sup:"18 kg"},
-  {name:"Ugui",img:"https://en.rf4-stat.ru/images/rf4game/trib_h.png",trophy:"1.200 kg",sup:"1.500 kg"},
-  {name:"Lamprea ucraniana",img:"https://en.rf4-stat.ru/images/rf4game/u_lamprey.png",trophy:"70 g",sup:"—"},
-  {name:"Pescado blanco de Valaam",img:"https://en.rf4-stat.ru/images/rf4game/sig_valaam.png",trophy:"1.500 kg",sup:"2.500 kg"},
-  {name:"Vendace",img:"https://en.rf4-stat.ru/images/rf4game/vendace.png",trophy:"500 g",sup:"800 g"},
-  {name:"Vimba o Zarte",img:"https://en.rf4-stat.ru/images/rf4game/v_bream.png",trophy:"1.500 kg",sup:"2.400 kg"},
-  {name:"Viviparous eelpout",img:"https://en.rf4-stat.ru/images/rf4game/zoarces_v.png",trophy:"900 g",sup:"1.300 kg"},
-  {name:"Sander volgensis",img:"https://en.rf4-stat.ru/images/rf4game/barsch.png",trophy:"1.400 kg",sup:"2.200 kg"},
-  {name:"Pescado blanco de Volkhov",img:"https://en.rf4-stat.ru/images/rf4game/sig.png",trophy:"4 kg",sup:"7 kg"},
-  {name:"Pescado blanco Vuoksa",img:"https://en.rf4-stat.ru/images/rf4game/sig_vouksa.png",trophy:"3 kg",sup:"5 kg"},
-  {name:"Brema blanca",img:"https://en.rf4-stat.ru/images/rf4game/s.bream.png",trophy:"800 g",sup:"1.200 kg"},
-  {name:"Bellaurus zapa",img:"https://en.rf4-stat.ru/images/rf4game/wa_bream.png",trophy:"600 g",sup:"900 g"},
-  {name:"Char japonés",img:"https://en.rf4-stat.ru/images/rf4game/kunja.png",trophy:"10 kg",sup:"14 kg"},
-  {name:"Merlan",img:"https://en.rf4-stat.ru/images/rf4game/merlang.png",trophy:"3 kg",sup:"4 kg"},
-  {name:"Carpa silvestre",img:"https://en.rf4-stat.ru/images/rf4game/common_carp.png",trophy:"25 kg",sup:"35 kg"},
-  {name:"Yotsushiro",img:"https://en.rf4-stat.ru/images/rf4game/yotsushiro.png",trophy:"25 kg",sup:"35 kg"},
-  {name:"Sander",img:"https://en.rf4-stat.ru/images/rf4game/e.pikeperch.png",trophy:"8 kg",sup:"12 kg"},
-  {name:"Mejillón Cebra",img:"https://en.rf4-stat.ru/images/rf4game/dreissena.png",trophy:"150 g",sup:"210 g"},
-  {name:"Lubina negra",img:"https://en.rf4-stat.ru/images/rf4game/fish.png",trophy:"6 kg",sup:"7.500 kg"},
-  {name:"Sábalo de molleja",img:"https://en.rf4-stat.ru/images/rf4game/fish.png",trophy:"1.100 kg",sup:"1.600 kg"},
-  {name:"Bagre de cabeza plana",img:"https://en.rf4-stat.ru/images/rf4game/fish.png",trophy:"30 kg",sup:"45 kg"},
-  {name:"Bagre de canal",img:"https://en.rf4-stat.ru/images/rf4game/fish.png",trophy:"14 kg",sup:"20 kg"},
-  {name:"Pavón",img:"https://en.rf4-stat.ru/images/rf4game/fish.png",trophy:"4 kg",sup:"5.500 kg"},
-  {name:"Pez agallas azules",img:"https://en.rf4-stat.ru/images/rf4game/fish.png",trophy:"1.200 kg",sup:"1.700 kg"},
-  {name:"Black crappie",img:"https://en.rf4-stat.ru/images/rf4game/fish.png",trophy:"1.600 kg",sup:"2.200 kg"},
-  {name:"Butterfly Peacock bass",img:"https://en.rf4-stat.ru/images/rf4game/fish.png",trophy:"4 kg",sup:"5.500 kg"},
-  {name:"Freshwater drum",img:"https://en.rf4-stat.ru/images/rf4game/fish.png",trophy:"13.500 kg",sup:"19 kg"},
-  {name:"Gizzard shad",img:"https://en.rf4-stat.ru/images/rf4game/fish.png",trophy:"1.100 kg",sup:"1.600 kg"},
-  {name:"Hybrid Striped Bass",img:"https://en.rf4-stat.ru/images/rf4game/fish.png",trophy:"8 kg",sup:"10 kg"},
-  {name:"Largemouth bass",img:"https://en.rf4-stat.ru/images/rf4game/fish.png",trophy:"6 kg",sup:"7.500 kg"},
-  {name:"Redear sunfish",img:"https://en.rf4-stat.ru/images/rf4game/fish.png",trophy:"1.700 kg",sup:"2.300 kg"},
-  {name:"Smallmouth bass",img:"https://en.rf4-stat.ru/images/rf4game/fish.png",trophy:"3 kg",sup:"4 kg"},
-  {name:"Spotted Gar",img:"https://en.rf4-stat.ru/images/rf4game/fish.png",trophy:"3 kg",sup:"—"},
-  {name:"Spotted bass",img:"https://en.rf4-stat.ru/images/rf4game/fish.png",trophy:"3 kg",sup:"4.500 kg"},
-  {name:"Striped Bass",img:"https://en.rf4-stat.ru/images/rf4game/fish.png",trophy:"30 kg",sup:"45 kg"},
-  {name:"Walleye",img:"https://en.rf4-stat.ru/images/rf4game/fish.png",trophy:"7 kg",sup:"9 kg"},
-  {name:"Warmouth",img:"https://en.rf4-stat.ru/images/rf4game/fish.png",trophy:"650 g",sup:"850 g"},
-  {name:"White bass",img:"https://en.rf4-stat.ru/images/rf4game/fish.png",trophy:"1.700 kg",sup:"2.500 kg"},
-  {name:"White crappie",img:"https://en.rf4-stat.ru/images/rf4game/fish.png",trophy:"1.350 kg",sup:"2 kg"},
-];
-let fishSelA=null,fishSelB=null;
-const el=document.getElementById('fishTotalCount');
-if(el) el.textContent=FISH_DB.length;
-
-function fishPW(w){
-  // Always returns kg
-  if(!w||w==='—') return 0;
-  const s=w.toString().replace(/\s/g,'').toLowerCase().replace(',','.');
-  const n=parseFloat(s.replace(/[^0-9.]/g,''));
-  if(!n) return 0;
-  // "500 g" or "250g" → grams → convert to kg
-  if(s.includes('g')&&!s.includes('kg')) return n/1000;
-  // "5 kg" or "5.5kg" → already kg
-  return n;
-}
-function renderFishDB(){
-  const q=(document.getElementById('fishSearchQ')||{}).value||'';
-  const s=(document.getElementById('fishSortSel')||{}).value||'az';
-  let list=FISH_DB.filter(f=>!q||f.name.toLowerCase().includes(q.toLowerCase()));
-  if(s==='az') list.sort((a,b)=>a.name.localeCompare(b.name,'es'));
-  else if(s==='za') list.sort((a,b)=>b.name.localeCompare(a.name,'es'));
-  else if(s==='td') list.sort((a,b)=>fishPW(b.trophy)-fishPW(a.trophy));
-  else if(s==='ta') list.sort((a,b)=>fishPW(a.trophy)-fishPW(b.trophy));
-  else if(s==='sd') list.sort((a,b)=>fishPW(b.sup)-fishPW(a.sup));
-  const rc=document.getElementById('fishRcount');
-  if(rc) rc.textContent=`Mostrando ${list.length} peces`;
-  const g=document.getElementById('fishGrid');
-  if(!g) return;
-  if(!list.length){g.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:50px;color:var(--muted)">🔍 Sin resultados para "${q}"</div>`;return;}
-  g.innerHTML=list.map(f=>{
-    const i=FISH_DB.indexOf(f);
-    const isA=fishSelA===i,isB=fishSelB===i;
-    const noSup=f.sup==='—'||!f.sup;
-    const badge=isA?`<div style="position:absolute;top:6px;right:6px;font-size:.58rem;font-weight:700;padding:2px 7px;border-radius:100px;background:rgba(0,198,255,.25);border:1px solid rgba(0,198,255,.5);color:var(--accent);">A</div>`:isB?`<div style="position:absolute;top:6px;right:6px;font-size:.58rem;font-weight:700;padding:2px 7px;border-radius:100px;background:rgba(255,215,0,.2);border:1px solid rgba(255,215,0,.5);color:var(--gold);">B</div>`:'';
-    const borderStyle=isA?'border-color:var(--accent);box-shadow:0 0 0 2px rgba(0,198,255,.3);':isB?'border-color:var(--gold);box-shadow:0 0 0 2px rgba(255,215,0,.3);':'';
-    return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:all .18s;position:relative;${borderStyle}" onclick="fishSel(${i})" onmouseover="if(!this.classList.contains('fselA')&&!this.classList.contains('fselB')){this.style.borderColor='var(--accent)';this.style.transform='translateY(-2px)';}" onmouseout="this.style.borderColor='${isA?'var(--accent)':isB?'var(--gold)':'var(--border)'}';this.style.transform='';">
-      ${badge}
-      <div style="width:100%;height:85px;background:linear-gradient(135deg,#071520,#0a2a4a);display:flex;align-items:center;justify-content:center;overflow:hidden;">
-        <img src="${f.img}" alt="${f.name}" loading="lazy" onerror="this.src='https://en.rf4-stat.ru/images/rf4game/fish.png'" style="max-width:88%;max-height:78px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.7));transition:transform .2s;">
-      </div>
-      <div style="padding:9px 10px 10px;">
-        <div style="font-size:.75rem;font-weight:700;margin-bottom:6px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${f.name}">${f.name}</div>
-        <div style="display:flex;align-items:center;gap:4px;font-size:.68rem;margin-bottom:3px;">🏆 <span style="color:var(--muted);font-size:.6rem;">Trofeo:</span> <span style="font-weight:700;color:var(--gold);">${f.trophy}</span></div>
-        <div style="display:flex;align-items:center;gap:4px;font-size:.68rem;">⭐ <span style="color:var(--muted);font-size:.6rem;">Súper:</span> <span style="font-weight:700;color:#ff6b35;">${noSup?'<span style="color:var(--muted);font-style:italic;font-size:.65rem">Sin datos</span>':f.sup}</span></div>
-      </div>
-    </div>`;
-  }).join('');
-}
-function fishSel(i){
-  if(fishSelA===i) fishSelA=null;
-  else if(fishSelB===i) fishSelB=null;
-  else if(fishSelA===null) fishSelA=i;
-  else if(fishSelB===null) fishSelB=i;
-  else{fishSelA=fishSelB;fishSelB=i;}
-  fishUpSlots();renderFishDB();
-}
-function fishUpSlots(){
-  const a=fishSelA!==null?FISH_DB[fishSelA]:null,b=fishSelB!==null?FISH_DB[fishSelB]:null;
-  const snA=document.getElementById('fishSlotAName'),snB=document.getElementById('fishSlotBName');
-  const cxA=document.getElementById('fishClearA'),cxB=document.getElementById('fishClearB');
-  const cbtn=document.getElementById('fishCmpBtn');
-  if(snA) snA.innerHTML=a?`<strong style="color:var(--text);font-style:normal;">${a.name}</strong>`:'<span style="color:var(--muted);font-style:italic;">Elegí un pez</span>';
-  if(snB) snB.innerHTML=b?`<strong style="color:var(--text);font-style:normal;">${b.name}</strong>`:'<span style="color:var(--muted);font-style:italic;">Elegí un pez</span>';
-  if(cxA) cxA.style.display=a?'inline':'none';
-  if(cxB) cxB.style.display=b?'inline':'none';
-  if(cbtn) cbtn.style.display=(a&&b)?'inline-flex':'none';
-  if(a&&b) fishOpenCmp();
-}
-function fishClr(s){if(s==='A')fishSelA=null;else fishSelB=null;fishUpSlots();renderFishDB();}
-function fishClrAll(){fishSelA=null;fishSelB=null;fishUpSlots();renderFishDB();fishCloseCmp();}
-function fishOpenCmp(){
-  if(fishSelA===null||fishSelB===null) return;
-  const a=FISH_DB[fishSelA],b=FISH_DB[fishSelB];
-  const tA=fishPW(a.trophy),tB=fishPW(b.trophy),sA2=fishPW(a.sup),sB2=fishPW(b.sup);
-  const cg=document.getElementById('fishCmpGrid');
-  if(cg) cg.innerHTML=[{f:a,t:tA,s:sA2,ot:tB,os:sB2,cls:'rgba(0,198,255,.4)'},{f:b,t:tB,s:sB2,ot:tA,os:sA2,cls:'rgba(255,215,0,.35)'}].map(({f,t,s,ot,os,cls})=>`
-    <div style="background:var(--bg3);border-radius:var(--r);overflow:hidden;border:2px solid ${cls};">
-      <div style="height:115px;background:linear-gradient(135deg,#071520,#0a2a4a);display:flex;align-items:center;justify-content:center;">
-        <img src="${f.img}" onerror="this.src='https://en.rf4-stat.ru/images/rf4game/fish.png'" style="max-width:85%;max-height:105px;object-fit:contain;filter:drop-shadow(0 3px 8px rgba(0,0,0,.8));">
-      </div>
-      <div style="padding:11px 13px;">
-        <div style="font-size:.82rem;font-weight:800;margin-bottom:10px;color:${cls};">${f.name}</div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.76rem;">
-          <span style="color:var(--muted);">🏆 Trofeo</span>
-          <span style="font-weight:700;${t>0&&t>=ot?'color:var(--green)':'opacity:.55'}">${f.trophy} ${t>ot?'▲':t<ot?'▼':''}</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.76rem;">
-          <span style="color:var(--muted);">⭐ Súper Trofeo</span>
-          <span style="font-weight:700;${s>0&&s>=os?'color:var(--green)':'opacity:.55'}">${f.sup==='—'||!f.sup?'Sin datos':f.sup} ${s>os?'▲':s<os?'▼':''}</span>
-        </div>
-        ${t&&ot?`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:.76rem;"><span style="color:var(--muted);">📊 Ratio</span><span style="font-weight:700;color:var(--muted);">x${(Math.max(t,ot)/Math.min(t,ot)).toFixed(2)}</span></div>`:''}
-      </div>
-    </div>`).join('');
-  const vd=document.getElementById('fishCmpVerd');
-  if(vd) vd.innerHTML=`
-    <div style="font-family:'Orbitron',monospace;font-size:.75rem;color:var(--accent);margin-bottom:10px;">🏆 Veredicto</div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:.78rem;">🏆 Mayor trofeo: <strong style="color:${tA>=tB?'var(--accent)':'var(--gold)'};">${tA>=tB?a.name:b.name}</strong> — ${tA>=tB?a.trophy:b.trophy}</div>
-    ${(sA2||sB2)?`<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:.78rem;">⭐ Mayor súper trofeo: <strong style="color:${sA2>=sB2?'var(--accent)':'var(--gold)'};">${sA2>=sB2?a.name:b.name}</strong> — ${sA2>=sB2?a.sup:b.sup}</div>`:''}
-    ${tA&&tB?`<div style="display:flex;align-items:center;gap:8px;font-size:.78rem;">📊 El trofeo de <strong>${tA>tB?a.name:b.name}</strong> es <strong style="color:var(--green)">${Math.round((Math.max(tA,tB)/Math.min(tA,tB)-1)*100)}% más pesado</strong></div>`:''}`;
-  const m=document.getElementById('fishCmpModal');
-  if(m){m.style.display='flex';}
-}
-function fishCloseCmp(){const m=document.getElementById('fishCmpModal');if(m)m.style.display='none';}
-document.addEventListener('click',e=>{const m=document.getElementById('fishCmpModal');if(m&&e.target===m)fishCloseCmp();});
-
-
-// ===== COMPARADOR DE CARRETES RF4 =====
-// Datos reales de Russian Fishing 4
-// Fuentes: RF4 Wiki, Steam guides actualizados Nov 2025
-
-const REELS_RF4 = [
-  // ——— SIZE 1000 ———
-  {name:"Trident EasySpin (1000)",           brand:"Trident",         size:1000, ratio:"5.2:1", bearings:3,  drag:2,   weight:168,  lineCap:"0.16/100",   bail:"manual", infinite:false, notes:"Carrete de entrada, económico, bueno para peces chicos"},
-  {name:"Sputnik Element (1000)",            brand:"Sputnik",         size:1000, ratio:"5.1:1", bearings:4,  drag:3,   weight:175,  lineCap:"0.18/100",   bail:"auto",   infinite:false, notes:"Buen inicio, fiable para float/picker ligero"},
-  {name:"Sputnik Element PRO (1000)",        brand:"Sputnik",         size:1000, ratio:"5.3:1", bearings:6,  drag:3.5, weight:165,  lineCap:"0.18/100",   bail:"auto",   infinite:false, notes:"Versión mejorada del Element, más rodamientos"},
-  {name:"Syberia Pegasus (1000)",            brand:"Syberia",         size:1000, ratio:"5.2:1", bearings:5,  drag:3,   weight:172,  lineCap:"0.18/100",   bail:"auto",   infinite:false, notes:"Carrete compacto de la línea Syberia"},
-  {name:"Zeiman Bird 2 GS (1000)",           brand:"Zeiman",          size:1000, ratio:"5.4:1", bearings:5,  drag:3,   weight:160,  lineCap:"0.16/100",   bail:"auto",   infinite:false, notes:"Ligero, buen ratio para pesca fina"},
-  {name:"Sputnik Alfa (1000)",               brand:"Sputnik",         size:1000, ratio:"5.5:1", bearings:7,  drag:4,   weight:158,  lineCap:"0.18/100",   bail:"auto",   infinite:true,  notes:"Arrastre infinito, línea Alfa premium"},
-  {name:"Express Fishing Lagoon (1000)",     brand:"Express Fishing", size:1000, ratio:"5.0:1", bearings:3,  drag:2.5, weight:180,  lineCap:"0.18/100",   bail:"auto",   infinite:false, notes:"Económico, ideal para principiantes"},
-
-  // ——— SIZE 2000 ———
-  {name:"Express Fishing Spark 2 (2000)",    brand:"Express Fishing", size:2000, ratio:"5.1:1", bearings:4,  drag:4,   weight:225,  lineCap:"0.20/150",   bail:"auto",   infinite:false, notes:"Versatil para feeder ligero y float"},
-  {name:"Express Fishing Libra 2 (2000)",    brand:"Express Fishing", size:2000, ratio:"5.2:1", bearings:5,  drag:4.5, weight:220,  lineCap:"0.20/150",   bail:"auto",   infinite:false, notes:"Buena relación calidad-precio"},
-  {name:"Syberia Hydra Smart 2 (2000)",      brand:"Syberia",         size:2000, ratio:"5.3:1", bearings:6,  drag:5,   weight:210,  lineCap:"0.22/150",   bail:"auto",   infinite:false, notes:"Sistema Smart, buen arrastre para su tamaño"},
-  {name:"Express Fishing Lagoon-HP 2 (2000)",brand:"Express Fishing", size:2000, ratio:"5.0:1", bearings:4,  drag:5,   weight:230,  lineCap:"0.22/150",   bail:"auto",   infinite:false, notes:"HP = High Performance, más arrastre"},
-  {name:"Express Fishing Pride (2000)",      brand:"Express Fishing", size:2000, ratio:"5.4:1", bearings:6,  drag:5,   weight:215,  lineCap:"0.22/150",   bail:"auto",   infinite:false, notes:"Línea Pride, construcción sólida"},
-  {name:"Sputnik Proton (2000)",             brand:"Sputnik",         size:2000, ratio:"5.2:1", bearings:5,  drag:5,   weight:218,  lineCap:"0.22/150",   bail:"auto",   infinite:false, notes:"Popular para feeder, buen arrastre"},
-  {name:"Sputnik Pulsar (2000)",             brand:"Sputnik",         size:2000, ratio:"5.3:1", bearings:6,  drag:6,   weight:210,  lineCap:"0.22/150",   bail:"auto",   infinite:false, notes:"Uno de los más usados en feeder medio"},
-  {name:"Syberia Sirius (2000)",             brand:"Syberia",         size:2000, ratio:"5.4:1", bearings:7,  drag:6,   weight:205,  lineCap:"0.22/150",   bail:"auto",   infinite:false, notes:"Línea Sirius, construcción premium ligera"},
-  {name:"Syberia Hercules G2 (2000)",        brand:"Syberia",         size:2000, ratio:"5.5:1", bearings:8,  drag:7,   weight:200,  lineCap:"0.25/150",   bail:"auto",   infinite:true,  notes:"Arrastre infinito, ideal para feeder medio-pesado"},
-  {name:"Trident Horizon 2 (2000)",          brand:"Trident",         size:2000, ratio:"5.2:1", bearings:6,  drag:6,   weight:212,  lineCap:"0.22/150",   bail:"auto",   infinite:false, notes:"Buena opción para feeder, giro suave"},
-  {name:"Zeiman Overlord 3 8-Years (2000)",  brand:"Zeiman",          size:2000, ratio:"5.6:1", bearings:9,  drag:7,   weight:198,  lineCap:"0.25/150",   bail:"auto",   infinite:true,  notes:"Edición 8 aniversario, arrastre infinito, specs premium"},
-  {name:"Sputnik Alfa (2000)",               brand:"Sputnik",         size:2000, ratio:"5.5:1", bearings:8,  drag:7,   weight:200,  lineCap:"0.25/150",   bail:"auto",   infinite:true,  notes:"Arrastre infinito, mejor Alfa en size 2000"},
-
-  // ——— SIZE 3000 ———
-  {name:"Express Fishing Spark 2 (3000)",    brand:"Express Fishing", size:3000, ratio:"5.1:1", bearings:4,  drag:6,   weight:270,  lineCap:"0.25/200",   bail:"auto",   infinite:false, notes:"Versión 3000, bueno para feeder medio"},
-  {name:"Express Fishing Libra 2 (3000)",    brand:"Express Fishing", size:3000, ratio:"5.2:1", bearings:5,  drag:7,   weight:265,  lineCap:"0.25/200",   bail:"auto",   infinite:false, notes:"Amplio carrete para carpa/feeder"},
-  {name:"Express Fishing Lagoon (3000)",     brand:"Express Fishing", size:3000, ratio:"5.0:1", bearings:4,  drag:6,   weight:280,  lineCap:"0.25/200",   bail:"auto",   infinite:false, notes:"Opción económica tamaño 3000"},
-  {name:"Syberia Dragon (3000)",             brand:"Syberia",         size:3000, ratio:"5.5:1", bearings:8,  drag:8,   weight:255,  lineCap:"0.28/200",   bail:"auto",   infinite:false, notes:"Línea Dragon, construcción robusta"},
-  {name:"Syberia Hydra G2 (3000)",           brand:"Syberia",         size:3000, ratio:"5.4:1", bearings:7,  drag:8,   weight:258,  lineCap:"0.28/200",   bail:"auto",   infinite:true,  notes:"Arrastre infinito, generación 2"},
-  {name:"Syberia Meteor (3000)",             brand:"Syberia",         size:3000, ratio:"5.6:1", bearings:9,  drag:9,   weight:248,  lineCap:"0.28/200",   bail:"auto",   infinite:true,  notes:"Alta relación de recuperación, arrastre infinito"},
-  {name:"Zeiman Bird 2 GS (3000)",           brand:"Zeiman",          size:3000, ratio:"5.4:1", bearings:6,  drag:8,   weight:260,  lineCap:"0.28/200",   bail:"auto",   infinite:false, notes:"GS = Gold Spool, buena capacidad de línea"},
-
-  // ——— SIZE 4000 ———
-  {name:"Express Fishing Lacerti NG (4000)", brand:"Express Fishing", size:4000, ratio:"5.2:1", bearings:5,  drag:9,   weight:315,  lineCap:"0.30/250",   bail:"auto",   infinite:false, notes:"NG = New Generation, arrastre sólido"},
-  {name:"Express Fishing Lacerti-SX NG (4000)",brand:"Express Fishing",size:4000,ratio:"5.4:1", bearings:7,  drag:10,  weight:308,  lineCap:"0.30/250",   bail:"auto",   infinite:false, notes:"SX = Special eXtra, mejor versión Lacerti"},
-  {name:"Sputnik Element (4000)",            brand:"Sputnik",         size:4000, ratio:"5.1:1", bearings:5,  drag:9,   weight:320,  lineCap:"0.30/250",   bail:"auto",   infinite:false, notes:"Fiel Element ampliado a 4000"},
-  {name:"Sputnik Element PRO (4000)",        brand:"Sputnik",         size:4000, ratio:"5.3:1", bearings:7,  drag:10,  weight:310,  lineCap:"0.30/250",   bail:"auto",   infinite:false, notes:"PRO con más rodamientos y arrastre"},
-  {name:"Trident Horizon 2 (4000)",          brand:"Trident",         size:4000, ratio:"5.2:1", bearings:6,  drag:10,  weight:312,  lineCap:"0.30/250",   bail:"auto",   infinite:false, notes:"Ideal feeder pesado y carp rod ligero"},
-  {name:"Trident Admiral II (4000)",         brand:"Trident",         size:4000, ratio:"5.3:1", bearings:7,  drag:11,  weight:305,  lineCap:"0.30/250",   bail:"auto",   infinite:false, notes:"Admiral II, línea profesional Trident"},
-  {name:"Sputnik Alfa (4000)",               brand:"Sputnik",         size:4000, ratio:"5.5:1", bearings:9,  drag:12,  weight:298,  lineCap:"0.32/250",   bail:"auto",   infinite:true,  notes:"Arrastre infinito, top de gama Sputnik 4000"},
-
-  // ——— SIZE 5000 ———
-  {name:"Zeiman Black Box (5000)",           brand:"Zeiman",          size:5000, ratio:"5.3:1", bearings:7,  drag:12,  weight:365,  lineCap:"0.33/300",   bail:"auto",   infinite:false, notes:"Black Box, diseño especial para carp/feeder pesado"},
-  {name:"Syberia SteelHead (5000)",          brand:"Syberia",         size:5000, ratio:"5.4:1", bearings:8,  drag:13,  weight:355,  lineCap:"0.35/300",   bail:"auto",   infinite:true,  notes:"SteelHead, robusto para esturión y carpa grande"},
-
-  // ——— SIZE 6000 ———
-  {name:"Express Fishing Adriatica (6000)",  brand:"Express Fishing", size:6000, ratio:"4.9:1", bearings:5,  drag:13,  weight:430,  lineCap:"0.35/300",   bail:"auto",   infinite:false, notes:"Carrete de mar/feeder pesado, ratio bajo para más potencia"},
-  {name:"Express Fishing Pride (6000)",      brand:"Express Fishing", size:6000, ratio:"5.0:1", bearings:6,  drag:14,  weight:420,  lineCap:"0.35/300",   bail:"auto",   infinite:false, notes:"Pride 6000, versátil para peces grandes"},
-  {name:"Sputnik Proton (6000)",             brand:"Sputnik",         size:6000, ratio:"5.1:1", bearings:6,  drag:14,  weight:415,  lineCap:"0.35/300",   bail:"auto",   infinite:false, notes:"Proton 6000, muy usado en feeder pesado"},
-  {name:"Express Fishing Super Cast (6000)", brand:"Express Fishing", size:6000, ratio:"4.8:1", bearings:5,  drag:15,  weight:440,  lineCap:"0.40/300",   bail:"auto",   infinite:false, notes:"Super Cast, diseñado para lanzar lejos con sedal grueso"},
-  {name:"Beluga Venga Black (6000)",         brand:"Beluga",          size:6000, ratio:"5.2:1", bearings:7,  drag:15,  weight:405,  lineCap:"0.40/300",   bail:"auto",   infinite:false, notes:"Venga Black, edición especial de la línea Venga"},
-  {name:"Beluga Venga Platinum (6000)",      brand:"Beluga",          size:6000, ratio:"5.2:1", bearings:8,  drag:16,  weight:398,  lineCap:"0.40/300",   bail:"auto",   infinite:true,  notes:"Arrastre infinito, tier premium de la línea Venga"},
-  {name:"Beluga Chronica II Super 8 (6000)", brand:"Beluga",          size:6000, ratio:"5.3:1", bearings:10, drag:16,  weight:392,  lineCap:"0.40/300",   bail:"auto",   infinite:true,  notes:"Super 8 rodamientos sellados, edición especial Chronica"},
-  {name:"Beluga Venga Classic (6000)",       brand:"Beluga",          size:6000, ratio:"5.1:1", bearings:7,  drag:15,  weight:408,  lineCap:"0.40/300",   bail:"auto",   infinite:false, notes:"Clásico de la línea Venga, muy recomendado para carpa"},
-  {name:"Trident Admiral II (6000)",         brand:"Trident",         size:6000, ratio:"5.2:1", bearings:8,  drag:16,  weight:400,  lineCap:"0.40/300",   bail:"auto",   infinite:false, notes:"Admiral II 6000, profesional para peces grandes"},
-  {name:"Zeiman Black Box (6000)",           brand:"Zeiman",          size:6000, ratio:"5.3:1", bearings:8,  drag:16,  weight:396,  lineCap:"0.40/300",   bail:"auto",   infinite:false, notes:"Black Box 6000, arrastre potente"},
-  {name:"Syberia SteelHead (6000)",          brand:"Syberia",         size:6000, ratio:"5.4:1", bearings:9,  drag:17,  weight:388,  lineCap:"0.40/300",   bail:"auto",   infinite:true,  notes:"SteelHead 6000, arrastre infinito, top para siluro/esturión"},
-  {name:"Sputnik Alfa (6000)",               brand:"Sputnik",         size:6000, ratio:"5.5:1", bearings:9,  drag:17,  weight:385,  lineCap:"0.40/300",   bail:"auto",   infinite:true,  notes:"Alfa 6000, arrastre infinito, el mejor Sputnik en este tamaño"},
-
-  // ——— SIZE 8000 ———
-  {name:"Sputnik Alfa (8000)",               brand:"Sputnik",         size:8000, ratio:"5.5:1", bearings:10, drag:20,  weight:470,  lineCap:"0.45/400",   bail:"auto",   infinite:true,  notes:"Alfa 8000, arrastre infinito, para peces de gran porte"},
-  {name:"Alfa Celestia (8000)",              brand:"Alfa",            size:8000, ratio:"5.6:1", bearings:11, drag:22,  weight:458,  lineCap:"0.45/400",   bail:"auto",   infinite:true,  notes:"Celestia, gama alta con arrastre infinito y máxima suavidad"},
-  {name:"Caliber HSV Raven (8000)",          brand:"Caliber",         size:8000, ratio:"5.4:1", bearings:9,  drag:20,  weight:465,  lineCap:"0.45/400",   bail:"auto",   infinite:false, notes:"HSV Raven, muy popular para esturión y carpa trofeo"},
-  {name:"SG8000 Ultra Power Emerald (8000)", brand:"SG",              size:8000, ratio:"5.3:1", bearings:9,  drag:21,  weight:472,  lineCap:"0.45/400",   bail:"auto",   infinite:false, notes:"Ultra Power, diseñado para pesca pesada, gran torque"},
-  {name:"Beluga Venga Classic (8000)",       brand:"Beluga",          size:8000, ratio:"5.1:1", bearings:8,  drag:20,  weight:480,  lineCap:"0.45/400",   bail:"auto",   infinite:false, notes:"Venga Classic 8000, fiable para peces grandes de fondo"},
-  {name:"Trident Admiral II (8000)",         brand:"Trident",         size:8000, ratio:"5.2:1", bearings:9,  drag:21,  weight:468,  lineCap:"0.45/400",   bail:"auto",   infinite:false, notes:"Admiral II 8000, profesional para esturión y siluro"},
-
-  // ——— SIZE 10000 ———
-  {name:"Beluga Venga Classic (10000)",      brand:"Beluga",          size:10000,ratio:"5.1:1", bearings:9,  drag:24,  weight:560,  lineCap:"0.50/500",   bail:"auto",   infinite:false, notes:"Venga Classic 10000, para los peces más grandes"},
-  {name:"Trident Admiral II (10000)",        brand:"Trident",         size:10000,ratio:"5.2:1", bearings:10, drag:25,  weight:545,  lineCap:"0.50/500",   bail:"auto",   infinite:false, notes:"Admiral II 10000, tope de línea Trident"},
-  {name:"Beluga Venga SBH (10000)",          brand:"Beluga",          size:10000,ratio:"5.3:1", bearings:11, drag:27,  weight:530,  lineCap:"0.50/500",   bail:"auto",   infinite:true,  notes:"SBH = Super Big Handle, arrastre infinito, para monstruos"},
-  {name:"Beluga Tagara II 8-Anniversary (10000)",brand:"Beluga",      size:10000,ratio:"5.4:1", bearings:12, drag:28,  weight:520,  lineCap:"0.55/500",   bail:"auto",   infinite:true,  notes:"Edición 8 aniversario, el mejor carrete de agua dulce del juego"},
-
-  // ——— SIZE 30000 (HEAVY / MAR) ———
-  {name:"Beluga Furia 8-Anniversary (30000)",brand:"Beluga",          size:30000,ratio:"4.6:1", bearings:14, drag:60,  weight:1050, lineCap:"0.80/600",   bail:"auto",   infinite:true,  notes:"⚠️ Carrete extremo — para Beluga, Kaluga y Siluro de trofeo máximo. Arrastre infinito, 14 rodamientos sellados. El más potente del juego"},
-];
-
-let _reelA = null;
-let _reelB = null;
-
-function swPecesTab(n){
-  document.getElementById('pecesPanelDB').style.display = n===1 ? 'block' : 'none';
-  document.getElementById('pecesPanelCalc').style.display = n===2 ? 'block' : 'none';
-  const t1 = document.getElementById('pecesTab1');
-  const t2 = document.getElementById('pecesTab2');
-  if(t1 && t2){
-    t1.style.background = n===1 ? 'linear-gradient(135deg,var(--accent),var(--accent2))' : 'none';
-    t1.style.color = n===1 ? '#000' : 'var(--muted)';
-    t2.style.background = n===2 ? 'linear-gradient(135deg,var(--accent),var(--accent2))' : 'none';
-    t2.style.color = n===2 ? '#000' : 'var(--muted)';
-  }
-  if(n===2) reelComparatorInit();
-}
-
-function reelComparatorInit(){
-  renderWeeklyRecords();
-}
-
-function reelFilter(slot){
-  const q = (document.getElementById('reelSearch'+slot)?.value||'').toLowerCase();
-  const list = document.getElementById('reelList'+slot);
-  if(!list) return;
-  const filtered = q ? REELS_RF4.filter(r=>r.name.toLowerCase().includes(q)||r.brand.toLowerCase().includes(q)) : REELS_RF4;
-  list.innerHTML = filtered.slice(0,20).map(r=>{
-    const idx = REELS_RF4.indexOf(r);
-    return `<div onclick="reelSelect('${slot}',${idx})"
-      style="padding:7px 11px;cursor:pointer;font-size:.78rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.04);"
-      onmouseover="this.style.background='rgba(0,198,255,.1)'" onmouseout="this.style.background=''">
-      <span>${r.name}</span>
-      <span style="font-size:.65rem;color:var(--muted);margin-left:8px;">${r.ratio} · ${r.drag}kg</span>
-    </div>`;
-  }).join('') || '<div style="padding:10px;font-size:.75rem;color:var(--muted);text-align:center;">Sin resultados</div>';
-}
-
-function reelSelect(slot, idx){
-  const r = REELS_RF4[idx];
-  if(slot==='A') _reelA=r; else _reelB=r;
-  // Update search input & selected card
-  const inp = document.getElementById('reelSearch'+slot);
-  if(inp) inp.value = r.name;
-  document.getElementById('reelList'+slot).innerHTML='';
-  const selEl = document.getElementById('reelSelected'+slot);
-  if(selEl){
-    selEl.style.display='block';
-    document.getElementById('reelName'+slot).textContent = r.name;
-    document.getElementById('reelBrand'+slot).textContent = r.brand + ' · Size '+r.size;
-  }
-  renderReelCompare();
-}
-
-function renderReelCompare(){
-  const el = document.getElementById('reelCompareResult');
-  if(!el) return;
-  if(!_reelA && !_reelB){ el.style.display='none'; return; }
-  el.style.display='block';
-
-  const A = _reelA;
-  const B = _reelB;
-
-  // Stat row helper
-  const statRow = (label, vA, vB, unit, higherIsBetter=true) => {
-    if(!A || !B) {
-      const v = A ? vA : vB;
-      const col = A ? 'var(--accent)' : 'var(--gold)';
-      return `<tr>
-        <td style="padding:7px 10px;color:var(--muted);font-size:.75rem;border-bottom:1px solid rgba(255,255,255,.04);">${label}</td>
-        <td style="padding:7px 10px;text-align:center;font-size:.78rem;font-weight:700;color:${A?'var(--accent)':'var(--muted)'};border-bottom:1px solid rgba(255,255,255,.04);">${A?vA:'—'}${A?unit:''}</td>
-        <td style="padding:7px 10px;text-align:center;font-size:.78rem;font-weight:700;color:${B?'var(--gold)':'var(--muted)'};border-bottom:1px solid rgba(255,255,255,.04);">${B?vB:'—'}${B?unit:''}</td>
-        <td style="padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.04);"></td>
-      </tr>`;
-    }
-    const nA = parseFloat(String(vA).replace(':','/')); 
-    const nB = parseFloat(String(vB).replace(':','/'));
-    let winner='', loser='';
-    if(!isNaN(nA)&&!isNaN(nB)){
-      if(higherIsBetter){ winner=nA>nB?'A':nA<nB?'B':''; } 
-      else { winner=nA<nB?'A':nA>nB?'B':''; }
-      loser=winner==='A'?'B':winner==='B'?'A':'';
-    }
-    const colA = winner==='A'?'var(--green)':loser==='A'?'var(--red)':'var(--text)';
-    const colB = winner==='B'?'var(--green)':loser==='B'?'var(--red)':'var(--text)';
-    const badge = winner ? `<span style="font-size:.65rem;padding:1px 6px;border-radius:100px;background:rgba(0,230,118,.15);color:var(--green);">✓ ${winner}</span>` : '—';
-    return `<tr>
-      <td style="padding:7px 10px;color:var(--muted);font-size:.75rem;border-bottom:1px solid rgba(255,255,255,.04);">${label}</td>
-      <td style="padding:7px 10px;text-align:center;font-size:.78rem;font-weight:700;color:${colA};border-bottom:1px solid rgba(255,255,255,.04);">${vA}${unit}</td>
-      <td style="padding:7px 10px;text-align:center;font-size:.78rem;font-weight:700;color:${colB};border-bottom:1px solid rgba(255,255,255,.04);">${vB}${unit}</td>
-      <td style="padding:7px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,.04);">${badge}</td>
-    </tr>`;
-  };
-
-  const yn = (v) => v ? '<span style="color:var(--green);font-weight:700;">✅ Sí</span>' : '<span style="color:var(--red);">❌ No</span>';
-  const infRow = (label, vA, vB) => {
-    const win = (vA && !vB) ? 'A' : (!vA && vB) ? 'B' : '';
-    const badge = win ? `<span style="font-size:.65rem;padding:1px 6px;border-radius:100px;background:rgba(0,230,118,.15);color:var(--green);">✓ ${win}</span>` : '—';
-    return `<tr>
-      <td style="padding:7px 10px;color:var(--muted);font-size:.75rem;border-bottom:1px solid rgba(255,255,255,.04);">${label}</td>
-      <td style="padding:7px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,.04);">${A?yn(vA):'—'}</td>
-      <td style="padding:7px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,.04);">${B?yn(vB):'—'}</td>
-      <td style="padding:7px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,.04);">${badge}</td>
-    </tr>`;
-  };
-
-  const thA = A ? `<th style="padding:8px 10px;text-align:center;font-size:.75rem;font-weight:900;color:var(--accent);background:rgba(0,198,255,.06);border-bottom:2px solid var(--accent);">⚙️ ${A.name}</th>` : `<th style="padding:8px 10px;background:var(--bg3);color:var(--muted);font-size:.72rem;border-bottom:2px solid var(--border);">— Sin selección —</th>`;
-  const thB = B ? `<th style="padding:8px 10px;text-align:center;font-size:.75rem;font-weight:900;color:var(--gold);background:rgba(255,215,0,.06);border-bottom:2px solid var(--gold);">⚙️ ${B.name}</th>` : `<th style="padding:8px 10px;background:var(--bg3);color:var(--muted);font-size:.72rem;border-bottom:2px solid var(--border);">— Sin selección —</th>`;
-
-  el.innerHTML = `
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:14px;">
-      <div style="padding:10px 14px;background:var(--bg3);border-bottom:1px solid var(--border);font-size:.7rem;font-weight:900;color:var(--accent);text-transform:uppercase;letter-spacing:1px;">📊 Comparación de Carretes</div>
-      <div style="overflow-x:auto;">
-        <table style="width:100%;border-collapse:collapse;">
-          <thead>
-            <tr>
-              <th style="padding:8px 10px;text-align:left;font-size:.7rem;color:var(--muted);background:var(--bg3);border-bottom:2px solid var(--border);">Característica</th>
-              ${thA}
-              ${thB}
-              <th style="padding:8px 10px;text-align:center;font-size:.7rem;color:var(--muted);background:var(--bg3);border-bottom:2px solid var(--border);">Mejor</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${statRow('Tamaño', A?.size||'', B?.size||'', '', false)}
-            ${statRow('Relación de recuperación', A?.ratio||'', B?.ratio||'', '', true)}
-            ${statRow('Arrastre máx (kg)', A?.drag||'', B?.drag||'', ' kg', true)}
-            ${statRow('Rodamientos', A?.bearings||'', B?.bearings||'', '', true)}
-            ${statRow('Peso del carrete', A?.weight||'', B?.weight||'', ' g', false)}
-            ${statRow('Cap. de línea', A?.lineCap||'', B?.lineCap||'', '', false)}
-            ${infRow('Arrastre Infinito', A?.infinite, B?.infinite)}
-            ${infRow('Bail automático', A?.bail==='auto', B?.bail==='auto')}
-          </tbody>
-        </table>
-      </div>
-    </div>
-    ${A ? `<div style="background:var(--bg2);border:1px solid rgba(0,198,255,.3);border-radius:var(--r);padding:12px 14px;margin-bottom:10px;font-size:.78rem;">
-      <span style="color:var(--accent);font-weight:700;">⚙️ A — ${A.name}:</span>
-      <span style="color:var(--muted);margin-left:6px;">${A.notes}</span>
-    </div>`:''}
-    ${B ? `<div style="background:var(--bg2);border:1px solid rgba(255,215,0,.3);border-radius:var(--r);padding:12px 14px;font-size:.78rem;">
-      <span style="color:var(--gold);font-weight:700;">⚙️ B — ${B.name}:</span>
-      <span style="color:var(--muted);margin-left:6px;">${B.notes}</span>
-    </div>`:''}`;
-}
-
-function renderReelTable(){
-  const tbl = document.getElementById('reelFullTable');
-  if(!tbl) return;
-  const headerStyle = 'padding:7px 10px;font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;background:var(--bg3);border-bottom:2px solid var(--border);white-space:nowrap;';
-  const cellStyle   = 'padding:6px 10px;font-size:.73rem;border-bottom:1px solid rgba(255,255,255,.04);';
-  tbl.innerHTML = `
-    <thead>
-      <tr>
-        <th style="${headerStyle}text-align:left;">Carrete</th>
-        <th style="${headerStyle}text-align:center;">Size</th>
-        <th style="${headerStyle}text-align:center;">Relación</th>
-        <th style="${headerStyle}text-align:center;">Arrastre</th>
-        <th style="${headerStyle}text-align:center;">Rodamientos</th>
-        <th style="${headerStyle}text-align:center;">Peso</th>
-        <th style="${headerStyle}text-align:center;">Línea</th>
-        <th style="${headerStyle}text-align:center;">∞ Arrastre</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${REELS_RF4.map((r,i)=>`<tr style="cursor:pointer;" onclick="reelSelect('A',${i})"
-        onmouseover="this.style.background='rgba(0,198,255,.05)'" onmouseout="this.style.background=''">
-        <td style="${cellStyle}font-weight:600;color:var(--text);">${r.name}</td>
-        <td style="${cellStyle}text-align:center;color:var(--muted);">${r.size}</td>
-        <td style="${cellStyle}text-align:center;color:var(--accent);font-weight:700;">${r.ratio}</td>
-        <td style="${cellStyle}text-align:center;color:var(--gold);font-weight:700;">${r.drag} kg</td>
-        <td style="${cellStyle}text-align:center;">${r.bearings}</td>
-        <td style="${cellStyle}text-align:center;color:var(--muted);">${r.weight} g</td>
-        <td style="${cellStyle}text-align:center;color:var(--muted);font-size:.7rem;">${r.lineCap}</td>
-        <td style="${cellStyle}text-align:center;">${r.infinite?'<span style="color:var(--green);font-weight:700;">✅</span>':'<span style="color:var(--muted);">—</span>'}</td>
-      </tr>`).join('')}
-    </tbody>`;
-}
-// ===== RECORDS SEMANALES =====
-async function renderWeeklyRecords(){
-  const tbody = document.getElementById('weeklyRecordsTbody');
-  if(!tbody) return;
-
-  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--muted);">⏳ Cargando records...</td></tr>`;
-
-  try{
-    const res = await fetch('https://raw.githubusercontent.com/Ruizgustavo12/chatrf4/main/records.json?nocache=' + Date.now());
-    if(!res.ok) throw new Error('No se pudo cargar');
-    const data = await res.json();
-   const records = (data.records || []).filter(r => r.pez !== 'Fish');
-
-    if(records.length === 0){
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--muted);">⚠️ No hay records disponibles aún.</td></tr>`;
-      return;
-    }
-
-    // Mostrar fecha de actualización
-    const updEl = document.getElementById('weeklyRecordsUpdated');
-    if(updEl && data.updated) updEl.textContent = '🕐 Actualizado: ' + data.updated;
-
-    tbody.innerHTML = records.map((r,i)=>`
-      <tr style="background:${i%2===0?'var(--bg2)':'var(--bg3)'};transition:background .15s;"
-          onmouseover="this.style.background='var(--bg4)'"
-          onmouseout="this.style.background='${i%2===0?'var(--bg2)':'var(--bg3)'}'">
-     <td style="padding:9px 8px;text-align:center;border-bottom:1px solid var(--border);color:var(--muted);font-weight:700;font-size:.75rem;">${i+1}</td>
-<td style="padding:9px 8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;">${r.img_pez ? `<img src="https://images.weserv.nl/?url=${r.img_pez}" style="width:32px;height:32px;object-fit:contain;" onerror="this.style.display='none'">` : '🐟'} ${r.pez}</td><td style="padding:9px 8px;text-align:center;border-bottom:1px solid var(--border);font-weight:700;color:var(--gold);">${r.peso}</td>
-<td style="padding:9px 8px;border-bottom:1px solid var(--border);color:var(--muted);">${r.ubicacion}</td>
-<td style="padding:9px 8px;text-align:center;border-bottom:1px solid var(--border);">${r.img_senuelo ? `<img src="https://images.weserv.nl/?url=${r.img_senuelo}" style="width:32px;height:32px;object-fit:contain;">` : '—'}</td>
-<td style="padding:9px 8px;border-bottom:1px solid var(--border);color:var(--accent);font-weight:700;">${r.jugador}</td>
-<td style="padding:9px 8px;text-align:center;border-bottom:1px solid var(--border);color:var(--muted);font-size:.75rem;">${r.fecha}</td>
-</tr>
-    `).join('');
-
-  } catch(e){
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--red);">
-      ❌ Error al cargar los records. <a href="https://rf4game.com/records/" target="_blank" style="color:var(--accent);">Error: ${e.message}</a>
-    </td></tr>`;
-  }
-}
-// ===== FIN RECORDS SEMANALES =====
-
 // ===== EXPOSE TO HTML — sobreescribe los stubs =====
 const _expose = {
   doLogin,doReg,showReg,showLogin,showTerms,closeTerms,acceptTermsAndRegister,
@@ -6179,13 +5263,10 @@ const _expose = {
   acceptFriendRequest, rejectFriendRequest, dismissFriendRequest, sendFriendRequestFromProfile, loadRealFriends, updateNotifBadge, updateMsgBadge,
   previewSpotImg, removeSpotImg, submitSpot, loadSpots, loadFriendSpots, renderFriendSpotsInHome, openEditSpot, saveEditSpot, deleteSpot, scrollToPost, loadVideos, filterVideos,
   renderSidebarFriends, renderSuggestedUsers, playNotifSound, showNotifToast, sendNotifToUserWithPost, openMessenger,
-  sendNotifToUserWithStory,
   previewPezSemanaImg, submitPezSemana, deletePezSemana, loadPezSemana, buildPezSemanaCard, openPezSemanalModal, openReactionsModal, buildRxnLabel,
   addXP, renderXPUI, checkDailyStreak, getLevel, getXpProgress,
   loadXPLevels, saveXPLevels, addXPLevelRow, renderXPLevelsAdmin,
-  listenTrofeosFeed, filterTrofeoFeed, renderTrofeosFeed, trofeoFeedCardHTML, renderTrofeoSidebar,
-  renderFishDB, fishSel, fishClr, fishClrAll, fishOpenCmp, fishCloseCmp,
-  swPecesTab, reelFilter, reelSelect, renderReelCompare, renderReelTable, reelComparatorInit
+  listenTrofeosFeed, filterTrofeoFeed, renderTrofeosFeed, trofeoFeedCardHTML, renderTrofeoSidebar
 };
 Object.entries(_expose).forEach(([k,v])=>{ window[k]=v; });
 // Replay any calls that happened before module loaded
