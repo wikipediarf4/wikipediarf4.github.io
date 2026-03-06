@@ -2320,7 +2320,6 @@ function closeSV(){
 async function _svRegisterView(){
   const s = _stories[_svIdx];
   if(!s || !window.CU || !db) return;
-  const storyId = s.id || ('story_'+s.time);
   const isOwner = s.userId === window.CU.id;
 
   // Cancela listener anterior ANTES de arrancar uno nuevo
@@ -2330,34 +2329,35 @@ async function _svRegisterView(){
   const listPanel = document.getElementById('svViewersList');
   if(listPanel) listPanel.style.display='none';
 
-  // Muestra el ojito
+  // Muestra el ojito solo si la historia tiene ID real de Firestore
   const wrap = document.getElementById('svViewsWrap');
+  if(!s.id){ if(wrap) wrap.style.display='none'; return; }
   if(wrap) wrap.style.display='flex';
 
   try {
-    // Registra la vista solo si NO es el dueño
+    // Registra la vista dentro del doc de la historia (solo si no es el dueño)
     if(!isOwner){
-      await setDoc(doc(db,'storyViews', storyId+'_'+window.CU.id),{
-        storyId, viewerId: window.CU.id, viewerNick: window.CU.nick,
-        viewerAv: window.CU.av||'', time: Date.now()
-      });
+      const viewData = {};
+      viewData[`views.${window.CU.id}`] = { nick: window.CU.nick, av: window.CU.av||'', time: Date.now() };
+      await updateDoc(doc(db,'stories', s.id), viewData);
     }
 
-    // Escucha en tiempo real — excluye al dueño del conteo
-    const q = query(collection(db,'storyViews'), where('storyId','==',storyId));
-    window._svViewsUnsub = onSnapshot(q, snap=>{
-      // Filtra para no contar al propio dueño si quedara algún doc suyo
-      const views = snap.docs.filter(d => d.data().viewerId !== s.userId);
-      const total = views.length;
+    // Escucha el doc en tiempo real para el contador
+    window._svViewsUnsub = onSnapshot(doc(db,'stories', s.id), snap=>{
+      if(!snap.exists()) return;
+      const views = snap.data().views || {};
+      // Excluye al dueño por si acaso
+      const viewers = Object.entries(views).filter(([uid]) => uid !== s.userId);
+      const total = viewers.length;
       const el = document.getElementById('svViewsCount');
       if(el) el.textContent = total;
+      const tot = document.getElementById('svViewersTotal');
+      if(tot) tot.textContent = total;
       // Actualiza lista si está abierta
       const listEl = document.getElementById('svViewersList');
-      const tot = document.getElementById('svViewersTotal');
       const items = document.getElementById('svViewersItems');
-      if(tot) tot.textContent = total;
       if(items && listEl && listEl.style.display !== 'none'){
-        _renderViewersList(views);
+        _renderViewersList(viewers.map(([uid,v])=>({...v, viewerId:uid, viewerNick:v.nick, viewerAv:v.av})));
       }
     });
   } catch(e){ console.error('_svRegisterView error',e); }
@@ -2384,11 +2384,16 @@ function svToggleViewersList(){
   // Dueño Y verificado: toggle panel
   const open = panel.style.display !== 'none';
   panel.style.display = open ? 'none' : 'block';
-  if(!open){
-    const storyId = s.id || ('story_'+s.time);
-    getDocs(query(collection(db,'storyViews'), where('storyId','==',storyId)))
-      .then(snap=>{ _renderViewersList(snap.docs); document.getElementById('svViewersTotal').textContent=snap.size; })
-      .catch(()=>{});
+  if(!open && s.id){
+    getDoc(doc(db,'stories', s.id)).then(snap=>{
+      if(!snap.exists()) return;
+      const views = snap.data().views || {};
+      const viewers = Object.entries(views)
+        .filter(([uid]) => uid !== s.userId)
+        .map(([uid,v])=>({...v, viewerId:uid, viewerNick:v.nick, viewerAv:v.av}));
+      document.getElementById('svViewersTotal').textContent = viewers.length;
+      _renderViewersList(viewers);
+    }).catch(()=>{});
   }
 }
 
