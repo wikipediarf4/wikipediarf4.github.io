@@ -2426,7 +2426,7 @@ function renderSV(){
   const s = _stories[_svIdx];
   if(!s) return;
   const bg = document.getElementById('svBg');
-  if(s.img){ bg.innerHTML = `<img src="${s.img}" style="width:100%;height:100%;object-fit:cover">`; }
+  if(s.img){ bg.innerHTML = `<img src="${s.img}" style="width:100%;height:100%;object-fit:contain;background:#000;">`; }
 
   else { bg.innerHTML = `<div style="width:100%;height:100%;background:linear-gradient(135deg,#0a2a4a,#0077b6);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px"><span style="font-size:5rem">${s.emoji||'🎣'}</span></div>`; }
   document.getElementById('svAv').innerHTML = s.userAv ? `<img src="${s.userAv}">` : s.userNick[0];
