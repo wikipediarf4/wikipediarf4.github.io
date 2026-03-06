@@ -355,7 +355,7 @@ select.fi option{background:#fff;}
   </div>
   <div class="tb-nav">
     <button class="tb-nav-btn on" onclick="gp('home');setNav(this)" title="Inicio">🏠</button>
-    <button class="tb-nav-btn" onclick="gp('home');setNav(this)" title="Amigos">👥</button>
+    <button class="tb-nav-btn" onclick="gp('amigos');setNav(this);renderAmigosPage();" title="Amigos">👥</button>
     <button class="tb-nav-btn" onclick="gp('spots');setNav(this)" title="Spots">📍</button>
     <button class="tb-nav-btn" onclick="gp('trofeos-feed');setNav(this)" title="Feed de Trofeos Aprobados" style="color:var(--gold);font-size:.75rem;font-weight:700;">🥇 Trofeos</button>
     <button class="tb-nav-btn" id="pezSemanalNavBtn" onclick="openPezSemanalModal();setNav(this)" title="Pez de la Semana" style="color:var(--green);font-size:.75rem;font-weight:700;">🐟 Pez Semanal</button>
@@ -523,6 +523,30 @@ select.fi option{background:#fff;}
   </div>
 </div>
 
+<!-- PAGE: AMIGOS -->
+<div class="page" id="page-amigos" style="max-width:680px;margin:0 auto;padding:16px 16px 16px;">
+  <!-- Solicitudes de amistad -->
+  <div id="friendReqSection" style="margin-bottom:20px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <span style="font-size:1rem;font-weight:800;color:var(--text);">Solicitudes de amistad</span>
+      <span id="friendReqCount" style="font-size:.75rem;color:var(--accent);font-weight:700;"></span>
+    </div>
+    <div id="friendReqList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px;">
+      <div style="font-size:.8rem;color:var(--muted);padding:8px;">Sin solicitudes pendientes</div>
+    </div>
+  </div>
+  <div style="border-top:1px solid var(--border);margin-bottom:20px;"></div>
+  <!-- Personas que quizás conozcas -->
+  <div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <span style="font-size:1rem;font-weight:800;color:var(--text);">Personas que quizás conozcas</span>
+      <span style="font-size:.75rem;color:var(--accent);cursor:pointer;font-weight:700;" onclick="renderAmigosPage()">↻ Actualizar</span>
+    </div>
+    <div id="amigosSuggList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px;">
+    </div>
+  </div>
+</div>
+
 <!-- PAGE: PROFILE -->
 <div class="page" id="page-profile">
   <div class="profile-cover" id="profCover" style="cursor:pointer;" onclick="openPhotoModal('cover')">
@@ -641,12 +665,11 @@ select.fi option{background:#fff;}
 
 <!-- STORY VIEWER -->
 <div class="story-viewer" id="storyViewer">
-  <button class="sv-nav sv-prev" onclick="svNav(-1)">‹</button>
   <div class="sv-inner">
     <div style="width:100%;height:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:5rem" id="svBg">🐟</div>
-    <!-- Click zones: left half = prev, right half = next -->
-    <div onclick="svNav(-1)" style="position:absolute;top:0;left:0;width:40%;height:100%;z-index:5;cursor:pointer;"></div>
-    <div onclick="svNav(1)" style="position:absolute;top:0;right:0;width:40%;height:100%;z-index:5;cursor:pointer;"></div>
+    <!-- Click zones: left half = prev, right half = next — full invisible areas -->
+    <div onclick="svNav(-1)" style="position:absolute;top:0;left:0;width:50%;height:100%;z-index:5;cursor:w-resize;"></div>
+    <div onclick="svNav(1)" style="position:absolute;top:0;right:0;width:50%;height:100%;z-index:5;cursor:e-resize;"></div>
     <div class="sv-gradient"></div>
 
     <!-- progress bars — top 8px -->
@@ -690,7 +713,6 @@ select.fi option{background:#fff;}
       <button onclick="submitStoryComment()" style="background:var(--accent);border:none;border-radius:50%;width:38px;height:38px;color:#000;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">➤</button>
     </div>
   </div>
-  <button class="sv-nav sv-next" onclick="svNav(1)">›</button>
 </div>
 
 <!-- MODALS -->
@@ -2034,11 +2056,11 @@ function onLogin(){
   const storyPhoto = document.getElementById('storyAddPhoto');
   const storyPhotoInner = document.getElementById('storyAddPhotoInner');
   if(storyPhoto && window.CU){
-    if(window.CU.photo){
-      storyPhoto.innerHTML = `<img src="${window.CU.photo}" style="width:100%;height:100%;object-fit:cover;">`;
+    if(window.CU.av){
+      storyPhoto.innerHTML = `<img src="${window.CU.av}" style="width:100%;height:100%;object-fit:cover;">`;
     } else if(storyPhotoInner){
       storyPhotoInner.textContent = (window.CU.nick||'?')[0].toUpperCase();
-      storyPhotoInner.style.opacity = '0.6';
+      storyPhotoInner.style.opacity = '0.7';
       storyPhotoInner.style.fontSize = '3.5rem';
       storyPhotoInner.style.fontWeight = '800';
     }
@@ -3275,6 +3297,9 @@ async function changeAvatar(input){
   const url = await uploadImage(f, 'avatars');
   window.CU.av = url;
   await updateDoc(doc(db, 'users', window.CU.id), {av: url});
+  // Update "Crear historia" card
+  const sp = document.getElementById('storyAddPhoto');
+  if(sp) sp.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;">`;
   updateNavUI(); renderProfile(); toast('Foto actualizada ✅','ok');
 }
 
@@ -4523,6 +4548,64 @@ async function renderSuggestedPosts(){
       </div>`;
     }).join('');
   } catch(e){ el.innerHTML='<div style="font-size:.75rem;color:var(--muted);padding:6px 4px;"></div>'; }
+}
+
+async function renderAmigosPage(){
+  if(!window.CU) return;
+  const reqList = document.getElementById('friendReqList');
+  const suggList = document.getElementById('amigosSuggList');
+  const reqCount = document.getElementById('friendReqCount');
+  if(!reqList || !suggList) return;
+
+  // --- Solicitudes pendientes (from notifications) ---
+  try {
+    const notifs = window.CU.notifs || [];
+    const requests = notifs.filter(n => n.type === 'friendRequest');
+    if(requests.length){
+      reqCount.textContent = requests.length + ' pendiente' + (requests.length>1?'s':'');
+      reqList.innerHTML = requests.map((n,i) => `
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;">
+          <div style="width:56px;height:56px;border-radius:50%;border:2px solid var(--accent);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:700;color:var(--accent);background:var(--bg3);cursor:pointer;" onclick="openUserProfile('${n.fromId||''}','${(n.fromNick||'').replace(/'/g,"\\'")}')">
+            ${n.fromAv?`<img src="${n.fromAv}" style="width:100%;height:100%;object-fit:cover;">`:(n.fromNick||'?')[0].toUpperCase()}
+          </div>
+          <div style="font-size:.82rem;font-weight:700;cursor:pointer;" onclick="openUserProfile('${n.fromId||''}','${(n.fromNick||'').replace(/'/g,"\\'")}')}">${esc(n.fromNick||'')}</div>
+          <div style="display:flex;gap:6px;width:100%;">
+            <button onclick="acceptFriendRequest('${n.fromId}','${(n.fromNick||'').replace(/'/g,"\\'")}',${i})" style="flex:1;background:var(--accent);border:none;border-radius:var(--rs);color:#000;font-size:.72rem;font-weight:700;padding:6px;cursor:pointer;">✓ Aceptar</button>
+            <button onclick="rejectFriendRequest(${i})" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:.72rem;font-weight:700;padding:6px;cursor:pointer;">✕ Rechazar</button>
+          </div>
+        </div>`).join('');
+    } else {
+      reqCount.textContent = '';
+      reqList.innerHTML = '<div style="font-size:.8rem;color:var(--muted);padding:8px;">Sin solicitudes pendientes</div>';
+    }
+  } catch(e){}
+
+  // --- Sugerencias de amistad ---
+  try {
+    suggList.innerHTML = '<div style="font-size:.8rem;color:var(--muted);padding:8px;">Cargando...</div>';
+    const snap = await getDocs(collection(db,'users'));
+    const allUsers = snap.docs.map(d=>({id:d.id,...d.data()}));
+    const myFriends = window.CU?.friends || [];
+    const notifs2 = window.CU.notifs || [];
+    const pendingIds = notifs2.filter(n=>n.type==='friendRequest').map(n=>n.fromId);
+    const candidates = allUsers.filter(u => u.id !== window.CU?.id && !myFriends.includes(u.id) && !pendingIds.includes(u.id));
+    const shuffled = candidates.sort(()=>Math.random()-0.5).slice(0,12);
+    if(!shuffled.length){ suggList.innerHTML='<div style="font-size:.8rem;color:var(--muted);padding:8px;">No hay sugerencias por ahora</div>'; return; }
+    suggList.innerHTML = shuffled.map(u=>`
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;">
+        <div style="width:64px;height:64px;border-radius:50%;border:2px solid var(--border);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700;color:var(--accent);background:var(--bg3);cursor:pointer;" onclick="openUserProfile('${u.id}','${(u.nick||'').replace(/'/g,"\\'")}')">
+          ${u.av?`<img src="${u.av}" style="width:100%;height:100%;object-fit:cover;">`:(u.nick||'?')[0].toUpperCase()}
+        </div>
+        <div>
+          <div style="font-size:.85rem;font-weight:700;cursor:pointer;" onclick="openUserProfile('${u.id}','${(u.nick||'').replace(/'/g,"\\'")}')}">${esc(u.nick||'')}</div>
+          <div style="font-size:.7rem;color:var(--muted);">${u.country||'Pescador RF4'}</div>
+        </div>
+        <button id="btnAmigo_${u.id}" onclick="sendFriendRequest('${u.id}','${(u.nick||'').replace(/'/g,"\\'")}','amigos-page');document.getElementById('btnAmigo_${u.id}').textContent='✓ Enviado';document.getElementById('btnAmigo_${u.id}').disabled=true;document.getElementById('btnAmigo_${u.id}').style.opacity='.5';"
+          style="width:100%;background:rgba(0,198,255,.12);border:1px solid rgba(0,198,255,.3);color:var(--accent);padding:7px;border-radius:var(--rs);font-size:.75rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">
+          + Añadir amigo
+        </button>
+      </div>`).join('');
+  } catch(e){ suggList.innerHTML='<div style="font-size:.8rem;color:var(--muted);">Error al cargar</div>'; }
 }
 
 async function renderSuggestedUsers(){
@@ -6267,7 +6350,7 @@ const _expose = {
   joinGroup, leaveGroup, openGroupPost, showGroupWelcome, previewGroupPostImg, removeGroupPostImg, submitGroupPost,
   acceptFriendRequest, rejectFriendRequest, dismissFriendRequest, sendFriendRequestFromProfile, loadRealFriends, updateNotifBadge, updateMsgBadge,
   previewSpotImg, removeSpotImg, submitSpot, loadSpots, loadFriendSpots, renderFriendSpotsInHome, openEditSpot, saveEditSpot, deleteSpot, scrollToPost, loadVideos, filterVideos,
-  renderSidebarFriends, renderSuggestedUsers, renderSuggestedPosts, playNotifSound, showNotifToast, sendNotifToUserWithPost, openMessenger,
+  renderSidebarFriends, renderSuggestedUsers, renderAmigosPage, renderSuggestedPosts, playNotifSound, showNotifToast, sendNotifToUserWithPost, openMessenger,
   previewPezSemanaImg, submitPezSemana, deletePezSemana, loadPezSemana, buildPezSemanaCard, openPezSemanalModal, openReactionsModal, buildRxnLabel,
   addXP, renderXPUI, checkDailyStreak, getLevel, getXpProgress,
   loadXPLevels, saveXPLevels, addXPLevelRow, renderXPLevelsAdmin,
