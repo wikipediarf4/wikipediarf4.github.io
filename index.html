@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://storage.googleapis.com wss://*.firebaseio.com https://api.imgbb.com https://i.ibb.co data: blob:; connect-src 'self' https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://storage.googleapis.com wss://*.firebaseio.com https://api.imgbb.com https://i.ibb.co data: blob:; frame-src https://www.youtube.com https://*.youtube.com https://*.firebaseapp.com https://open.spotify.com https://*.spotify.com; img-src 'self' data: blob: https: http:;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://storage.googleapis.com wss://*.firebaseio.com https://api.imgbb.com https://i.ibb.co data: blob:; connect-src 'self' https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://storage.googleapis.com wss://*.firebaseio.com https://api.imgbb.com https://i.ibb.co https://open.spotify.com https://*.spotify.com data: blob:; frame-src https://www.youtube.com https://*.youtube.com https://*.firebaseapp.com https://open.spotify.com https://*.spotify.com; img-src 'self' data: blob: https: http:;">
 <title>RedSocialRF4</title>
 
   <meta name="theme-color" content="#00c6ff">
@@ -294,7 +294,7 @@ select.fi option{background:var(--bg2);}
 .sv-emoji-btn:hover{transform:scale(1.3);}
 /* Bottom bar de la historia */
 #svBottomBar{position:absolute;bottom:0;left:0;right:0;padding:8px 10px 12px;display:flex;gap:7px;align-items:center;z-index:15;background:linear-gradient(to top,rgba(0,0,0,.6),transparent);}
-#svDeleteBtn{position:absolute;top:52px;right:10px;z-index:25;}
+#svDeleteBtn{position:absolute;top:10px;right:52px;z-index:25;}
 #svDeleteBtn button{background:rgba(220,50,50,.5);border:1px solid rgba(255,100,100,.4);color:#fff;border-radius:50%;width:34px;height:34px;font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 #svDeleteBtn button:hover{background:rgba(220,50,50,.8);}
 
@@ -419,7 +419,6 @@ select.fi option{background:var(--bg2);}
     <span>🔍</span>
     <input type="text" placeholder="Buscar en CharlasRF4..." id="searchInput" oninput="doSearch(this.value)">
   </div>
-  <div id="topbarStreak" style="display:none;align-items:center;gap:5px;background:rgba(255,100,0,.12);border:1px solid rgba(255,100,0,.35);color:#ff8c42;border-radius:100px;padding:4px 12px;font-size:.75rem;font-weight:800;white-space:nowrap;cursor:default;" title="Tu racha activa">🔥 <span id="topbarStreakNum">0</span> días</div>
   <div class="tb-nav">
     <button class="tb-nav-btn on" onclick="gp('home');setNav(this)" title="Inicio">🏠</button>
     <button class="tb-nav-btn" onclick="gp('home');setNav(this)" title="Amigos">👥</button>
@@ -735,7 +734,6 @@ select.fi option{background:var(--bg2);}
         <button id="svReactBtn" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:50%;width:38px;height:38px;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">👍</button>
         <div id="svReactPop" style="display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:rgba(20,30,45,.97);border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:6px 10px;gap:4px;align-items:center;box-shadow:0 4px 24px rgba(0,0,0,.7);white-space:nowrap;z-index:100;"
           onmouseenter="this.style.display='flex'" onmouseleave="this.style.display='none'">
-          ${['❤️','😮','😂','🎣','👏','🔥','😍','🐟','🏆','💀'].map(em=>{const enc=encodeURIComponent(em);return `<button onclick="reactStory(decodeURIComponent('${enc}'))" style="background:none;border:none;font-size:1.4rem;cursor:pointer;transition:transform .13s;padding:2px;" onmouseover="this.style.transform='scale(1.5) translateY(-4px)'" onmouseout="this.style.transform='scale(1)'">${em}</button>`;}).join('')}
         </div>
       </div>
       <!-- Comment input -->
@@ -1136,7 +1134,6 @@ select.fi option{background:var(--bg2);}
     <div id="chatInputRow" style="display:none;flex-direction:column;border-top:1px solid var(--border);flex-shrink:0;">
       <!-- Quick emoji reactions bar -->
       <div id="chatQuickEmoji" style="display:flex;gap:2px;padding:5px 8px 2px;border-bottom:1px solid rgba(255,255,255,.04);">
-        ${['😂','❤️','👍','🔥','😮','🎣','🐟','👏','💀','🏆'].map(e=>{const enc=encodeURIComponent(e);return `<button onclick="sendChatEmoji(decodeURIComponent('${enc}'))" style="background:none;border:none;font-size:1.1rem;cursor:pointer;padding:2px 4px;border-radius:6px;transition:transform .12s,background .12s;" onmouseover="this.style.transform='scale(1.35)';this.style.background='rgba(255,255,255,.07)'" onmouseout="this.style.transform='scale(1)';this.style.background='none'">${e}</button>`;}).join('')}
       </div>
       <!-- Text input -->
       <div style="padding:8px;display:flex;gap:6px;align-items:center;">
@@ -2234,13 +2231,20 @@ function renderSV(){
   else if(s.yt){
     const spId = s.yt.match(/track\/([a-zA-Z0-9]+)/)?.[1] || '';
     if(spId){
-      const bgImg = s.img ? `<img src="${s.img}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(4px) brightness(.45);">` : `<div style="position:absolute;inset:0;background:linear-gradient(135deg,#1DB954 0%,#0a1a0a 100%);"></div>`;
-      bg.innerHTML = `<div style="position:relative;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:90px;">
-        ${bgImg}
-        <div style="position:relative;z-index:2;width:100%;padding:0 10px;">
-          <iframe src="https://open.spotify.com/embed/track/${spId}?utm_source=generator&theme=0" width="100%" height="152" frameborder="0" style="border-radius:12px;border:none;" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe>
+      // Fetch album art via Spotify oEmbed, then render with blurred album art background
+      bg.innerHTML = `<div style="position:relative;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0a0a0a;" id="spBgWrap">
+        <div id="spBgArt" style="position:absolute;inset:0;background-size:cover;background-position:center;filter:blur(18px) brightness(.35);transform:scale(1.1);"></div>
+        <div style="position:relative;z-index:2;width:calc(100% - 24px);max-width:380px;">
+          <iframe id="spFrame" src="https://open.spotify.com/embed/track/${spId}?utm_source=generator&theme=0" width="100%" height="352" frameborder="0" style="border-radius:16px;border:none;" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe>
         </div>
       </div>`;
+      // Load album art for background via oEmbed
+      fetch('https://open.spotify.com/oembed?url=https://open.spotify.com/track/${spId}')
+        .then(r=>r.json())
+        .then(d=>{
+          const artEl = document.getElementById('spBgArt');
+          if(artEl && d.thumbnail_url){ artEl.style.backgroundImage='url('+d.thumbnail_url+')'; }
+        }).catch(()=>{});
     } else {
       bg.innerHTML = `<div style="font-size:5rem">${s.emoji||'🎣'}</div>`;
     }
@@ -4896,7 +4900,7 @@ function openChatWith(uid, nick){
                 cursor:pointer;"
                 onmouseenter="showMsgRxnPop('${m.id}')" onmouseleave="hideMsgRxnPop('${m.id}')"
                 ondblclick="reactToMsg('${m.id}','${chatId}','❤️')">
-                ${m.text ? m.text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;") : ""}
+                ${esc(m.text)}
               </div>
               ${rxnHtml}
             </div>
@@ -5482,13 +5486,6 @@ function renderXPUI(){
     if(sb){
       if(streak>=2){ sb.style.display='inline-flex'; sb.textContent='🔥 '+streak+' días'; }
       else { sb.style.display='none'; }
-    }
-    // Update topbar streak
-    const tsEl = document.getElementById('topbarStreak');
-    const tsNum = document.getElementById('topbarStreakNum');
-    if(tsEl && tsNum){
-      if(streak>=1){ tsEl.style.display='inline-flex'; tsNum.textContent=streak; }
-      else { tsEl.style.display='none'; }
     }
   }
 
@@ -6246,5 +6243,38 @@ init();
   <div>Red Social creada por <strong style="color:var(--text);">ruizgustavo12</strong></div>
   <div>© 2025 · Todos los derechos reservados</div>
 </div>
+
+<script>
+// Populate story reaction popup
+(function(){
+  var emojis = ['❤️','😮','😂','🎣','👏','🔥','😍','🐟','🏆','💀'];
+  var pop = document.getElementById('svReactPop');
+  if(pop){
+    emojis.forEach(function(em){
+      var btn = document.createElement('button');
+      btn.textContent = em;
+      btn.style.cssText = 'background:none;border:none;font-size:1.4rem;cursor:pointer;transition:transform .13s;padding:2px;';
+      btn.onmouseover = function(){ this.style.transform='scale(1.5) translateY(-4px)'; };
+      btn.onmouseout  = function(){ this.style.transform='scale(1)'; };
+      btn.onclick     = function(){ reactStory(em); };
+      pop.appendChild(btn);
+    });
+  }
+  // Populate chat quick emoji bar
+  var chatEmojis = ['😂','❤️','👍','🔥','😮','🎣','🐟','👏','💀','🏆'];
+  var bar = document.getElementById('chatQuickEmoji');
+  if(bar){
+    chatEmojis.forEach(function(e){
+      var btn = document.createElement('button');
+      btn.textContent = e;
+      btn.style.cssText = 'background:none;border:none;font-size:1.1rem;cursor:pointer;padding:2px 4px;border-radius:6px;transition:transform .12s,background .12s;';
+      btn.onmouseover = function(){ this.style.transform='scale(1.35)'; this.style.background='rgba(255,255,255,.07)'; };
+      btn.onmouseout  = function(){ this.style.transform='scale(1)';    this.style.background='none'; };
+      btn.onclick     = function(){ sendChatEmoji(e); };
+      bar.appendChild(btn);
+    });
+  }
+})();
+</script>
 </body>
 </html>
