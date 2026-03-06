@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://storage.googleapis.com wss://*.firebaseio.com https://api.imgbb.com https://i.ibb.co data: blob:; connect-src 'self' https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://storage.googleapis.com wss://*.firebaseio.com https://api.imgbb.com https://i.ibb.co https://open.spotify.com https://*.spotify.com data: blob:; frame-src https://www.youtube.com https://*.youtube.com https://*.firebaseapp.com https://open.spotify.com https://*.spotify.com; img-src 'self' data: blob: https: http:;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://storage.googleapis.com wss://*.firebaseio.com https://api.imgbb.com https://i.ibb.co data: blob:; connect-src 'self' https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://storage.googleapis.com wss://*.firebaseio.com https://api.imgbb.com https://i.ibb.co data: blob:; frame-src https://www.youtube.com https://*.youtube.com https://*.firebaseapp.com https://open.spotify.com https://*.spotify.com; img-src 'self' data: blob: https: http:;">
 <title>RedSocialRF4</title>
 
   <meta name="theme-color" content="#00c6ff">
@@ -1884,7 +1884,7 @@ function fmtT(ts){
   return Math.floor(diff/86400000)+'d';
 }
 
-function esc(s){ const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 function renderCommentText(text){
   if(!text) return '';
@@ -2231,20 +2231,34 @@ function renderSV(){
   else if(s.yt){
     const spId = s.yt.match(/track\/([a-zA-Z0-9]+)/)?.[1] || '';
     if(spId){
-      // Fetch album art via Spotify oEmbed, then render with blurred album art background
-      bg.innerHTML = `<div style="position:relative;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0a0a0a;" id="spBgWrap">
-        <div id="spBgArt" style="position:absolute;inset:0;background-size:cover;background-position:center;filter:blur(18px) brightness(.35);transform:scale(1.1);"></div>
-        <div style="position:relative;z-index:2;width:calc(100% - 24px);max-width:380px;">
-          <iframe id="spFrame" src="https://open.spotify.com/embed/track/${spId}?utm_source=generator&theme=0" width="100%" height="352" frameborder="0" style="border-radius:16px;border:none;" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe>
-        </div>
-      </div>`;
-      // Load album art for background via oEmbed
-      fetch('https://open.spotify.com/oembed?url=https://open.spotify.com/track/${spId}')
-        .then(r=>r.json())
-        .then(d=>{
-          const artEl = document.getElementById('spBgArt');
-          if(artEl && d.thumbnail_url){ artEl.style.backgroundImage='url('+d.thumbnail_url+')'; }
-        }).catch(()=>{});
+      // Build Spotify story using DOM (no innerHTML template literals with variables)
+      bg.innerHTML = '';
+      // Outer wrapper: dark green bg
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'position:relative;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0a1a0a;overflow:hidden;';
+      // Animated green gradient background
+      const gradBg = document.createElement('div');
+      gradBg.style.cssText = 'position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,#1DB954 0%,#0a3a1a 45%,#040d04 100%);opacity:.7;';
+      wrap.appendChild(gradBg);
+      // Spotify logo top label
+      const label = document.createElement('div');
+      label.style.cssText = 'position:absolute;top:18px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:6px;z-index:3;';
+      label.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg><span style="color:#1DB954;font-weight:800;font-size:.85rem;font-family:Circular,Arial,sans-serif;">Spotify</span>';
+      wrap.appendChild(label);
+      // Iframe centered
+      const iframeWrap = document.createElement('div');
+      iframeWrap.style.cssText = 'position:relative;z-index:2;width:calc(100% - 28px);max-width:360px;margin-top:20px;';
+      const iframe = document.createElement('iframe');
+      iframe.src = 'https://open.spotify.com/embed/track/' + spId + '?utm_source=generator&theme=0';
+      iframe.width = '100%';
+      iframe.height = '352';
+      iframe.frameBorder = '0';
+      iframe.allow = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
+      iframe.setAttribute('allowfullscreen', '');
+      iframe.style.cssText = 'border-radius:16px;border:none;display:block;';
+      iframeWrap.appendChild(iframe);
+      wrap.appendChild(iframeWrap);
+      bg.appendChild(wrap);
     } else {
       bg.innerHTML = `<div style="font-size:5rem">${s.emoji||'🎣'}</div>`;
     }
@@ -6245,22 +6259,23 @@ init();
 </div>
 
 <script>
-// Populate story reaction popup
-(function(){
-  var emojis = ['❤️','😮','😂','🎣','👏','🔥','😍','🐟','🏆','💀'];
+// ── Init emoji buttons via DOM (avoids JS template literal in static HTML) ──
+(function initEmojiButtons(){
+  // Story reaction popup
+  var storyEmojis = ['❤️','😮','😂','🎣','👏','🔥','😍','🐟','🏆','💀'];
   var pop = document.getElementById('svReactPop');
   if(pop){
-    emojis.forEach(function(em){
+    storyEmojis.forEach(function(em){
       var btn = document.createElement('button');
       btn.textContent = em;
       btn.style.cssText = 'background:none;border:none;font-size:1.4rem;cursor:pointer;transition:transform .13s;padding:2px;';
-      btn.onmouseover = function(){ this.style.transform='scale(1.5) translateY(-4px)'; };
-      btn.onmouseout  = function(){ this.style.transform='scale(1)'; };
-      btn.onclick     = function(){ reactStory(em); };
+      btn.addEventListener('mouseover', function(){ this.style.transform='scale(1.5) translateY(-4px)'; });
+      btn.addEventListener('mouseout',  function(){ this.style.transform='scale(1)'; });
+      btn.addEventListener('click',     function(){ if(typeof reactStory==='function') reactStory(em); });
       pop.appendChild(btn);
     });
   }
-  // Populate chat quick emoji bar
+  // Chat quick-emoji bar
   var chatEmojis = ['😂','❤️','👍','🔥','😮','🎣','🐟','👏','💀','🏆'];
   var bar = document.getElementById('chatQuickEmoji');
   if(bar){
@@ -6268,13 +6283,13 @@ init();
       var btn = document.createElement('button');
       btn.textContent = e;
       btn.style.cssText = 'background:none;border:none;font-size:1.1rem;cursor:pointer;padding:2px 4px;border-radius:6px;transition:transform .12s,background .12s;';
-      btn.onmouseover = function(){ this.style.transform='scale(1.35)'; this.style.background='rgba(255,255,255,.07)'; };
-      btn.onmouseout  = function(){ this.style.transform='scale(1)';    this.style.background='none'; };
-      btn.onclick     = function(){ sendChatEmoji(e); };
+      btn.addEventListener('mouseover', function(){ this.style.transform='scale(1.35)'; this.style.background='rgba(255,255,255,.07)'; });
+      btn.addEventListener('mouseout',  function(){ this.style.transform='scale(1)';    this.style.background='none'; });
+      btn.addEventListener('click',     function(){ if(typeof sendChatEmoji==='function') sendChatEmoji(e); });
       bar.appendChild(btn);
     });
   }
-})();
+})(); // svReactPop_init
 </script>
 </body>
 </html>
