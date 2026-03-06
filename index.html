@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://storage.googleapis.com wss://*.firebaseio.com https://api.imgbb.com https://i.ibb.co data: blob:; connect-src 'self' https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://storage.googleapis.com wss://*.firebaseio.com https://api.imgbb.com https://i.ibb.co data: blob:; frame-src https://www.youtube.com https://*.youtube.com https://*.firebaseapp.com; img-src 'self' data: blob: https: http:;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://storage.googleapis.com wss://*.firebaseio.com https://api.imgbb.com https://i.ibb.co data: blob:; connect-src 'self' https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://storage.googleapis.com wss://*.firebaseio.com https://api.imgbb.com https://i.ibb.co data: blob:; frame-src https://www.youtube.com https://*.youtube.com https://*.firebaseapp.com https://open.spotify.com https://*.spotify.com; img-src 'self' data: blob: https: http:;">
 <title>RF4 Latam</title>
 
   <meta name="theme-color" content="#00c6ff">
@@ -881,6 +881,10 @@ select.fi option{background:var(--bg2);}
         <span style="font-size:1.6rem;cursor:pointer" onclick="pickStoryEmoji('🌊')">🌊</span>
         <span style="font-size:1.6rem;cursor:pointer" onclick="pickStoryEmoji('🦈')">🦈</span>
       </div>
+    </div>
+    <div class="fg">
+      <label class="fl">🎵 Música de fondo - Spotify (opcional)</label>
+      <input class="fi" id="storyYT" placeholder="https://open.spotify.com/track/...">
     </div>
     <button class="btn btn-p btn-full" onclick="submitStory()">Publicar Historia</button>
   </div>
@@ -2009,6 +2013,10 @@ function renderSV(){
   if(!s) return;
   const bg = document.getElementById('svBg');
   if(s.img){ bg.innerHTML = `<img src="${s.img}" style="width:100%;height:100%;object-fit:cover">`; }
+  else if(s.yt){
+    const spId = s.yt.match(/track\/([a-zA-Z0-9]+)/)?.[1] || '';
+    bg.innerHTML = spId ? `<iframe src="https://open.spotify.com/embed/track/${spId}?utm_source=generator" style="width:100%;height:100%;border:none" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>` : `<div style="font-size:5rem">${s.emoji||'🎣'}</div>`;
+  }
   else { bg.innerHTML = `<div style="width:100%;height:100%;background:linear-gradient(135deg,#0a2a4a,#0077b6);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px"><span style="font-size:5rem">${s.emoji||'🎣'}</span></div>`; }
   document.getElementById('svAv').innerHTML = s.userAv ? `<img src="${s.userAv}">` : s.userNick[0];
   document.getElementById('svName').textContent = s.userNick;
@@ -2099,16 +2107,18 @@ async function deleteMyStory(){
 async function submitStory(){
   if(!window.CU){ toast('Inicia sesión primero','err'); return; }
   const text = document.getElementById('storyText').value.trim();
-  if(!text && !_storyImgData){ toast('Escribe algo o sube una imagen','err'); return; }
+  const yt = document.getElementById('storyYT')?.value.trim()||'';
+  if(!text && !_storyImgData && !yt){ toast('Escribe algo, sube una imagen o pega un link de Spotify','err'); return; }
   toast('Publicando historia...','inf');
   let imgUrl = '';
   if(_storyImgData) imgUrl = await uploadImage(_storyImgData, 'stories');
   await addDoc(collection(db, 'stories'), {
     userId:window.CU.id, userNick:window.CU.nick, userAv:window.CU.av||'',
-    text, emoji:_storyEmojiPick||'🎣', img:imgUrl, time:serverTimestamp()
+    text, emoji:_storyEmojiPick||'🎣', img:imgUrl, yt, time:serverTimestamp()
   });
   _storyImgData = null; _storyEmojiPick = '';
   document.getElementById('storyText').value='';
+  document.getElementById('storyYT').value='';
   document.getElementById('storyImgPrev').innerHTML='';
   cm('mAddStory');
   toast('Historia publicada 📖','ok');
