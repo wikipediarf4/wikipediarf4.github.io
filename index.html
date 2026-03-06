@@ -2246,11 +2246,13 @@ function renderSV(){
   if(!s) return;
   const bg = document.getElementById('svBg');
   if(s.img){ 
-  bg.innerHTML = `<img src="${s.img}" style="width:100%;height:100%;object-fit:cover">`;
- } else if(s.yt){
-  const scUrl = encodeURIComponent(s.yt);
-  bg.innerHTML = `<iframe scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=${scUrl}&auto_play=true&hide_related=true&show_comments=false&show_user=false&show_reposts=false&visual=true" style="width:100%;height:100%;border:none"></iframe>`;
-} else {
+    bg.innerHTML = `<img src="${s.img}" style="width:100%;height:100%;object-fit:cover">`;
+  } else if(s.yt){
+    const spId = s.yt.match(/track\/([a-zA-Z0-9]+)/)?.[1] || '';
+    bg.innerHTML = spId ? `<iframe src="https://open.spotify.com/embed/track/${spId}" style="width:100%;height:100%;border:none" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>` : `<div style="font-size:5rem">${s.emoji||'🎣'}</div>`;
+  } else {
+    bg.innerHTML = `<div style="font-size:5rem">${s.emoji||'🎣'}</div>`;
+  }
   bg.innerHTML = `<div style="width:100%;height:100%;background:linear-gradient(135deg,#0a2a4a,#0077b6);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px"><span style="font-size:5rem">${s.emoji||'🎣'}</span></div>`;
 }
   document.getElementById('svAv').innerHTML = s.userAv ? `<img src="${s.userAv}">` : s.userNick[0];
