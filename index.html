@@ -1744,7 +1744,6 @@ function listenStories() {
       if(t && (now - t) > 86400000){ expiredIds.push(d.id); return false; }
       return true;
     }).map(d => ({ id: d.id, ...d.data(), time: d.data().time?.toMillis?.() || Date.now() }));
-    // Auto-delete expired stories from Firestore
     expiredIds.forEach(id => deleteDoc(doc(db, 'stories', id)).catch(()=>{}));
     renderStories();
   });
@@ -2478,10 +2477,10 @@ function postHTML(p){
       </div>
     </div>
     ${sharedHTML}
-    ${!p.sharedFrom && linkHTML}
+    ${!p.sharedFrom ? linkHTML : ''}
     ${!p.sharedFrom && p.text?`<div class="post-text">${renderCommentText(p.text)}</div>`:''}
-    ${!p.sharedFrom && fishTag}
-    ${!p.sharedFrom && imgHTML}
+    ${!p.sharedFrom ? fishTag : ''}
+    ${!p.sharedFrom ? imgHTML : ''}
     ${videoHTML}
     <div class="post-stats">
       <div class="post-rxn-summary" onclick="openReactionsModal('${p.id}')" style="${totalRxn>0?'cursor:pointer':'cursor:default'}">
