@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://storage.googleapis.com wss://*.firebaseio.com https://api.imgbb.com https://i.ibb.co data: blob:; connect-src 'self' https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://storage.googleapis.com wss://*.firebaseio.com https://api.imgbb.com https://i.ibb.co data: blob:; frame-src https://www.youtube.com https://*.youtube.com https://*.firebaseapp.com https://open.spotify.com https://*.spotify.com; img-src 'self' data: blob: https: http:;">
-<title>RF4 Latam</title>
+<title>RedSocialRF4</title>
 
   <meta name="theme-color" content="#00c6ff">
   <meta name="mobile-web-app-capable" content="yes">
@@ -272,21 +272,28 @@ select.fi option{background:var(--bg2);}
 /* ===== STORY VIEWER ===== */
 .story-viewer{position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.97);display:none;align-items:center;justify-content:center;}
 .story-viewer.open{display:flex;}
-.sv-inner{position:relative;width:380px;height:680px;border-radius:var(--r);overflow:hidden;background:var(--bg3);}
+.sv-inner{position:relative;width:min(360px,90vw);height:min(640px,85vh);border-radius:var(--r);overflow:hidden;background:var(--bg3);}
 .sv-img{width:100%;height:100%;object-fit:cover;}
-.sv-progress{position:absolute;top:8px;left:8px;right:8px;display:flex;gap:3px;}
+.sv-progress{position:absolute;top:8px;left:8px;right:8px;display:flex;gap:3px;z-index:20;}
 .sv-prog-bar{flex:1;height:3px;background:rgba(255,255,255,.3);border-radius:3px;overflow:hidden;}
 .sv-prog-fill{height:100%;background:#fff;width:0;transition:width linear;}
-.sv-header{position:absolute;top:20px;left:12px;right:12px;display:flex;align-items:center;gap:10px;}
-.sv-close{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.5);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:1rem;display:flex;align-items:center;justify-content:center;}
-.sv-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.4);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:1.2rem;display:flex;align-items:center;justify-content:center;}
-.sv-prev{left:8px;}.sv-next{right:8px;}
-.sv-gradient{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.4) 0%,transparent 30%,transparent 60%,rgba(0,0,0,.5) 100%);pointer-events:none;}
-.sv-text{position:absolute;bottom:60px;left:16px;right:16px;font-size:1rem;font-weight:600;text-shadow:0 2px 8px rgba(0,0,0,.8);}
+.sv-header{position:absolute;top:22px;left:10px;right:80px;display:flex;align-items:center;gap:8px;z-index:20;}
+.sv-close{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);color:#fff;width:34px;height:34px;border-radius:50%;font-size:1rem;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:25;}
+.sv-close:hover{background:rgba(255,68,68,.6);}
+.sv-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);color:#fff;width:38px;height:38px;border-radius:50%;font-size:1.3rem;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:20;}
+.sv-prev{left:-50px;}.sv-next{right:-50px;}
+@media(max-width:520px){.sv-prev{left:4px;}.sv-next{right:4px;}.sv-inner{width:100vw;height:100dvh;border-radius:0;}}
+.sv-gradient{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.5) 0%,transparent 30%,transparent 55%,rgba(0,0,0,.7) 100%);pointer-events:none;z-index:5;}
+.sv-text{position:absolute;bottom:80px;left:14px;right:14px;font-size:.95rem;font-weight:600;text-shadow:0 2px 8px rgba(0,0,0,.9);z-index:10;color:#fff;}
 .sv-emoji{position:absolute;bottom:14px;left:0;right:0;display:flex;justify-content:center;gap:10px;}
 .sv-emoji-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:1.3rem;
   width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:transform .2s;}
 .sv-emoji-btn:hover{transform:scale(1.3);}
+/* Bottom bar de la historia */
+#svBottomBar{position:absolute;bottom:0;left:0;right:0;padding:8px 10px 12px;display:flex;gap:7px;align-items:center;z-index:15;background:linear-gradient(to top,rgba(0,0,0,.6),transparent);}
+#svDeleteBtn{position:absolute;top:10px;right:52px;z-index:25;}
+#svDeleteBtn button{background:rgba(220,50,50,.5);border:1px solid rgba(255,100,100,.4);color:#fff;border-radius:50%;width:34px;height:34px;font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+#svDeleteBtn button:hover{background:rgba(220,50,50,.8);}
 
 /* ===== TOAST ===== */
 .toast-ct{position:fixed;top:70px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:6px;}
@@ -680,51 +687,51 @@ select.fi option{background:var(--bg2);}
 
 <!-- STORY VIEWER -->
 <div class="story-viewer" id="storyViewer">
-  <button class="sv-close" onclick="closeSV()">✕</button>
   <button class="sv-nav sv-prev" onclick="svNav(-1)">‹</button>
   <div class="sv-inner">
     <div style="width:100%;height:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:5rem" id="svBg">🐟</div>
     <div class="sv-gradient"></div>
     <div class="sv-progress" id="svProgress"></div>
+    <!-- Header: avatar + nombre + cerrar + eliminar -->
     <div class="sv-header">
-      <div class="story-av" id="svAv">👤</div>
+      <div class="story-av" id="svAv" style="cursor:pointer;">👤</div>
       <div>
-        <div style="font-size:.85rem;font-weight:700" id="svName"></div>
-        <div style="font-size:.7rem;color:rgba(255,255,255,.7)" id="svTime"></div>
+        <div style="font-size:.85rem;font-weight:700;color:#fff;" id="svName"></div>
+        <div style="font-size:.68rem;color:rgba(255,255,255,.7);" id="svTime"></div>
       </div>
     </div>
+    <!-- Botón cerrar -->
+    <button class="sv-close" onclick="closeSV()">✕</button>
+    <!-- Botón eliminar (solo historia propia) -->
+    <div id="svDeleteBtn" style="display:none;">
+      <button onclick="deleteMyStory()" title="Eliminar historia">🗑</button>
+    </div>
+    <!-- Texto de la historia -->
     <div class="sv-text" id="svText"></div>
     <!-- Reaction counts bar -->
-    <div class="sv-rxn-counts" id="svRxnCounts"></div>
-    <!-- Delete button (own stories) -->
-    <div id="svDeleteBtn" style="display:none;position:absolute;top:10px;right:52px;z-index:10;">
-      <button onclick="deleteMyStory()" title="Eliminar historia" style="background:rgba(255,68,68,.4);border:1px solid rgba(255,68,68,.6);color:#fff;border-radius:50%;width:32px;height:32px;font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">🗑</button>
-    </div>
-    <!-- Story comments panel (slides up) -->
+    <div class="sv-rxn-counts" id="svRxnCounts" style="position:absolute;bottom:75px;left:10px;right:10px;z-index:12;"></div>
+    <!-- Panel de comentarios -->
     <div class="sv-comments-panel" id="svCommentsPanel">
       <div id="svCommentsList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px;"></div>
     </div>
-    <!-- Bottom bar: react + comment + toggle comments -->
-    <div style="position:absolute;bottom:10px;left:12px;right:12px;display:flex;gap:8px;align-items:center;z-index:10;">
-      <!-- React button with floating popup -->
-      <div style="position:relative;" id="svReactWrap"
+    <!-- Bottom bar: reaccionar + comentar + toggle -->
+    <div id="svBottomBar">
+      <!-- React -->
+      <div style="position:relative;flex-shrink:0;" id="svReactWrap"
         onmouseenter="document.getElementById('svReactPop').style.display='flex'"
         onmouseleave="document.getElementById('svReactPop').style.display='none'">
-        <button id="svReactBtn" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:50%;width:36px;height:36px;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">👍</button>
-        <!-- Floating reaction popup -->
-        <div id="svReactPop" style="display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:rgba(30,40,55,.97);border:1px solid rgba(255,255,255,.15);border-radius:100px;padding:6px 10px;gap:6px;align-items:center;box-shadow:0 4px 20px rgba(0,0,0,.6);white-space:nowrap;z-index:100;"
+        <button id="svReactBtn" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:50%;width:38px;height:38px;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">👍</button>
+        <div id="svReactPop" style="display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:rgba(20,30,45,.97);border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:6px 10px;gap:4px;align-items:center;box-shadow:0 4px 24px rgba(0,0,0,.7);white-space:nowrap;z-index:100;"
           onmouseenter="this.style.display='flex'" onmouseleave="this.style.display='none'">
-          ${['❤️','😮','😂','🎣','👏','🔥','😍','🐟','🏆','💀'].map(em=>`
-            <button onclick="reactStory('${em}')" title="${em}" style="background:none;border:none;font-size:1.5rem;cursor:pointer;transition:transform .15s;border-radius:50%;padding:2px;" onmouseover="this.style.transform='scale(1.4) translateY(-4px)'" onmouseout="this.style.transform='scale(1) translateY(0)'">${em}</button>
-          `).join('')}
+          ${['❤️','😮','😂','🎣','👏','🔥','😍','🐟','🏆','💀'].map(em=>`<button onclick="reactStory('${em}')" style="background:none;border:none;font-size:1.4rem;cursor:pointer;transition:transform .13s;padding:2px;" onmouseover="this.style.transform='scale(1.5) translateY(-4px)'" onmouseout="this.style.transform='scale(1)'">${em}</button>`).join('')}
         </div>
       </div>
       <!-- Comment input -->
-      <input id="svCommentInput" placeholder="Comentar historia..." style="flex:1;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:8px 14px;color:#fff;font-size:.82rem;outline:none;font-family:'Exo 2',sans-serif;" onkeypress="if(event.key==='Enter')submitStoryComment()">
+      <input id="svCommentInput" placeholder="Comentar..." style="flex:1;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:8px 14px;color:#fff;font-size:.82rem;outline:none;font-family:'Exo 2',sans-serif;min-width:0;" onkeypress="if(event.key==='Enter')submitStoryComment()">
       <!-- Send -->
-      <button onclick="submitStoryComment()" style="background:var(--accent);border:none;border-radius:50%;width:34px;height:34px;color:#000;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">➤</button>
-      <!-- Toggle comments panel -->
-      <button onclick="toggleSvCommentsPanel()" id="svToggleComments" title="Ver comentarios" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:50%;width:34px;height:34px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.2)'" onmouseout="this.style.background='rgba(255,255,255,.1)'">💬</button>
+      <button onclick="submitStoryComment()" style="background:var(--accent);border:none;border-radius:50%;width:36px;height:36px;color:#000;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">➤</button>
+      <!-- Toggle comments -->
+      <button onclick="toggleSvCommentsPanel()" id="svToggleComments" title="Ver comentarios" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:50%;width:36px;height:36px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">💬</button>
     </div>
   </div>
   <button class="sv-nav sv-next" onclick="svNav(1)">›</button>
@@ -826,7 +833,7 @@ select.fi option{background:var(--bg2);}
 
     <!-- Logo -->
     <div style="text-align:center;margin-bottom:32px;">
-      <div style="font-family:'Orbitron',monospace;font-size:2.8rem;font-weight:900;color:var(--accent);text-shadow:0 0 30px rgba(0,198,255,.5);">🎣 Charlas<span style="color:var(--gold)">RF4</span></div>
+      <div style="font-family:'Orbitron',monospace;font-size:2.4rem;font-weight:900;color:var(--accent);text-shadow:0 0 30px rgba(0,198,255,.5);">🎣 <span style="color:#fff;">Red</span><span style="color:var(--accent);">Social</span><span style="color:var(--gold);">RF4</span></div>
       <div style="color:var(--muted);font-size:.85rem;letter-spacing:3px;margin-top:6px;">RED SOCIAL DE PESCA</div>
     </div>
 
@@ -835,8 +842,14 @@ select.fi option{background:var(--bg2);}
       <h2 style="font-family:'Orbitron',monospace;font-size:1rem;color:var(--accent);text-align:center;margin-bottom:22px;">Iniciar Sesión</h2>
       <!-- Account switcher -->
       <div id="savedAccountsList" style="display:none;margin-bottom:14px;"></div>
-      <div class="fg"><input class="fi" type="text" id="lEmail" placeholder="Nick de usuario o correo electrónico" autocomplete="username"></div>
-      <div class="fg"><input class="fi" type="password" id="lPass" placeholder="Contraseña" onkeypress="if(event.key==='Enter')doLogin()"></div>
+      <div class="fg">
+        <label style="font-size:.75rem;color:var(--muted);font-weight:600;display:block;margin-bottom:4px;">👤 Usuario o correo electrónico</label>
+        <input class="fi" type="text" id="lEmail" placeholder="Tu nick o email" autocomplete="username">
+      </div>
+      <div class="fg">
+        <label style="font-size:.75rem;color:var(--muted);font-weight:600;display:block;margin-bottom:4px;">🔒 Contraseña</label>
+        <input class="fi" type="password" id="lPass" placeholder="Tu contraseña" onkeypress="if(event.key==='Enter')doLogin()">
+      </div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
         <input type="checkbox" id="rememberMe" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;">
         <label for="rememberMe" style="font-size:.82rem;color:var(--muted);cursor:pointer;">Mantener sesión iniciada</label>
@@ -2674,7 +2687,8 @@ async function submitComment(pid){
   if(mentionEl) mentionEl.style.display='none';
   const p = _posts.find(p=>p.id===pid);
   if(p){
-    const newComments = [...(p.comments||[]), {userId:window.CU.id,nick:window.CU.nick,text:txt,time:Date.now()}];
+    const finalTxt = /[.!?…]$/.test(txt) ? txt : txt+'.';
+    const newComments = [...(p.comments||[]), {userId:window.CU.id, nick:window.CU.nick, av:window.CU.av||'', text:finalTxt, time:Date.now()}];
     await updateDoc(doc(db, 'posts', pid), {comments: newComments});
     // Notify post owner
     if(p.userId && p.userId !== window.CU.id){
@@ -4117,15 +4131,28 @@ async function renderSidebarFriends(){
   const el = document.getElementById('friendsListSidebar');
   if(!el) return;
   const friends = window.CU?.friendsList || [];
-  el.innerHTML = friends.length
-    ? friends.slice(0,6).map(f=>`
-      <div class="sl-item" onclick="openUserProfile('${f.id}','${(f.nick||'').replace(/'/g,"\\'")}')">
-        <div style="width:28px;height:28px;border-radius:50%;border:1px solid var(--accent);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:var(--accent);background:var(--bg3);flex-shrink:0;">
-          ${f.av?`<img src="${f.av}" style="width:100%;height:100%;object-fit:cover;">`:f.nick[0].toUpperCase()}
+  if(!friends.length){
+    el.innerHTML = '<div style="font-size:.75rem;color:var(--muted);padding:4px 10px;">Aún no tenés amigos</div>';
+    return;
+  }
+  el.innerHTML = friends.slice(0,8).map(f=>{
+    const hasStory = _stories.some(s=>s.userId===f.id);
+    const isOnline = _onlineUsers && _onlineUsers[f.id];
+    const avHtml = f.av
+      ? `<img src="${f.av}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
+      : `<span style="font-size:.75rem;font-weight:700;color:var(--accent);">${(f.nick||'?')[0].toUpperCase()}</span>`;
+    return `<div class="sl-item" style="position:relative;" onclick="${hasStory?`openSVUser('${f.id}')`:`openUserProfile('${f.id}','${(f.nick||'').replace(/'/g,"\\'")}')`}">
+      <div style="position:relative;flex-shrink:0;">
+        <div style="width:30px;height:30px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:.8rem;background:var(--bg3);
+          ${hasStory?'outline:2px solid #e6683c;outline-offset:2px;':'border:1.5px solid var(--accent);'}">
+          ${avHtml}
         </div>
-        <span style="font-size:.83rem;">${esc(f.nick)}</span>
-      </div>`).join('')
-    : '<div style="font-size:.75rem;color:var(--muted);padding:4px 10px;">Aún no tenés amigos</div>';
+        ${isOnline?'<div style="position:absolute;bottom:0;right:0;width:9px;height:9px;background:#00e676;border-radius:50%;border:2px solid var(--bg2);"></div>':''}
+      </div>
+      <span style="font-size:.83rem;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(f.nick)}</span>
+      ${hasStory?'<span style="font-size:.6rem;color:#e6683c;font-weight:700;">●</span>':''}
+    </div>`;
+  }).join('');
 }
 
 async function renderSuggestedUsers(){
@@ -4599,66 +4626,85 @@ let _presenceUnsub = null;
 function renderMessengerList(){
   const list = document.getElementById('messengerList');
   if(!list) return;
-  // Unsub previous presence listener
   if(_presenceUnsub){ _presenceUnsub(); _presenceUnsub=null; }
 
-  // Show friends first, then online users
   const friends = window.CU?.friendsList || [];
-  
-  _presenceUnsub = onSnapshot(collection(db,'presence'), snap=>{
-    const now = Date.now();
-    const onlineIds = new Set(
-      snap.docs
-        .map(d=>({id:d.id, ts:d.data().last?.toMillis?.()||0}))
-        .filter(u=>u.id!==window.CU?.id && now-u.ts<120000)
-        .map(u=>u.id)
-    );
 
-    // Friends section
-    const friendItems = friends.map(f=>{
-      const isOnline = onlineIds.has(f.id);
+  _presenceUnsub = onSnapshot(collection(db,'presence'), async snap=>{
+    const now = Date.now();
+    const onlineMap = {};
+    snap.docs.forEach(d=>{
+      const ts = d.data().last?.toMillis?.()||0;
+      if(d.id!==window.CU?.id && now-ts<120000) onlineMap[d.id]=true;
+    });
+    window._onlineUsers = onlineMap;
+
+    // Calcular unread por amigo
+    const unreadMap = window._unreadCounts || {};
+
+    // Separar amigos con msj no leídos primero
+    const friendsSorted = [...friends].sort((a,b)=>(unreadMap[b.id]||0)-(unreadMap[a.id]||0));
+
+    const friendItems = friendsSorted.map(f=>{
+      const isOnline = onlineMap[f.id];
+      const unread = unreadMap[f.id]||0;
       const safeNick = (f.nick||'').replace(/["'<>&]/g,'');
+      const avHtml = f.av
+        ? `<img src="${f.av}" style="width:100%;height:100%;object-fit:cover;">`
+        : (f.nick||'?')[0].toUpperCase();
       return `<div data-chatuid="${f.id}" data-chatnick="${safeNick}"
-        style="display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;border-radius:var(--rs);transition:background .15s;"
-        onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
-        <div style="position:relative;width:38px;height:38px;border-radius:50%;background:var(--bg3);border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;overflow:hidden;flex-shrink:0;">
-          ${f.av?`<img src="${f.av}" style="width:100%;height:100%;object-fit:cover;">`:f.nick[0].toUpperCase()}
-          ${isOnline?'<div style="position:absolute;bottom:1px;right:1px;width:9px;height:9px;background:var(--green);border-radius:50%;border:2px solid var(--bg2);"></div>':''}
+        style="display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;border-radius:var(--rs);transition:background .15s;${unread?'background:rgba(0,198,255,.06);border-left:3px solid var(--accent);':''}"
+        onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='${unread?'rgba(0,198,255,.06)':''}'">
+        <div style="position:relative;width:40px;height:40px;border-radius:50%;background:var(--bg3);border:${isOnline?'2px solid var(--green)':'1px solid var(--accent)'};display:flex;align-items:center;justify-content:center;font-weight:700;overflow:hidden;flex-shrink:0;">
+          ${avHtml}
+          ${isOnline?'<div style="position:absolute;bottom:1px;right:1px;width:10px;height:10px;background:#00e676;border-radius:50%;border:2px solid var(--bg2);"></div>':''}
         </div>
         <div style="flex:1;min-width:0;">
-          <div style="font-size:.85rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(f.nick)}</div>
-          <div style="font-size:.72rem;color:${isOnline?'var(--green)':'var(--muted)'};">${isOnline?'En línea':'Desconectado'}</div>
+          <div style="font-size:.85rem;font-weight:${unread?'800':'700'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:${unread?'var(--text)':'inherit'};">${esc(f.nick)}</div>
+          <div style="font-size:.72rem;color:${isOnline?'var(--green)':'var(--muted)'};">${isOnline?'🟢 En línea':'Desconectado'}</div>
         </div>
+        ${unread?`<div style="background:var(--accent);color:#000;font-size:.65rem;font-weight:800;min-width:18px;height:18px;border-radius:100px;display:flex;align-items:center;justify-content:center;padding:0 4px;">${unread>99?'99+':unread}</div>`:''}
       </div>`;
     }).join('');
 
-    // Also show online non-friends
+    // Usuarios en línea no amigos
     const onlineNonFriends = snap.docs
       .map(d=>({id:d.id,...d.data(),ts:d.data().last?.toMillis?.()||0}))
       .filter(u=>u.id!==window.CU?.id && now-u.ts<120000 && !friends.find(f=>f.id===u.id));
 
     const onlineItems = onlineNonFriends.map(u=>{
-      const safeNick = (u.nick||'').replace(/["'<>&]/g,'');
+      const safeNick=(u.nick||'').replace(/["'<>&]/g,'');
       return `<div data-chatuid="${u.id}" data-chatnick="${safeNick}"
         style="display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;border-radius:var(--rs);transition:background .15s;"
         onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
         <div style="position:relative;width:38px;height:38px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:700;overflow:hidden;flex-shrink:0;">
           ${u.av?`<img src="${u.av}" style="width:100%;height:100%;object-fit:cover;">`:(u.nick||'?')[0].toUpperCase()}
-          <div style="position:absolute;bottom:1px;right:1px;width:9px;height:9px;background:var(--green);border-radius:50%;border:2px solid var(--bg2);"></div>
+          <div style="position:absolute;bottom:1px;right:1px;width:9px;height:9px;background:#00e676;border-radius:50%;border:2px solid var(--bg2);"></div>
         </div>
         <div>
           <div style="font-size:.85rem;font-weight:700;">${esc(u.nick||'')}</div>
-          <div style="font-size:.72rem;color:var(--green);">En línea</div>
+          <div style="font-size:.72rem;color:var(--green);">🟢 En línea</div>
         </div>
       </div>`;
     }).join('');
 
+    // Sección mensajes no leídos al tope
+    const unreadFriends = friendsSorted.filter(f=>(unreadMap[f.id]||0)>0);
+    const unreadSection = unreadFriends.length
+      ? `<div style="font-size:.7rem;color:var(--accent);padding:8px 12px 4px;text-transform:uppercase;letter-spacing:1px;font-weight:700;">🔵 No leídos</div>`
+      : '';
+
+    const onlineFriends = friendsSorted.filter(f=>onlineMap[f.id]);
+    const onlineSection = onlineFriends.length
+      ? `<div style="font-size:.7rem;color:var(--green);padding:8px 12px 4px;text-transform:uppercase;letter-spacing:1px;margin-top:4px;">● Amigos en línea</div>`
+      : '';
+
     list.innerHTML = (friends.length||onlineNonFriends.length)
-      ? (friends.length ? `<div style="font-size:.7rem;color:var(--muted);padding:8px 12px 4px;text-transform:uppercase;letter-spacing:1px;">Amigos</div>${friendItems}` : '')
-        + (onlineNonFriends.length ? `<div style="font-size:.7rem;color:var(--muted);padding:8px 12px 4px;text-transform:uppercase;letter-spacing:1px;">En línea</div>${onlineItems}` : '')
+      ? `${unreadFriends.length?unreadSection:''}
+         ${friends.length?`<div style="font-size:.7rem;color:var(--muted);padding:8px 12px 4px;text-transform:uppercase;letter-spacing:1px;">Amigos</div>${friendItems}`:''}
+         ${onlineNonFriends.length?`<div style="font-size:.7rem;color:var(--muted);padding:8px 12px 4px;text-transform:uppercase;letter-spacing:1px;margin-top:4px;">En línea</div>${onlineItems}`:''}`
       : '<div style="text-align:center;padding:24px;color:var(--muted);font-size:.83rem;">Sin contactos aún</div>';
 
-    // Event delegation for clicks
     list.onclick = (e)=>{
       const row = e.target.closest('[data-chatuid]');
       if(row) openChatWith(row.dataset.chatuid, row.dataset.chatnick);
