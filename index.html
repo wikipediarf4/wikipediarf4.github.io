@@ -1737,7 +1737,15 @@ function listenPosts() {
 function listenStories() {
   if (_unsubStories) _unsubStories();
   _unsubStories = onSnapshot(query(collection(db, 'stories'), orderBy('time', 'desc')), snap => {
-    _stories = snap.docs.map(d => ({ id: d.id, ...d.data(), time: d.data().time?.toMillis?.() || Date.now() }));
+    const now = Date.now();
+    const expiredIds = [];
+    _stories = snap.docs.filter(d => {
+      const t = d.data().time?.toMillis?.() || 0;
+      if(t && (now - t) > 86400000){ expiredIds.push(d.id); return false; }
+      return true;
+    }).map(d => ({ id: d.id, ...d.data(), time: d.data().time?.toMillis?.() || Date.now() }));
+    // Auto-delete expired stories from Firestore
+    expiredIds.forEach(id => deleteDoc(doc(db, 'stories', id)).catch(()=>{}));
     renderStories();
   });
 }
@@ -2316,24 +2324,23 @@ function postHTML(p){
     const orig = p.sharedPostId ? _posts.find(op=>op.id===p.sharedPostId) : null;
     // Prefer snapshot data - it was saved at share time, always reliable
     const origText = snap.text || (orig ? orig.text : '');
-    const snapImg = snap.images && snap.images[0] ? snap.images[0] : (snap.userAv||'');
+    const snapImg = snap.images && snap.images[0] ? snap.images[0] : '';
     const liveImg = orig ? (orig.images&&orig.images[0]||'') : '';
     const origImg = liveImg || snapImg;
     const origNick = snap.userNick || (orig ? orig.userNick : p.sharedFrom) || p.sharedFrom;
     const origAv = snap.userAv || (orig ? orig.userAv : '');
     const origAvLetter = (origNick||'?')[0].toUpperCase();
     const origAvHTML = origAv ? '<img src="'+origAv+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">' : origAvLetter;
-    return '<div style="margin:0 14px 10px;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;background:var(--bg3);">'
-      +'<div style="display:flex;align-items:center;gap:8px;padding:10px 12px 8px;">'
-        +'<div style="width:32px;height:32px;border-radius:50%;border:1px solid var(--border);overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.78rem;color:var(--accent);background:var(--bg4);flex-shrink:0;">'+origAvHTML+'</div>'
-        +'<div>'
-          +'<div style="font-size:.84rem;font-weight:700;color:var(--text);">'+esc(origNick||'')+'</div>'
-          +(origText ? '<div style="font-size:.78rem;color:var(--muted);margin-top:1px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">'+esc(origText)+'</div>' : '')
-        +'</div>'
-      +'</div>'
-      +(origImg ? '<img src="'+origImg+'" style="width:100%;max-height:240px;object-fit:cover;display:block;border-top:1px solid var(--border);" loading="lazy">' : '')
-      +(!origText && !origImg ? '<div style="padding:10px 12px;font-size:.78rem;color:var(--muted);">📸 Publicación compartida</div>' : '')
-    +'</div>';
+    const origVideo = snap.video || (orig ? orig.video : '') || '';
+    const origYtId = origVideo ? extractYtId(origVideo) : '';
+    let sharedMediaHTML = '';
+    if(origYtId){
+      sharedMediaHTML = '<div style="width:100%;aspect-ratio:16/9;border-top:1px solid var(--border);overflow:hidden;background:#000;"><iframe src="https://www.youtube.com/embed/'+origYtId+'?rel=0" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" style="width:100%;height:100%;display:block;border:none;" loading="lazy"></iframe></div>';
+    } else if(origImg){
+      sharedMediaHTML = '<img src="'+origImg+'" style="width:100%;max-height:240px;object-fit:cover;display:block;border-top:1px solid var(--border);" loading="lazy">';
+    }
+    const _sharedClick = p.sharedPostId ? ' onclick="scrollToPost(\'' + p.sharedPostId + '\')" style="margin:0 14px 10px;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;background:var(--bg3);cursor:pointer;"' : ' style="margin:0 14px 10px;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;background:var(--bg3);"';
+    return '<div'+_sharedClick+'>'      +'<div style="display:flex;align-items:center;gap:8px;padding:10px 12px 8px;">'        +'<div style="width:32px;height:32px;border-radius:50%;border:1px solid var(--border);overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.78rem;color:var(--accent);background:var(--bg4);flex-shrink:0;">'+origAvHTML+'</div>'        +'<div style="flex:1;min-width:0;">'          +'<div style="font-size:.84rem;font-weight:700;color:var(--text);">'+esc(origNick||'')+'</div>'          +(origText ? '<div style="font-size:.78rem;color:var(--muted);margin-top:1px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">'+esc(origText)+'</div>' : '')        +'</div>'        +(p.sharedPostId ? '<div style="font-size:.72rem;color:var(--accent);flex-shrink:0;padding-left:6px;">Ver →</div>' : '')      +'</div>'      +sharedMediaHTML      +(!origText && !origImg && !origYtId ? '<div style="padding:10px 12px;font-size:.78rem;color:var(--muted);">📸 Publicación compartida</div>' : '')    +'</div>';
   })() : '';
   const linkHTML = (function(){
     var lnk = p.link || null;
@@ -2471,10 +2478,10 @@ function postHTML(p){
       </div>
     </div>
     ${sharedHTML}
-    ${!p.sharedFrom ? linkHTML : ''}
+    ${!p.sharedFrom && linkHTML}
     ${!p.sharedFrom && p.text?`<div class="post-text">${renderCommentText(p.text)}</div>`:''}
-    ${!p.sharedFrom ? fishTag : ''}
-    ${!p.sharedFrom ? imgHTML : ''}
+    ${!p.sharedFrom && fishTag}
+    ${!p.sharedFrom && imgHTML}
     ${videoHTML}
     <div class="post-stats">
       <div class="post-rxn-summary" onclick="openReactionsModal('${p.id}')" style="${totalRxn>0?'cursor:pointer':'cursor:default'}">
@@ -4464,6 +4471,7 @@ async function sharePost(pid){
     sharedSnapshot: {
       text: p.text||'',
       images: p.images||[],
+      video: p.video||'',
       userNick: p.userNick||'',
       userAv: p.userAv||'',
       fish: p.fish||'',
