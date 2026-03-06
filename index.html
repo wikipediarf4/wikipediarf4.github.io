@@ -2279,7 +2279,12 @@ function postHTML(p){
   })();
   const isMyPost = window.CU && p.userId === window.CU.id;
   const CMT_RXNS=['👍','❤️','😂','😮','😢','🔥'];
-  const cmtsHTML = (p.comments||[]).map(function(c,ci){
+  // Separate top-level comments from replies
+  const allCmts = p.comments||[];
+  // Build HTML: for each top-level comment, then its replies indented below
+  const cmtsHTML = allCmts.map(function(c,ci){
+    if(c.replyTo) return ''; // replies rendered inline below their parent
+
     const isMine = window.CU && c.userId===window.CU.id;
     const canDel = window.CU && (c.userId===window.CU.id || p.userId===window.CU.id);
     const cRxns = c.reactions||{};
@@ -2321,7 +2326,47 @@ function postHTML(p){
           +(cRxnTotal>0?'<span style="font-size:.72rem;background:var(--bg3);border-radius:100px;padding:1px 6px;color:var(--muted);">'+cTopRxn+' '+cRxnTotal+'</span>':'')
         +'</div>'
       +'</div>'
-    +'</div>';
+    +'</div>'
+    // Append replies to this comment, indented
+    + allCmts.filter(function(r){ return r.replyTo && c.nick && r.replyTo.toLowerCase()===c.nick.toLowerCase() && allCmts.indexOf(r)>ci; })
+      .slice(0,10).map(function(r,ri){
+        const rMine = window.CU && r.userId===window.CU.id;
+        const rCanDel = window.CU && (r.userId===window.CU.id || p.userId===window.CU.id);
+        const rRxns = r.reactions||{};
+        const rRxnTotal = Object.values(rRxns).reduce((a,b)=>a+b,0);
+        const rTopRxn = Object.entries(rRxns).filter(e=>e[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,2).map(e=>e[0]).join('');
+        const myRxnR = window.CU ? ((r.userReactions||{})[window.CU.id]||'') : '';
+        const rIdx = allCmts.indexOf(r);
+        let rMenuBtns = '';
+        if(rMine) rMenuBtns += '<button onclick="editCmt(event,\''+p.id+'\','+rIdx+')" style="display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;color:var(--text);padding:10px 14px;cursor:pointer;font-size:.85rem;white-space:nowrap;">✏️ Editar</button>';
+        if(rCanDel) rMenuBtns += '<button onclick="delCmt(event,\''+p.id+'\','+rIdx+')" style="display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;color:#f55;padding:10px 14px;cursor:pointer;font-size:.85rem;white-space:nowrap;">🗑 Eliminar</button>';
+        rMenuBtns += '<button onclick="toast(\'Comentario reportado\',\'ok\')" style="display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;color:#fa0;padding:10px 14px;cursor:pointer;font-size:.85rem;white-space:nowrap;">⚠️ Reportar</button>';
+        const rRxnBtns = CMT_RXNS.map(em=>'<button onclick="reactCmt(event,\''+p.id+'\','+rIdx+',\''+em+'\')" style="background:none;border:none;font-size:1.3rem;cursor:pointer;padding:3px;border-radius:50%;transition:transform .13s;" onmouseover="this.style.transform=\'scale(1.4) translateY(-4px)\'" onmouseout="this.style.transform=\'scale(1)\'">'+em+'</button>').join('');
+        return '<div class="comment-item" style="align-items:flex-start;position:relative;margin-left:36px;margin-top:4px;padding-left:8px;border-left:2px solid rgba(0,198,255,.2);">'
+          +'<div class="sl-av" style="width:26px;height:26px;font-size:.68rem;flex-shrink:0;cursor:pointer;margin-top:2px;" onclick="openUserProfile(\''+r.userId+'\',\''+esc(r.nick)+'\')">'+(r.av?'<img src="'+r.av+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">':esc((r.nick||'?')[0]))+'</div>'
+          +'<div style="flex:1;min-width:0;">'
+            +'<div class="comment-bubble" style="margin-bottom:3px;">'
+              +'<div style="display:flex;align-items:center;justify-content:space-between;gap:4px;margin-bottom:2px;">'
+                +'<div class="comment-author" style="cursor:pointer;font-size:.74rem;" onclick="openUserProfile(\''+r.userId+'\',\''+esc(r.nick)+'\')">'+(r.nick||'?')+'</div>'
+                +'<div class="cmt-menu-wrap">'
+                  +'<button class="cmt-dots-btn">⋯</button>'
+                  +'<div class="cmt-menu-dropdown">'+rMenuBtns+'</div>'
+                +'</div>'
+              +'</div>'
+              +'<div class="comment-text" style="font-size:.8rem;">'+renderCommentText(r.text)+(r.edited?' <span style="font-size:.6rem;color:var(--muted);">(editado)</span>':'')+'</div>'
+            +'</div>'
+            +'<div style="display:flex;align-items:center;gap:8px;padding:0 4px 2px;flex-wrap:wrap;">'
+              +'<span style="font-size:.66rem;color:var(--muted);">'+(r.time?fmtT(r.time):'')+'</span>'
+              +'<button onclick="replyCmt(event,\''+p.id+'\',\''+esc(c.nick)+'\')" class="cmt-reply-btn" style="font-size:.7rem;">Responder</button>'
+              +'<div class="cmt-rxn-wrap">'
+                +'<button onclick="quickCmtRxn(event,\''+p.id+'\','+rIdx+')" style="background:none;border:none;font-size:.7rem;font-weight:700;cursor:pointer;padding:2px 5px;border-radius:100px;color:'+(myRxnR?'var(--accent)':'var(--muted)')+';padding:2px 5px;">'+(myRxnR?myRxnR+' ':'')+' Me gusta</button>'
+                +'<div class="cmt-rxn-popup">'+rRxnBtns+'</div>'
+              +'</div>'
+              +(rRxnTotal>0?'<span style="font-size:.68rem;background:var(--bg3);border-radius:100px;padding:1px 5px;color:var(--muted);">'+rTopRxn+' '+rRxnTotal+'</span>':'')
+            +'</div>'
+          +'</div>'
+        +'</div>';
+      }).join('');
   }).join('');
   return `<div class="post" id="post_${p.id}">
     <div class="post-header">
@@ -2782,7 +2827,8 @@ async function submitComment(pid){
   if(mentionEl) mentionEl.style.display='none';
   const p = _posts.find(p=>p.id===pid);
   if(p){
-    const newComments = [...(p.comments||[]), {userId:window.CU.id,nick:window.CU.nick,text:txt,time:Date.now()}];
+    const replyToNick = txt.startsWith('@') ? (txt.match(/^@(\S+)/)||[])[1]||'' : '';
+    const newComments = [...(p.comments||[]), {userId:window.CU.id,nick:window.CU.nick,av:window.CU.av||'',text:txt,time:Date.now(),replyTo:replyToNick}];
     await updateDoc(doc(db, 'posts', pid), {comments: newComments});
     // Notify post owner
     if(p.userId && p.userId !== window.CU.id){
@@ -2801,7 +2847,11 @@ async function submitComment(pid){
           const user = allUsers.find(u=>(u.nick||'').toLowerCase()===nick);
           if(user && user.id !== window.CU.id && !notified.has(user.id)){
             notified.add(user.id);
-            sendNotifToUserWithPost(user.id, `🏷️ ${window.CU.nick} te etiquetó en un comentario: "${txt.slice(0,50)}"`, p.id);
+            const isReply = txt.startsWith('@'+nick);
+            const notifTxt = isReply
+              ? `↩️ ${window.CU.nick} respondió tu comentario: "${txt.slice(0,50)}"`
+              : `🏷️ ${window.CU.nick} te mencionó en un comentario: "${txt.slice(0,50)}"`;
+            sendNotifToUserWithPost(user.id, notifTxt, p.id);
           }
         }
       } catch(e){}
