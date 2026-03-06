@@ -166,14 +166,17 @@ button{font-family:'Exo 2',sans-serif;cursor:pointer;}
 
 /* REACTION POPUP */
 .rxn-wrap{position:relative;}
-.rxn-popup{display:none;position:absolute;bottom:calc(100% + 6px);left:0;
-  background:var(--bg3);border:1px solid var(--border);border-radius:100px;
-  padding:6px 10px;gap:4px;align-items:center;z-index:600;box-shadow:0 6px 22px rgba(0,0,0,.8);white-space:nowrap;}
-.rxn-popup.show{display:flex;animation:rxnPop .16s ease;}
-@keyframes rxnPop{from{opacity:0;transform:scale(.6) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
-.rxn-btn{background:none;border:none;font-size:1.4rem;cursor:pointer;padding:2px 4px;border-radius:50%;transition:transform .13s;line-height:1;position:relative;}
-.rxn-btn:hover{transform:scale(1.6) translateY(-6px);}
-.rxn-btn:hover .rxn-tooltip{opacity:1!important;}
+.rxn-popup{display:none;position:absolute;bottom:calc(100% + 10px);left:0;
+  background:var(--bg2);border:1px solid rgba(255,255,255,.12);border-radius:100px;
+  padding:8px 12px;gap:2px;align-items:center;z-index:600;
+  box-shadow:0 8px 32px rgba(0,0,0,.9),0 2px 8px rgba(0,0,0,.6);white-space:nowrap;
+  backdrop-filter:blur(12px);}
+.rxn-popup.show{display:flex;animation:rxnPop .18s cubic-bezier(.34,1.56,.64,1);}
+@keyframes rxnPop{from{opacity:0;transform:scale(.5) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.rxn-btn{background:none;border:none;font-size:1.6rem;cursor:pointer;padding:3px 5px;border-radius:50%;transition:transform .15s cubic-bezier(.34,1.56,.64,1),filter .15s;line-height:1;position:relative;display:inline-flex;align-items:center;justify-content:center;}
+.rxn-btn:hover{transform:scale(1.8) translateY(-8px);filter:drop-shadow(0 4px 8px rgba(0,0,0,.5));}
+.rxn-btn:hover .rxn-tooltip{opacity:1!important;transform:translateX(-50%) translateY(-2px);}
+.rxn-tooltip{transition:opacity .15s,transform .15s;transform:translateX(-50%) translateY(0);}
 
 /* COMMENTS */
 .comments-section{padding:8px 14px;display:none;}
@@ -613,6 +616,7 @@ select.fi option{background:var(--bg2);}
         <div class="ptab on" onclick="swPTab(this,'ptPosts')">Publicaciones</div>
         <div class="ptab" onclick="swPTab(this,'ptAbout')">Información</div>
         <div class="ptab" onclick="swPTab(this,'ptGallery')">🖼 Galería</div>
+        <div class="ptab" onclick="swPTab(this,'ptVideos')">📹 Videos</div>
         <div class="ptab" onclick="swPTab(this,'ptFriends')">Amigos</div>
       </div>
     </div>
@@ -664,6 +668,13 @@ select.fi option{background:var(--bg2);}
       <div id="ptGallery" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:14px;">
         <div style="font-family:'Orbitron',monospace;font-size:.82rem;font-weight:700;color:var(--accent);margin-bottom:12px;">🖼 Galería completa</div>
         <div id="profileGalleryGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;border-radius:var(--rs);overflow:hidden"></div>
+      </div>
+      <!-- Videos tab panel -->
+      <div id="ptVideos" style="display:none;margin-bottom:14px;">
+        <div class="profile-about-card">
+          <div class="pac-title">📹 Videos compartidos</div>
+          <div id="ptVideosList"></div>
+        </div>
       </div>
       <!-- Friends tab panel -->
       <div id="ptFriends" style="display:none;margin-bottom:14px;">
@@ -2221,7 +2232,21 @@ function renderSV(){
   if(s.img){ bg.innerHTML = `<img src="${s.img}" style="width:100%;height:100%;object-fit:cover">`; }
   else if(s.yt){
     const spId = s.yt.match(/track\/([a-zA-Z0-9]+)/)?.[1] || '';
-    bg.innerHTML = spId ? `<iframe src="https://open.spotify.com/embed/track/${spId}?utm_source=generator" style="width:100%;height:100%;border:none" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>` : `<div style="font-size:5rem">${s.emoji||'🎣'}</div>`;
+    if(spId){
+      const bgImg = s.img ? `<img src="${s.img}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(4px) brightness(.45);">` : `<div style="position:absolute;inset:0;background:linear-gradient(135deg,#1DB954 0%,#0a1a0a 100%);"></div>`;
+      bg.innerHTML = `<div style="position:relative;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:80px;">
+        ${bgImg}
+        <div style="position:relative;z-index:2;width:100%;padding:0 12px;display:flex;flex-direction:column;align-items:center;gap:10px;">
+          <div style="background:rgba(0,0,0,.5);border-radius:12px;padding:8px;display:flex;align-items:center;gap:8px;width:100%;">
+            <span style="font-size:1.4rem;">🎵</span>
+            <span style="font-size:.8rem;color:#1DB954;font-weight:700;">Spotify</span>
+          </div>
+          <iframe src="https://open.spotify.com/embed/track/${spId}?utm_source=generator&theme=0" width="100%" height="80" style="border-radius:12px;border:none;position:relative;z-index:2;" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+        </div>
+      </div>`;
+    } else {
+      bg.innerHTML = `<div style="font-size:5rem">${s.emoji||'🎣'}</div>`;
+    }
   }
   else { bg.innerHTML = `<div style="width:100%;height:100%;background:linear-gradient(135deg,#0a2a4a,#0077b6);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px"><span style="font-size:5rem">${s.emoji||'🎣'}</span></div>`; }
   document.getElementById('svAv').innerHTML = s.userAv ? `<img src="${s.userAv}">` : s.userNick[0];
@@ -2288,19 +2313,10 @@ async function reactStory(em){
       delete rxns[window.CU.id];
       await updateDoc(doc(db,'stories',s.id), {reactions: rxns});
     }
-    // Send reaction as private message if not own story
+    // Send reaction as notification (not as chat message)
     if(newEm && s.userId && s.userId !== window.CU.id){
       const storyPreview = s.text ? s.text.slice(0,40) : (s.img ? '📸 imagen' : '🎣');
-      const chatId = [window.CU.id, s.userId].sort().join('_');
-      await addDoc(collection(db,'chats',chatId,'messages'),{
-        uid: window.CU.id,
-        nick: window.CU.nick,
-        text: `${newEm} Reaccionó a tu historia: "${storyPreview}"`,
-        storyComment: true,
-        storyImg: s.img || '',
-        time: serverTimestamp()
-      });
-      sendNotifToUser(s.userId, `${newEm} ${window.CU.nick} reaccionó a tu historia`);
+      sendNotifToUserStory(s.userId, `${newEm} ${window.CU.nick} reaccionó a tu historia: "${storyPreview}"`, s.img||'');
     }
   } catch(e){ console.error('Error guardando reacción en historia:', e); }
 }
@@ -2328,19 +2344,10 @@ async function submitStoryComment(){
     // Update toggle badge
     const toggleBtn = document.getElementById('svToggleComments');
     if(toggleBtn) toggleBtn.title = `Ver comentarios (${comments.length})`;
-    // If not own story, also send as chat message
+    // Send comment as notification (not chat message)
     if(s.userId && s.userId !== window.CU.id){
       const storyPreview = s.text ? s.text.slice(0,40) : (s.img ? '📸 imagen' : '🎣');
-      const chatId = [window.CU.id, s.userId].sort().join('_');
-      await addDoc(collection(db,'chats',chatId,'messages'),{
-        uid: window.CU.id,
-        nick: window.CU.nick,
-        text: `📖 Comentó tu historia "${storyPreview}": ${text}`,
-        storyComment: true,
-        storyImg: s.img || '',
-        time: serverTimestamp()
-      });
-      sendNotifToUser(s.userId, `💬 ${window.CU.nick} comentó tu historia`);
+      sendNotifToUserStory(s.userId, `💬 ${window.CU.nick} comentó tu historia "${storyPreview}": ${text.slice(0,40)}`, s.img||'');
     }
     toast('Comentario enviado 💬','ok');
   } catch(e){
@@ -2908,17 +2915,48 @@ function swPTab(el, tabId){
   const aboutEl = document.getElementById('ptAbout');
   const galleryEl = document.getElementById('ptGallery');
   const friendsEl = document.getElementById('ptFriends');
+  const videosEl = document.getElementById('ptVideos');
   const feedEl = document.getElementById('profileFeed');
   const postBox = document.getElementById('profilePostBox');
   const leftCol = document.getElementById('profileLeftCol');
   if(aboutEl) aboutEl.style.display = tabId==='ptAbout' ? 'block' : 'none';
   if(galleryEl) galleryEl.style.display = tabId==='ptGallery' ? 'block' : 'none';
   if(friendsEl) friendsEl.style.display = tabId==='ptFriends' ? 'block' : 'none';
+  if(videosEl) videosEl.style.display = tabId==='ptVideos' ? 'block' : 'none';
   if(feedEl) feedEl.style.display = tabId==='ptPosts' ? 'block' : 'none';
   if(postBox) postBox.style.display = tabId==='ptPosts' ? 'block' : 'none';
   if(leftCol) leftCol.style.display = (tabId==='ptAbout' || tabId==='ptFriends') ? 'none' : 'block';
   if(tabId==='ptGallery') renderGallery();
   if(tabId==='ptFriends') renderProfileFriendsList();
+  if(tabId==='ptVideos') renderProfileVideos();
+}
+
+function renderProfileVideos(){
+  const el = document.getElementById('ptVideosList');
+  if(!el || !window.CU) return;
+  const uid = window._viewingProfileUid || window.CU.id;
+  const videoPosts = _posts.filter(p=>p.userId===uid && p.video);
+  if(!videoPosts.length){
+    el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);font-size:.85rem;">Sin videos compartidos aún 📹</div>';
+    return;
+  }
+  el.innerHTML = videoPosts.map(p=>{
+    const ytId = extractYtId(p.video);
+    const thumb = ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : '';
+    const preview = ytId
+      ? `<div style="position:relative;width:100%;aspect-ratio:16/9;border-radius:var(--rs);overflow:hidden;cursor:pointer;background:#000;" onclick="this.innerHTML='<iframe src=\\'https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0\\' frameborder=\\'0\\' allowfullscreen style=\\'width:100%;height:100%;display:block;\\'></iframe>'">
+          <img src="${thumb}" style="width:100%;height:100%;object-fit:cover;">
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);">
+            <div style="width:48px;height:48px;border-radius:50%;background:rgba(255,0,0,.85);display:flex;align-items:center;justify-content:center;font-size:1.3rem;">▶️</div>
+          </div>
+        </div>`
+      : `<video src="${p.video}" controls style="width:100%;border-radius:var(--rs);max-height:200px;display:block;"></video>`;
+    return `<div style="margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:14px;">
+      ${preview}
+      ${p.text?`<div style="font-size:.83rem;color:var(--muted);margin-top:6px;">${esc(p.text.slice(0,80))}</div>`:''}
+      <div style="font-size:.7rem;color:var(--muted);margin-top:3px;">${fmtT(p.time?.toMillis?.()|| p.time||Date.now())}</div>
+    </div>`;
+  }).join('');
 }
 
 // ===== PROFILE FRIENDS LIST =====
@@ -3277,17 +3315,71 @@ async function loadAdminData(){
 async function loadAdminUsers(){
   const snap = await getDocs(collection(db,'users'));
   const users = snap.docs.map(d=>({id:d.id,...d.data()}));
-  document.getElementById('adminUsersList').innerHTML = users.length ? users.map(u=>`
-    <div style="padding:12px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:center;">
-      <div style="width:38px;height:38px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;flex-shrink:0;overflow:hidden;">
-        ${u.av?`<img src="${u.av}" style="width:100%;height:100%;object-fit:cover;">`:u.nick?u.nick[0].toUpperCase():'?'}
+  document.getElementById('adminUsersList').innerHTML = users.length ? users.map(u=>{
+    const isBanned = u.banned || false;
+    const isSuspended = u.suspended || false;
+    const statusBadge = isBanned
+      ? '<span style="font-size:.62rem;background:rgba(255,68,68,.15);color:var(--red);padding:2px 7px;border-radius:100px;border:1px solid rgba(255,68,68,.3);">🚫 BANEADO</span>'
+      : isSuspended
+      ? '<span style="font-size:.62rem;background:rgba(255,170,0,.15);color:var(--warn);padding:2px 7px;border-radius:100px;border:1px solid rgba(255,170,0,.3);">⏸ SUSPENDIDO</span>'
+      : '';
+    return `<div style="padding:14px;border-bottom:1px solid var(--border);">
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;flex-shrink:0;overflow:hidden;">
+          ${u.av?`<img src="${u.av}" style="width:100%;height:100%;object-fit:cover;">`:u.nick?u.nick[0].toUpperCase():'?'}
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:.85rem;font-weight:700;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            ${esc(u.nick||'')}
+            ${u.nick==='ruizgustavo12'?'<span style="font-size:.62rem;background:rgba(255,68,68,.1);color:var(--red);padding:1px 7px;border-radius:100px;">ADMIN</span>':''}
+            ${statusBadge}
+          </div>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:2px;">${u.email||''} · ${u.country||''}</div>
+          ${u.warnMessage?`<div style="font-size:.72rem;color:var(--warn);margin-top:3px;background:rgba(255,170,0,.06);padding:4px 8px;border-radius:6px;">⚠️ Advertencia: "${u.warnMessage}"</div>`:''}
+        </div>
       </div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:.85rem;font-weight:700;">${esc(u.nick||'')} ${u.nick==='ruizgustavo12'?'<span style=\"font-size:.65rem;background:rgba(255,68,68,.1);color:var(--red);padding:1px 6px;border-radius:100px;\">ADMIN</span>':''}</div>
-        <div style="font-size:.75rem;color:var(--muted);">${u.email||''} · ${u.country||''}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button onclick="adminWarnUser('${u.id}','${esc(u.nick||'')}')" style="background:rgba(255,170,0,.1);border:1px solid rgba(255,170,0,.3);color:var(--warn);padding:5px 10px;border-radius:var(--rs);font-size:.72rem;cursor:pointer;font-family:'Exo 2',sans-serif;">⚠️ Advertir</button>
+        <button onclick="adminSuspendUser('${u.id}','${esc(u.nick||'')}',${isSuspended})" style="background:rgba(255,170,0,.08);border:1px solid rgba(255,170,0,.25);color:var(--warn);padding:5px 10px;border-radius:var(--rs);font-size:.72rem;cursor:pointer;font-family:'Exo 2',sans-serif;">${isSuspended?'▶️ Reactivar':'⏸ Suspender'}</button>
+        <button onclick="banUser('${u.id}','${esc(u.nick||'')}')" style="background:rgba(255,68,68,.08);border:1px solid rgba(255,68,68,.25);color:var(--red);padding:5px 10px;border-radius:var(--rs);font-size:.72rem;cursor:pointer;font-family:'Exo 2',sans-serif;">🚫 Banear</button>
       </div>
-      <button onclick="banUser('${u.id}','${u.nick}')" style="background:rgba(255,68,68,.05);border:1px solid rgba(255,68,68,.2);color:var(--red);padding:4px 10px;border-radius:var(--rs);font-size:.7rem;cursor:pointer;font-family:\'Exo 2\',sans-serif;flex-shrink:0;">🚫 Banear</button>
-    </div>`).join('') : '<div style="text-align:center;padding:30px;color:var(--muted);">Sin usuarios</div>';
+    </div>`;
+  }).join('') : '<div style="text-align:center;padding:30px;color:var(--muted);">Sin usuarios</div>';
+}
+
+async function adminWarnUser(uid, nick){
+  const msg = prompt(`Mensaje de advertencia para ${nick}:`);
+  if(!msg) return;
+  try {
+    await updateDoc(doc(db,'users',uid), {warnMessage: msg, warnTime: Date.now()});
+    // Send notification to user
+    const snap = await getDoc(doc(db,'users',uid));
+    if(snap.exists()){
+      const notifs = snap.data().notifs || [];
+      notifs.unshift({text:`⚠️ Advertencia del administrador: "${msg}"`, time:Date.now(), read:false});
+      await updateDoc(doc(db,'users',uid), {notifs: notifs.slice(0,30)});
+    }
+    toast(`Advertencia enviada a ${nick} ⚠️`,'ok');
+    loadAdminUsers();
+  } catch(e){ toast('Error al enviar advertencia','err'); }
+}
+
+async function adminSuspendUser(uid, nick, isSuspended){
+  const action = isSuspended ? 'reactivar' : 'suspender';
+  if(!confirm(`¿${action.charAt(0).toUpperCase()+action.slice(1)} la cuenta de ${nick}?`)) return;
+  try {
+    await updateDoc(doc(db,'users',uid), {suspended: !isSuspended});
+    if(!isSuspended){
+      const snap = await getDoc(doc(db,'users',uid));
+      if(snap.exists()){
+        const notifs = snap.data().notifs || [];
+        notifs.unshift({text:'⏸ Tu cuenta ha sido suspendida temporalmente por el administrador.', time:Date.now(), read:false});
+        await updateDoc(doc(db,'users',uid), {notifs: notifs.slice(0,30)});
+      }
+    }
+    toast(`${nick} ${isSuspended?'reactivado':'suspendido'} ✅`,'ok');
+    loadAdminUsers();
+  } catch(e){ toast('Error al suspender usuario','err'); }
 }
 
 async function banUser(uid, nick){
@@ -4303,6 +4395,17 @@ async function sendNotifToUserWithPost(uid, text, postId){
     notifs.unshift({text, time:Date.now(), read:false, postId: postId||null});
     await updateDoc(doc(db,'users',uid), {notifs: notifs.slice(0,30)});
   } catch(e){ console.error('notif error',e); }
+}
+
+async function sendNotifToUserStory(uid, text, storyPreview){
+  if(!uid || uid===window.CU?.id) return;
+  try {
+    const snap = await getDoc(doc(db,'users',uid));
+    if(!snap.exists()) return;
+    const notifs = snap.data().notifs || [];
+    notifs.unshift({text, time:Date.now(), read:false, storyComment:true, storyPreview: storyPreview||''});
+    await updateDoc(doc(db,'users',uid), {notifs: notifs.slice(0,30)});
+  } catch(e){ console.error('notif story error',e); }
 }
 
 // ===== USER PROFILE MODAL =====
@@ -6102,15 +6205,15 @@ const _expose = {
   toggleUserMenu, doLogout,
   swAdminTab, loadAdminData, previewAdminMedia, saveSiteConfig,
   submitPatch, submitTorneo, submitAdminGroup, submitAd, toggleAd,
-  banUser, deleteAdminContent, deleteAdminPost, resolveReport,
-  openUserProfile, _openFullProfile, _resetToMyProfile, sendFriendRequest, togglePostMenu, renderProfileFriendsList, openEditPost, saveEditPost, deleteMyPost,
+  banUser, deleteAdminContent, deleteAdminPost, resolveReport, adminWarnUser, adminSuspendUser,
+  openUserProfile, _openFullProfile, _resetToMyProfile, sendFriendRequest, togglePostMenu, renderProfileFriendsList, renderProfileVideos, openEditPost, saveEditPost, deleteMyPost,
   reactToComment, toggleCommentRxnPop, deleteMyComment, loadFriendsFeed,
   _openMyStoryOrCreate, _updateSidebarStoryRing,
   toggleMessenger, sendChatMsg, openChatWith, backToMessengerList, openPostWithYt,
   joinGroup, leaveGroup, openGroupPost, showGroupWelcome, previewGroupPostImg, removeGroupPostImg, submitGroupPost,
   acceptFriendRequest, rejectFriendRequest, dismissFriendRequest, sendFriendRequestFromProfile, loadRealFriends, updateNotifBadge, updateMsgBadge,
   previewSpotImg, removeSpotImg, submitSpot, loadSpots, loadFriendSpots, renderFriendSpotsInHome, openEditSpot, saveEditSpot, deleteSpot, scrollToPost, loadVideos, filterVideos,
-  renderSidebarFriends, renderSuggestedUsers, playNotifSound, showNotifToast, sendNotifToUserWithPost, openMessenger,
+  renderSidebarFriends, renderSuggestedUsers, playNotifSound, showNotifToast, sendNotifToUserWithPost, sendNotifToUserStory, openMessenger,
   previewPezSemanaImg, submitPezSemana, deletePezSemana, loadPezSemana, buildPezSemanaCard, openPezSemanalModal, openReactionsModal, buildRxnLabel,
   addXP, renderXPUI, checkDailyStreak, getLevel, getXpProgress,
   loadXPLevels, saveXPLevels, addXPLevelRow, renderXPLevelsAdmin,
