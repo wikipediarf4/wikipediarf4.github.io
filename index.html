@@ -706,9 +706,14 @@ select.fi option{background:#fff;}
         <button onclick="deleteMyStory()" title="Eliminar" style="background:rgba(220,40,40,.4);border:1px solid rgba(255,80,80,.5);color:#fff;border-radius:50%;width:30px;height:30px;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">🗑</button>
       </div>
       <!-- Ojito vistas (tiempo real) -->
-      <div id="svViewsWrap" style="display:none;align-items:center;gap:3px;background:rgba(0,0,0,.35);border-radius:100px;padding:3px 9px;cursor:default;" title="Personas que vieron esta historia">
+      <div id="svViewsWrap" style="display:none;align-items:center;gap:3px;background:rgba(0,0,0,.35);border-radius:100px;padding:3px 9px;cursor:pointer;transition:background .2s;" title="Ver quién vio esta historia" onclick="svToggleViewersList()" onmouseover="this.style.background='rgba(255,215,0,.2)'" onmouseout="this.style.background='rgba(0,0,0,.35)'">
         <span style="font-size:.85rem;">👁</span>
         <span id="svViewsCount" style="font-size:.72rem;font-weight:800;color:#fff;">0</span>
+      </div>
+      <!-- Panel lista de vistas (verificados) -->
+      <div id="svViewersList" style="display:none;position:absolute;top:52px;right:8px;width:220px;background:rgba(14,22,35,.97);border:1px solid rgba(255,215,0,.25);border-radius:14px;padding:10px;z-index:50;box-shadow:0 8px 32px rgba(0,0,0,.7);max-height:260px;overflow-y:auto;">
+        <div style="font-size:.72rem;font-weight:800;color:gold;margin-bottom:8px;display:flex;align-items:center;gap:5px;">👁 Visto por <span id="svViewersTotal" style="background:rgba(255,215,0,.15);border-radius:100px;padding:1px 7px;">0</span></div>
+        <div id="svViewersItems"></div>
       </div>
       <!-- Reportar (solo ajena) -->
       <div id="svReportBtn" style="display:none;">
@@ -2316,23 +2321,84 @@ async function _svRegisterView(){
   const s = _stories[_svIdx];
   if(!s || !window.CU || !db) return;
   const storyId = s.id || ('story_'+s.time);
+  const isOwner = s.userId === window.CU.id;
   // Apaga listener anterior
   if(window._svViewsUnsub){ window._svViewsUnsub(); window._svViewsUnsub=null; }
-  // Muestra el ojito
+  // Oculta panel lista si cambia historia
+  const listPanel = document.getElementById('svViewersList');
+  if(listPanel) listPanel.style.display='none';
+  // Muestra el ojito solo si es dueño o verificado viendo una historia propia
   const wrap = document.getElementById('svViewsWrap');
   if(wrap) wrap.style.display='flex';
   try {
-    // Registra la vista (set con merge — no duplica al mismo usuario)
-    await setDoc(doc(db,'storyViews',storyId+'_'+window.CU.id),{
-      storyId, viewerId: window.CU.id, viewerNick: window.CU.nick, time: Date.now()
-    });
+    // Registra la vista del usuario actual (no registra si es el propio dueño)
+    if(!isOwner){
+      await setDoc(doc(db,'storyViews',storyId+'_'+window.CU.id),{
+        storyId, viewerId: window.CU.id, viewerNick: window.CU.nick,
+        viewerAv: window.CU.av||'', time: Date.now()
+      });
+    }
     // Escucha el conteo en tiempo real
     const q = query(collection(db,'storyViews'), where('storyId','==',storyId));
     window._svViewsUnsub = onSnapshot(q, snap=>{
+      const total = snap.size;
       const el = document.getElementById('svViewsCount');
-      if(el) el.textContent = snap.size;
+      if(el) el.textContent = total;
+      // Actualiza lista si está abierta y el usuario es dueño verificado
+      const listEl = document.getElementById('svViewersList');
+      const tot = document.getElementById('svViewersTotal');
+      const items = document.getElementById('svViewersItems');
+      if(tot) tot.textContent = total;
+      if(items && listEl && listEl.style.display!=='none'){
+        _renderViewersList(snap.docs);
+      }
     });
   } catch(e){}
+}
+
+function svToggleViewersList(){
+  const s = _stories[_svIdx];
+  if(!s) return;
+  const isOwner = window.CU && s.userId === window.CU.id;
+  const isVerified = window.CU && window.CU.verified;
+  const panel = document.getElementById('svViewersList');
+  if(!panel) return;
+  // Solo el dueño verificado puede ver la lista
+  if(!isOwner || !isVerified){
+    // Para no-dueños o no-verificados solo muestra tooltip
+    if(!isOwner){ return; } // no-dueño: no hace nada
+    // Dueño pero no verificado: hint
+    toast('Solo cuentas verificadas pueden ver quién vio sus historias ✅','inf');
+    return;
+  }
+  const open = panel.style.display !== 'none';
+  panel.style.display = open ? 'none' : 'block';
+  if(!open){
+    // Renderiza lista inmediatamente con los datos del último snapshot
+    const storyId = s.id || ('story_'+s.time);
+    getDocs(query(collection(db,'storyViews'), where('storyId','==',storyId)))
+      .then(snap=>{ _renderViewersList(snap.docs); document.getElementById('svViewersTotal').textContent=snap.size; })
+      .catch(()=>{});
+  }
+}
+
+function _renderViewersList(docs){
+  const el = document.getElementById('svViewersItems');
+  if(!el) return;
+  if(!docs.length){ el.innerHTML='<div style="text-align:center;padding:10px;color:rgba(255,255,255,.4);font-size:.75rem;">Nadie lo vio todavía</div>'; return; }
+  const sorted = [...docs].sort((a,b)=>(b.data().time||0)-(a.data().time||0));
+  el.innerHTML = sorted.map(d=>{
+    const v = d.data();
+    const av = v.viewerAv ? `<img src="${v.viewerAv}" style="width:100%;height:100%;object-fit:cover;">` : (v.viewerNick||'?')[0].toUpperCase();
+    const t = v.time ? new Date(v.time).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}) : '';
+    return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.06);">
+      <div style="width:28px;height:28px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:var(--accent);flex-shrink:0;">${av}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:.75rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(v.viewerNick||'?')}</div>
+        <div style="font-size:.62rem;color:rgba(255,255,255,.4);">${t}</div>
+      </div>
+    </div>`;
+  }).join('');
 }
 // ESC para cerrar historias
 document.addEventListener('keydown',function(e){
@@ -6968,7 +7034,7 @@ const _expose = {
   reportPost,submitReport,
   loadAdminData,deleteAdminPost,resolveReport,
   requestVerification, loadVerifRequests, adminApproveVerif, adminRejectVerif, adminRevokeVerif,
-  _svRegisterView,
+  _svRegisterView, svToggleViewersList, _renderViewersList,
   doForgotPassword,quickLogin,
   createGroup,previewGroupImg,
   submitMapPost,previewMapMedia,filterMapPosts,
