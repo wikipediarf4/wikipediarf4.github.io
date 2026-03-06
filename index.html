@@ -148,12 +148,12 @@ button{font-family:'Exo 2',sans-serif;cursor:pointer;}
 .post-menu{background:none;border:none;color:var(--muted);font-size:1.1rem;padding:4px 8px;border-radius:var(--rs);transition:background .2s;}
 .post-menu:hover{background:#e4e6eb;color:var(--text);}
 .post-text{padding:0 14px 12px;font-size:.9rem;line-height:1.6;}
-.post-img{width:100%;max-height:500px;object-fit:cover;display:block;cursor:pointer;}
+.post-img{width:100%;max-height:360px;object-fit:cover;display:block;cursor:pointer;}
 .post-img-grid{display:grid;gap:2px;}
 .post-img-grid.g2{grid-template-columns:1fr 1fr;}
 .post-img-grid.g3{grid-template-columns:1fr 1fr;grid-template-rows:auto auto;}
 .post-img-grid.g3 .img-main{grid-column:1/-1;}
-.post-img-grid img{width:100%;height:200px;object-fit:cover;cursor:pointer;transition:opacity .2s;}
+.post-img-grid img{width:100%;height:160px;object-fit:cover;cursor:pointer;transition:opacity .2s;}
 .post-img-grid img:hover{opacity:.9;}
 .post-stats{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-top:1px solid var(--border);}
 .post-rxn-summary{display:flex;align-items:center;gap:5px;font-size:.8rem;color:var(--muted);cursor:pointer;}
@@ -312,7 +312,7 @@ select.fi option{background:#fff;}
 .sv-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.4);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:1.2rem;display:flex;align-items:center;justify-content:center;}
 .sv-prev{left:8px;}.sv-next{right:8px;}
 .sv-gradient{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.4) 0%,transparent 30%,transparent 60%,rgba(0,0,0,.5) 100%);pointer-events:none;}
-.sv-text{position:absolute;bottom:60px;left:16px;right:16px;font-size:1rem;font-weight:600;text-shadow:0 2px 8px rgba(0,0,0,.8);}
+.sv-text{position:absolute;bottom:115px;left:16px;right:16px;font-size:1rem;font-weight:600;text-shadow:0 2px 8px rgba(0,0,0,.8);}
 .sv-emoji{position:absolute;bottom:14px;left:0;right:0;display:flex;justify-content:center;gap:10px;}
 .sv-emoji-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:1.3rem;
   width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:transform .2s;}
@@ -447,17 +447,17 @@ select.fi option{background:#fff;}
     <div class="feed">
       <!-- Stories -->
       <div class="stories-row" id="storiesRow">
-        <div onclick="om('mAddStory')" style="border:none;border-radius:12px;overflow:hidden;cursor:pointer;position:relative;width:115px;height:200px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.15);transition:transform .2s,box-shadow .2s;" onmouseover="this.style.transform='scale(1.03)';this.style.boxShadow='0 4px 14px rgba(0,0,0,.22)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 2px 8px rgba(0,0,0,.15)'">
-          <!-- Top ~66%: user photo background -->
-          <div id="storyAddPhoto" style="position:absolute;top:0;left:0;right:0;height:66%;background:var(--bg3);overflow:hidden;display:flex;align-items:center;justify-content:center;">
-            <span id="storyAddPhotoInner" style="font-size:4rem;opacity:.3;">👤</span>
+        <div onclick="om('mAddStory')" style="border:none;border-radius:12px;overflow:hidden;cursor:pointer;position:relative;width:80px;height:140px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.15);transition:transform .2s,box-shadow .2s;" onmouseover="this.style.transform='scale(1.03)';this.style.boxShadow='0 4px 14px rgba(0,0,0,.22)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 2px 8px rgba(0,0,0,.15)'">
+          <!-- Top ~65%: user photo background -->
+          <div id="storyAddPhoto" style="position:absolute;top:0;left:0;right:0;height:65%;background:var(--bg3);overflow:hidden;display:flex;align-items:center;justify-content:center;">
+            <span id="storyAddPhotoInner" style="font-size:2.2rem;opacity:.3;">👤</span>
           </div>
-          <!-- Bottom ~34%: white panel -->
-          <div style="position:absolute;bottom:0;left:0;right:0;height:37%;background:var(--bg2);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:11px;">
-            <div style="font-size:.7rem;font-weight:700;color:var(--text);text-align:center;line-height:1.2;margin-top:20px;">Crear historia</div>
+          <!-- Bottom ~35%: white panel -->
+          <div style="position:absolute;bottom:0;left:0;right:0;height:38%;background:var(--bg2);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:7px;">
+            <div style="font-size:.58rem;font-weight:700;color:var(--text);text-align:center;line-height:1.2;margin-top:16px;">Crear historia</div>
           </div>
           <!-- Blue + circle straddling the boundary -->
-          <div style="position:absolute;bottom:calc(37% - 20px);left:50%;transform:translateX(-50%);width:40px;height:40px;border-radius:50%;background:#1877f2;border:3px solid var(--bg2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:900;color:#fff;z-index:3;box-shadow:0 2px 8px rgba(24,119,242,.5);">+</div>
+          <div style="position:absolute;bottom:calc(38% - 14px);left:50%;transform:translateX(-50%);width:28px;height:28px;border-radius:50%;background:#1877f2;border:2px solid var(--bg2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:900;color:#fff;z-index:3;box-shadow:0 2px 6px rgba(24,119,242,.5);">+</div>
         </div>
         <!-- Stories se renderizan con JS -->
       </div>
@@ -706,21 +706,27 @@ select.fi option{background:#fff;}
 
     <div class="sv-text" id="svText"></div>
 
-    <!-- BOTTOM BAR: ~32px from bottom (≈2cm above edge) -->
-    <div style="position:absolute;bottom:32px;left:10px;right:10px;display:flex;gap:7px;align-items:center;z-index:20;">
-      <!-- 👍 react button — click toggles popup -->
-      <div style="position:relative;flex-shrink:0;" id="svReactWrap">
-        <button id="svReactBtn"
-          onclick="var p=document.getElementById('svReactPop');p.style.display=p.style.display==='flex'?'none':'flex';"
-          style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:50%;width:40px;height:40px;font-size:1.3rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s;"
-          onmouseover="this.style.transform='scale(1.12)'" onmouseout="this.style.transform='scale(1)'">👍</button>
-        <!-- Reaction emoji popup — floats UP from the thumb -->
-        <div id="svReactPop" style="display:none;position:absolute;bottom:calc(100% + 10px);left:0;background:rgba(18,28,42,.97);border:1px solid rgba(255,255,255,.18);border-radius:100px;padding:7px 12px;gap:5px;align-items:center;box-shadow:0 6px 28px rgba(0,0,0,.75);white-space:nowrap;z-index:200;">
+    <!-- BOTTOM BAR mejorado -->
+    <div style="position:absolute;bottom:0;left:0;right:0;z-index:20;background:linear-gradient(transparent,rgba(0,0,0,.7) 40%);padding:20px 12px 14px;">
+      <!-- Fila de reacciones rápidas -->
+      <div id="svReactWrap" style="position:relative;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <button id="svReactBtn"
+            onclick="var p=document.getElementById('svReactPop');p.style.display=p.style.display==='flex'?'none':'flex';"
+            style="background:rgba(255,255,255,.15);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:100px;padding:5px 12px;font-size:1rem;cursor:pointer;display:flex;align-items:center;gap:5px;transition:transform .15s;font-family:'Exo 2',sans-serif;"
+            onmouseover="this.style.transform='scale(1.07)'" onmouseout="this.style.transform='scale(1)'">
+            👍 <span style="font-size:.72rem;font-weight:700;">Reaccionar</span>
+          </button>
+          <!-- Reaction emoji popup — floats UP -->
+          <div id="svReactPop" style="display:none;position:absolute;bottom:calc(100% + 8px);left:0;background:rgba(18,28,42,.97);border:1px solid rgba(255,255,255,.18);border-radius:100px;padding:7px 12px;gap:5px;align-items:center;box-shadow:0 6px 28px rgba(0,0,0,.75);white-space:nowrap;z-index:200;">
+          </div>
         </div>
       </div>
-      <!-- Comment input -->
-      <input id="svCommentInput" placeholder="Comentar..." style="flex:1;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:8px 14px;color:#fff;font-size:.82rem;outline:none;font-family:'Exo 2',sans-serif;min-width:0;" onkeypress="if(event.key==='Enter')submitStoryComment()">
-      <button onclick="submitStoryComment()" style="background:var(--accent);border:none;border-radius:50%;width:38px;height:38px;color:#000;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">➤</button>
+      <!-- Caja de comentario -->
+      <div style="display:flex;gap:7px;align-items:center;">
+        <input id="svCommentInput" placeholder="Escribí un comentario..." style="flex:1;background:rgba(255,255,255,.12);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.25);border-radius:100px;padding:9px 16px;color:#fff;font-size:.82rem;outline:none;font-family:'Exo 2',sans-serif;min-width:0;" onkeypress="if(event.key==='Enter')submitStoryComment()">
+        <button onclick="submitStoryComment()" style="background:var(--accent);border:none;border-radius:50%;width:38px;height:38px;color:#000;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(0,198,255,.4);">➤</button>
+      </div>
     </div>
   </div>
 </div>
