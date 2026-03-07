@@ -3320,7 +3320,7 @@ function postHTML(p){
         <div class="post-time">🌐 ${fmtT(p.time)}</div>
       </div>
       <div style="position:relative;">
-        <button class="post-menu" onclick="togglePostMenu('${p.id}', event)" style="font-size:1.3rem;line-height:1;">⋯</button>
+        <button class="post-menu" onclick="togglePostMenu('${p.id}', event, '${p.userId}')" style="font-size:1.3rem;line-height:1;">⋯</button>
         <div id="pmenu_${p.id}" data-owner="${p.userId}" style="display:none;position:absolute;right:0;top:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);min-width:150px;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,.5);overflow:hidden;">
           ${!p.sharedFrom ? `<button onclick="togglePostMenu('${p.id}', event); openEditPost('${p.id}','${esc(p.text||'')}')" data-owner-only="true" style="display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;color:var(--text);padding:12px 16px;cursor:pointer;font-size:.88rem;text-align:left;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">✏️ Editar</button>` : ''}
           ${window.CU?.verified&&p.userId===window.CU?.id?`<button onclick="togglePostMenu('${p.id}',event);${p.id===window.CU?.pinnedPostId?'unpinPost()':"pinPost('${p.id}')"};" style="display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;color:gold;padding:12px 16px;cursor:pointer;font-size:.88rem;text-align:left;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">${p.id===window.CU?.pinnedPostId?'📌 Desfijar':'📌 Fijar en perfil'}</button>`:''}
@@ -6451,25 +6451,36 @@ async function dismissFriendRequest(notifIndex){
 }
 
 // ===== EDIT / DELETE OWN POSTS =====
-function togglePostMenu(pid, e){
-  e.stopPropagation();
+function togglePostMenu(pid, e, ownerId){
+  if(e) e.stopPropagation();
   document.querySelectorAll('[id^="pmenu_"]').forEach(m => {
     if(m.id !== 'pmenu_' + pid) m.style.display = 'none';
   });
   const menu = document.getElementById('pmenu_' + pid);
   if(!menu) return;
-  // Show/hide buttons based on ownership
-  const isOwner = window.CU && menu.dataset.owner === window.CU.id;
+  // Owner check — use passed ownerId or fallback to data-owner
+  const menuOwner = (ownerId || menu.dataset.owner || '').trim();
+  const myId = (window.CU?.id || '').trim();
+  const isAdmin = window.CU?.nick === 'ruizgustavo12';
+  const isOwner = myId && (menuOwner === myId || isAdmin);
+  console.log('[PostMenu] ownerId:', menuOwner, 'myId:', myId, 'isOwner:', isOwner);
   menu.querySelectorAll('[data-owner-only]').forEach(b => b.style.display = isOwner ? 'flex' : 'none');
   menu.querySelectorAll('[data-other-only]').forEach(b => b.style.display = isOwner ? 'none' : 'flex');
-  menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
-  if(menu.style.display === 'block'){
+  // If owner and no visible buttons yet, force show edit/delete
+  if(isOwner){
+    menu.querySelectorAll('[data-owner-only]').forEach(b => { b.style.display='flex'; });
+  }
+  const isOpen = menu.style.display === 'block';
+  menu.style.display = isOpen ? 'none' : 'block';
+  if(!isOpen){
     setTimeout(() => {
-      document.addEventListener('click', function closeMenu(){
-        menu.style.display = 'none';
-        document.removeEventListener('click', closeMenu);
+      document.addEventListener('click', function closeMenu(ev){
+        if(!menu.contains(ev.target)){
+          menu.style.display = 'none';
+          document.removeEventListener('click', closeMenu);
+        }
       });
-    }, 0);
+    }, 10);
   }
 }
 
