@@ -3216,27 +3216,30 @@ function acceptTermsAndRegister(){
 const ROUTES = {
   '/': 'home',
   '/home': 'home',
-  '/amigos': 'amigos',
-  '/tienda': 'shop',
-  '/trofeos': 'trofeos-feed',
-  '/galeria': 'galeria',
-  '/videos': 'videos',
-  '/spots': 'spots',
-  '/torneos': 'torneos',
-  '/perfil': 'profile',
-  '/buscar-trofeo': 'buscar-trofeo',
-  '/publica-trofeo': 'publica-trofeo',
-  '/carretes': 'carretes',
-  '/parches': 'parches',
-  '/casitrofeo': 'casitrofeo',
-  '/mensajes': 'mensajes',
-  '/notificaciones': 'notificaciones',
-  '/pez-semanal': 'pez-semanal',
+  '/chatrf4/': 'home',
+  '/chatrf4': 'home',
+  '/chatrf4/home': 'home',
+  '/chatrf4/amigos': 'amigos',
+  '/chatrf4/tienda': 'shop',
+  '/chatrf4/trofeos': 'trofeos-feed',
+  '/chatrf4/galeria': 'galeria',
+  '/chatrf4/videos': 'videos',
+  '/chatrf4/spots': 'spots',
+  '/chatrf4/torneos': 'torneos',
+  '/chatrf4/perfil': 'profile',
+  '/chatrf4/buscar-trofeo': 'buscar-trofeo',
+  '/chatrf4/publica-trofeo': 'publica-trofeo',
+  '/chatrf4/carretes': 'carretes',
+  '/chatrf4/parches': 'parches',
+  '/chatrf4/casitrofeo': 'casitrofeo',
+  '/chatrf4/mensajes': 'mensajes',
+  '/chatrf4/notificaciones': 'notificaciones',
+  '/chatrf4/pez-semanal': 'pez-semanal',
 };
 
 // Map page IDs to clean URLs
 const PAGE_TO_URL = {
-  'home': '/',
+  'home': '/chatrf4/',
   'amigos': '/chatrf4/amigos',
   'shop': '/chatrf4/tienda',
   'trofeos-feed': '/chatrf4/trofeos',
@@ -3266,17 +3269,17 @@ function navigateTo(id, pushState = true) {
 window.addEventListener('popstate', (e) => {
   const path = window.location.pathname;
   // Close overlays if navigating away
-  if(path !== '/mensajes' && !path.startsWith('/mensajes/')) {
+  if(path !== '/chatrf4/mensajes' && !path.startsWith('/chatrf4/mensajes/')) {
     const msg = document.getElementById('mMessenger');
     if(msg && msg.classList.contains('open')) msg.classList.remove('open');
   }
-  if(path !== '/notificaciones') {
+  if(path !== '/chatrf4/notificaciones') {
     const nd = document.getElementById('mNotif');
     if(nd) nd.style.display = 'none';
   }
   // Handle user profile URLs
-  if(path.startsWith('/u/')) {
-    const nickSlug = path.slice(3);
+  if(path.startsWith('/chatrf4/u/')) {
+    const nickSlug = path.slice('/chatrf4/u/'.length);
     // Try to find user by nick slug
     if(window.CU) {
       window.gp('userprofile', false);
@@ -3287,18 +3290,18 @@ window.addEventListener('popstate', (e) => {
     }
     return;
   }
-  if(path.startsWith('/mensajes/')) {
+  if(path.startsWith('/chatrf4/mensajes/')) {
     const msgEl = document.getElementById('mMessenger');
     if(msgEl) { om('mMessenger'); renderMessengerList(); }
     if(e.state && e.state.chatUid) openChatWith(e.state.chatUid, e.state.chatNick||'');
     return;
   }
-  if(path === '/mensajes') {
+  if(path === '/chatrf4/mensajes') {
     const msgEl = document.getElementById('mMessenger');
     if(msgEl) { om('mMessenger'); renderMessengerList(); }
     return;
   }
-  if(path === '/notificaciones') {
+  if(path === '/chatrf4/notificaciones') {
     openNotifDropdown();
     return;
   }
@@ -3310,7 +3313,7 @@ window.addEventListener('popstate', (e) => {
 window.addEventListener('DOMContentLoaded', () => {
   const path = window.location.pathname;
   // Save full path for after login (handles /u/nick, /mensajes/nick, etc.)
-  if (path && path !== '/' && path !== '/home') {
+  if (path && path !== '/' && path !== '/home' && path !== '/chatrf4/' && path !== '/chatrf4') {
     window._initialPath = path;
   }
   const pageId = ROUTES[path];
@@ -9180,7 +9183,7 @@ async function submitPhotoComment(){
 }
 
 function backToMessengerList(){
-  if(!window.location.pathname.startsWith('/mensajes/') && window.location.pathname !== '/mensajes') {
+  if(!window.location.pathname.startsWith('/chatrf4/mensajes/') && window.location.pathname !== '/chatrf4/mensajes') {
     // already handled
   } else {
     history.pushState({page:'mensajes'}, '', '/chatrf4/mensajes');
@@ -10835,9 +10838,9 @@ function openNotifDropdown(){
   const isMobile = window.innerWidth <= 768;
   // Push URL only when opening (not closing)
   const willOpen = dd.style.display !== 'flex';
-  if(willOpen && window.location.pathname !== '/notificaciones') {
+  if(willOpen && window.location.pathname !== '/chatrf4/notificaciones') {
     history.pushState({page:'notificaciones'}, '', '/chatrf4/notificaciones');
-  } else if(!willOpen && window.location.pathname === '/notificaciones') {
+  } else if(!willOpen && window.location.pathname === '/chatrf4/notificaciones') {
     history.pushState({page:'home'}, '', '/chatrf4/');
   }
   if(isMobile){
