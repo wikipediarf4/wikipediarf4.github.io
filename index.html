@@ -8075,57 +8075,40 @@ const PHOTO_REACTIONS = ['👍','❤️','😍','😮','😢','🔥','🎣'];
 
 
 function openPhotoModalUser(type){
-  // Obtener imagen según tipo
   let imgSrc = '';
-
   if(type === 'avatar'){
-    // Buscar img dentro de upAv
     const img = document.querySelector('#upAv img');
-    if(img){
-      imgSrc = img.src;
-    } else {
-      // No tiene foto — mostrar la inicial como placeholder
-      toast('Este usuario no tiene foto de perfil','inf');
-      return;
-    }
+    if(!img){ toast('Este usuario no tiene foto de perfil','inf'); return; }
+    imgSrc = img.src;
   } else {
-    // Portada — puede ser img o canvas (banner animado)
     const img = document.querySelector('#upCoverInner img');
-    if(img){
-      imgSrc = img.src;
-    } else {
-      toast('Este usuario no tiene foto de portada','inf');
-      return;
-    }
+    if(!img){ toast('Este usuario no tiene foto de portada','inf'); return; }
+    imgSrc = img.src;
   }
-
-  if(!imgSrc){ toast('Sin imagen para mostrar','inf'); return; }
-
-  const viewedUid = window._viewingUserId || (window.CU && window.CU.id);
-
-  _photoModalType = type;
-  _photoModalUserId = viewedUid;
-
-  const modalImg = document.getElementById('photoModalImg');
-  const modalTitle = document.getElementById('photoModalTitle');
-  const uavEl = document.getElementById('photoModalUserAv');
-
-  if(!modalImg){ console.error('photoModalImg no encontrado'); return; }
-
-  modalImg.src = imgSrc;
-  if(modalTitle) modalTitle.textContent = type==='avatar' ? '📷 Foto de perfil' : '🖼️ Foto de portada';
-
-  if(uavEl){
-    if(window.CU && window.CU.av){
-      uavEl.innerHTML = `<img src="${window.CU.av}" style="width:100%;height:100%;object-fit:cover;">`;
-    } else if(window.CU){
-      uavEl.textContent = (window.CU.nick||'?')[0].toUpperCase();
-    }
-  }
-
-  om('mPhotoModal');
-  if(viewedUid) loadPhotoModalData(type, viewedUid);
+  // Abrir visor simple
+  _openSimpleLightbox(imgSrc, type==='avatar' ? '📷 Foto de perfil' : '🖼️ Foto de portada');
 }
+
+function _openSimpleLightbox(src, title){
+  // Remover visor anterior si existe
+  const old = document.getElementById('_simpleLightbox');
+  if(old) old.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = '_simpleLightbox';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;animation:fadeIn .2s ease;';
+  overlay.innerHTML = `
+    <div style="position:absolute;top:16px;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:10px;">
+      <span style="color:#fff;font-size:.9rem;font-weight:600;opacity:.8;">${title||''}</span>
+    </div>
+    <button onclick="event.stopPropagation();document.getElementById('_simpleLightbox').remove()" 
+      style="position:absolute;top:12px;right:16px;background:rgba(255,255,255,.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    <img src="${src}" style="max-width:92vw;max-height:85vh;object-fit:contain;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,.6);pointer-events:none;">
+  `;
+  overlay.addEventListener('click', () => overlay.remove());
+  document.body.appendChild(overlay);
+}
+
 
 function openPhotoModal(type){
   if(!window.CU){ toast('Iniciá sesión primero','err'); return; }
@@ -8134,10 +8117,14 @@ function openPhotoModal(type){
     const img = document.querySelector('#profAvBig img');
     if(!img){ toast('Sin foto de perfil cargada','inf'); return; }
     imgSrc = img.src;
+    _openSimpleLightbox(imgSrc, '📷 Tu foto de perfil');
+    return;
   } else {
     const img = document.querySelector('#profCoverInner img') || document.querySelector('#profCover img');
     if(!img){ toast('Sin foto de portada cargada','inf'); return; }
     imgSrc = img.src;
+    _openSimpleLightbox(imgSrc, '🖼️ Tu foto de portada');
+    return;
   }
 
   _photoModalType = type;
