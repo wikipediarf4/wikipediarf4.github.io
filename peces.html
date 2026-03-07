@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Winding Rivulet – Fish Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --water-deep: #0a1628;
+    --water-mid: #0d2240;
+    --water-light: #1a3a5c;
+    --teal: #2ec4b6;
+    --gold: #e8c46a;
+    --gold-dim: #a8893a;
+    --text: #d4e8f0;
+    --text-dim: #7aa8c0;
+    --trophy: #e8c46a;
+    --rare: #c084fc;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background-color: var(--water-deep);
+    background-image:
+      radial-gradient(ellipse at 20% 0%, rgba(46,196,182,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 100%, rgba(14,50,90,0.6) 0%, transparent 60%),
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 60px,
+        rgba(255,255,255,0.012) 60px,
+        rgba(255,255,255,0.012) 61px
+      );
+    font-family: 'Crimson Pro', Georgia, serif;
+    color: var(--text);
+    min-height: 100vh;
+    padding: 40px 20px 60px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  header .location-tag {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--teal);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    opacity: 0.8;
+  }
+
+  header h1 {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(28px, 5vw, 52px);
+    font-weight: 800;
+    color: var(--gold);
+    text-shadow: 0 0 40px rgba(232,196,106,0.3), 0 2px 8px rgba(0,0,0,0.8);
+    letter-spacing: 2px;
+    line-height: 1.1;
+  }
+
+  header .subtitle {
+    font-size: 16px;
+    color: var(--text-dim);
+    font-style: italic;
+    margin-top: 8px;
+  }
+
+  .divider {
+    width: 120px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--teal), transparent);
+    margin: 16px auto 0;
+  }
+
+  .fish-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .fish-card {
+    background: linear-gradient(145deg, rgba(26,58,92,0.7), rgba(13,34,64,0.9));
+    border: 1px solid rgba(46,196,182,0.15);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .fish-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(46,196,182,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .fish-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(46,196,182,0.45);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.4), 0 0 20px rgba(46,196,182,0.1);
+  }
+
+  .fish-card.rare-fish {
+    border-color: rgba(192,132,252,0.25);
+  }
+  .fish-card.rare-fish:hover {
+    border-color: rgba(192,132,252,0.6);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.4), 0 0 20px rgba(192,132,252,0.12);
+  }
+
+  .rare-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(192,132,252,0.2);
+    border: 1px solid rgba(192,132,252,0.5);
+    color: #c084fc;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-family: 'Cinzel', serif;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  .fish-img-wrap {
+    width: 96px;
+    height: 96px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.6));
+  }
+
+  .fish-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    image-rendering: auto;
+  }
+
+  .fish-name {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    text-align: center;
+    letter-spacing: 0.5px;
+    line-height: 1.3;
+  }
+
+  .fish-weights {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-top: 2px;
+  }
+
+  .weight-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    font-size: 12.5px;
+  }
+
+  .weight-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--text-dim);
+    font-style: italic;
+    font-size: 12px;
+  }
+
+  .weight-label .icon {
+    font-size: 13px;
+  }
+
+  .weight-val {
+    font-weight: 400;
+    font-size: 13px;
+  }
+
+  .weight-val.trophy { color: var(--gold); }
+  .weight-val.rare-trophy { color: var(--rare); }
+
+  footer {
+    text-align: center;
+    margin-top: 48px;
+    color: var(--text-dim);
+    font-size: 13px;
+    font-style: italic;
+    opacity: 0.6;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="location-tag">Russian Fishing 4 · Fish Guide</div>
+  <h1>Winding Rivulet</h1>
+  <p class="subtitle">29 species — Trophy & Rare Trophy weights</p>
+  <div class="divider"></div>
+</header>
+
+<div class="fish-grid">
+
+  <div class="fish-card">
+    <div class="fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/1bIBSBIbfYzlHQ_256.webp" alt="Asp"></div>
+    <div class="fish-name">Asp</div>
+    <div class="fish-weights">
+      <div class="weight-row"><span class="weight-label"><span class="icon">🏆</span>Trophy</span><span class="weight-val trophy">8 kg</span></div>
+      <div class="weight-row"><span class="weight-label"><span class="icon">✨</span>Rare</span><span class="weight-val rare-trophy">13 kg</span></div>
+    </div>
+  </div>
+
+  <div class="fish-card">
+    <div class="fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/k3CBowNM5yaDaA_256.webp" alt="Bleak"></div>
+    <div class="fish-name">Bleak</div>
+    <div class="fish-weights">
+      <div class="weight-row"><span class="weight-label"><span class="icon">🏆</span>Trophy</span><span class="weight-val trophy">110 g</span></div>
+      <div class="weight-row"><span class="weight-label"><span class="icon">✨</span>Rare</span><span class="weight-val rare-trophy">160 g</span></div>
+    </div>
+  </div>
+
+  <div class="fish-card">
+    <div class="fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/GONJgJjMb9tpBw_256.webp" alt="Blue Bream"></div>
+    <div class="fish-name">Blue Bream</div>
+    <div class="fish-weights">
+      <div class="weight-row"><span class="weight-label"><span class="icon">🏆</span>Trophy</span><span class="weight-val trophy">750 g</span></div>
+      <div class="weight-row"><span class="weight-label"><span class="icon">✨</span>Rare</span><span class="weight-val rare-trophy">1.1 kg</span></div>
+    </div>
+  </div>
+
+  <div class="fish-card">
+    <div class="fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/bul1bWXX9JwPnQ_256.webp" alt="Bream"></div>
+    <div class="fish-name">Bream</div>
+    <div class="fish-weights">
+      <div class="weight-row"><span class="weight-label"><span class="icon">🏆</span>Trophy</span><span class="weight-val trophy">4.4 kg</span></div>
+      <div class="weight-row"><span class="weight-label"><span class="icon">✨</span>Rare</span><span class="weight-val rare-trophy">7 kg</span></div>
+    </div>
+  </div>
+
+  <div class="fish-card">
+    <div class="fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/gdzjfBROEvDWMw_256.webp" alt="Burbot"></div>
+    <div class="fish-name">Burbot</div>
+    <div class="fish-weights">
+      <div class="weight-row"><span class="weight-label"><span class="icon">🏆</span>Trophy</span><span class="weight-val trophy">9 kg</span></div>
+      <div class="weight-row"><span class="weight-label"><span class="icon">✨</span>Rare</span><span class="weight-val rare-trophy">14 kg</span></div>
+    </div>
+  </div>
+
+  <div class="fish-card">
+    <div class="fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/xPsBTlijI9cjgA_256.webp" alt="Catfish"></div>
+    <div class="fish-name">Catfish</div>
+    <div class="fish-weights">
+      <div class="weight-row"><span class="weight-label"><span class="icon">🏆</span>Trophy</span><span class="weight-val trophy">100 kg</span></div>
+      <div class="weight-row"><span class="weight-label"><span class="icon">✨</span>Rare</span><span class="weight-val rare-trophy">200 kg</span></div>
+    </div>
+  </div>
+
+  <div class="fish-card">
+    <div class="fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/4CBTDm5bOOhsVQ_256.webp" alt="Chinese Sleeper"></div>
+    <div class="fish-name">Chinese Sleeper</div>
+    <div class="fish-weights">
+      <div class="weight-row"><span class="weight-label"><span class="icon">🏆</span>Trophy</span><span class="weight-val trophy">400 g</span></div>
+      <div class="weight-row"><span class="weight-label"><span class="icon">✨</span>Rare</span><span class="weight-val rare-trophy">700 g</span></div>
+    </div>
+  </div>
+
+  <div class="fish-card">
+    <div class="fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/TduVFrauO8Ox0g_256.webp" alt="Chub"></div>
+    <div class="fish-name">Chub</div>
+    <div class="fish-weights">
+      <div class="weight-row"><span class="weight-label"><span class="icon">🏆</span>Trophy</span><span class="weight-val trophy">4 kg</span></div>
+      <div class="weight-row"><span class="weight-label"><span class="icon">✨</span>Rare</span><span class="weight-val rare-trophy">7 kg</span></div>
+    </div>
+  </div>
+
+  <div class="fish-card">
+    <div class="fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/9ipy05y1wx0V_Q_256.webp" alt="Common Carp"></div>
+    <div class="fish-name">Common Carp</div>
+    <div class="fish-weights">
+      <div class="weight-row"><span class="weight-label"><span class="icon">🏆</span>Trophy</span><span class="weight-val trophy">20 kg</span></div>
+      <div class="weight-row"><span class="weight-label"><span class="icon">✨</span>Rare</span><span class="weight-val rare-trophy">30 kg</span></div>
+    </div>
+  </div>
+
+  <div class="fish-card">
+    <div class="fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/sV20Pz9GiJlvqA_256.webp" alt="Common Roach"></div>
+    <div class="fish-name">Common Roach</div>
+    <div class="fish-weights">
+      <div class="weight-row"><span class="weight-label"><span class="icon">🏆</span>Trophy</span><span class="weight-val trophy">1.2 kg</span></div>
+      <div class="weight-row"><span class="weight-label"><span class="icon">✨</span>Rare</span><span class="weight-val rare-trophy">2 kg</span></div>
+    </div>
+  </div>
+
+  <div class="fish-card">
+    <div class="fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/2qsl5st-0C-UWA_256.webp" alt="Crucian Carp"></div>
+    <div class="fish-name">Crucian Carp</div>
+    <div class="fish-weights">
+      <div class="weight-row"><span class="weight-label"><span class="icon">🏆</span>Trophy</span><span class="weight-val trophy">1.8 kg</span></div>
+      <div class="weight-row"><span class="weight-label"><span class="icon">✨</span>Rare</span><span class="weight-val rare-trophy">2.9 kg</span></div>
+    </div>
+  </div>
+
+  <div class="fish-card">
+    <div class="fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/Da22Etvb_thGCA_256.webp" alt="Dace"></div>
+    <div class="fish-name">Dace</div>
+    <div class="fish-weights">
+      <div class="weight-row"><span class="weight-label"><span class="icon">🏆</span>Trophy</span><span class="weight-val trophy">250 g</span></div>
+      <div class="weight-row"><span class="weight-label"><span class="icon">✨</span>Rare</span><span class="weight-val rare-trophy">390 g</span></div>
+    </div>
+  </div>
+
+  <div class="fish-card rare-fish">
+    <div class="rare-badge">Rare</div>
+    <div class="fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/ABaJZoV-zy5dCA_256.webp" alt="Donets Ruffe"></div>
+    <div class="fish-name">Donets Ruffe</div>
+    <div class="fish-weights">
+      <div class="weight-row"><span class="weight-label"><span class="icon">🏆</span>Trophy</span><span class="weight-val trophy">250 g</span></div>
+      <div class="weight-row"><span class="weight-label"><span class="icon">✨</span>Rare</span><span class="weight-val rare-trophy">350 g</span></div>
+    </div>
+  </div>
+
+  <div class="fish-card">
+    <div class="fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/0M65KXpcjp-DZQ_256.webp" alt="Freshwater Crayfish"></div>
+    <div class="fish-name">Freshwater Crayfish</div>
+    <div class="fish-weights">
+      <div class="weight-row"><span class="weight-label"><span class="icon">🏆</span>Trophy</span><span class="weight-val trophy">200 g</span></div>
+      <div class="weight-row"><span class="weight-label"><span class="icon">✨</span>Rare</span><span class="weight-val rare-trophy">330 g</span></div>
+    </div>
+  </div>
+
+  <div class="fish-card">
+    <div class="fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/TP2OTANksZFpaw_256.webp" alt="Frog"></div>
+    <div class="fish-name">Frog</div>
+    <div class="fish-weights">
+      <div class="weight-row"><span class="weight-label"><span class="icon">🏆</span>Trophy</span><span class="weight-val trophy">190 g</span></div>
+      <div class="weight-row"><span class="weight-label"><span class="icon">✨</span>Rare</span><span class="weight-val rare-trophy">250 g</span></div>
+    </div>
+  </div>
+
+  <div class="fish-card">
+    <div class="fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/JTrlFhVpBM6t_w_256.webp" alt="Gibel Carp"></div>
+    <div class="fish-name">Gibel Carp</div>
+    <div class="fish-weights">
+      <div class="weight-row"><span class="weight-label"><span class="icon">🏆</span>Trophy</span><span class="weight-val trophy">1.9 kg</span></div>
+      <div class="weight-row"><span class="weight-label"><span class="icon">✨</span>Rare</span><span class="weight-val rare-trophy">3.2 kg</span></div>
+    </div>
+  </div>
+
+  <div class="fish-card">
+    <div class="fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/MHLaGwS-ripf8g_256.webp" alt="Gudgeon"></div>
+    <div class="fish-name">Gudgeon</div>
+    <div class="fish-weights">
+      <div class="weight-row"><span class="weight-label"><span class="icon">🏆</span>Trophy</span><span class="weight-val trophy">100 g</span></div>
+      <div class="weight-row"><span class="weight-label"><span class="icon">✨</span>Rare</span><span class="weight-val rare-trophy">160 g</span></div>
+    </div>
+  </div>
+
+  <div class="fish-card">
+    <div class="fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/l7CSIYb3JcRRcQ_256.webp" alt="Ide"></div>
+    <div class="fish-name">Ide</div>
+    <div class="fish-weights">
+      <div class="weight-row"><span class="weight-label"><span class="icon">🏆</span>Trophy</span><span class="weight-val trophy">4 kg</span></div>
+      <div class="weight-row"><span class="weight-label"><span class="icon">✨</span>Rare</span><span class="weight-val rare-trophy">6.5 kg</span></div>
+    </div>
+  </div>
+
+  <div class="fish-card">
+    <div class="fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/lozJTj0l-BshNg_256.webp" alt="Nase"></div>
+    <div class="fish-name">Nase</div>
+    <div class="fish-weights">
+      <div class="weight-row"><span class="weight-label"><span class="icon">🏆</span>Trophy</span><span class="weight-val trophy">800 g</span></div>
+      <div class="weight-row"><span class="weight-label"><span class="icon">✨</span>Rare</span><span class="weight-val rare-trophy">1.3 kg</span></div>
+    </div>
+  </div>
+
+  <div class="fish-card">
+    <div class="fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/7uVgvasOtw_G2Q_256.webp" alt="Perch"></div>
+    <div class="fish-name">Perch</div>
+    <div class="fish-weights">
+      <div class="weight-row"><span class="weight-label"><span class="icon">🏆</span>Trophy</span><span class="weight-val trophy">1.6 kg</span></div>
+      <div class="weight-row"><span class="weight-label"><span class="icon">✨</span>Rare</span><span class="weight-val rare-trophy">2.7 kg</span></div>
+    </div>
+  </div>
+
+  <div class="fish-card">
+    <div class="fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/T2RD5tHdEjjE1w_256.webp" alt="Pike"></div>
+    <div class="fish-name">Pike</div>
+    <div class="fish-weights">
+      <div class="weight-row"><span class="weight-label"><span class="icon">🏆</span>Trophy</span><span class="weight-val trophy">12 kg</span></div>
+      <div class="weight-row"><span class="weight-label"><span class="icon">✨</span>Rare</span><span class="weight-val rare-trophy">20 kg</span></div>
+    </div>
+  </div>
+
+  <div class="fish-card">
+    <div class="fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/pRz1PYucPpWQNQ_256.webp" alt="River Mussel"></div>
+    <div class="fish-name">River Mussel</div>
+    <div class="fish-weights">
+      <div class="weight-row"><span class="weight-label"><span class="icon">🏆</span>Trophy</span><span class="weight-val trophy">190 g</span></div>
+      <div class="weight-row"><span class="weight-label"><span class="icon">✨</span>Rare</span><span class="weight-val rare-trophy">280 g</span></div>
+    </div>
+  </div>
+
+  <div class="fish-card">
+    <div class="fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/YQEcUYrJRxEpLg_256.webp" alt="Ruffe"></div>
+    <div class="fish-name">Ruffe</div>
+    <div class="fish-weights">
+      <div class="weight-row"><span class="weight-label"><span class="icon">🏆</span>Trophy</span><span class="weight-val trophy">140 g</span></div>
+      <div class="weight-row"><span class="weight-label"><span class="icon">✨</span>Rare</span><span class="weight-val rare-trophy">220 g</span></div>
+    </div>
+  </div>
+
+  <div class="fish-card">
+    <div class="fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/fa9G6jJwBQBPhA_256.webp" alt="Tench"></div>
+    <div class="fish-name">Tench</div>
+    <div class="fish-weights">
+      <div class="weight-row"><span class="weight-label"><span class="icon">🏆</span>Trophy</span><span class="weight-val trophy">4 kg</span></div>
+      <div class="weight-row"><span class="weight-label"><span class="icon">✨</span>Rare</span><span class="weight-val rare-trophy">6 kg</span></div>
+    </div>
+  </div>
+
+  <div class="fish-card">
+    <div class="fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/dvsIOJVsvXv_IA_256.webp" alt="Volga Zander"></div>
+    <div class="fish-name">Volga Zander</div>
+    <div class="fish-weights">
+      <div class="weight-row"><span class="weight-label"><span class="icon">🏆</span>Trophy</span><span class="weight-val trophy">1.4 kg</span></div>
+      <div class="weight-row"><span class="weight-label"><span class="icon">✨</span>Rare</span><span class="weight-val rare-trophy">2.2 kg</span></div>
+    </div>
+  </div>
+
+  <div class="fish-card">
+    <div class="fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/dgvecRibHbgDKQ_256.webp" alt="White Bream"></div>
+    <div class="fish-name">White Bream</div>
+    <div class="fish-weights">
+      <div class="weight-row"><span class="weight-label"><span class="icon">🏆</span>Trophy</span><span class="weight-val trophy">800 g</span></div>
+      <div class="weight-row"><span class="weight-label"><span class="icon">✨</span>Rare</span><span class="weight-val rare-trophy">1.2 kg</span></div>
+    </div>
+  </div>
+
+  <div class="fish-card">
+    <div class="fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/qt1MTjFsaPrnFA_256.webp" alt="White-eye Bream"></div>
+    <div class="fish-name">White-eye Bream</div>
+    <div class="fish-weights">
+      <div class="weight-row"><span class="weight-label"><span class="icon">🏆</span>Trophy</span><span class="weight-val trophy">600 g</span></div>
+      <div class="weight-row"><span class="weight-label"><span class="icon">✨</span>Rare</span><span class="weight-val rare-trophy">900 g</span></div>
+    </div>
+  </div>
+
+  <div class="fish-card">
+    <div class="fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/eWvagbYdMDJquA_256.webp" alt="Zander"></div>
+    <div class="fish-name">Zander</div>
+    <div class="fish-weights">
+      <div class="weight-row"><span class="weight-label"><span class="icon">🏆</span>Trophy</span><span class="weight-val trophy">8 kg</span></div>
+      <div class="weight-row"><span class="weight-label"><span class="icon">✨</span>Rare</span><span class="weight-val rare-trophy">12 kg</span></div>
+    </div>
+  </div>
+
+  <div class="fish-card">
+    <div class="fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/EfCJ7Z1P25I6NA_256.webp" alt="Zebra Mussel"></div>
+    <div class="fish-name">Zebra Mussel</div>
+    <div class="fish-weights">
+      <div class="weight-row"><span class="weight-label"><span class="icon">🏆</span>Trophy</span><span class="weight-val trophy">150 g</span></div>
+      <div class="weight-row"><span class="weight-label"><span class="icon">✨</span>Rare</span><span class="weight-val rare-trophy">210 g</span></div>
+    </div>
+  </div>
+
+</div>
+
+<footer>Russian Fishing 4 · Winding Rivulet · 29 species · rf4h.ru</footer>
+
+</body>
+</html>
