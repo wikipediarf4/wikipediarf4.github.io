@@ -3776,7 +3776,7 @@ function renderTrofeos(data) {
     const isNA = v => v==='—';
     return `<div class="trof-row" style="${bg}">
       <img class="trof-fish-img" src="${f.img.startsWith('data:')||f.img.startsWith('http') ? f.img : base+f.img+'.png'}" onerror="if(!this.src.includes('rf4h.ru'))this.src='${base}fish.png'" alt="${f.n}" loading="lazy">
-      <div class="trof-name">${f.n}${f.map?`<img src="${f.map}" title="Mapa" style="width:18px;height:18px;object-fit:contain;margin-left:6px;border-radius:3px;vertical-align:middle;opacity:.85;">`:''}</div>
+      <div class="trof-name" style="display:flex;align-items:center;gap:8px;">${f.n}${f.map?`<img src="${f.map}" title="Mapa" style="width:44px;height:30px;object-fit:cover;border-radius:5px;opacity:.9;flex-shrink:0;">`:''}</div>
       <img class="trof-icon" src="${troff}" alt="trofeo">
       <div class="trof-weight${isNA(f.t)?' na':''}">${f.t}</div>
       <div class="trof-weight rare${isNA(f.r)?' na':''}" style="display:flex;align-items:center;justify-content:center;gap:5px;">
