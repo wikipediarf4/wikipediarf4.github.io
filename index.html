@@ -1302,6 +1302,7 @@ select.fi option{background:#fff;}
         <button id="chatTab-all" onclick="switchChatTab('all')" style="flex:1;background:none;border:none;border-bottom:2px solid var(--accent);color:var(--accent);font-family:'Exo 2',sans-serif;font-size:.8rem;font-weight:700;padding:8px 4px;cursor:pointer;">Todos</button>
         <button id="chatTab-unread" onclick="switchChatTab('unread')" style="flex:1;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:'Exo 2',sans-serif;font-size:.8rem;font-weight:600;padding:8px 4px;cursor:pointer;position:relative;">No leídos<span id="unreadChatBadge" style="display:none;position:absolute;top:5px;right:6px;background:var(--accent);color:#fff;border-radius:100px;font-size:.58rem;font-weight:700;padding:1px 5px;min-width:16px;text-align:center;"></span></button>
 
+              <button id="chatTab-archived" onclick="switchChatTab('archived')" style="flex:1;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:'Exo 2',sans-serif;font-size:.8rem;font-weight:600;padding:8px 4px;cursor:pointer;">📦 Archiv.</button>
       </div>
     </div>
     <!-- Content (list or chat) -->
@@ -6211,7 +6212,7 @@ let _chatLastMsgs = {};
 
 function switchChatTab(tab){
   _currentChatTab = tab;
-  ['all','unread'].forEach(t=>{
+  ['all','unread','archived'].forEach(t=>{
     const btn = document.getElementById('chatTab-'+t);
     if(!btn) return;
     const active = t===tab;
@@ -6228,6 +6229,7 @@ function renderMessengerList(){
   if(_presenceUnsub){ _presenceUnsub(); _presenceUnsub=null; }
 
   const friends = window.CU?.friendsList || [];
+  const archived = window.CU?.archivedChats || [];
 
   _presenceUnsub = onSnapshot(collection(db,'presence'), async snap=>{
     const now = Date.now();
@@ -6238,7 +6240,6 @@ function renderMessengerList(){
         .map(u=>u.id)
     );
 
-    // Load last messages
     await Promise.all(friends.map(async f=>{
       try {
         const chatId = [window.CU.id, f.id].sort().join('_');
@@ -6256,88 +6257,74 @@ function renderMessengerList(){
       } catch(e){}
     }));
 
-    // Update unread badge
-    const unreadCount = friends.filter(f=>_chatLastMsgs[f.id]?.unread).length;
+    const unreadCount = friends.filter(f=>!archived.includes(f.id) && _chatLastMsgs[f.id]?.unread).length;
     const badge = document.getElementById('unreadChatBadge');
     if(badge){
       badge.style.display = unreadCount>0 ? 'inline-block' : 'none';
       badge.textContent = unreadCount;
     }
 
-    // Filter based on tab
-    let showFriends = friends;
-    if(_currentChatTab === 'unread') showFriends = friends.filter(f=>_chatLastMsgs[f.id]?.unread);
+    let showFriends;
+    if(_currentChatTab === 'archived'){
+      showFriends = friends.filter(f=>archived.includes(f.id));
+    } else if(_currentChatTab === 'unread'){
+      showFriends = friends.filter(f=>!archived.includes(f.id) && _chatLastMsgs[f.id]?.unread);
+    } else {
+      showFriends = friends.filter(f=>!archived.includes(f.id));
+    }
 
-    // Ordenar: con mensajes primero, luego por tiempo desc
     showFriends = [...showFriends].sort((a,b)=>{
       const ta = _chatLastMsgs[a.id]?.time||0;
       const tb = _chatLastMsgs[b.id]?.time||0;
       return tb - ta;
     });
 
-    // Search bar — agregar si no existe
-    if(!list.querySelector('#chatSearchInput')){
-      const sb = document.createElement('div');
-      sb.style.cssText='padding:8px 10px 4px;';
-      sb.innerHTML=`<div style="background:var(--bg3);border-radius:20px;display:flex;align-items:center;gap:6px;padding:7px 12px;">
-        <span style="color:var(--muted);font-size:.85rem;">🔍</span>
-        <input id="chatSearchInput" placeholder="Buscar en Messenger" style="background:none;border:none;outline:none;color:var(--text);font-size:.82rem;flex:1;font-family:'Exo 2',sans-serif;" oninput="filterChatSearch(this.value)">
-      </div>`;
-      list.insertBefore(sb, list.firstChild);
+    let html = '';
+    html += `<div style="padding:8px 10px 6px;"><div style="background:var(--bg4);border-radius:20px;display:flex;align-items:center;gap:6px;padding:7px 12px;"><span style="color:var(--muted);font-size:.85rem;">🔍</span><input id="chatSearchInput" placeholder="Buscar chat" style="background:none;border:none;outline:none;color:var(--text);font-size:.82rem;flex:1;font-family:'Exo 2',sans-serif;" oninput="filterChatSearch(this.value)"></div></div>`;
+
+    if(showFriends.length === 0){
+      const msgs = {archived:'📦 Sin chats archivados', unread:'✓ Sin mensajes sin leer', all:'Sin contactos aún'};
+      html += `<div style="text-align:center;padding:32px 16px;color:var(--muted);font-size:.82rem;">${msgs[_currentChatTab]||msgs.all}</div>`;
+    } else {
+      html += showFriends.map(f=>{
+        const isOnline = onlineIds.has(f.id);
+        const safeNick = (f.nick||'').replace(/['"<>&]/g,'');
+        const lm = _chatLastMsgs[f.id];
+        const lastTxt = lm ? (lm.mine ? 'Tú: '+lm.text : lm.text) : (isOnline ? '● En línea' : '');
+        const lastTime = lm?.time ? fmtT(lm.time) : '';
+        const hasUnread = !!lm?.unread;
+        const isArch = archived.includes(f.id);
+        const avInner = f.av
+          ? `<img src="${f.av}" style="width:100%;height:100%;object-fit:cover;">`
+          : `<span style="font-size:1.1rem;font-weight:800;color:var(--accent);">${(f.nick||'?')[0].toUpperCase()}</span>`;
+        return `<div data-chatuid="${f.id}" data-chatnick="${safeNick}" data-searchname="${(f.nick||'').toLowerCase()}" style="display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:10px;margin:1px 4px;transition:background .15s;position:relative;${hasUnread?'background:rgba(0,198,255,.07);':''}" onmouseover="this.style.background='var(--bg3)';this.querySelector('.cgear').style.opacity='1'" onmouseout="this.style.background='${hasUnread?'rgba(0,198,255,.07)':'transparent'}';this.querySelector('.cgear').style.opacity='0'">
+          <div style="position:relative;flex-shrink:0;cursor:pointer;" onclick="openChatWith('${f.id}','${safeNick}');event.stopPropagation();">
+            <div style="width:46px;height:46px;border-radius:50%;background:var(--bg3);overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:700;">${avInner}</div>
+            ${isOnline?'<div style="position:absolute;bottom:0;right:0;width:12px;height:12px;background:#31a24c;border-radius:50%;border:2px solid var(--bg2);"></div>':''}
+          </div>
+          <div style="flex:1;min-width:0;cursor:pointer;" onclick="openChatWith('${f.id}','${safeNick}');event.stopPropagation();">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:4px;margin-bottom:1px;">
+              <div style="font-size:.86rem;font-weight:${hasUnread?'800':'600'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(f.nick)}</div>
+              <div style="font-size:.64rem;color:${hasUnread?'var(--accent)':'var(--muted)'};white-space:nowrap;flex-shrink:0;">${lastTime}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;">
+              <div style="font-size:.74rem;color:${hasUnread?'var(--text)':'var(--muted)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:${hasUnread?'600':'400'};">${esc(lastTxt)}${isArch?' 📦':''}</div>
+              ${hasUnread?'<div style="min-width:16px;height:16px;background:var(--accent);border-radius:100px;display:flex;align-items:center;justify-content:center;font-size:.58rem;font-weight:800;color:#000;padding:0 3px;flex-shrink:0;">N</div>':''}
+            </div>
+          </div>
+          <button class="cgear" onclick="openChatMenu(event,'${f.id}','${safeNick}',${hasUnread},${isArch})" style="opacity:0;transition:opacity .15s;background:var(--bg3);border:none;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:.82rem;" onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background='var(--bg3)'" title="Opciones">⚙️</button>
+        </div>`;
+      }).join('');
     }
 
-    const friendItems = showFriends.map(f=>{
-      const isOnline = onlineIds.has(f.id);
-      const safeNick = (f.nick||'').replace(/['"<>&]/g,'');
-      const lm = _chatLastMsgs[f.id];
-      const lastTxt = lm
-        ? (lm.mine ? 'Tú: '+lm.text : lm.text)
-        : (isOnline ? '● En línea' : '');
-      const lastTime = lm?.time ? fmtT(lm.time) : '';
-      const hasUnread = !!lm?.unread;
-      const avInner = f.av
-        ? `<img src="${f.av}" style="width:100%;height:100%;object-fit:cover;">`
-        : `<span style="font-size:1.1rem;font-weight:800;color:var(--accent);">${(f.nick||'?')[0].toUpperCase()}</span>`;
+    list.innerHTML = html;
 
-      return `<div data-chatuid="${f.id}" data-chatnick="${safeNick}" data-searchname="${(f.nick||'').toLowerCase()}"
-        style="display:flex;align-items:center;gap:12px;padding:8px 12px;cursor:pointer;border-radius:10px;margin:1px 6px;transition:background .15s;${hasUnread?'background:rgba(0,198,255,.07);':''}"
-        onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='${hasUnread?'rgba(0,198,255,.07)':'transparent'}'">
-        <!-- Avatar con estado online -->
-        <div style="position:relative;flex-shrink:0;">
-          <div style="width:48px;height:48px;border-radius:50%;background:var(--bg3);overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:700;">
-            ${avInner}
-          </div>
-          ${isOnline?`<div style="position:absolute;bottom:1px;right:1px;width:12px;height:12px;background:#31a24c;border-radius:50%;border:2px solid var(--bg2);"></div>`:''}
-        </div>
-        <!-- Info -->
-        <div style="flex:1;min-width:0;">
-          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:4px;margin-bottom:2px;">
-            <div style="font-size:.87rem;font-weight:${hasUnread?'800':'600'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(f.nick)}</div>
-            <div style="font-size:.66rem;color:${hasUnread?'var(--accent)':'var(--muted)'};white-space:nowrap;flex-shrink:0;">${lastTime}</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:4px;">
-            <div style="font-size:.76rem;color:${hasUnread?'var(--text)':'var(--muted)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:${hasUnread?'600':'400'};">${esc(lastTxt)}</div>
-            ${hasUnread?`<div style="min-width:18px;height:18px;background:var(--accent);border-radius:100px;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800;color:#000;padding:0 4px;flex-shrink:0;">N</div>`:''}
-          </div>
-        </div>
-      </div>`;
-    }).join('');
-
-    const listContainer = list.querySelector('#chatListItems') || (() => {
-      const d = document.createElement('div'); d.id='chatListItems'; list.appendChild(d); return d;
-    })();
-    listContainer.innerHTML = friendItems || (
-      _currentChatTab==='unread'
-        ? '<div style="text-align:center;padding:32px 16px;color:var(--muted);font-size:.82rem;">✓ Sin mensajes sin leer</div>'
-        : '<div style="text-align:center;padding:24px;color:var(--muted);font-size:.83rem;">Sin contactos aún</div>'
-    );
-
-    list.onclick = (e)=>{
-      const row = e.target.closest('[data-chatuid]');
-      if(row) openChatWith(row.dataset.chatuid, row.dataset.chatnick);
-    };
+    if(!window._chatUserAvCache) window._chatUserAvCache = {};
+    friends.forEach(f=>{ if(f.av) window._chatUserAvCache[f.id]=f.av; });
   });
 }
+
+
 
 function openChatWith(uid, nick){
   if(!uid||!window.CU){ toast('Iniciá sesión primero','err'); return; }
@@ -7457,6 +7444,7 @@ const _expose = {
   loadAdminData,deleteAdminPost,resolveReport,
   requestVerification, loadVerifRequests, adminApproveVerif, adminRejectVerif, adminRevokeVerif,
   switchNotifTab, markAllNotifsRead, filterChatSearch,
+  openChatMenu, archiveChat, unarchiveChat, markChatRead, markChatUnread, deleteChatConfirm,
   openNotifDropdown, closeNotifDropdown, toggleNotifDropdown,
   checkFriendsBirthdays, bdaySendWish,
   launchGoldConfetti, applyVerifStoryRings, tryApplyChatGold,
@@ -7811,6 +7799,115 @@ function toggleNotifDropdown(e){
   e.stopPropagation();
   openNotifDropdown();
 }
+
+// ── Menú contextual del chat (ruedita) ──
+let _chatMenuOpen = null;
+
+function openChatMenu(e, uid, nick, hasUnread, isArchived){
+  e.stopPropagation();
+  // Cerrar menú anterior si existe
+  document.getElementById('chatContextMenu')?.remove();
+  document.removeEventListener('click', _closeChatMenu);
+
+  const btn = e.currentTarget;
+  const rect = btn.getBoundingClientRect();
+
+  const menu = document.createElement('div');
+  menu.id = 'chatContextMenu';
+  menu.style.cssText = `position:fixed;z-index:9999;background:var(--bg2);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.5);min-width:180px;overflow:hidden;animation:mIn .15s ease;`;
+  menu.style.top  = (rect.bottom + 6) + 'px';
+  menu.style.right = (window.innerWidth - rect.right) + 'px';
+
+  const safeNick = nick.replace(/'/g,'&apos;');
+  const items = [
+    !isArchived
+      ? { icon:'📦', label:'Archivar chat',    fn:`archiveChat('${uid}','${safeNick}')` }
+      : { icon:'📤', label:'Desarchivar chat', fn:`unarchiveChat('${uid}')` },
+    hasUnread
+      ? { icon:'✓',  label:'Marcar como leído',    fn:`markChatRead('${uid}')` }
+      : { icon:'●',  label:'Marcar como no leído',  fn:`markChatUnread('${uid}','${safeNick}')` },
+    { icon:'🗑', label:'Eliminar chat', fn:`deleteChatConfirm('${uid}','${safeNick}')`, danger:true },
+  ];
+
+  items.forEach(item=>{
+    const btn = document.createElement('button');
+    btn.style.cssText = `display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;padding:11px 16px;font-size:.84rem;cursor:pointer;font-family:'Exo 2',sans-serif;color:${item.danger?'var(--red)':'var(--text)'};text-align:left;transition:background .12s;`;
+    btn.innerHTML = `<span style="font-size:1rem;">${item.icon}</span>${item.label}`;
+    btn.onmouseover = ()=>btn.style.background='var(--bg3)';
+    btn.onmouseout  = ()=>btn.style.background='none';
+    btn.onclick = (ev)=>{ ev.stopPropagation(); document.getElementById('chatContextMenu')?.remove(); new Function(item.fn)(); };
+    menu.appendChild(btn);
+  });
+
+  document.body.appendChild(menu);
+  setTimeout(()=>document.addEventListener('click', _closeChatMenu), 10);
+}
+
+function _closeChatMenu(e){
+  const m = document.getElementById('chatContextMenu');
+  if(m && !m.contains(e.target)){ m.remove(); document.removeEventListener('click', _closeChatMenu); }
+}
+
+async function archiveChat(uid, nick){
+  if(!window.CU) return;
+  const arch = window.CU.archivedChats || [];
+  if(!arch.includes(uid)){
+    arch.push(uid);
+    window.CU.archivedChats = arch;
+    await updateDoc(doc(db,'users',window.CU.id),{archivedChats:arch});
+  }
+  toast(`💬 Chat con ${nick} archivado 📦`,'ok');
+  renderMessengerList();
+}
+
+async function unarchiveChat(uid){
+  if(!window.CU) return;
+  window.CU.archivedChats = (window.CU.archivedChats||[]).filter(id=>id!==uid);
+  await updateDoc(doc(db,'users',window.CU.id),{archivedChats:window.CU.archivedChats});
+  toast('Chat desarchivado','ok');
+  renderMessengerList();
+}
+
+async function markChatRead(uid){
+  if(!window.CU) return;
+  try{
+    const chatId = [window.CU.id, uid].sort().join('_');
+    const q = query(collection(db,'chats',chatId,'messages'),where('read','==',false),where('uid','!=',window.CU.id));
+    const snap = await getDocs(q);
+    await Promise.all(snap.docs.map(d=>updateDoc(d.ref,{read:true})));
+    if(_chatLastMsgs[uid]) _chatLastMsgs[uid].unread = false;
+    renderMessengerList();
+    toast('Chat marcado como leído ✓','ok');
+  }catch(e){}
+}
+
+async function markChatUnread(uid, nick){
+  if(_chatLastMsgs[uid]) _chatLastMsgs[uid].unread = true;
+  renderMessengerList();
+  toast(`Chat con ${nick} marcado como no leído ●`,'ok');
+}
+
+async function deleteChatConfirm(uid, nick){
+  if(!confirm(`¿Eliminar el chat con ${nick}? Esto borra todos los mensajes solo de tu lado.`)) return;
+  try{
+    const chatId = [window.CU.id, uid].sort().join('_');
+    const q = query(collection(db,'chats',chatId,'messages'),orderBy('time','desc'));
+    const snap = await getDocs(q);
+    // Marcamos los mensajes míos como deleted para mi
+    await Promise.all(snap.docs.map(d=>{
+      const data = d.data();
+      if(data.uid===window.CU.id){
+        return updateDoc(d.ref,{deletedFor:{...(data.deletedFor||{}),[window.CU.id]:true}});
+      }
+      return Promise.resolve();
+    }));
+    delete _chatLastMsgs[uid];
+    renderMessengerList();
+    toast('Chat eliminado','ok');
+  }catch(e){ toast('Error al eliminar','err'); }
+}
+
+
 Object.entries(_expose).forEach(([k,v])=>{ window[k]=v; });
 // Replay any calls that happened before module loaded
 if(window._q) window._q.forEach(([name,args])=>{ if(window[name]) window[name](...args); });
