@@ -1867,6 +1867,18 @@ select.fi option{background:#fff;}
     </div>
   </div>
 
+  <!-- Acciones rápidas admin -->
+  <div style="background:linear-gradient(135deg,rgba(255,200,0,.08),rgba(255,100,0,.05));border:1px solid rgba(255,200,0,.25);border-radius:var(--r);padding:14px 16px;margin-bottom:20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+    <div>
+      <div style="font-size:.82rem;font-weight:700;color:gold;">🛒 Tienda Gratis — Anuncio Masivo</div>
+      <div style="font-size:.72rem;color:var(--muted);margin-top:2px;">Envía un mensaje privado a TODOS los usuarios avisando que la tienda está 100% gratis por 30 días.</div>
+    </div>
+    <button id="btnShopAnnounce" onclick="sendShopAnnouncementToAll()"
+      style="margin-left:auto;background:linear-gradient(135deg,gold,#ff8c00);color:#000;border:none;border-radius:var(--rs);padding:9px 18px;font-size:.8rem;font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;white-space:nowrap;box-shadow:0 2px 10px rgba(255,200,0,.3);">
+      🔔 Anunciar Tienda Gratis
+    </button>
+  </div>
+
   <!-- Admin Tabs -->
   <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:8px;">
     <button class="adm-tab adm-on" onclick="swAdminTab(this,'admt-reports')">⚠️ Reportes</button>
@@ -3300,6 +3312,20 @@ function renderProfileFeed(){
   const el = document.getElementById('profileFeed');
   if(!el||!window.CU) return;
   const mine = _posts.filter(p=>p.userId===window.CU.id);
+  if(!mine.length){
+    // Fallback: load from Firestore
+    getDocs(query(collection(db,'posts'), where('userId','==',window.CU.id), orderBy('time','desc'))).then(snap=>{
+      const fetched = snap.docs.map(d=>({id:d.id,...d.data()}));
+      // Merge into _posts so reactions/comments work
+      fetched.forEach(p=>{ if(!_posts.find(x=>x.id===p.id)) _posts.push(p); });
+      _renderProfileFeedHTML(el, fetched);
+    }).catch(()=>{ el.innerHTML=`<div style="text-align:center;padding:40px;color:var(--muted)">Sin publicaciones aún. ¡Comparte tu primera pesca!</div>`; });
+    return;
+  }
+  _renderProfileFeedHTML(el, mine);
+}
+
+function _renderProfileFeedHTML(el, mine){
   const scrollY = window.scrollY;
   let pinnedH='';
   if(window.CU?.verified&&window.CU.pinnedPostId){
@@ -3310,7 +3336,7 @@ function renderProfileFeed(){
   const newHTML = pinnedH+(rest.length?rest.map(p=>postHTML(p)).join(''):(!pinnedH?`<div style="text-align:center;padding:40px;color:var(--muted)">Sin publicaciones aún. ¡Comparte tu primera pesca!</div>`:''));
   if(el.innerHTML === newHTML) return;
   if(!el.children.length){ el.innerHTML = newHTML; return; }
-  // Smart patch - same as renderFeed
+  // Smart patch
   const tempDiv = document.createElement('div');
   tempDiv.innerHTML = newHTML;
   const newPosts = Array.from(tempDiv.children);
@@ -6852,6 +6878,41 @@ async function sendNotifToUserWithPost(uid, text, postId){
   } catch(e){ console.error('notif error',e); }
 }
 
+// ===== MENSAJE MASIVO: Anuncio Tienda Gratis =====
+async function sendShopAnnouncementToAll(){
+  if(!window.CU) return;
+  const btn = document.getElementById('btnShopAnnounce');
+  if(btn){ btn.disabled=true; btn.textContent='⏳ Enviando...'; }
+  try {
+    const usersSnap = await getDocs(collection(db,'users'));
+    const myId = window.CU.id;
+    const myNick = window.CU.nick || 'RF4 Latam';
+    const msg = `🎉 ¡Hola! Te avisamos que la TIENDA de RF4 Latam está 100% GRATIS por 30 días 🛒✨\n\nPodés tunear tu perfil y publicaciones con marcos, badges, títulos, efectos y colores. ¡Entrá a la tienda desde el botón de arriba y equipate todo lo que quieras sin costo!\n\n🔥 ¡Aprovechalo antes de que se acabe el período gratuito!`;
+    let sent = 0;
+    for(const d of usersSnap.docs){
+      const uid = d.id;
+      if(uid === myId) continue;
+      try {
+        const chatId = [myId, uid].sort().join('_');
+        await addDoc(collection(db,'chats',chatId,'messages'), {
+          uid: myId,
+          nick: myNick,
+          text: msg,
+          time: serverTimestamp(),
+          system: true
+        });
+        sent++;
+      } catch(e){ console.warn('Error enviando a', uid, e); }
+    }
+    if(btn){ btn.disabled=false; btn.textContent='✅ Enviado a '+sent+' usuarios'; }
+    toast(`✅ Mensaje enviado a ${sent} usuarios`, 'ok');
+  } catch(e){
+    if(btn){ btn.disabled=false; btn.textContent='🔔 Anunciar Tienda Gratis'; }
+    toast('Error al enviar mensajes: '+e.message, 'err');
+    console.error(e);
+  }
+}
+
 // ===== USER PROFILE MODAL =====
 async function openUserProfile(uid, nick){
   // Si es el propio usuario, va al perfil propio
@@ -9249,6 +9310,7 @@ const _expose = {
   reportPost,submitReport,
   loadAdminData,deleteAdminPost,resolveReport,
   requestVerification, loadVerifRequests, adminApproveVerif, adminRejectVerif, adminRevokeVerif,
+  sendShopAnnouncementToAll,
   switchNotifTab, markAllNotifsRead, filterChatSearch,
   openChatMenu, archiveChat, unarchiveChat, markChatRead, markChatUnread, deleteChatConfirm,
   openNotifDropdown, closeNotifDropdown, toggleNotifDropdown,
