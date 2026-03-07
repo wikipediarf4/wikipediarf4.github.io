@@ -10,7 +10,11 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="RF4 Latam">
-  <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/chatrf4/icon-512.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/chatrf4/icon-192.png">
+  <link rel="shortcut icon" href="/chatrf4/icon-192.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/chatrf4/icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="/chatrf4/icon-512.png">
   <link rel="manifest" href="/chatrf4/manifest.json">
   <script>
     if('serviceWorker' in navigator){
@@ -501,9 +505,6 @@ select.fi option{background:var(--bg3);color:var(--text);}
 
 /* ===== PROFILE PAGE ===== */
 .profile-cover{height:300px;background:linear-gradient(135deg,#e7f3ff,#1877f222);background-size:cover;background-position:center;position:relative;overflow:hidden;}
-
-/* ── GALERÍA INSTAGRAM ── */
-@keyframes _igFadeIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
 
 /* ── BANNERS ANIMADOS DE TIENDA ── */
 /* Capa de partículas que se pone DENTRO del cover */
@@ -4024,7 +4025,7 @@ function postHTML(p){
   const topRxn = Object.entries(p.reactionCounts||{}).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([e])=>e).join('');
   const rxnBtns = REACTIONS.map(r=>`<button class="rxn-btn" onclick="doReact('${p.id}','${r.emoji}')" title="${r.label}" style="position:relative;">${r.emoji}<span style="position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;font-size:.58rem;white-space:nowrap;padding:2px 6px;border-radius:4px;pointer-events:none;opacity:0;transition:opacity .15s;" class="rxn-tooltip">${r.label}</span></button>`).join('');
   const fishTag = p.fish ? `<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(0,198,255,.08);border:1px solid rgba(0,198,255,.2);border-radius:100px;padding:4px 12px;font-size:.78rem;margin-bottom:10px;margin-left:14px"><span>🎣</span><strong>${p.fish}</strong>${p.weight?` · ${p.weight}kg`:''} ${p.map?`· ${p.map}`:''} ${p.tech?`· ${p.tech}`:''}</div>` : '';
-  const imgHTML = (p.images&&p.images.length) ? `<div style="display:grid;grid-template-columns:${p.images.length===1?'1fr':p.images.length===2?'1fr 1fr':'1fr 1fr 1fr'};gap:3px;margin-bottom:10px;border-radius:var(--rs);overflow:hidden;">${p.images.slice(0,5).map(img=>`<img src="${img}" style="width:100%;max-height:300px;object-fit:contain;background:var(--bg3);cursor:pointer;" onclick="openImgLightbox('${img}',${JSON.stringify(p.images||[])},'${p.id}')" loading="lazy">`).join('')}</div>` : '';
+  const imgHTML = (p.images&&p.images.length) ? `<div style="display:grid;grid-template-columns:${p.images.length===1?'1fr':p.images.length===2?'1fr 1fr':'1fr 1fr 1fr'};gap:3px;margin-bottom:10px;border-radius:var(--rs);overflow:hidden;">${p.images.slice(0,5).map(img=>`<img src="${img}" style="width:100%;max-height:300px;object-fit:contain;background:var(--bg3);cursor:pointer;" onclick="openImgLightbox('${img}')" loading="lazy">`).join('')}</div>` : '';
   let videoHTML = '';
   if(p.video){
     const ytId = extractYtId(p.video);
@@ -4915,8 +4916,7 @@ function renderProfile(){
   document.getElementById('profBadges').innerHTML = badges.join(' ');
   // Photo grid
   const allImgs = mine.flatMap(p=>p.images||[]).filter(Boolean);
-  const _profImgsStr = JSON.stringify(allImgs.slice(0,9));
-  document.getElementById('profPhotoGrid').innerHTML = allImgs.slice(0,9).map(img=>`<img src="${img}" style="width:100%;aspect-ratio:1;object-fit:cover;cursor:pointer" onclick="openImgLightbox('${img}',${_profImgsStr})">`).join('') || '<div style="color:var(--muted);font-size:.8rem;grid-column:1/-1;padding:8px">Sin fotos aún</div>';
+  document.getElementById('profPhotoGrid').innerHTML = allImgs.slice(0,9).map(img=>`<img src="${img}" style="width:100%;aspect-ratio:1;object-fit:cover;cursor:pointer" onclick="openImgLightbox('${img}')">`).join('') || '<div style="color:var(--muted);font-size:.8rem;grid-column:1/-1;padding:8px">Sin fotos aún</div>';
   // Friends grid - real friends
   const friends = getDemoFriends();
   document.getElementById('profFriendCount').textContent = friends.length;
@@ -5968,228 +5968,13 @@ function doSearch(val){
 // ===== SHARE =====
 
 // ===== LIGHTBOX =====
-// ===== GALERÍA ESTILO INSTAGRAM =====
-let _galImages = [];
-let _galIdx = 0;
-let _galPostId = null;
-let _galUnsub = null;
-
-function openImgLightbox(src, allImgs, postId){
-  _galImages = Array.isArray(allImgs) && allImgs.length ? allImgs : [src];
-  _galIdx = _galImages.indexOf(src);
-  if(_galIdx < 0) _galIdx = 0;
-  _galPostId = postId || null;
-
-  const old = document.getElementById('_igModal');
-  if(old){ old.remove(); if(_galUnsub){_galUnsub();_galUnsub=null;} }
-
-  const post = _galPostId ? (_posts||[]).find(p=>p.id===_galPostId) : null;
-
-  const modal = document.createElement('div');
-  modal.id = '_igModal';
-  modal.style.cssText = 'position:fixed;inset:0;z-index:99000;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;animation:_igFadeIn .18s ease;';
-
-  const dotsHtml = _galImages.length > 1
-    ? `<div id="_igDots" style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:3;">
-        ${_galImages.map((_,i)=>`<div class="_igDot" onclick="igNavTo(${i})" style="width:7px;height:7px;border-radius:50%;background:${i===_galIdx?'#fff':'rgba(255,255,255,.35)'};cursor:pointer;transition:background .2s;"></div>`).join('')}
-       </div>` : '';
-
-  const rxnBtns = [
-    {e:'👍',l:'Me gusta'},{e:'❤️',l:'Me encanta'},{e:'😂',l:'Me divierte'},
-    {e:'😮',l:'Me asombra'},{e:'😢',l:'Me entristece'},{e:'😡',l:'Me enoja'},{e:'🎣',l:'Pescador'}
-  ].map(r=>`<button class="_igRxnBtn" data-e="${r.e}" onclick="igReact('${r.e}')" title="${r.l}"
-    style="background:none;border:1px solid transparent;border-radius:100px;padding:4px 9px;cursor:pointer;font-size:.9rem;display:flex;align-items:center;gap:3px;transition:all .15s;">
-    ${r.e}<span id="_igRxnCnt_${r.e.codePointAt(0)}" style="font-size:.68rem;color:var(--muted);font-weight:700;min-width:8px;"></span>
-  </button>`).join('');
-
-  const avHtml = window.CU && window.CU.av
-    ? `<img src="${window.CU.av}" style="width:100%;height:100%;object-fit:cover;">`
-    : (window.CU ? (window.CU.nick||'?')[0].toUpperCase() : '👤');
-
-  const postAvHtml = post && post.userAv
-    ? `<img src="${post.userAv}" style="width:100%;height:100%;object-fit:cover;">`
-    : (post ? (post.userNick||'?')[0].toUpperCase() : '📷');
-
-  modal.innerHTML = `
-  <style>
-    @keyframes _igFadeIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
-    ._igRxnBtn:hover{background:var(--bg3)!important;transform:scale(1.15);}
-    #_igComments::-webkit-scrollbar{width:4px;}
-    #_igComments::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
-    @media(max-width:700px){
-      #_igBox{flex-direction:column!important;max-height:98vh!important;}
-      #_igSidebar{width:100%!important;border-left:none!important;border-top:1px solid var(--border);max-height:52vh!important;}
-      #_igImgCol{min-height:200px!important;max-height:42vh!important;}
-    }
-  </style>
-  <div id="_igBox" style="background:var(--bg2);border-radius:12px;display:flex;max-width:960px;width:98vw;max-height:94vh;overflow:hidden;position:relative;box-shadow:0 20px 80px rgba(0,0,0,.7);">
-    <div id="_igImgCol" style="flex:1;min-width:0;background:#000;display:flex;align-items:center;justify-content:center;position:relative;min-height:360px;">
-      <img id="_igImg" src="${_galImages[_galIdx]}" style="max-width:100%;max-height:90vh;object-fit:contain;display:block;user-select:none;transition:opacity .12s ease;">
-      <button onclick="igNav(-1)" style="display:${_galImages.length>1?'flex':'none'};position:absolute;left:10px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.55);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:1.3rem;cursor:pointer;align-items:center;justify-content:center;z-index:4;transition:background .15s;" onmouseover="this.style.background='rgba(0,0,0,.9)'" onmouseout="this.style.background='rgba(0,0,0,.55)'">‹</button>
-      <button onclick="igNav(1)" style="display:${_galImages.length>1?'flex':'none'};position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.55);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:1.3rem;cursor:pointer;align-items:center;justify-content:center;z-index:4;transition:background .15s;" onmouseover="this.style.background='rgba(0,0,0,.9)'" onmouseout="this.style.background='rgba(0,0,0,.55)'">›</button>
-      ${dotsHtml}
-    </div>
-    <div id="_igSidebar" style="width:320px;flex-shrink:0;display:flex;flex-direction:column;border-left:1px solid var(--border);max-height:94vh;overflow:hidden;">
-      <div style="padding:12px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);flex-shrink:0;">
-        <div style="width:34px;height:34px;border-radius:50%;background:var(--bg3);border:2px solid var(--accent);overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;color:var(--accent);flex-shrink:0;">${postAvHtml}</div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-weight:700;font-size:.85rem;">${post?esc(post.userNick||''):'Foto'}</div>
-          ${post&&post.text?`<div style="font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(post.text.slice(0,55))}</div>`:''}
-        </div>
-        <button onclick="document.getElementById('_igModal').remove();if(window._galUnsub){window._galUnsub();window._galUnsub=null;}"
-          style="background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:4px;border-radius:50%;flex-shrink:0;line-height:1;" title="Cerrar">✕</button>
-      </div>
-      <div id="_igComments" style="flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px;">
-        <div style="text-align:center;padding:20px;color:var(--muted);font-size:.78rem;">Cargando...</div>
-      </div>
-      <div style="border-top:1px solid var(--border);flex-shrink:0;padding:10px 14px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;">
-        ${rxnBtns}
-        <span id="_igRxnTotal" style="margin-left:auto;font-size:.72rem;color:var(--muted);font-weight:600;"></span>
-      </div>
-      ${_galPostId?`
-      <div style="border-top:1px solid var(--border);padding:8px 14px;display:flex;gap:7px;flex-shrink:0;">
-        <button onclick="igShare()" style="flex:1;background:rgba(46,196,182,.12);border:1px solid rgba(46,196,182,.3);color:var(--accent);border-radius:100px;padding:6px 0;font-size:.78rem;font-weight:700;cursor:pointer;">🔁 Compartir</button>
-        <button onclick="igDownload()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:100px;padding:6px 12px;font-size:.78rem;cursor:pointer;" title="Descargar">⬇️</button>
-      </div>
-      <div style="padding:6px 14px 12px;display:flex;gap:8px;align-items:center;flex-shrink:0;">
-        <div style="width:28px;height:28px;border-radius:50%;background:var(--bg3);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:var(--accent);flex-shrink:0;">${avHtml}</div>
-        <input id="_igCmtInp" placeholder="Comentá esta foto..." style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:6px 13px;color:var(--text);font-size:.8rem;font-family:'Exo 2',sans-serif;outline:none;" onkeypress="if(event.key==='Enter')igSubmitComment()">
-        <button onclick="igSubmitComment()" style="background:none;border:none;color:var(--accent);font-size:1rem;cursor:pointer;font-weight:700;padding:3px;">➤</button>
-      </div>`:`
-      <div style="border-top:1px solid var(--border);padding:8px 14px 12px;flex-shrink:0;">
-        <button onclick="igDownload()" style="width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:100px;padding:7px 0;font-size:.78rem;cursor:pointer;">⬇️ Descargar foto</button>
-      </div>`}
-    </div>
-  </div>`;
-
-  modal.addEventListener('click', e => {
-    if(!e.target.closest('#_igBox')){ modal.remove(); if(_galUnsub){_galUnsub();_galUnsub=null;} }
-  });
-  const _kh = e => {
-    if(e.key==='Escape'){ modal.remove(); if(_galUnsub){_galUnsub();_galUnsub=null;} }
-    if(e.key==='ArrowRight') igNav(1);
-    if(e.key==='ArrowLeft') igNav(-1);
-  };
-  document.addEventListener('keydown', _kh);
-  modal.addEventListener('remove', ()=>document.removeEventListener('keydown', _kh));
-  // Swipe táctil
-  let _tsX = null;
-  modal.addEventListener('touchstart', e=>{ _tsX=e.touches[0].clientX; },{passive:true});
-  modal.addEventListener('touchend', e=>{
-    if(_tsX===null) return;
-    const dx = e.changedTouches[0].clientX - _tsX;
-    if(Math.abs(dx)>40) igNav(dx<0?1:-1);
-    _tsX=null;
-  });
-
-  document.body.appendChild(modal);
-
-  if(_galPostId) igLoadPostData(_galPostId);
-  else {
-    document.getElementById('_igComments').innerHTML='<div style="text-align:center;padding:28px;color:var(--muted);font-size:.78rem;">Sin comentarios</div>';
-    // Limpiar contadores reacción
-    [0x1F44D,0x2764,0x1F602,0x1F62E,0x1F622,0x1F621,0x1F3A3].forEach(cp=>{
-      const el=document.getElementById('_igRxnCnt_'+cp); if(el) el.textContent='';
-    });
-  }
+function openImgLightbox(src){
+  const lb = document.createElement('div');
+  lb.style.cssText='position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.95);display:flex;align-items:center;justify-content:center;cursor:zoom-out';
+  lb.innerHTML=`<img src="${src}" style="max-width:95vw;max-height:95vh;object-fit:contain;border-radius:8px">`;
+  lb.onclick=()=>lb.remove();
+  document.body.appendChild(lb);
 }
-
-function igNav(dir){
-  _galIdx = (_galIdx + dir + _galImages.length) % _galImages.length;
-  igNavTo(_galIdx);
-}
-function igNavTo(i){
-  _galIdx = i;
-  const img = document.getElementById('_igImg');
-  if(img){ img.style.opacity='0'; setTimeout(()=>{ img.src=_galImages[i]; img.style.opacity='1'; },110); }
-  document.querySelectorAll('._igDot').forEach((d,j)=>{ d.style.background = j===i?'#fff':'rgba(255,255,255,.35)'; });
-}
-async function igLoadPostData(pid){
-  if(_galUnsub){ _galUnsub(); _galUnsub=null; }
-  const pRef = doc(db,'posts',pid);
-  _galUnsub = onSnapshot(pRef, snap=>{
-    if(!snap.exists()) return;
-    const p = {id:snap.id,...snap.data()};
-    igRenderComments(p.comments||[]);
-    igRenderReactions(p.reactions||{}, p.reactionCounts||{});
-  });
-}
-function igRenderReactions(reactions, counts){
-  const myRxn = window.CU ? (reactions[window.CU.id]||'') : '';
-  const total = Object.values(reactions).filter(Boolean).length;
-  [
-    {e:'👍'},{e:'❤️'},{e:'😂'},{e:'😮'},{e:'😢'},{e:'😡'},{e:'🎣'}
-  ].forEach(r=>{
-    const btn = document.querySelector(`._igRxnBtn[data-e="${r.e}"]`);
-    const cntEl = document.getElementById('_igRxnCnt_'+r.e.codePointAt(0));
-    const active = myRxn===r.e;
-    if(btn){
-      btn.style.background = active?'rgba(46,196,182,.18)':'none';
-      btn.style.border = active?'1px solid var(--accent)':'1px solid transparent';
-    }
-    if(cntEl) cntEl.textContent = (counts[r.e]||0)>0?(counts[r.e]):'';
-  });
-  const tot = document.getElementById('_igRxnTotal');
-  if(tot) tot.textContent = total>0?`${total} reacci${total===1?'ón':'ones'}`:'';
-}
-function igRenderComments(comments){
-  const el = document.getElementById('_igComments');
-  if(!el) return;
-  if(!comments.length){
-    el.innerHTML='<div style="text-align:center;padding:28px;color:var(--muted);font-size:.78rem;">Sin comentarios. ¡Sé el primero!</div>';
-    return;
-  }
-  el.innerHTML = comments.map(c=>{
-    const av = c.av?`<img src="${c.av}" style="width:100%;height:100%;object-fit:cover;">`:(c.nick||'?')[0].toUpperCase();
-    return `<div style="display:flex;gap:8px;align-items:flex-start;">
-      <div style="width:28px;height:28px;border-radius:50%;background:var(--bg3);border:1.5px solid var(--accent);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:700;color:var(--accent);flex-shrink:0;">${av}</div>
-      <div style="flex:1;min-width:0;background:var(--bg3);border-radius:10px;padding:6px 10px;">
-        <span style="font-weight:700;font-size:.78rem;color:var(--accent);">${esc(c.nick||'')}</span>
-        <span style="font-size:.8rem;color:var(--text);margin-left:5px;">${esc(c.text||'')}</span>
-        <div style="font-size:.65rem;color:var(--muted);margin-top:2px;">${c.time?fmtT(c.time):''}</div>
-      </div>
-    </div>`;
-  }).join('');
-  el.scrollTop = el.scrollHeight;
-}
-async function igReact(emoji){
-  if(!_galPostId){ toast('Sin post asociado','inf'); return; }
-  if(!window.CU){ toast('Iniciá sesión para reaccionar','err'); return; }
-  await doReact(_galPostId, emoji);
-}
-async function igSubmitComment(){
-  if(!_galPostId) return;
-  if(!window.CU){ toast('Iniciá sesión para comentar','err'); return; }
-  const inp = document.getElementById('_igCmtInp');
-  const txt = inp ? inp.value.trim() : '';
-  if(!txt) return;
-  let p = (_posts||[]).find(p=>p.id===_galPostId);
-  if(!p){
-    try{
-      const snap = await getDoc(doc(db,'posts',_galPostId));
-      if(snap.exists()) p={id:snap.id,...snap.data()};
-    }catch(e){}
-  }
-  if(p){
-    const nc = [...(p.comments||[]), {userId:window.CU.id,nick:window.CU.nick,av:window.CU.av||'',text:txt,time:Date.now()}];
-    await updateDoc(doc(db,'posts',_galPostId), {comments:nc});
-    if(p.userId&&p.userId!==window.CU.id) sendNotifToUserWithPost(p.userId,`💬 ${window.CU.nick} comentó tu foto: "${txt.slice(0,40)}"`,_galPostId);
-  }
-  if(inp) inp.value='';
-}
-async function igShare(){
-  if(!_galPostId){ toast('Sin post para compartir','inf'); return; }
-  await sharePost(_galPostId);
-}
-function igDownload(){
-  const src = _galImages[_galIdx];
-  const a = document.createElement('a');
-  a.href=src; a.download='foto_rf4latam.jpg'; a.target='_blank';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-}
-window.igNav=igNav; window.igNavTo=igNavTo; window.igReact=igReact;
-window.igSubmitComment=igSubmitComment; window.igShare=igShare; window.igDownload=igDownload;
-window.openImgLightbox=openImgLightbox;
 
 // ===== REPORT =====
 function reportPost(pid, userNick){
@@ -8339,10 +8124,7 @@ async function _loadUserProfilePage(uid, nick){
       : `<button disabled title="Solo podés mensajear a tus amigos" style="padding:8px 16px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);border-radius:var(--rs);font-size:.82rem;font-weight:700;cursor:not-allowed;font-family:'Exo 2',sans-serif;">🔒 Mensaje</button>`;
     document.getElementById('upActions').innerHTML = friendBtn + msgBtn;
 
-    // ── TAB POSTS ── Agregar posts al caché local para que doReact/submitComment funcionen
-    userPosts.forEach(p=>{
-      if(!(_posts||[]).find(x=>x.id===p.id)) _posts.unshift(p);
-    });
+    // ── TAB POSTS ──
     document.getElementById('upTabPosts').innerHTML = userPosts.length
       ? userPosts.map(p=>postHTML(p)).join('')
       : '<div style="text-align:center;padding:40px;color:var(--muted);">Sin publicaciones aún</div>';
@@ -8360,16 +8142,9 @@ async function _loadUserProfilePage(uid, nick){
     document.getElementById('upTabInfo').innerHTML = infoRows || '<div style="color:var(--muted);padding:20px;text-align:center;font-size:.85rem;">Sin información disponible</div>';
 
     // ── TAB FOTOS ──
-    // Armar mapa img->postId para que el lightbox pueda cargar comentarios/reacciones
-    const _imgPostMap = {};
-    userPosts.forEach(p=>{ (p.images||[]).forEach(img=>{ _imgPostMap[img]=p.id; }); });
     const allImgs = userPosts.flatMap(p=>p.images||[]).filter(Boolean);
-    const _allImgsJson = JSON.stringify(allImgs);
     document.getElementById('upTabFotos').innerHTML = allImgs.length
-      ? `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;">${allImgs.map(img=>{
-          const pid = _imgPostMap[img]||'';
-          return `<div style="aspect-ratio:1;overflow:hidden;cursor:pointer;border-radius:2px;transition:opacity .15s;" onclick="openImgLightbox('${img}',${_allImgsJson},'${pid}')" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'"><img src="${img}" style="width:100%;height:100%;object-fit:cover;" loading="lazy"></div>`;
-        }).join('')}</div>`
+      ? `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;">${allImgs.map(img=>`<div style="aspect-ratio:1;overflow:hidden;cursor:pointer;" onclick="openImgLightbox('${img}')"><img src="${img}" style="width:100%;height:100%;object-fit:cover;transition:transform .2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"></div>`).join('')}</div>`
       : '<div style="color:var(--muted);text-align:center;padding:30px;">Sin fotos aún</div>';
 
     // ── TAB AMIGOS ──
