@@ -1994,7 +1994,6 @@ select.fi option{background:#fff;}
     <button class="adm-tab" onclick="swAdminTab(this,'admt-ads')">📢 Publicidad</button>
     <button class="adm-tab" onclick="swAdminTab(this,'admt-pezdelsemana')" style="background:rgba(0,230,118,.08);border-color:rgba(0,230,118,.3);color:var(--green);">🐟 Pez Semanal</button>
     <button class="adm-tab" onclick="swAdminTab(this,'admt-xplevels');renderXPLevelsAdmin();" style="background:rgba(255,215,0,.08);border-color:rgba(255,215,0,.3);color:var(--gold);">⚡ Niveles XP</button>
-    <button class="adm-tab" onclick="swAdminTab(this,'admt-peces');renderAdminPeces();" style="background:rgba(0,198,255,.08);border-color:rgba(0,198,255,.3);color:var(--accent);">🐠 Peces DB</button>
   </div>
 
   <!-- TAB: Reportes -->
@@ -2266,64 +2265,6 @@ select.fi option{background:#fff;}
   </div>
 
   <!-- PECES DB ADMIN -->
-  <div id="admt-peces" style="display:none;">
-    <div style="font-size:.78rem;font-weight:700;color:var(--accent);margin-bottom:14px;text-transform:uppercase;letter-spacing:1px;">🐠 Editor de Base de Datos de Peces</div>
-
-    <!-- Barra búsqueda + contador -->
-    <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
-      <input id="adminPecesSearch" placeholder="🔍 Buscar pez..." oninput="renderAdminPeces()"
-        style="flex:1;min-width:180px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:8px 14px;color:var(--text);font-size:.85rem;outline:none;font-family:'Exo 2',sans-serif;">
-      <span id="adminPecesCount" style="font-size:.75rem;color:var(--muted);white-space:nowrap;"></span>
-    </div>
-
-    <!-- Lista de peces -->
-    <div id="adminPecesList"></div>
-
-    <!-- Modal edición -->
-    <div id="adminPecesModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:16px;">
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);width:100%;max-width:480px;padding:24px;position:relative;">
-        <button onclick="closeAdminPecesModal()" style="position:absolute;top:12px;right:14px;background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;">✕</button>
-        <div style="font-family:'Orbitron',monospace;font-size:.95rem;font-weight:800;color:var(--accent);margin-bottom:16px;">✏️ Editar Pez</div>
-
-        <!-- Preview imagen -->
-        <div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:16px;">
-          <div style="flex-shrink:0;width:100px;height:68px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);display:flex;align-items:center;justify-content:center;overflow:hidden;">
-            <img id="adminPecesImgPreview" src="" style="max-width:100%;max-height:100%;object-fit:contain;" onerror="this.style.display='none'">
-          </div>
-          <div style="flex:1;">
-            <div style="font-size:.72rem;color:var(--muted);margin-bottom:4px;">Nombre</div>
-            <input id="adminPecesEditName" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:7px 12px;color:var(--text);font-size:.88rem;outline:none;font-family:'Exo 2',sans-serif;box-sizing:border-box;">
-          </div>
-        </div>
-
-        <!-- URL imagen -->
-        <div style="margin-bottom:12px;">
-          <div style="font-size:.72rem;color:var(--muted);margin-bottom:4px;">URL de imagen</div>
-          <div style="display:flex;gap:8px;">
-            <input id="adminPecesEditImg" oninput="previewAdminPezImg()" placeholder="https://..." style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:7px 12px;color:var(--text);font-size:.8rem;outline:none;font-family:'Exo 2',sans-serif;">
-            <label style="cursor:pointer;background:rgba(0,198,255,.1);border:1px solid rgba(0,198,255,.3);color:var(--accent);padding:7px 12px;border-radius:var(--rs);font-size:.78rem;white-space:nowrap;display:flex;align-items:center;gap:4px;">
-              📁 Subir<input type="file" accept="image/*" style="display:none;" onchange="uploadAdminPezImg(this)">
-            </label>
-          </div>
-        </div>
-
-        <!-- Trofeo / Raro -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
-          <div>
-            <div style="font-size:.72rem;color:var(--muted);margin-bottom:4px;">🥇 Trofeo</div>
-            <input id="adminPecesEditT" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:7px 12px;color:var(--text);font-size:.85rem;outline:none;font-family:'Exo 2',sans-serif;box-sizing:border-box;">
-          </div>
-          <div>
-            <div style="font-size:.72rem;color:var(--muted);margin-bottom:4px;">⭐ Trofeo Raro</div>
-            <input id="adminPecesEditR" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:7px 12px;color:var(--text);font-size:.85rem;outline:none;font-family:'Exo 2',sans-serif;box-sizing:border-box;">
-          </div>
-        </div>
-
-        <input type="hidden" id="adminPecesEditIdx">
-        <button onclick="saveAdminPez()" class="btn btn-p" style="width:100%;font-size:.9rem;">💾 Guardar cambios</button>
-      </div>
-    </div>
-  </div>
 </div>
 
 <!-- SPOTS PAGE -->
@@ -3056,7 +2997,6 @@ async function doReg(){
 
 function onLogin(){
   updateNavUI();
-  loadFishDB(); // Load fish DB now that auth + db are ready
   listenVerifiedUsers().then(()=>{
     listenPosts();
     listenStories();
@@ -3580,43 +3520,6 @@ let FISH_DB = [
   {n:"Orenji",img:"https://en.rf4h.ru/templates/rf4m/fish/V90JXd1TrvE9Bw_128.webp",t:"25 kg",r:"35 kg",maps:[{"n": "Copper lake", "i": "https://en.rf4h.ru/templates/rf4m/maps/img/copper_83.webp"}]},
 ]
 
-// ===== FISH_DB FIRESTORE SYNC =====
-const _FISH_DB_HARDCODED = FISH_DB.map(f=>({...f})); // backup
-
-let _fishDBReady = false;
-async function loadFishDB(){
-  try {
-    const snap = await getDoc(doc(db, 'config', 'fish_db'));
-    if(snap.exists() && snap.data().peces && snap.data().peces.length){
-      FISH_DB = snap.data().peces;
-      console.log('[FishDB] Loaded from Firestore:', FISH_DB.length, 'fish');
-    } else {
-      // First time: upload hardcoded data to Firestore
-      await saveFishDBToFirestore();
-      console.log('[FishDB] Uploaded hardcoded DB to Firestore');
-    }
-  } catch(e){
-    console.warn('[FishDB] Firestore load failed, using hardcoded:', e);
-  }
-  _fishDBReady = true;
-  // If admin peces panel is open, render now
-  const panel = document.getElementById('admt-peces');
-  if(panel && panel.style.display !== 'none') renderAdminPeces();
-}
-
-async function saveFishDBToFirestore(){
-  // Firestore doc limit ~1MB — store full array in config/fish_db
-  const peces = FISH_DB.map(f=>({
-    n: f.n||'',
-    img: f.img||'',
-    t: f.t||'',
-    r: f.r||'',
-    maps: f.maps||[]
-  }));
-  await setDoc(doc(db, 'config', 'fish_db'), { peces, updated: serverTimestamp() });
-}
-window.loadFishDB = loadFishDB;
-window.saveFishDBToFirestore = saveFishDBToFirestore;
 
 let _trofChip = '';
 function _mapImg(f){
@@ -6107,7 +6010,7 @@ async function submitReport(){
 function swAdminTab(el, tabId){
   document.querySelectorAll('.adm-tab').forEach(t=>t.classList.remove('adm-on'));
   el.classList.add('adm-on');
-  ['admt-reports','admt-posts','admt-users','admt-verif','admt-site','admt-parches','admt-torneos','admt-grupos','admt-ads','admt-peces','admt-pezdelsemana','admt-xplevels']
+  ['admt-reports','admt-posts','admt-users','admt-verif','admt-site','admt-parches','admt-torneos','admt-grupos','admt-ads','admt-pezdelsemana','admt-xplevels']
     .forEach(id=>{ const e=document.getElementById(id); if(e) e.style.display='none'; });
   const tab = document.getElementById(tabId);
   if(tab) tab.style.display='block';
@@ -10211,108 +10114,6 @@ function renderXPLevelsAdmin(){
       </div>`).join('');
   }
 
-// ===== ADMIN PECES DB =====
-let _adminPecesEditIdx = null;
-
-function renderAdminPeces(){
-  const list = document.getElementById('adminPecesList');
-  const countEl = document.getElementById('adminPecesCount');
-  if(!list) return;
-  if(!_fishDBReady){
-    list.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted);">🎣 Cargando peces...</div>';
-    if(countEl) countEl.textContent = '';
-    // Retry automatically when ready
-    setTimeout(renderAdminPeces, 800);
-    return;
-  }
-  const q = (document.getElementById('adminPecesSearch')?.value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-  const filtered = FISH_DB.map((f,i)=>({...f,_i:i})).filter(f=>{
-    const n = f.n.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-    return !q || n.includes(q);
-  });
-  if(countEl) countEl.textContent = filtered.length + ' / ' + FISH_DB.length + ' peces';
-  if(!filtered.length){ list.innerHTML='<div style="text-align:center;padding:30px;color:var(--muted);">Sin resultados</div>'; return; }
-  list.innerHTML = filtered.map(f=>`
-    <div style="display:grid;grid-template-columns:90px 1fr auto;gap:10px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--border);background:var(--bg2);border-radius:var(--rs);margin-bottom:4px;">
-      <img src="https://wsrv.nl/?url=${encodeURIComponent(f.img.startsWith('http')?f.img:'https://en.rf4-stat.ru/images/rf4game/'+f.img+'.png')}" style="width:90px;height:60px;object-fit:contain;border-radius:6px;background:var(--bg3);" onerror="this.style.opacity='.3'">
-      <div>
-        <div style="font-weight:700;font-size:.88rem;color:var(--text);">${f.n}</div>
-        <div style="font-size:.72rem;color:var(--muted);margin-top:2px;">🥇 ${f.t} &nbsp;⭐ ${f.r}</div>
-        <div style="font-size:.68rem;color:rgba(0,198,255,.6);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;" title="${f.img}">${f.img}</div>
-      </div>
-      <button onclick="openAdminPezEdit(${f._i})" style="background:rgba(0,198,255,.1);border:1px solid rgba(0,198,255,.3);color:var(--accent);padding:6px 14px;border-radius:var(--rs);font-size:.78rem;cursor:pointer;white-space:nowrap;">✏️ Editar</button>
-    </div>`).join('');
-}
-
-function openAdminPezEdit(idx){
-  const f = FISH_DB[idx];
-  if(!f) return;
-  _adminPecesEditIdx = idx;
-  document.getElementById('adminPecesEditName').value = f.n;
-  const rawImg = f.img.startsWith('http') ? f.img : 'https://en.rf4-stat.ru/images/rf4game/'+f.img+'.png';
-  document.getElementById('adminPecesEditImg').value = rawImg;
-  document.getElementById('adminPecesEditT').value = f.t;
-  document.getElementById('adminPecesEditR').value = f.r;
-  document.getElementById('adminPecesEditIdx').value = idx;
-  const prev = document.getElementById('adminPecesImgPreview');
-  prev.style.display = 'block';
-  prev.src = 'https://wsrv.nl/?url=' + encodeURIComponent(rawImg);
-  document.getElementById('adminPecesModal').style.display = 'flex';
-}
-
-function closeAdminPecesModal(){
-  document.getElementById('adminPecesModal').style.display = 'none';
-  _adminPecesEditIdx = null;
-}
-
-function previewAdminPezImg(){
-  const url = document.getElementById('adminPecesEditImg').value.trim();
-  const prev = document.getElementById('adminPecesImgPreview');
-  if(url){ prev.style.display='block'; prev.src='https://wsrv.nl/?url='+encodeURIComponent(url); }
-  else { prev.style.display='none'; }
-}
-
-async function uploadAdminPezImg(input){
-  const f = input.files[0]; if(!f) return;
-  toast('Subiendo imagen...','inf');
-  try {
-    const url = await uploadImage(f, 'fish');
-    document.getElementById('adminPecesEditImg').value = url;
-    previewAdminPezImg();
-    toast('Imagen subida ✅','ok');
-  } catch(e){ toast('Error al subir imagen','err'); }
-}
-
-async function saveAdminPez(){
-  const idx = parseInt(document.getElementById('adminPecesEditIdx').value);
-  if(isNaN(idx) || !FISH_DB[idx]) return;
-  const newName = document.getElementById('adminPecesEditName').value.trim();
-  const newImg  = document.getElementById('adminPecesEditImg').value.trim();
-  const newT    = document.getElementById('adminPecesEditT').value.trim();
-  const newR    = document.getElementById('adminPecesEditR').value.trim();
-  if(!newName){ toast('El nombre no puede estar vacío','err'); return; }
-  FISH_DB[idx].n   = newName;
-  FISH_DB[idx].img = newImg || FISH_DB[idx].img;
-  FISH_DB[idx].t   = newT || FISH_DB[idx].t;
-  FISH_DB[idx].r   = newR || FISH_DB[idx].r;
-  closeAdminPecesModal();
-  renderAdminPeces();
-  renderTrofeos(FISH_DB);
-  // Persist to Firestore
-  try {
-    await saveFishDBToFirestore();
-    toast('Pez actualizado y guardado ✅','ok');
-  } catch(e) {
-    console.error('[saveAdminPez] Firestore error:', e);
-    toast('Actualizado localmente, error al guardar en Firestore ⚠️','err');
-  }
-}
-window.renderAdminPeces = renderAdminPeces;
-window.openAdminPezEdit = openAdminPezEdit;
-window.closeAdminPecesModal = closeAdminPecesModal;
-window.previewAdminPezImg = previewAdminPezImg;
-window.uploadAdminPezImg = uploadAdminPezImg;
-window.saveAdminPez = saveAdminPez;
 
 }
 
