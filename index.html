@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://storage.googleapis.com wss://*.firebaseio.com https://api.imgbb.com https://i.ibb.co data: blob:; connect-src 'self' https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://storage.googleapis.com wss://*.firebaseio.com https://api.imgbb.com https://i.ibb.co https://api.allorigins.win https://api.giphy.com https://api.cloudinary.com https://res.cloudinary.com data: blob:; frame-src https://www.youtube.com https://*.youtube.com https://*.firebaseapp.com https://open.spotify.com https://*.spotify.com https://www.tiktok.com https://*.tiktok.com; img-src 'self' data: blob: https: http: https://flagcdn.com; media-src 'self' blob: data: https://firebasestorage.googleapis.com https://*.firebasestorage.app https://res.cloudinary.com;">
 <title>RF4 Latam</title>
 
   <meta name="theme-color" content="#1877f2">
@@ -678,6 +677,34 @@ select.fi option{background:#fff;}
 .trof-weight{font-size:.82rem;font-weight:800;color:var(--text);text-align:center;}
 .trof-weight.rare{color:var(--gold);}
 .trof-weight.na{color:var(--muted);font-weight:400;font-size:.72rem;}
+/* ===== RIVULET FISH GUIDE ===== */
+#page-rivulet{font-family:'Crimson Pro',Georgia,serif;background-image:radial-gradient(ellipse at 20% 0%,rgba(46,196,182,.08) 0%,transparent 60%),repeating-linear-gradient(0deg,transparent,transparent 60px,rgba(255,255,255,.012) 60px,rgba(255,255,255,.012) 61px);}
+#page-rivulet .riv-header{text-align:center;margin-bottom:32px;}
+#page-rivulet .riv-location-tag{font-family:'Cinzel',serif;font-size:11px;letter-spacing:4px;color:var(--accent);text-transform:uppercase;margin-bottom:8px;opacity:.8;}
+#page-rivulet .riv-title{font-family:'Cinzel',serif;font-size:clamp(22px,4vw,40px);font-weight:800;color:var(--gold);text-shadow:0 0 40px rgba(232,196,106,.3);letter-spacing:2px;line-height:1.1;}
+#page-rivulet .riv-subtitle{font-size:14px;color:#7aa8c0;font-style:italic;margin-top:6px;}
+#page-rivulet .riv-divider{width:120px;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);margin:12px auto 0;}
+.riv-fish-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:12px;max-width:1100px;margin:0 auto;}
+.riv-fish-card{background:linear-gradient(145deg,rgba(20,20,20,.7),rgba(10,10,10,.9));border:1px solid rgba(46,196,182,.15);border-radius:12px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:8px;transition:transform .25s,border-color .25s,box-shadow .25s;position:relative;overflow:hidden;}
+.riv-fish-card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,rgba(46,196,182,.06) 0%,transparent 70%);pointer-events:none;}
+.riv-fish-card:hover{transform:translateY(-4px);border-color:rgba(46,196,182,.45);box-shadow:0 12px 32px rgba(0,0,0,.4),0 0 20px rgba(46,196,182,.1);}
+.riv-fish-card.rare-fish{border-color:rgba(192,132,252,.25);}
+.riv-fish-card.rare-fish:hover{border-color:rgba(192,132,252,.6);box-shadow:0 12px 32px rgba(0,0,0,.4),0 0 20px rgba(192,132,252,.12);}
+.riv-rare-badge{position:absolute;top:8px;right:8px;background:rgba(192,132,252,.2);border:1px solid rgba(192,132,252,.5);color:#c084fc;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;font-family:'Cinzel',serif;padding:2px 6px;border-radius:4px;}
+.riv-fish-img-wrap{width:86px;height:86px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 4px 12px rgba(0,0,0,.6));}
+.riv-fish-img-wrap img{width:100%;height:100%;object-fit:contain;}
+.riv-fish-name{font-family:'Cinzel',serif;font-size:12px;font-weight:600;color:#d4e8f0;text-align:center;letter-spacing:.5px;line-height:1.3;}
+.riv-fish-weights{width:100%;display:flex;flex-direction:column;gap:4px;margin-top:2px;}
+.riv-weight-row{display:flex;align-items:center;justify-content:space-between;gap:4px;font-size:11.5px;}
+.riv-weight-label{display:flex;align-items:center;gap:4px;color:#7aa8c0;font-style:italic;font-size:11px;}
+.riv-weight-val.trophy{color:var(--gold);}
+.riv-weight-val.rare-trophy{color:#c084fc;}
+.riv-search-wrap{position:relative;flex:1;max-width:320px;}
+.riv-search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);opacity:.4;pointer-events:none;}
+#rivSearchInput{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(46,196,182,.2);border-radius:8px;color:#d4e8f0;font-family:'Crimson Pro',serif;font-size:14px;padding:9px 12px 9px 34px;outline:none;transition:border-color .2s;}
+#rivSearchInput::placeholder{color:#7aa8c0;opacity:.6;}
+#rivSearchInput:focus{border-color:rgba(46,196,182,.5);}
+.riv-no-results{display:none;text-align:center;color:#7aa8c0;font-style:italic;font-size:14px;padding:40px;grid-column:1/-1;}
 </style>
 </head>
 <body>
@@ -764,6 +791,7 @@ select.fi option{background:#fff;}
       <div class="sl-item" onclick="gp('carretes')"><span class="sl-item-icon">🎣</span> Buscar Carretes</div>
       <div class="sl-item"><span class="sl-item-icon">🔖</span> Guardados</div>
       <div class="sl-item" onclick="gp('parches')"><span class="sl-item-icon">🔧</span> Parches y Actualizaciones</div>
+      <div class="sl-item" onclick="gp('rivulet')"><span class="sl-item-icon">🐟</span> Winding Rivulet – Peces</div>
       <div class="divider"></div>
       <!-- Streak mini widget -->
       <div id="sidebarStreakWidget" style="display:none;margin:8px 8px 4px;background:linear-gradient(135deg,rgba(255,100,0,.1),rgba(255,60,0,.05));border:1px solid rgba(255,100,0,.25);border-radius:var(--r);padding:10px 12px;">
@@ -2569,6 +2597,90 @@ select.fi option{background:#fff;}
   </div>
 </div>
 
+<!-- WINDING RIVULET FISH GUIDE -->
+<div class="page" id="page-rivulet" style="max-width:1200px;margin:0 auto;padding:32px 16px 80px;">
+  <div class="riv-header">
+    <div class="riv-location-tag">Russian Fishing 4 · Zona de pesca</div>
+    <h1 class="riv-title">Winding Rivulet</h1>
+    <p class="riv-subtitle">29 especies — Trofeo &amp; Rare Trophy pesos mínimos</p>
+    <div class="riv-divider"></div>
+  </div>
+
+  <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:24px;flex-wrap:wrap;">
+    <div class="riv-search-wrap">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2ec4b6" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="rivSearchInput" placeholder="Buscar pez..." oninput="rivFilterFish(this.value)">
+    </div>
+  </div>
+
+  <div class="riv-fish-grid" id="rivFishGrid">
+    <div class="riv-no-results" id="rivNoResults">No se encontraron peces 🐟</div>
+
+    <div class="riv-fish-card"><div class="riv-fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/1bIBSBIbfYzlHQ_256.webp" alt="Asp"></div><div class="riv-fish-name">Asp</div><div class="riv-fish-weights"><div class="riv-weight-row"><span class="riv-weight-label">🏆 Trophy</span><span class="riv-weight-val trophy">8 kg</span></div><div class="riv-weight-row"><span class="riv-weight-label">💜 Rare</span><span class="riv-weight-val rare-trophy">13 kg</span></div></div></div>
+
+    <div class="riv-fish-card"><div class="riv-fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/k3CBowNM5yaDaA_256.webp" alt="Bleak"></div><div class="riv-fish-name">Bleak</div><div class="riv-fish-weights"><div class="riv-weight-row"><span class="riv-weight-label">🏆 Trophy</span><span class="riv-weight-val trophy">110 g</span></div><div class="riv-weight-row"><span class="riv-weight-label">💜 Rare</span><span class="riv-weight-val rare-trophy">160 g</span></div></div></div>
+
+    <div class="riv-fish-card"><div class="riv-fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/GONJgJjMb9tpBw_256.webp" alt="Blue Bream"></div><div class="riv-fish-name">Blue Bream</div><div class="riv-fish-weights"><div class="riv-weight-row"><span class="riv-weight-label">🏆 Trophy</span><span class="riv-weight-val trophy">750 g</span></div><div class="riv-weight-row"><span class="riv-weight-label">💜 Rare</span><span class="riv-weight-val rare-trophy">1.1 kg</span></div></div></div>
+
+    <div class="riv-fish-card"><div class="riv-fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/bul1bWXX9JwPnQ_256.webp" alt="Bream"></div><div class="riv-fish-name">Bream</div><div class="riv-fish-weights"><div class="riv-weight-row"><span class="riv-weight-label">🏆 Trophy</span><span class="riv-weight-val trophy">4.4 kg</span></div><div class="riv-weight-row"><span class="riv-weight-label">💜 Rare</span><span class="riv-weight-val rare-trophy">7 kg</span></div></div></div>
+
+    <div class="riv-fish-card"><div class="riv-fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/gdzjfBROEvDWMw_256.webp" alt="Burbot"></div><div class="riv-fish-name">Burbot</div><div class="riv-fish-weights"><div class="riv-weight-row"><span class="riv-weight-label">🏆 Trophy</span><span class="riv-weight-val trophy">9 kg</span></div><div class="riv-weight-row"><span class="riv-weight-label">💜 Rare</span><span class="riv-weight-val rare-trophy">14 kg</span></div></div></div>
+
+    <div class="riv-fish-card"><div class="riv-fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/xPsBTlijI9cjgA_256.webp" alt="Catfish"></div><div class="riv-fish-name">Catfish</div><div class="riv-fish-weights"><div class="riv-weight-row"><span class="riv-weight-label">🏆 Trophy</span><span class="riv-weight-val trophy">100 kg</span></div><div class="riv-weight-row"><span class="riv-weight-label">💜 Rare</span><span class="riv-weight-val rare-trophy">200 kg</span></div></div></div>
+
+    <div class="riv-fish-card"><div class="riv-fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/4CBTDm5bOOhsVQ_256.webp" alt="Chinese Sleeper"></div><div class="riv-fish-name">Chinese Sleeper</div><div class="riv-fish-weights"><div class="riv-weight-row"><span class="riv-weight-label">🏆 Trophy</span><span class="riv-weight-val trophy">400 g</span></div><div class="riv-weight-row"><span class="riv-weight-label">💜 Rare</span><span class="riv-weight-val rare-trophy">700 g</span></div></div></div>
+
+    <div class="riv-fish-card"><div class="riv-fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/TduVFrauO8Ox0g_256.webp" alt="Chub"></div><div class="riv-fish-name">Chub</div><div class="riv-fish-weights"><div class="riv-weight-row"><span class="riv-weight-label">🏆 Trophy</span><span class="riv-weight-val trophy">4 kg</span></div><div class="riv-weight-row"><span class="riv-weight-label">💜 Rare</span><span class="riv-weight-val rare-trophy">7 kg</span></div></div></div>
+
+    <div class="riv-fish-card"><div class="riv-fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/9ipy05y1wx0V_Q_256.webp" alt="Common Carp"></div><div class="riv-fish-name">Common Carp</div><div class="riv-fish-weights"><div class="riv-weight-row"><span class="riv-weight-label">🏆 Trophy</span><span class="riv-weight-val trophy">20 kg</span></div><div class="riv-weight-row"><span class="riv-weight-label">💜 Rare</span><span class="riv-weight-val rare-trophy">30 kg</span></div></div></div>
+
+    <div class="riv-fish-card"><div class="riv-fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/sV20Pz9GiJlvqA_256.webp" alt="Common Roach"></div><div class="riv-fish-name">Common Roach</div><div class="riv-fish-weights"><div class="riv-weight-row"><span class="riv-weight-label">🏆 Trophy</span><span class="riv-weight-val trophy">1.2 kg</span></div><div class="riv-weight-row"><span class="riv-weight-label">💜 Rare</span><span class="riv-weight-val rare-trophy">2 kg</span></div></div></div>
+
+    <div class="riv-fish-card"><div class="riv-fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/2qsl5st-0C-UWA_256.webp" alt="Crucian Carp"></div><div class="riv-fish-name">Crucian Carp</div><div class="riv-fish-weights"><div class="riv-weight-row"><span class="riv-weight-label">🏆 Trophy</span><span class="riv-weight-val trophy">1.8 kg</span></div><div class="riv-weight-row"><span class="riv-weight-label">💜 Rare</span><span class="riv-weight-val rare-trophy">2.9 kg</span></div></div></div>
+
+    <div class="riv-fish-card"><div class="riv-fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/Da22Etvb_thGCA_256.webp" alt="Dace"></div><div class="riv-fish-name">Dace</div><div class="riv-fish-weights"><div class="riv-weight-row"><span class="riv-weight-label">🏆 Trophy</span><span class="riv-weight-val trophy">250 g</span></div><div class="riv-weight-row"><span class="riv-weight-label">💜 Rare</span><span class="riv-weight-val rare-trophy">390 g</span></div></div></div>
+
+    <div class="riv-fish-card rare-fish"><div class="riv-rare-badge">Rare</div><div class="riv-fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/ABaJZoV-zy5dCA_256.webp" alt="Donets Ruffe"></div><div class="riv-fish-name">Donets Ruffe</div><div class="riv-fish-weights"><div class="riv-weight-row"><span class="riv-weight-label">🏆 Trophy</span><span class="riv-weight-val trophy">250 g</span></div><div class="riv-weight-row"><span class="riv-weight-label">💜 Rare</span><span class="riv-weight-val rare-trophy">350 g</span></div></div></div>
+
+    <div class="riv-fish-card"><div class="riv-fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/0M65KXpcjp-DZQ_256.webp" alt="Freshwater Crayfish"></div><div class="riv-fish-name">Freshwater Crayfish</div><div class="riv-fish-weights"><div class="riv-weight-row"><span class="riv-weight-label">🏆 Trophy</span><span class="riv-weight-val trophy">200 g</span></div><div class="riv-weight-row"><span class="riv-weight-label">💜 Rare</span><span class="riv-weight-val rare-trophy">330 g</span></div></div></div>
+
+    <div class="riv-fish-card"><div class="riv-fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/TP2OTANksZFpaw_256.webp" alt="Frog"></div><div class="riv-fish-name">Frog</div><div class="riv-fish-weights"><div class="riv-weight-row"><span class="riv-weight-label">🏆 Trophy</span><span class="riv-weight-val trophy">190 g</span></div><div class="riv-weight-row"><span class="riv-weight-label">💜 Rare</span><span class="riv-weight-val rare-trophy">250 g</span></div></div></div>
+
+    <div class="riv-fish-card"><div class="riv-fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/JTrlFhVpBM6t_w_256.webp" alt="Gibel Carp"></div><div class="riv-fish-name">Gibel Carp</div><div class="riv-fish-weights"><div class="riv-weight-row"><span class="riv-weight-label">🏆 Trophy</span><span class="riv-weight-val trophy">1.9 kg</span></div><div class="riv-weight-row"><span class="riv-weight-label">💜 Rare</span><span class="riv-weight-val rare-trophy">3.2 kg</span></div></div></div>
+
+    <div class="riv-fish-card"><div class="riv-fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/MHLaGwS-ripf8g_256.webp" alt="Gudgeon"></div><div class="riv-fish-name">Gudgeon</div><div class="riv-fish-weights"><div class="riv-weight-row"><span class="riv-weight-label">🏆 Trophy</span><span class="riv-weight-val trophy">100 g</span></div><div class="riv-weight-row"><span class="riv-weight-label">💜 Rare</span><span class="riv-weight-val rare-trophy">160 g</span></div></div></div>
+
+    <div class="riv-fish-card"><div class="riv-fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/l7CSIYb3JcRRcQ_256.webp" alt="Ide"></div><div class="riv-fish-name">Ide</div><div class="riv-fish-weights"><div class="riv-weight-row"><span class="riv-weight-label">🏆 Trophy</span><span class="riv-weight-val trophy">4 kg</span></div><div class="riv-weight-row"><span class="riv-weight-label">💜 Rare</span><span class="riv-weight-val rare-trophy">6.5 kg</span></div></div></div>
+
+    <div class="riv-fish-card"><div class="riv-fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/lozJTj0l-BshNg_256.webp" alt="Nase"></div><div class="riv-fish-name">Nase</div><div class="riv-fish-weights"><div class="riv-weight-row"><span class="riv-weight-label">🏆 Trophy</span><span class="riv-weight-val trophy">800 g</span></div><div class="riv-weight-row"><span class="riv-weight-label">💜 Rare</span><span class="riv-weight-val rare-trophy">1.3 kg</span></div></div></div>
+
+    <div class="riv-fish-card"><div class="riv-fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/7uVgvasOtw_G2Q_256.webp" alt="Perch"></div><div class="riv-fish-name">Perch</div><div class="riv-fish-weights"><div class="riv-weight-row"><span class="riv-weight-label">🏆 Trophy</span><span class="riv-weight-val trophy">1.6 kg</span></div><div class="riv-weight-row"><span class="riv-weight-label">💜 Rare</span><span class="riv-weight-val rare-trophy">2.7 kg</span></div></div></div>
+
+    <div class="riv-fish-card"><div class="riv-fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/T2RD5tHdEjjE1w_256.webp" alt="Pike"></div><div class="riv-fish-name">Pike</div><div class="riv-fish-weights"><div class="riv-weight-row"><span class="riv-weight-label">🏆 Trophy</span><span class="riv-weight-val trophy">12 kg</span></div><div class="riv-weight-row"><span class="riv-weight-label">💜 Rare</span><span class="riv-weight-val rare-trophy">20 kg</span></div></div></div>
+
+    <div class="riv-fish-card"><div class="riv-fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/pRz1PYucPpWQNQ_256.webp" alt="River Mussel"></div><div class="riv-fish-name">River Mussel</div><div class="riv-fish-weights"><div class="riv-weight-row"><span class="riv-weight-label">🏆 Trophy</span><span class="riv-weight-val trophy">190 g</span></div><div class="riv-weight-row"><span class="riv-weight-label">💜 Rare</span><span class="riv-weight-val rare-trophy">280 g</span></div></div></div>
+
+    <div class="riv-fish-card"><div class="riv-fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/YQEcUYrJRxEpLg_256.webp" alt="Ruffe"></div><div class="riv-fish-name">Ruffe</div><div class="riv-fish-weights"><div class="riv-weight-row"><span class="riv-weight-label">🏆 Trophy</span><span class="riv-weight-val trophy">140 g</span></div><div class="riv-weight-row"><span class="riv-weight-label">💜 Rare</span><span class="riv-weight-val rare-trophy">220 g</span></div></div></div>
+
+    <div class="riv-fish-card"><div class="riv-fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/fa9G6jJwBQBPhA_256.webp" alt="Tench"></div><div class="riv-fish-name">Tench</div><div class="riv-fish-weights"><div class="riv-weight-row"><span class="riv-weight-label">🏆 Trophy</span><span class="riv-weight-val trophy">4 kg</span></div><div class="riv-weight-row"><span class="riv-weight-label">💜 Rare</span><span class="riv-weight-val rare-trophy">6 kg</span></div></div></div>
+
+    <div class="riv-fish-card"><div class="riv-fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/dvsIOJVsvXv_IA_256.webp" alt="Volga Zander"></div><div class="riv-fish-name">Volga Zander</div><div class="riv-fish-weights"><div class="riv-weight-row"><span class="riv-weight-label">🏆 Trophy</span><span class="riv-weight-val trophy">1.4 kg</span></div><div class="riv-weight-row"><span class="riv-weight-label">💜 Rare</span><span class="riv-weight-val rare-trophy">2.2 kg</span></div></div></div>
+
+    <div class="riv-fish-card"><div class="riv-fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/dgvecRibHbgDKQ_256.webp" alt="White Bream"></div><div class="riv-fish-name">White Bream</div><div class="riv-fish-weights"><div class="riv-weight-row"><span class="riv-weight-label">🏆 Trophy</span><span class="riv-weight-val trophy">800 g</span></div><div class="riv-weight-row"><span class="riv-weight-label">💜 Rare</span><span class="riv-weight-val rare-trophy">1.2 kg</span></div></div></div>
+
+    <div class="riv-fish-card"><div class="riv-fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/qt1MTjFsaPrnFA_256.webp" alt="White-eye Bream"></div><div class="riv-fish-name">White-eye Bream</div><div class="riv-fish-weights"><div class="riv-weight-row"><span class="riv-weight-label">🏆 Trophy</span><span class="riv-weight-val trophy">600 g</span></div><div class="riv-weight-row"><span class="riv-weight-label">💜 Rare</span><span class="riv-weight-val rare-trophy">900 g</span></div></div></div>
+
+    <div class="riv-fish-card"><div class="riv-fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/eWvagbYdMDJquA_256.webp" alt="Zander"></div><div class="riv-fish-name">Zander</div><div class="riv-fish-weights"><div class="riv-weight-row"><span class="riv-weight-label">🏆 Trophy</span><span class="riv-weight-val trophy">8 kg</span></div><div class="riv-weight-row"><span class="riv-weight-label">💜 Rare</span><span class="riv-weight-val rare-trophy">12 kg</span></div></div></div>
+
+    <div class="riv-fish-card"><div class="riv-fish-img-wrap"><img src="https://en.rf4h.ru/templates/rf4m/fish/EfCJ7Z1P25I6NA_256.webp" alt="Zebra Mussel"></div><div class="riv-fish-name">Zebra Mussel</div><div class="riv-fish-weights"><div class="riv-weight-row"><span class="riv-weight-label">🏆 Trophy</span><span class="riv-weight-val trophy">150 g</span></div><div class="riv-weight-row"><span class="riv-weight-label">💜 Rare</span><span class="riv-weight-val rare-trophy">210 g</span></div></div></div>
+
+  </div>
+
+  <div style="text-align:center;margin-top:40px;color:#7aa8c0;font-family:'Crimson Pro',serif;font-size:13px;font-style:italic;opacity:.6;">
+    WikiPediaRF4 · Winding Rivulet · 29 especies · creado por ruizgustavo12
+  </div>
+</div>
+
 <!-- CREATE SPOT MODAL -->
 <div class="mo" id="mCreateSpot">
   <div class="modal modal-md">
@@ -3324,6 +3436,18 @@ window.addEventListener('DOMContentLoaded', () => {
 window.navigateTo = navigateTo;
 // ===== END URL ROUTER =====
 
+function rivFilterFish(query){
+  const q=(query||'').toLowerCase().trim();
+  const cards=document.querySelectorAll('#rivFishGrid .riv-fish-card');
+  let visible=0;
+  cards.forEach(card=>{
+    const name=(card.querySelector('.riv-fish-name')||{}).textContent||'';
+    if(name.toLowerCase().includes(q)){card.style.display='';visible++;}
+    else{card.style.display='none';}
+  });
+  const nr=document.getElementById('rivNoResults');
+  if(nr) nr.style.display=visible===0?'block':'none';
+}
 window.gp = (id, pushState = true) => {
   // Al salir del perfil ajeno: detener sus partículas y restaurar las del usuario propio
   const currentPage = document.querySelector('.page.active');
@@ -10306,6 +10430,37 @@ function filterTrofeoFeed(filter, btn){
 }
 
 // ==== TROFEOS POR MAPA (solo ruizgustavo12) ====
+const FISH_IMGS = {
+  "Asp":"https://en.rf4h.ru/templates/rf4m/fish/1bIBSBIbfYzlHQ_256.webp",
+  "Bleak":"https://en.rf4h.ru/templates/rf4m/fish/k3CBowNM5yaDaA_256.webp",
+  "Blue Bream":"https://en.rf4h.ru/templates/rf4m/fish/GONJgJjMb9tpBw_256.webp",
+  "Bream":"https://en.rf4h.ru/templates/rf4m/fish/bul1bWXX9JwPnQ_256.webp",
+  "Burbot":"https://en.rf4h.ru/templates/rf4m/fish/gdzjfBROEvDWMw_256.webp",
+  "Catfish":"https://en.rf4h.ru/templates/rf4m/fish/xPsBTlijI9cjgA_256.webp",
+  "Chinese Sleeper":"https://en.rf4h.ru/templates/rf4m/fish/4CBTDm5bOOhsVQ_256.webp",
+  "Chub":"https://en.rf4h.ru/templates/rf4m/fish/TduVFrauO8Ox0g_256.webp",
+  "Common Carp":"https://en.rf4h.ru/templates/rf4m/fish/9ipy05y1wx0V_Q_256.webp",
+  "Common Roach":"https://en.rf4h.ru/templates/rf4m/fish/sV20Pz9GiJlvqA_256.webp",
+  "Crucian Carp":"https://en.rf4h.ru/templates/rf4m/fish/2qsl5st-0C-UWA_256.webp",
+  "Dace":"https://en.rf4h.ru/templates/rf4m/fish/Da22Etvb_thGCA_256.webp",
+  "Donets Ruffe":"https://en.rf4h.ru/templates/rf4m/fish/ABaJZoV-zy5dCA_256.webp",
+  "Freshwater Crayfish":"https://en.rf4h.ru/templates/rf4m/fish/0M65KXpcjp-DZQ_256.webp",
+  "Frog":"https://en.rf4h.ru/templates/rf4m/fish/TP2OTANksZFpaw_256.webp",
+  "Gibel Carp":"https://en.rf4h.ru/templates/rf4m/fish/JTrlFhVpBM6t_w_256.webp",
+  "Gudgeon":"https://en.rf4h.ru/templates/rf4m/fish/MHLaGwS-ripf8g_256.webp",
+  "Ide":"https://en.rf4h.ru/templates/rf4m/fish/l7CSIYb3JcRRcQ_256.webp",
+  "Nase":"https://en.rf4h.ru/templates/rf4m/fish/lozJTj0l-BshNg_256.webp",
+  "Perch":"https://en.rf4h.ru/templates/rf4m/fish/7uVgvasOtw_G2Q_256.webp",
+  "Pike":"https://en.rf4h.ru/templates/rf4m/fish/T2RD5tHdEjjE1w_256.webp",
+  "River Mussel":"https://en.rf4h.ru/templates/rf4m/fish/pRz1PYucPpWQNQ_256.webp",
+  "Ruffe":"https://en.rf4h.ru/templates/rf4m/fish/YQEcUYrJRxEpLg_256.webp",
+  "Tench":"https://en.rf4h.ru/templates/rf4m/fish/fa9G6jJwBQBPhA_256.webp",
+  "Volga Zander":"https://en.rf4h.ru/templates/rf4m/fish/dvsIOJVsvXv_IA_256.webp",
+  "White Bream":"https://en.rf4h.ru/templates/rf4m/fish/dgvecRibHbgDKQ_256.webp",
+  "White-eye Bream":"https://en.rf4h.ru/templates/rf4m/fish/qt1MTjFsaPrnFA_256.webp",
+  "Zander":"https://en.rf4h.ru/templates/rf4m/fish/eWvagbYdMDJquA_256.webp",
+  "Zebra Mussel":"https://en.rf4h.ru/templates/rf4m/fish/EfCJ7Z1P25I6NA_256.webp"
+};
 const TROFEOS_MAPA_DATA = {
   bindweed: {
     peces: [
@@ -10351,31 +10506,51 @@ function switchTrofMapaTab(mapId, btn){
   renderTrofMapaContent();
 }
 function renderTrofMapaContent(){
+  const TROPHY_ICON = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAAYABgDASIAAhEBAxEB/8QAGAABAAMBAAAAAAAAAAAAAAAAAAQHCAX/xAAvEAABAwICCAQHAQAAAAAAAAABAgMEABEGEgUIExQVFjFBByEyYhckUVJhcXKy/8QAFwEAAwEAAAAAAAAAAAAAAAAABAUGB//EACYRAAECBQMDBQAAAAAAAAAAAAECAwAEBRFRBhJhFCFBM3GRscH/2gAMAwEAAhEDEQA/AK51H4EKRi7T01+Ky7IixG9g4tAKmsyiFFJ7EgAXFaW5rw9zxybvLfF9y33Z2GXZ5str/d3y9befSs46jABxBicEXBiM/wC1VKOrrpL4mcWGjNH8rcZtw3eztN0vfPf6e3Nm7Vl9elpSZqr/AFTuzakbeTbkj485Hl1KrWhhOxN7mObrwwYcfFugZjEVlqRKiObdxCAFO5VAJKj3IBIuaVI15wBiDDAAAAiPWA/tNKstMEmlM3wfswvnfXVEXUi0jAh4pxBHlzGI7r8JtTSXHAkrCFEqtfrYEH9Vd58cPDcYx5Z48ja9N9t8nnv6Nre1/d6fdfypSkFTokvUKm+p0nsgHtm3txBTMytphITmKQ13NIwJmKcPMRJjEh1mE4p1LTgUUBagU3t0uASPxSlKo9OoDdMZSMfpgSbN3lGP/9k=';
+  const RARE_ICON = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAAYABgDASIAAhEBAxEB/8QAGAABAQEBAQAAAAAAAAAAAAAAAAcFAgP/xAArEAABAwIEBgEEAwAAAAAAAAABAgMEABEFEhMxBggUFSFRMgcXJGFBQlL/xAAVAQEBAAAAAAAAAAAAAAAAAAAFBv/EACIRAAEEAgAHAQAAAAAAAAAAAAEAAgMEBRESEyFBUZHwsf/aAAwDAQACEQMRAD8AiHLK1BGNYziExDAMSKlSXnbANAk5jc7eBv6q99XC7j2/UR1Wjr6eX+l7Zr7b1CeWFluRiHEEd5AW27FbQtJHgglQIrV+2XGnWdX3x7X6fpNXuis2h/i+jt/NvdWWLmkhpM5bOLZO/akMpDHLcfzH8OgPxYvM01BVjWDT4aGCZUVSlPNWIdAIym438HwfVK9eZ5luPP4fjspCG2oriEJGwAKQBSp/LjVyT7snsSd04/u645YZkSNj2LsyJLTK3YyC2lawnMEqJVa/q9U8/VHgscR9k7snPt1Vvx81/jqbX/fx/d6UpOpkJatOMMA6uIRluhFZtyF5PRoKmHM9MiScdwdqPJaeW1GWVhCwrKFKBTe3u1KUorKuLrkhPlK4tobUjA8L/9k=';
   const el = document.getElementById('trofMapaContent');
   if(!el) return;
   const data = TROFEOS_MAPA_DATA[_trofMapaActivo];
   if(!data){ el.innerHTML='<div style="color:var(--muted);text-align:center;padding:40px;">Sin datos aun</div>'; return; }
   const q = (document.getElementById('trofMapaBuscar')?.value||'').toLowerCase();
   const peces = q ? data.peces.filter(p=>p.n.toLowerCase().includes(q)) : data.peces;
-  el.innerHTML =
-    '<div style="margin-bottom:14px;">' +
-      '<input id="trofMapaBuscar" placeholder="Buscar pez..." oninput="renderTrofMapaContent()" value="'+q+'" ' +
-      'style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:8px 16px;color:var(--text);font-size:.82rem;font-family:\'Exo 2\',sans-serif;outline:none;box-sizing:border-box;">' +
-    '</div>' +
-    '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;">' +
-      '<div style="display:grid;grid-template-columns:1fr 120px 120px;background:var(--bg3);padding:10px 16px;font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">' +
-        '<div>Pez</div><div style="text-align:center;">Trofeo</div><div style="text-align:center;">Trofeo Raro</div>' +
-      '</div>' +
-      peces.map(function(p,i){
-        return '<div style="display:grid;grid-template-columns:1fr 120px 120px;padding:10px 16px;border-top:1px solid var(--border);align-items:center;' + (i%2===0?'':'background:rgba(255,255,255,.025)') + '">' +
-          '<div style="font-size:.85rem;font-weight:600;">'+p.n+'</div>' +
-          '<div style="text-align:center;font-size:.83rem;color:var(--gold);font-weight:700;">'+p.t+'</div>' +
-          '<div style="text-align:center;font-size:.83rem;color:#c084fc;font-weight:700;">'+p.r+'</div>' +
-        '</div>';
-      }).join('') +
-      (peces.length===0 ? '<div style="text-align:center;padding:32px;color:var(--muted);font-size:.82rem;">Sin resultados</div>' : '') +
-    '</div>' +
-    '<div style="text-align:right;margin-top:8px;font-size:.68rem;color:var(--muted);">' + peces.length + ' peces &middot; Fuente: rf4h.ru</div>';
+  const cards = peces.map(function(p){
+    const imgSrc = FISH_IMGS[p.n] || '';
+    const imgTag = imgSrc
+      ? `<img src="${imgSrc}" alt="${p.n}" style="width:100%;height:140px;object-fit:contain;filter:drop-shadow(0 4px 12px rgba(0,0,0,.7));padding:8px;box-sizing:border-box;">`
+      : `<div style="height:140px;display:flex;align-items:center;justify-content:center;font-size:3rem;">🐟</div>`;
+    return `<div class="rv-fish-card">
+      <div class="rv-fish-img-wrap">${imgTag}</div>
+      <div class="rv-fish-name">${p.n}</div>
+      <div class="rv-fish-weights">
+        <div class="rv-weight-row"><span class="rv-weight-label"><img src="${TROPHY_ICON}" style="width:16px;height:16px;object-fit:contain;vertical-align:middle"> Trophy</span><span class="rv-weight-val rv-trophy">${p.t}</span></div>
+        <div class="rv-weight-row"><span class="rv-weight-label"><img src="${RARE_ICON}" style="width:16px;height:16px;object-fit:contain;vertical-align:middle"> Rare</span><span class="rv-weight-val rv-rare">${p.r}</span></div>
+      </div>
+    </div>`;
+  }).join('');
+  el.innerHTML = `
+    <style>
+      .rv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;margin-bottom:16px;}
+      .rv-fish-card{background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid rgba(46,196,182,.25);border-radius:14px;overflow:hidden;transition:transform .2s,border-color .2s;cursor:default;}
+      .rv-fish-card:hover{transform:translateY(-3px);border-color:rgba(46,196,182,.7);}
+      .rv-fish-img-wrap{background:linear-gradient(180deg,rgba(46,196,182,.08),rgba(0,0,0,.3));border-bottom:1px solid rgba(46,196,182,.15);}
+      .rv-fish-name{font-family:'Cinzel',serif;font-size:.78rem;font-weight:700;text-align:center;color:#d4e8f0;padding:8px 6px 4px;}
+      .rv-fish-weights{padding:4px 10px 10px;}
+      .rv-weight-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+      .rv-weight-row:last-child{border-bottom:none;}
+      .rv-weight-label{font-size:.68rem;color:#7aa8c0;display:flex;align-items:center;gap:4px;}
+      .rv-weight-val{font-size:.75rem;font-weight:700;}
+      .rv-trophy{color:#e8c46a;}
+      .rv-rare{color:#c084fc;}
+    </style>
+    <div style="margin-bottom:14px;">
+      <input id="trofMapaBuscar" placeholder="Buscar pez..." oninput="renderTrofMapaContent()" value="${q}"
+        style="width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(46,196,182,.3);border-radius:20px;padding:8px 16px;color:#d4e8f0;font-size:.82rem;outline:none;box-sizing:border-box;">
+    </div>
+    <div class="rv-grid">
+      ${cards || '<div style="text-align:center;padding:32px;color:var(--muted);grid-column:1/-1;">Sin resultados</div>'}
+    </div>
+    <div style="text-align:right;font-size:.68rem;color:var(--muted);">${peces.length} peces &middot; Fuente: rf4h.ru</div>`;
 }
 window.switchTrofMapaTab = switchTrofMapaTab;
 window.renderTrofMapaContent = renderTrofMapaContent;
