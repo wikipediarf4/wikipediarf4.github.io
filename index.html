@@ -1616,9 +1616,13 @@ select.fi option{background:#fff;}
 </div>
 
 <!-- Burbuja minimizada -->
-<div id="chatBubbleMin" style="display:none;position:fixed;bottom:24px;right:24px;z-index:3000;cursor:pointer;" onclick="maximizeMessenger()">
-  <div style="width:56px;height:56px;border-radius:50%;background:var(--accent);box-shadow:0 4px 20px rgba(24,119,242,.5);display:flex;align-items:center;justify-content:center;font-size:1.4rem;transition:transform .15s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">💬</div>
-  <span id="chatBubbleMinBadge" style="display:none;position:absolute;top:0;right:0;background:var(--red);color:#fff;border-radius:50%;width:18px;height:18px;font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #fff;"></span>
+<div id="chatBubbleMin" style="display:none;position:fixed;bottom:24px;right:24px;z-index:3000;">
+  <!-- Avatar clickeable para abrir -->
+  <div onclick="maximizeMessenger()" style="width:56px;height:56px;border-radius:50%;background:var(--accent);box-shadow:0 4px 20px rgba(24,119,242,.5);display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;color:#fff;cursor:pointer;transition:transform .15s;overflow:hidden;border:2px solid #fff;position:relative;" id="chatBubbleAvatar" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">💬</div>
+  <!-- X para cerrar completamente -->
+  <div onclick="closeMessenger()" style="position:absolute;top:-4px;right:-4px;width:20px;height:20px;background:#333;border:2px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.65rem;color:#fff;font-weight:900;z-index:1;transition:background .15s;" onmouseover="this.style.background='var(--red)'" onmouseout="this.style.background='#333'">✕</div>
+  <!-- Badge de mensajes no leídos -->
+  <span id="chatBubbleMinBadge" style="display:none;position:absolute;top:-2px;left:-2px;background:var(--red);color:#fff;border-radius:50%;width:18px;height:18px;font-size:.62rem;font-weight:700;align-items:center;justify-content:center;border:2px solid #fff;"></span>
 </div>
 
 <!-- User Profile Modal -->
@@ -6616,8 +6620,19 @@ function minimizeMessenger(){
   if(el){
     bubble.style.bottom = el.style.bottom || '24px';
     bubble.style.right = el.style.right || '24px';
-    bubble.style.left = el.style.left || '';
-    bubble.style.top = el.style.top || '';
+    bubble.style.left = el.style.left || 'auto';
+    bubble.style.top = el.style.top || 'auto';
+  }
+  // Show avatar of chat user inside bubble
+  const av = document.getElementById('chatBubbleAvatar');
+  if(av && _chatUserId){
+    const cachedAv = window._chatUserAvCache && window._chatUserAvCache[_chatUserId];
+    const nick = _chatUserNick || '?';
+    if(cachedAv){
+      av.innerHTML = `<img src="${cachedAv}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    } else {
+      av.innerHTML = `<span style="font-size:1.2rem;font-weight:700;">${nick[0].toUpperCase()}</span>`;
+    }
   }
 }
 
@@ -6675,6 +6690,52 @@ function maximizeMessenger(){
     if(handle){
       handle.addEventListener('mousedown', onDown);
       handle.addEventListener('touchstart', onDown, {passive:false});
+    }
+  });
+})();
+
+// ===== DRAG for minimized bubble =====
+(function initBubbleDrag(){
+  let dragging=false, startX, startY, startRight, startBottom, moved=false;
+  const getEl = ()=>document.getElementById('chatBubbleMin');
+  function onDown(e){
+    if(e.target.closest('[onclick*="closeMessenger"]')) return; // don't drag on X
+    dragging=true; moved=false;
+    const touch = e.touches ? e.touches[0] : e;
+    startX=touch.clientX; startY=touch.clientY;
+    const el=getEl(); if(!el) return;
+    const rect=el.getBoundingClientRect();
+    startRight=window.innerWidth-rect.right;
+    startBottom=window.innerHeight-rect.bottom;
+    document.addEventListener('mousemove',onMove);
+    document.addEventListener('mouseup',onUp);
+    document.addEventListener('touchmove',onMove,{passive:false});
+    document.addEventListener('touchend',onUp);
+  }
+  function onMove(e){
+    if(!dragging) return;
+    e.preventDefault();
+    const touch=e.touches?e.touches[0]:e;
+    const dx=touch.clientX-startX, dy=touch.clientY-startY;
+    if(Math.abs(dx)>4||Math.abs(dy)>4) moved=true;
+    const el=getEl(); if(!el) return;
+    let nr=Math.max(0,Math.min(window.innerWidth-60,startRight-dx));
+    let nb=Math.max(0,Math.min(window.innerHeight-60,startBottom-dy));
+    el.style.right=nr+'px'; el.style.bottom=nb+'px';
+    el.style.left='auto'; el.style.top='auto';
+  }
+  function onUp(){
+    dragging=false;
+    document.removeEventListener('mousemove',onMove);
+    document.removeEventListener('mouseup',onUp);
+    document.removeEventListener('touchmove',onMove);
+    document.removeEventListener('touchend',onUp);
+  }
+  document.addEventListener('DOMContentLoaded',()=>{
+    const el=getEl();
+    if(el){
+      el.addEventListener('mousedown',onDown);
+      el.addEventListener('touchstart',onDown,{passive:false});
     }
   });
 })();
