@@ -1241,10 +1241,24 @@ select.fi option{background:#fff;}
 
 <!-- Notifications -->
 <div class="mo" id="mNotif">
-  <div class="modal modal-sm">
-    <button class="mcx" onclick="cm('mNotif')">✕</button>
-    <div class="mt">🔔 Notificaciones</div>
-    <div id="notifList"></div>
+  <div class="modal" style="width:380px;max-width:97vw;max-height:88vh;display:flex;flex-direction:column;padding:0;overflow:hidden;border-radius:12px;">
+    <!-- Header -->
+    <div style="padding:16px 18px 0;background:var(--bg2);flex-shrink:0;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <span style="font-family:'Orbitron',monospace;font-size:1rem;font-weight:900;color:var(--text);">Notificaciones</span>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <button onclick="markAllNotifsRead()" title="Marcar todas como leídas" style="background:none;border:none;color:var(--muted);font-size:.72rem;cursor:pointer;padding:4px 8px;border-radius:6px;font-family:'Exo 2',sans-serif;font-weight:600;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">··· </button>
+          <button onclick="cm('mNotif')" style="background:var(--bg3);border:none;color:var(--text);font-size:1rem;cursor:pointer;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background='var(--bg3)'">✕</button>
+        </div>
+      </div>
+      <!-- Tabs -->
+      <div style="display:flex;gap:4px;margin-bottom:0;">
+        <button id="ntab-all" onclick="switchNotifTab('all')" style="padding:7px 14px;border:none;border-radius:20px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;background:var(--accent);color:#000;transition:all .15s;">Todas</button>
+        <button id="ntab-unread" onclick="switchNotifTab('unread')" style="padding:7px 14px;border:none;border-radius:20px;font-size:.82rem;font-weight:600;cursor:pointer;font-family:'Exo 2',sans-serif;background:transparent;color:var(--muted);transition:all .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="if(_notifTab!=='unread')this.style.background='transparent'">No leídas</button>
+      </div>
+    </div>
+    <!-- List -->
+    <div id="notifList" style="flex:1;overflow-y:auto;padding:8px 0;"></div>
   </div>
 </div>
 
@@ -3815,88 +3829,144 @@ function playNotifSound(){
     o.start(); o.stop(ctx.currentTime+0.25);
   } catch(e){}
 }
+let _notifTab = 'all';
+function switchNotifTab(tab){
+  _notifTab = tab;
+  const all = document.getElementById('ntab-all');
+  const unread = document.getElementById('ntab-unread');
+  if(all){ all.style.background = tab==='all'?'var(--accent)':'transparent'; all.style.color = tab==='all'?'#000':'var(--muted)'; }
+  if(unread){ unread.style.background = tab==='unread'?'var(--accent)':'transparent'; unread.style.color = tab==='unread'?'#000':'var(--muted)'; }
+  renderNotifs();
+}
+async function markAllNotifsRead(){
+  if(!window.CU||!_notifs.length) return;
+  _notifs.forEach(n=>n.read=true);
+  await updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs});
+  renderNotifs(); updateNotifBadge();
+}
+
+function _notifIcon(n){
+  // Retorna {emoji, bg, icon} para el badge sobre el avatar
+  if(n.type==='friendRequest') return {bg:'#1877f2', icon:'👥'};
+  const t = n.text||'';
+  if(t.includes('cumpleaños')||t.includes('🎂')) return {bg:'#e91e63', icon:'🎂'};
+  if(t.includes('reaccionó')||t.includes('❤️')||t.includes('😍')) return {bg:'#f02849', icon:'❤️'};
+  if(t.includes('comentó')||t.includes('💬')) return {bg:'#1877f2', icon:'💬'};
+  if(t.includes('compartió')||t.includes('🔁')) return {bg:'#1877f2', icon:'🔁'};
+  if(t.includes('etiquetó')||t.includes('🏷')) return {bg:'#1877f2', icon:'🏷️'};
+  if(t.includes('amigo')||t.includes('solicitud')||t.includes('aceptó')) return {bg:'#1877f2', icon:'👥'};
+  if(t.includes('spot')||t.includes('📍')) return {bg:'#43a047', icon:'📍'};
+  if(t.includes('trofeo')||t.includes('🏆')) return {bg:'#f9a825', icon:'🏆'};
+  if(t.includes('verificad')||t.includes('✅')) return {bg:'#ffd700', icon:'✅'};
+  if(t.includes('historia')||t.includes('📖')) return {bg:'#9c27b0', icon:'📖'};
+  if(t.includes('felicitó')||t.includes('🎉')) return {bg:'#e91e63', icon:'🎉'};
+  return {bg:'#1877f2', icon:'🔔'};
+}
+
 function renderNotifs(){
   const el = document.getElementById('notifList');
-  if(!_notifs.length){
-    el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.85rem">Sin notificaciones</div>';
+  if(!el) return;
+  const list = _notifTab==='unread' ? _notifs.filter(n=>!n.read) : _notifs;
+  if(!list.length){
+    el.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--muted);">
+      <div style="font-size:2.5rem;margin-bottom:10px;">${_notifTab==='unread'?'✓':'🔔'}</div>
+      <div style="font-size:.85rem;">${_notifTab==='unread'?'Todo al día, sin notificaciones sin leer':'Sin notificaciones aún'}</div>
+    </div>`;
     el.onclick = null;
     return;
   }
-  el.innerHTML = _notifs.slice(0,20).map((n,i)=>{
-    if(n.type === 'friendRequest'){
-      const avatarInner = n.fromAv
-        ? `<img src="${n.fromAv}" style="width:100%;height:100%;object-fit:cover;">`
-        : (n.fromNick||'?')[0].toUpperCase();
-      const safeNick = (n.fromNick||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
-      return `
-        <div style="padding:12px 14px;border-bottom:1px solid var(--border);">
-          <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;">
-            <div data-action="view-profile" data-uid="${n.fromId}" data-nick="${safeNick}"
-              style="width:38px;height:38px;border-radius:50%;background:var(--bg3);border:1px solid var(--accent);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;cursor:pointer;">
-              ${avatarInner}
-            </div>
-            <div style="flex:1;min-width:0;">
-              <div data-action="view-profile" data-uid="${n.fromId}" data-nick="${safeNick}" style="font-weight:600;cursor:pointer;">${n.fromNick||''} <span style="font-weight:400;color:var(--muted);">quiere ser tu amigo</span></div>
-              <div style="font-size:.7rem;color:var(--muted);margin-top:2px;">${fmtT(n.time)}</div>
-            </div>
-          </div>
+
+  // Agrupar por hoy / anteriores
+  const now = Date.now();
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const todayTs = todayStart.getTime();
+  const todayItems = list.filter(n=>(n.time||0)>=todayTs);
+  const prevItems  = list.filter(n=>(n.time||0)<todayTs);
+
+  function renderItem(n, i){
+    const isRead = !!n.read;
+    const {bg, icon} = _notifIcon(n);
+
+    // Avatar del que generó la notif
+    const fromAv = n.fromAv || n.visitorAv || '';
+    const fromNick = n.fromNick || n.visitorNick || 'RF4';
+    const avInner = fromAv
+      ? `<img src="${fromAv}" style="width:100%;height:100%;object-fit:cover;">`
+      : `<span style="font-size:1.1rem;font-weight:800;color:var(--accent);">${(fromNick[0]||'R').toUpperCase()}</span>`;
+
+    if(n.type==='friendRequest'){
+      const safeNick = (n.fromNick||'').replace(/['"<>&]/g,'');
+      return `<div style="display:flex;align-items:flex-start;gap:12px;padding:10px 16px;transition:background .15s;${isRead?'':'background:rgba(0,198,255,.05);'};cursor:pointer;"
+        onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='${isRead?'':'rgba(0,198,255,.05)'}'">
+        <div style="position:relative;flex-shrink:0;">
+          <div style="width:52px;height:52px;border-radius:50%;background:var(--bg3);overflow:hidden;display:flex;align-items:center;justify-content:center;">${avInner}</div>
+          <div style="position:absolute;bottom:-2px;right:-2px;width:20px;height:20px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;font-size:.7rem;border:2px solid var(--bg2);">${icon}</div>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:.83rem;line-height:1.4;margin-bottom:8px;"><strong>${esc(n.fromNick||'')}</strong> <span style="color:var(--muted);">quiere ser tu amigo/a</span></div>
+          <div style="font-size:.7rem;color:var(--accent);margin-bottom:10px;">${fmtT(n.time)}</div>
           <div style="display:flex;gap:8px;">
             <button data-action="accept-friend" data-idx="${i}" data-uid="${n.fromId}" data-nick="${safeNick}"
-              style="flex:1;padding:7px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#000;border-radius:var(--rs);font-size:.8rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">✓ Aceptar</button>
+              style="flex:1;padding:8px;background:var(--accent);border:none;color:#000;border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;transition:opacity .15s;"
+              onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Confirmar</button>
             <button data-action="reject-friend" data-idx="${i}"
-              style="flex:1;padding:7px;background:rgba(255,68,68,.1);border:1px solid rgba(255,68,68,.3);color:var(--red);border-radius:var(--rs);font-size:.8rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">✕ Rechazar</button>
+              style="flex:1;padding:8px;background:var(--bg3);border:none;color:var(--text);border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;transition:background .15s;"
+              onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background='var(--bg3)'">Eliminar</button>
           </div>
-        </div>`;
+        </div>
+        ${!isRead?`<div style="width:10px;height:10px;background:var(--accent);border-radius:50%;flex-shrink:0;margin-top:4px;"></div>`:''}
+      </div>`;
     }
-    // Determine icon and whether it's clickable to a post
-    let icon = '🔔';
-    let clickable = false;
-    let postId = n.postId || null;
-    let profileUid = null;
-    let profileNick = null;
-    if(n.text){
-      if(n.storyComment) { icon='📖'; clickable=false; }
-      else if(n.text.includes('reaccionó')) { icon='❤️'; clickable=!!postId; }
-      else if(n.text.includes('comentó')) { icon='💬'; clickable=!!postId; }
-      else if(n.text.includes('compartió')) { icon='🔁'; clickable=!!postId; }
-      else if(n.text.includes('💬')) { icon='💬'; }
-      else if(n.text.includes('📍')) { icon='📍'; }
-      else if(n.text.includes('spot')) { icon='📍'; }
-    }
-    const unreadStyle = n.read ? '' : 'background:rgba(0,198,255,.05);';
-    return `<div data-action="notif-click" data-postid="${postId||''}" data-uid="${profileUid||''}" data-nick="${profileNick||''}"
-      style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:.83rem;display:flex;gap:10px;align-items:flex-start;cursor:${clickable?'pointer':'default'};${unreadStyle}transition:background .15s;"
-      onmouseover="if(${clickable})this.style.background='rgba(0,198,255,.08)'" onmouseout="this.style.background='${unreadStyle?'rgba(0,198,255,.05)':'transparent'}'">
-      <span style="font-size:1.1rem;flex-shrink:0;">${icon}</span>
-      <div style="flex:1;min-width:0;">
-        <div style="line-height:1.4;">${n.text||''}</div>
-        ${n.storyComment && n.storyPreview ? `<div style="font-size:.72rem;color:var(--accent);margin-top:3px;background:rgba(0,198,255,.06);padding:3px 8px;border-radius:var(--rs);border-left:2px solid var(--accent);">📖 Historia: "${n.storyPreview}"</div>` : ''}
-        <div style="font-size:.7rem;color:var(--muted);margin-top:3px;">${fmtT(n.time)}</div>
+
+    // Notif normal
+    const postId = n.postId||'';
+    const bdayUid = n.bdayUid||'';
+    const clickable = !!(postId || bdayUid);
+    return `<div data-action="notif-click" data-postid="${postId}" data-bdayuid="${bdayUid}" data-bdaynick="${n.bdayNick||''}"
+      style="display:flex;align-items:flex-start;gap:12px;padding:10px 16px;transition:background .15s;${isRead?'':'background:rgba(0,198,255,.05);'}cursor:${clickable?'pointer':'default'};"
+      onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='${isRead?'':'rgba(0,198,255,.05)'}'">
+      <div style="position:relative;flex-shrink:0;">
+        <div style="width:52px;height:52px;border-radius:50%;background:var(--bg3);overflow:hidden;display:flex;align-items:center;justify-content:center;">${avInner}</div>
+        <div style="position:absolute;bottom:-2px;right:-2px;width:20px;height:20px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;font-size:.7rem;border:2px solid var(--bg2);">${icon}</div>
       </div>
-      ${clickable?'<span style="color:var(--accent);font-size:.75rem;flex-shrink:0;margin-top:2px;">Ver →</span>':''}
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:.83rem;line-height:1.45;">${n.text||''}</div>
+        ${n.storyPreview?`<div style="font-size:.72rem;color:var(--accent);margin-top:3px;padding:3px 8px;border-radius:6px;border-left:2px solid var(--accent);background:rgba(0,198,255,.06);">📖 "${esc(n.storyPreview)}"</div>`:''}
+        <div style="font-size:.72rem;color:${isRead?'var(--muted)':'var(--accent)'};margin-top:4px;font-weight:${isRead?'400':'700'};">${fmtT(n.time)}</div>
+      </div>
+      ${!isRead?`<div style="width:10px;height:10px;background:var(--accent);border-radius:50%;flex-shrink:0;margin-top:4px;"></div>`:''}
     </div>`;
-  }).join('');
+  }
+
+  let html = '';
+  if(todayItems.length){
+    html += `<div style="padding:8px 16px 4px;font-size:.78rem;font-weight:800;color:var(--text);">Hoy</div>`;
+    html += todayItems.map((n,i)=>renderItem(n,i)).join('');
+  }
+  if(prevItems.length){
+    html += `<div style="padding:12px 16px 4px;font-size:.78rem;font-weight:800;color:var(--text);">Anteriores</div>`;
+    html += prevItems.map((n,i)=>renderItem(n, todayItems.length+i)).join('');
+  }
+  el.innerHTML = html;
+
   el.onclick = async (e)=>{
     const row = e.target.closest('[data-action]');
     if(!row) return;
     const action = row.dataset.action;
-    if(action === 'notif-click'){
-      const postId = row.dataset.postid;
-      if(postId){
-        cm('mNotif');
-        scrollToPost(postId);
-      }
-    } else if(action === 'view-profile'){
-      cm('mNotif');
-      openUserProfile(row.dataset.uid, row.dataset.nick);
-    } else if(action === 'accept-friend'){
-      row.disabled = true; row.textContent = 'Aceptando...';
+    if(action==='notif-click'){
+      if(row.dataset.postid){ cm('mNotif'); scrollToPost(row.dataset.postid); }
+      else if(row.dataset.bdayuid){ cm('mNotif'); openUserProfile(row.dataset.bdayuid, row.dataset.bdaynick); }
+    } else if(action==='view-profile'){
+      cm('mNotif'); openUserProfile(row.dataset.uid, row.dataset.nick);
+    } else if(action==='accept-friend'){
+      row.disabled=true; row.textContent='Aceptando...';
       await acceptFriendRequest(row.dataset.uid, row.dataset.nick, parseInt(row.dataset.idx));
-    } else if(action === 'reject-friend'){
+    } else if(action==='reject-friend'){
       await rejectFriendRequest(parseInt(row.dataset.idx));
     }
   };
 }
+
 function updateNotifBadge(){
   const unread = _notifs.filter(n=>!n.read && !(n.text&&n.text.startsWith('💬'))).length;
   const el = document.getElementById('notifDot');
@@ -6199,47 +6269,69 @@ function renderMessengerList(){
     let showFriends = friends;
     if(_currentChatTab === 'unread') showFriends = friends.filter(f=>_chatLastMsgs[f.id]?.unread);
 
+    // Ordenar: con mensajes primero, luego por tiempo desc
+    showFriends = [...showFriends].sort((a,b)=>{
+      const ta = _chatLastMsgs[a.id]?.time||0;
+      const tb = _chatLastMsgs[b.id]?.time||0;
+      return tb - ta;
+    });
+
+    // Search bar — agregar si no existe
+    if(!list.querySelector('#chatSearchInput')){
+      const sb = document.createElement('div');
+      sb.style.cssText='padding:8px 10px 4px;';
+      sb.innerHTML=`<div style="background:var(--bg3);border-radius:20px;display:flex;align-items:center;gap:6px;padding:7px 12px;">
+        <span style="color:var(--muted);font-size:.85rem;">🔍</span>
+        <input id="chatSearchInput" placeholder="Buscar en Messenger" style="background:none;border:none;outline:none;color:var(--text);font-size:.82rem;flex:1;font-family:'Exo 2',sans-serif;" oninput="filterChatSearch(this.value)">
+      </div>`;
+      list.insertBefore(sb, list.firstChild);
+    }
 
     const friendItems = showFriends.map(f=>{
       const isOnline = onlineIds.has(f.id);
-      const safeNick = (f.nick||'').replace(/["'<>&]/g,'');
+      const safeNick = (f.nick||'').replace(/['"<>&]/g,'');
       const lm = _chatLastMsgs[f.id];
-      const lastTxt = lm ? (lm.mine ? 'Tú: '+lm.text : lm.text) : (isOnline ? 'En línea' : 'Desconectado');
+      const lastTxt = lm
+        ? (lm.mine ? 'Tú: '+lm.text : lm.text)
+        : (isOnline ? '● En línea' : '');
       const lastTime = lm?.time ? fmtT(lm.time) : '';
       const hasUnread = !!lm?.unread;
-      return `<div data-chatuid="${f.id}" data-chatnick="${safeNick}"
-        style="display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;border-radius:var(--rs);transition:background .15s;${hasUnread?'background:rgba(24,119,242,.08);':''}"
-        onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='${hasUnread?'rgba(24,119,242,.08)':''}'"
-      >
-        <div style="position:relative;width:44px;height:44px;flex-shrink:0;">
-          <div style="width:44px;height:44px;border-radius:50%;background:var(--bg3);border:1px solid ${hasUnread?'var(--accent)':'var(--border)'};display:flex;align-items:center;justify-content:center;font-weight:700;overflow:hidden;">
-            ${f.av?`<img src="${f.av}" style="width:100%;height:100%;object-fit:cover;">`:f.nick[0].toUpperCase()}
+      const avInner = f.av
+        ? `<img src="${f.av}" style="width:100%;height:100%;object-fit:cover;">`
+        : `<span style="font-size:1.1rem;font-weight:800;color:var(--accent);">${(f.nick||'?')[0].toUpperCase()}</span>`;
+
+      return `<div data-chatuid="${f.id}" data-chatnick="${safeNick}" data-searchname="${(f.nick||'').toLowerCase()}"
+        style="display:flex;align-items:center;gap:12px;padding:8px 12px;cursor:pointer;border-radius:10px;margin:1px 6px;transition:background .15s;${hasUnread?'background:rgba(0,198,255,.07);':''}"
+        onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='${hasUnread?'rgba(0,198,255,.07)':'transparent'}'">
+        <!-- Avatar con estado online -->
+        <div style="position:relative;flex-shrink:0;">
+          <div style="width:48px;height:48px;border-radius:50%;background:var(--bg3);overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:700;">
+            ${avInner}
           </div>
-          ${isOnline?'<div style="position:absolute;bottom:1px;right:1px;width:10px;height:10px;background:var(--green);border-radius:50%;border:2px solid var(--bg2);"></div>':''}
+          ${isOnline?`<div style="position:absolute;bottom:1px;right:1px;width:12px;height:12px;background:#31a24c;border-radius:50%;border:2px solid var(--bg2);"></div>`:''}
         </div>
+        <!-- Info -->
         <div style="flex:1;min-width:0;">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:4px;">
-            <div style="font-size:.85rem;font-weight:${hasUnread?'800':'700'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(f.nick)}</div>
-            <div style="font-size:.65rem;color:${hasUnread?'var(--accent)':'var(--muted)'};white-space:nowrap;flex-shrink:0;">${lastTime}</div>
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:4px;margin-bottom:2px;">
+            <div style="font-size:.87rem;font-weight:${hasUnread?'800':'600'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(f.nick)}</div>
+            <div style="font-size:.66rem;color:${hasUnread?'var(--accent)':'var(--muted)'};white-space:nowrap;flex-shrink:0;">${lastTime}</div>
           </div>
           <div style="display:flex;align-items:center;gap:4px;">
-            <div style="font-size:.72rem;color:${hasUnread?'var(--text)':'var(--muted)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:${hasUnread?'700':'400'};">${esc(lastTxt)}</div>
-            ${hasUnread?'<div style="width:8px;height:8px;background:var(--accent);border-radius:50%;flex-shrink:0;"></div>':''}
+            <div style="font-size:.76rem;color:${hasUnread?'var(--text)':'var(--muted)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:${hasUnread?'600':'400'};">${esc(lastTxt)}</div>
+            ${hasUnread?`<div style="min-width:18px;height:18px;background:var(--accent);border-radius:100px;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800;color:#000;padding:0 4px;flex-shrink:0;">N</div>`:''}
           </div>
         </div>
       </div>`;
     }).join('');
 
-    if(_currentChatTab === 'unread' && showFriends.length===0){
-      list.innerHTML = '<div style="text-align:center;padding:32px 16px;color:var(--muted);font-size:.82rem;">No tenés mensajes sin leer ✓</div>';
-    } else {
-      list.innerHTML = friendItems || '<div style="text-align:center;padding:24px;color:var(--muted);font-size:.83rem;">Sin contactos aún</div>';
-    }
-
-    // Cache avatars
-    if(!window._chatUserAvCache) window._chatUserAvCache = {};
-    friends.forEach(f=>{ if(f.av) window._chatUserAvCache[f.id]=f.av; });
-    snap.docs.forEach(d=>{ const u=d.data(); if(u.av) window._chatUserAvCache[d.id]=u.av; });
+    const listContainer = list.querySelector('#chatListItems') || (() => {
+      const d = document.createElement('div'); d.id='chatListItems'; list.appendChild(d); return d;
+    })();
+    listContainer.innerHTML = friendItems || (
+      _currentChatTab==='unread'
+        ? '<div style="text-align:center;padding:32px 16px;color:var(--muted);font-size:.82rem;">✓ Sin mensajes sin leer</div>'
+        : '<div style="text-align:center;padding:24px;color:var(--muted);font-size:.83rem;">Sin contactos aún</div>'
+    );
 
     list.onclick = (e)=>{
       const row = e.target.closest('[data-chatuid]');
@@ -7365,6 +7457,7 @@ const _expose = {
   reportPost,submitReport,
   loadAdminData,deleteAdminPost,resolveReport,
   requestVerification, loadVerifRequests, adminApproveVerif, adminRejectVerif, adminRevokeVerif,
+  switchNotifTab, markAllNotifsRead, filterChatSearch,
   checkFriendsBirthdays, bdaySendWish,
   launchGoldConfetti, applyVerifStoryRings, tryApplyChatGold,
   pinPost, unpinPost, toggleAnonMode, registerProfileVisit, loadProfileVisitors, setupBioLimit,
@@ -7663,6 +7756,14 @@ async function bdaySendWish(uid, nick){
   toast('¡Mensaje de cumpleaños listo para enviar! 🎉','ok');
 }
 
+
+function filterChatSearch(val){
+  const items = document.querySelectorAll('#chatListItems [data-chatuid]');
+  const q = val.toLowerCase().trim();
+  items.forEach(el=>{
+    el.style.display = (!q || (el.dataset.searchname||'').includes(q)) ? '' : 'none';
+  });
+}
 Object.entries(_expose).forEach(([k,v])=>{ window[k]=v; });
 // Replay any calls that happened before module loaded
 if(window._q) window._q.forEach(([name,args])=>{ if(window[name]) window[name](...args); });
