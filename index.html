@@ -2243,7 +2243,7 @@ select.fi option{background:#fff;}
     <div style="font-size:3.5rem;margin-bottom:10px;position:relative;">🏆</div>
     <div style="font-family:'Orbitron',monospace;font-size:1.25rem;font-weight:900;color:var(--gold);margin-bottom:8px;position:relative;">Publica tu Trofeo</div>
     <div style="font-size:.84rem;color:var(--muted);line-height:1.7;margin-bottom:24px;position:relative;">
-      Registrá tu captura en la <strong style="color:var(--text);">Wiki Oficial RF4 Latam</strong><br>y que quede en los récords para siempre.
+      Registrá tu captura en la <strong style="color:var(--text);">WikiPediaRF4</strong><br>y que quede en los récords para siempre.
     </div>
 
     <!-- Botón principal -->
@@ -2255,7 +2255,7 @@ select.fi option{background:#fff;}
     </a>
 
     <div style="margin-top:14px;position:relative;">
-      <a href="https://rf4wikipedia.netlify.app/login" target="_blank"
+      <a href="https://rf4wikipedia.netlify.app" target="_blank"
          style="text-decoration:none;display:inline-flex;align-items:center;gap:7px;color:var(--accent);border:1.5px solid rgba(0,120,255,.4);background:rgba(0,120,255,.06);font-weight:700;font-size:.88rem;padding:10px 26px;border-radius:var(--r);transition:.2s;"
          onmouseover="this.style.background='rgba(0,120,255,.14)';this.style.borderColor='var(--accent)'"
          onmouseout="this.style.background='rgba(0,120,255,.06)';this.style.borderColor='rgba(0,120,255,.4)'">
@@ -2270,7 +2270,7 @@ select.fi option{background:#fff;}
       <div style="font-size:1.6rem;flex-shrink:0;margin-top:2px;">🔑</div>
       <div>
         <div style="font-size:.78rem;font-weight:800;color:var(--text);margin-bottom:3px;">1. Iniciá sesión</div>
-        <div style="font-size:.71rem;color:var(--muted);line-height:1.5;">Creá tu cuenta o ingresá en rf4wikipedia.netlify.app</div>
+        <div style="font-size:.71rem;color:var(--muted);line-height:1.5;">Creá tu cuenta o ingresá en <strong style="color:var(--text);">WikipediaRF4</strong></div>
       </div>
     </div>
     <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;display:flex;align-items:flex-start;gap:12px;">
@@ -2393,7 +2393,7 @@ select.fi option{background:#fff;}
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:10px;">
     <div>
       <div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:var(--gold);">🥇 Feed de Trofeos</div>
-      <div style="font-size:.75rem;color:var(--muted);margin-top:3px;">Trofeos aprobados en <a href="https://rf4wikipedia.netlify.app" target="_blank" style="color:var(--accent);">rf4wikipedia.netlify.app</a> · actualización en tiempo real</div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:3px;">Trofeos aprobados en <a href="https://rf4wikipedia.netlify.app" target="_blank" style="color:var(--accent);">WikipediaRF4</a> · actualización en tiempo real</div>
     </div>
     <div id="trofeoFeedBadge" style="display:none;background:rgba(255,215,0,.12);border:1px solid rgba(255,215,0,.35);color:var(--gold);padding:4px 12px;border-radius:100px;font-size:.72rem;font-weight:700;">
       🔴 En vivo
@@ -9822,7 +9822,7 @@ function renderTrofeosFeed(){
     el.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--muted);">
       <div style="font-size:3rem;margin-bottom:12px;">🏆</div>
       <div style="font-size:.95rem;font-weight:700;margin-bottom:6px;">No hay trofeos aprobados aún</div>
-      <div style="font-size:.8rem;">Los trofeos aprobados en <a href="https://rf4wikipedia.netlify.app" target="_blank" style="color:var(--accent);">rf4wikipedia.netlify.app</a> aparecerán aquí automáticamente.</div>
+      <div style="font-size:.8rem;">Los trofeos aprobados en <a href="https://rf4wikipedia.netlify.app" target="_blank" style="color:var(--accent);">WikipediaRF4</a> aparecerán aquí automáticamente.</div>
     </div>`;
     return;
   }
@@ -9861,7 +9861,7 @@ function trofeoFeedCardHTML(t){
           <div class="post-author">${nick}</div>
           <span style="font-size:.62rem;font-weight:700;padding:1px 8px;border-radius:100px;border:1px solid rgba(255,215,0,.4);color:var(--gold);background:rgba(255,215,0,.08);">🥇 Trofeo</span>
         </div>
-        <div class="post-time">🌐 ${fmtT(approvedAt)} · rf4wikipedia.netlify.app</div>
+        <div class="post-time">🌐 ${fmtT(approvedAt)} · WikipediaRF4</div>
       </div>
       <a href="https://rf4wikipedia.netlify.app" target="_blank" style="background:none;border:1px solid rgba(255,215,0,.3);color:var(--gold);padding:4px 10px;border-radius:var(--rs);font-size:.7rem;font-weight:700;cursor:pointer;text-decoration:none;font-family:'Exo 2',sans-serif;">↗ Wiki</a>
     </div>
@@ -9887,7 +9887,7 @@ function trofeoFeedCardHTML(t){
     ${description?`<div style="padding:4px 14px 12px;font-size:.85rem;color:var(--muted);line-height:1.5;">${description}</div>`:''}
     <!-- Footer -->
     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-top:1px solid rgba(255,215,0,.12);">
-      <div style="font-size:.72rem;color:var(--muted);">Verificado en rf4wikipedia.netlify.app</div>
+      <div style="font-size:.72rem;color:var(--muted);">Verificado en WikipediaRF4</div>
       <a href="https://rf4wikipedia.netlify.app" target="_blank" style="font-size:.72rem;color:var(--accent);text-decoration:none;font-weight:600;">Ver registro completo ↗</a>
     </div>
   </div>`;
