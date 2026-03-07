@@ -332,18 +332,18 @@ img[title="Verificado"]:hover{
 #carretesTable tbody td{padding:8px 8px;vertical-align:middle;}
 
 /* ===== POST BOX ===== */
-.post-box{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:16px;box-shadow:0 1px 2px rgba(0,0,0,.1);}
+.post-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:16px;box-shadow:0 1px 2px rgba(0,0,0,.1);}
 .post-box-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-.post-input{flex:1;background:#f0f2f5;border:1px solid transparent;border-radius:100px;padding:10px 18px;
+.post-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:10px 18px;
   color:var(--muted);font-family:'Exo 2',sans-serif;font-size:.9rem;cursor:pointer;transition:all .2s;}
 .post-input:hover{background:#e4e6eb;color:var(--text);}
 .post-box-actions{display:flex;gap:4px;border-top:1px solid #dddfe2;padding-top:10px;}
 .pba{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:7px;border-radius:var(--rs);
   cursor:pointer;font-size:.82rem;font-weight:600;color:var(--muted);background:none;border:none;transition:all .2s;}
-.pba:hover{background:#f0f2f5;color:var(--text);}
+.pba:hover{background:var(--bg3);color:var(--text);}
 
 /* ===== POST CARD ===== */
-.post{background:#fff;border:1px solid var(--border);border-radius:var(--r);margin-bottom:16px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.1);}
+.post{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:16px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.1);}
 /* ── TEMAS DE PUBLICACIÓN (tienda) ── */
 .post-theme-ocean    { background:linear-gradient(160deg,#0a1628,#0d2347) !important; border-color:rgba(0,150,255,.3) !important; box-shadow:0 0 20px rgba(0,100,255,.15) !important; }
 .post-theme-fuego    { background:linear-gradient(160deg,#1a0800,#2d0f00) !important; border-color:rgba(255,80,0,.35) !important; box-shadow:0 0 20px rgba(255,60,0,.2) !important; }
@@ -387,7 +387,7 @@ img[title="Verificado"]:hover{
 .post-actions{display:flex;border-top:1px solid var(--border);}
 .post-action-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;
   background:none;border:none;color:var(--muted);font-size:.85rem;font-weight:600;transition:all .2s;border-radius:0;}
-.post-action-btn:hover{background:#f0f2f5;color:var(--text);}
+.post-action-btn:hover{background:var(--bg3);color:var(--text);}
 .post-action-btn.active{color:var(--accent);}
 
 /* REACTION POPUP */
@@ -412,25 +412,25 @@ img[title="Verificado"]:hover{
 
 /* Comment menu hover (CSS-only, no JS needed) */
 .cmt-menu-wrap{position:relative;flex-shrink:0;}
-.cmt-menu-wrap .cmt-menu-dropdown{display:none;position:absolute;right:0;top:0;background:#fff;border:1px solid var(--border);border-radius:var(--r);min-width:150px;z-index:9999;box-shadow:0 2px 12px rgba(0,0,0,.15);overflow:hidden;}
+.cmt-menu-wrap .cmt-menu-dropdown{display:none;position:absolute;right:0;top:0;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);min-width:150px;z-index:9999;box-shadow:0 2px 12px rgba(0,0,0,.15);overflow:hidden;}
 .cmt-menu-wrap:hover .cmt-menu-dropdown{display:block;}
 .cmt-menu-wrap .cmt-dots-btn{background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:50%;}
 .cmt-menu-wrap:hover .cmt-dots-btn{background:var(--bg4);}
 
 /* Comment reaction popup hover (CSS-only) */
 .cmt-rxn-wrap{position:relative;}
-.cmt-rxn-wrap .cmt-rxn-popup{display:none;position:absolute;bottom:100%;left:0;background:#fff;border:1px solid var(--border);border-radius:100px;padding:8px 10px 16px;align-items:center;box-shadow:0 2px 12px rgba(0,0,0,.2);white-space:nowrap;z-index:9998;flex-direction:row;}
+.cmt-rxn-wrap .cmt-rxn-popup{display:none;position:absolute;bottom:100%;left:0;background:var(--bg2);border:1px solid var(--border);border-radius:100px;padding:8px 10px 16px;align-items:center;box-shadow:0 2px 12px rgba(0,0,0,.2);white-space:nowrap;z-index:9998;flex-direction:row;}
 .cmt-rxn-wrap:hover .cmt-rxn-popup{display:flex;}
 
 .comments-section.open{display:block;}
 .comment-input-row{display:flex;gap:8px;margin-bottom:10px;}
-.comment-input{flex:1;background:#f0f2f5;border:1px solid transparent;border-radius:100px;
+.comment-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:100px;
   padding:8px 14px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.83rem;outline:none;}
-.comment-input:focus{border-color:var(--accent);background:#fff;}
+.comment-input:focus{border-color:var(--accent);background:var(--bg3);}
 .comment-send{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#000;
   width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;}
 .comment-item{display:flex;gap:8px;margin-bottom:8px;}
-.comment-bubble{background:#f0f2f5;border-radius:var(--r);border-bottom-left-radius:4px;padding:8px 12px;flex:1;}
+.comment-bubble{background:var(--bg3);border-radius:var(--r);border-bottom-left-radius:4px;padding:8px 12px;flex:1;}
 .comment-author{font-size:.78rem;font-weight:700;color:var(--accent);margin-bottom:2px;}
 .comment-text{font-size:.83rem;line-height:1.4;}
 
@@ -446,7 +446,7 @@ img[title="Verificado"]:hover{
 @media(max-width:1100px){.sidebar-right{display:none;}}
 .sr-title{font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;padding:0 4px;}
 .contact-item{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:var(--r);cursor:pointer;transition:background .2s;}
-.contact-item:hover{background:#f0f2f5;}
+.contact-item:hover{background:var(--bg3);}
 .contact-av{width:34px;height:34px;border-radius:50%;border:2px solid var(--border);overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent);background:var(--bg3);flex-shrink:0;position:relative;}
 .contact-av img{width:100%;height:100%;object-fit:cover;}
 .online-dot{position:absolute;bottom:0px;right:0px;width:10px;height:10px;background:var(--green);border-radius:50%;border:2px solid #fff;animation:pulse-green 2s infinite;}
@@ -467,7 +467,7 @@ img[title="Verificado"]:hover{
 .mo{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);
   align-items:center;justify-content:center;padding:16px;}
 .mo.open{display:flex;}
-.modal{background:#fff;border:1px solid var(--border);border-radius:var(--r);width:100%;
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);width:100%;
   max-height:90vh;overflow-y:auto;position:relative;animation:mIn .22s ease;}
 @keyframes mIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
 .modal-sm{max-width:480px;padding:24px;}
