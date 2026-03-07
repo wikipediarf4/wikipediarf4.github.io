@@ -7310,7 +7310,7 @@ async function startVoiceRecord(){
   _voiceTimerInterval = setInterval(()=>{
     _voiceSeconds++;
     updateVoiceTimer();
-    if(_voiceSeconds >= 120){ stopAndSendVoice(); } // max 2 min
+    if(_voiceSeconds >= 45){ stopAndSendVoice(); } // max 45s para no superar 1MB en Firestore
   }, 1000);
 
   // Wave animation
@@ -7382,18 +7382,20 @@ async function stopAndSendVoice(){
   toast('Enviando audio...','inf');
 
   try {
-    // Upload to Firebase Storage
-    const ext = blob.type.includes('ogg') ? 'ogg' : 'webm';
-    const filename = `voice/${window.CU.id}_${Date.now()}.${ext}`;
-    const sRef = storageRef(storage, filename);
-    await uploadBytes(sRef, blob, { contentType: blob.type });
-    const audioUrl = await getDownloadURL(sRef);
+    // Convertir a base64 y guardar directo en Firestore
+    const base64Audio = await blobToBase64(blob);
+    const dataUrl = `data:${blob.type};base64,${base64Audio}`;
 
-    // Send as chat message with audioUrl
+    // Firestore tiene límite de 1MB por documento — avisamos si es muy largo
+    if(base64Audio.length > 900000){
+      toast('Audio muy largo, grabá menos de 1 minuto','err');
+      return;
+    }
+
     const chatId = [window.CU.id, _chatUserId].sort().join('_');
     await addDoc(collection(db,'chats',chatId,'messages'),{
       uid: window.CU.id, nick: window.CU.nick,
-      audioUrl,
+      audioUrl: dataUrl,
       audioDuration: _voiceSeconds,
       text: '', time: serverTimestamp()
     });
