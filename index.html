@@ -155,6 +155,113 @@ button{font-family:'Exo 2',sans-serif;cursor:pointer;}
 .verif-stat-card{background:linear-gradient(135deg,rgba(255,215,0,.08),rgba(255,165,0,.04));border:1px solid rgba(255,215,0,.2);border-radius:14px;padding:14px;text-align:center;transition:transform .2s,box-shadow .2s;}
 .verif-stat-card:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(255,215,0,.15);}
 
+/* ===== POST VERIFICADO ===== */
+@keyframes verifPostGlow{0%,100%{box-shadow:0 0 0 0 rgba(255,215,0,.0),0 1px 3px rgba(0,0,0,.1)}50%{box-shadow:0 0 18px 3px rgba(255,215,0,.18),0 1px 3px rgba(0,0,0,.1)}}
+@keyframes verifBorderFlow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes verifAvatarSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+@keyframes verifBadgeBounce{0%,100%{transform:scale(1)}40%{transform:scale(1.3)}60%{transform:scale(.9)}}
+@keyframes verifShine{0%{left:-100%}100%{left:200%}}
+@keyframes verifStarPop{0%{opacity:0;transform:scale(0) rotate(-30deg)}60%{opacity:1;transform:scale(1.2) rotate(5deg)}100%{opacity:1;transform:scale(1) rotate(0deg)}}
+
+.post-verified{
+  position:relative;
+  border:1.5px solid rgba(255,215,0,.45) !important;
+  background:linear-gradient(180deg,rgba(255,215,0,.04) 0%,#fff 60%) !important;
+  animation:verifPostGlow 4s ease-in-out infinite;
+  overflow:hidden;
+}
+.post-verified::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,#ffd700,#ffec6e,#ffa500,#ff6f00,#ffd700);
+  background-size:300% 100%;
+  animation:verifBorderFlow 3s linear infinite;
+  z-index:2;
+}
+.post-verified .post-header{
+  background:linear-gradient(90deg,rgba(255,215,0,.07),transparent 70%);
+}
+
+/* Avatar animado en post verificado */
+.post-verified .post-av{
+  border:2px solid gold !important;
+  box-shadow:0 0 10px rgba(255,215,0,.5) !important;
+  position:relative;
+}
+.post-verified .post-av-wrap{
+  position:relative;
+  flex-shrink:0;
+}
+.post-verified .post-av-wrap::before{
+  content:'';
+  position:absolute;
+  inset:-4px;
+  border-radius:50%;
+  background:conic-gradient(gold 0deg, transparent 120deg, gold 240deg, transparent 360deg);
+  animation:verifAvatarSpin 3s linear infinite;
+  z-index:0;
+}
+.post-verified .post-av-wrap::after{
+  content:'';
+  position:absolute;
+  inset:-2px;
+  border-radius:50%;
+  background:#fff;
+  z-index:1;
+}
+.post-verified .post-av{
+  position:relative;
+  z-index:2;
+}
+
+/* Nombre dorado en post */
+.post-verified .post-author{
+  background:linear-gradient(90deg,#b8860b,#ffd700,#ffec6e,#ffa500,#b8860b);
+  background-size:300%;
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  animation:verifBorderFlow 4s ease infinite;
+}
+
+/* Etiqueta "Verificado" en la esquina */
+.verif-post-tag{
+  position:absolute;
+  top:10px;right:10px;
+  background:linear-gradient(135deg,#b8860b,#ffd700);
+  color:#000;
+  font-size:.6rem;
+  font-weight:900;
+  padding:3px 8px;
+  border-radius:100px;
+  letter-spacing:.06em;
+  z-index:3;
+  animation:verifStarPop .5s cubic-bezier(.34,1.56,.64,1) both;
+  box-shadow:0 2px 8px rgba(255,215,0,.5);
+  display:flex;align-items:center;gap:3px;
+}
+
+/* Barra inferior dorada */
+.post-verified .post-actions{
+  border-top:1px solid rgba(255,215,0,.2) !important;
+  background:rgba(255,215,0,.03);
+}
+.post-verified .post-stats{
+  border-top:1px solid rgba(255,215,0,.15) !important;
+}
+
+/* Shine sweep */
+.post-verified .post-header::after{
+  content:'';
+  position:absolute;
+  top:0;bottom:0;
+  width:60px;
+  background:linear-gradient(90deg,transparent,rgba(255,215,0,.12),transparent);
+  animation:verifShine 4s ease-in-out infinite;
+  pointer-events:none;
+}
+
 /* ===== CARRETES ===== */
 .cfbtn{background:var(--bg3);border:1px solid var(--border);border-radius:100px;color:var(--muted);padding:4px 10px;font-size:.73rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .15s;}
 .cfbtn:hover{border-color:var(--accent);color:var(--accent);}
@@ -2965,9 +3072,12 @@ function postHTML(p){
       })()
 
     }).join('');
-  return `<div class="post" id="post_${p.id}">
-    <div class="post-header">
-      <div class="post-av" style="cursor:pointer;${p.userVerified?'border:2px solid gold;box-shadow:0 0 8px rgba(255,215,0,.35);':''}" onclick="openUserProfile('${p.userId}','${esc(p.userNick)}')">${p.userAv?`<img src="${p.userAv}">`:(p.userNick||'U')[0]}</div>
+  return `<div class="post${p.userVerified?' post-verified':''}" id="post_${p.id}">
+    ${p.userVerified?`<div class="verif-post-tag">⭐ VERIFICADO</div>`:''}
+    <div class="post-header" style="position:relative;">
+      <div class="${p.userVerified?'post-av-wrap':''}">
+        <div class="post-av" style="cursor:pointer;" onclick="openUserProfile('${p.userId}','${esc(p.userNick)}')">${p.userAv?`<img src="${p.userAv}">`:(p.userNick||'U')[0]}</div>
+      </div>
       <div class="post-meta" style="cursor:pointer" onclick="openUserProfile('${p.userId}','${esc(p.userNick)}')">
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
           <div class="post-author">${esc(p.userNick)}${p.userVerified?' <span title="Verificado" style="font-size:.75rem;line-height:1;">✅</span>':''}</div>
