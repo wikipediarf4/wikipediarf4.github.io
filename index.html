@@ -7251,10 +7251,17 @@ async function renderAmigosPage(){
     const snap = await getDocs(collection(db,'users'));
     const allUsers = snap.docs.map(d=>({id:d.id,...d.data()}));
     const myId = window.CU?.id || window.CU?.uid || '';
+    const myNick = (window.CU?.nick || '').toLowerCase();
     const myFriends = window.CU?.friends || [];
     const notifs2 = window.CU.notifs || [];
     const pendingIds = notifs2.filter(n=>n.type==='friendRequest').map(n=>n.fromId);
-    const candidates = allUsers.filter(u => u.id !== myId && u.uid !== myId && !myFriends.includes(u.id) && !pendingIds.includes(u.id));
+    const candidates = allUsers.filter(u => {
+      if(u.id === myId || u.uid === myId) return false;
+      if(myNick && (u.nick||'').toLowerCase() === myNick) return false;
+      if(myFriends.includes(u.id)) return false;
+      if(pendingIds.includes(u.id)) return false;
+      return true;
+    });
     const shuffled = candidates.sort(()=>Math.random()-0.5).slice(0,12);
     if(!shuffled.length){ suggList.innerHTML='<div style="font-size:.8rem;color:var(--muted);padding:8px;">No hay sugerencias por ahora</div>'; return; }
     suggList.innerHTML = shuffled.map(u=>`
@@ -7281,9 +7288,15 @@ async function renderSuggestedUsers(){
     const snap = await getDocs(collection(db,'users'));
     const allUsers = snap.docs.map(d=>({id:d.id,...d.data()}));
     const myId = window.CU?.id || window.CU?.uid || '';
+    const myNick = (window.CU?.nick || '').toLowerCase();
     const myFriends = window.CU?.friends || [];
-    // Filter out self and existing friends, pick random ones
-    const candidates = allUsers.filter(u => u.id !== myId && u.uid !== myId && !myFriends.includes(u.id));
+    // Filter out self and existing friends
+    const candidates = allUsers.filter(u => {
+      if(u.id === myId || u.uid === myId) return false;
+      if(myNick && (u.nick||'').toLowerCase() === myNick) return false;
+      if(myFriends.includes(u.id)) return false;
+      return true;
+    });
     // Shuffle and pick up to 5
     const shuffled = candidates.sort(()=>Math.random()-0.5).slice(0,5);
     el.innerHTML = shuffled.length
