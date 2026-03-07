@@ -6748,11 +6748,37 @@ function openChatWith(uid, nick){
       const el = document.getElementById('chatMessages');
       if(!el) return;
       const msgs = snap.docs.map(d=>({id:d.id,...d.data()}));
+      // Mark incoming messages as read with timestamp
+      msgs.forEach(m=>{
+        if(m.uid !== window.CU.id && !m.read){
+          const msgRef = doc(db,'chats',chatId,'messages',m.id);
+          updateDoc(msgRef,{read:true, readAt: Date.now()}).catch(()=>{});
+        }
+      });
       const CHAT_RXNS = window.CU?.verified ? ['👍','❤️','😂','😮','😢','🔥','🎣','🏅','🎖️','👑'] : ['👍','❤️','😂','😮','😢','🔥','🎣'];
       el.innerHTML = msgs.length
         ? msgs.map(m=>{
             const mine = m.uid === window.CU.id;
             const time = m.time?.toMillis ? fmtT(m.time.toMillis()) : '';
+            // Exact time HH:MM
+            const exactTime = (()=>{
+              const ms = m.time?.toMillis ? m.time.toMillis() : (typeof m.time === 'number' ? m.time : 0);
+              if(!ms) return '';
+              const d = new Date(ms);
+              return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
+            })();
+            // Read status for my messages
+            const readLabel = (()=>{
+              if(!mine) return '';
+              if(m.read && m.readAt){
+                const d = new Date(m.readAt);
+                const h = d.getHours().toString().padStart(2,'0');
+                const min = d.getMinutes().toString().padStart(2,'0');
+                return `<span style="color:var(--accent);font-size:.62rem;">✓✓ Leído ${h}:${min}</span>`;
+              }
+              if(m.read) return `<span style="color:var(--accent);font-size:.62rem;">✓✓ Leído</span>`;
+              return `<span style="color:var(--muted);font-size:.62rem;">✓ Enviado</span>`;
+            })();
             const isStoryComment = m.storyComment;
             const storyImg = m.storyImg || '';
             const msgRxns = m.reactions || {};
@@ -6780,10 +6806,13 @@ function openChatWith(uid, nick){
                 ${msgContent}
                 ${msgRxnTotal>0?`<div onclick="reactChatMsg('${chatId}','${m.id}','')" style="position:absolute;${mine?'left:-8px':'right:-8px'};bottom:-12px;background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:1px 7px;font-size:.75rem;cursor:pointer;white-space:nowrap;">${msgTopRxns} ${msgRxnTotal}</div>`:''}
               </div>` : '';
-            return `<div style="display:flex;flex-direction:column;align-items:${mine?'flex-end':'flex-start'};gap:2px;margin-bottom:${msgRxnTotal>0?'12px':'4px'};">
+            return `<div style="display:flex;flex-direction:column;align-items:${mine?'flex-end':'flex-start'};gap:2px;margin-bottom:${msgRxnTotal>0?'12px':'4px'};" onclick="toggleMsgTime('msgtime_${m.id}')">
               ${storyCard}
               ${normalBubble}
-              <div style="font-size:.65rem;color:var(--muted);padding:0 4px;">${time}</div>
+              <div id="msgtime_${m.id}" style="display:none;flex-direction:column;align-items:${mine?'flex-end':'flex-start'};gap:1px;padding:0 4px;">
+                <span style="font-size:.65rem;color:var(--muted);">${exactTime}</span>
+                ${readLabel}
+              </div>
             </div>`;
           }).join('')
         : '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.8rem;">Empezá la conversación 👋</div>';
@@ -6980,6 +7009,16 @@ async function sendChatMsg(gifUrl){
   try {
     await addDoc(collection(db,'chats',chatId,'messages'), msgData);
   } catch(e){ toast('Error al enviar mensaje','err'); inp.value=text; }
+}
+
+// ===== MSG TIME TOGGLE =====
+function toggleMsgTime(id){
+  const el = document.getElementById(id);
+  if(!el) return;
+  const isOpen = el.style.display === 'flex';
+  // Close all other open time labels
+  document.querySelectorAll('[id^="msgtime_"]').forEach(e=>e.style.display='none');
+  if(!isOpen) el.style.display='flex';
 }
 
 // ===== GIPHY =====
@@ -7912,7 +7951,7 @@ const _expose = {
   submitPatch, submitTorneo, submitAdminGroup, submitAd, toggleAd,
   banUser, deleteAdminContent, deleteAdminPost, resolveReport,
   openUserProfile, sendFriendRequest, togglePostMenu, renderProfileFriendsList, openEditPost, saveEditPost, deleteMyPost,
-  toggleMessenger, sendChatMsg, openChatWith, backToMessengerList, openPostWithYt, reactChatMsg, showMsgRxnBar, hideMsgRxnBar, keepMsgRxnBar, showCmtMenu, hideCmtMenu, setChatTyping, toggleGifPicker, closeGifPicker, searchGifs, sendGif,
+  toggleMessenger, sendChatMsg, openChatWith, backToMessengerList, openPostWithYt, reactChatMsg, showMsgRxnBar, hideMsgRxnBar, keepMsgRxnBar, showCmtMenu, hideCmtMenu, setChatTyping, toggleGifPicker, closeGifPicker, searchGifs, sendGif, toggleMsgTime,
   joinGroup, leaveGroup, openGroupPost, showGroupWelcome, previewGroupPostImg, removeGroupPostImg, submitGroupPost,
   acceptFriendRequest, rejectFriendRequest, dismissFriendRequest, sendFriendRequestFromProfile, loadRealFriends, updateNotifBadge, updateMsgBadge,
   previewSpotImg, removeSpotImg, submitSpot, loadSpots, loadFriendSpots, renderFriendSpotsInHome, openEditSpot, saveEditSpot, deleteSpot, scrollToPost, loadVideos, filterVideos,
