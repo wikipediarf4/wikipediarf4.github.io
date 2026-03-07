@@ -2172,12 +2172,20 @@ async function uploadImage(fileOrBase64, folder) {
 // Caché de usuarios verificados — se actualiza en tiempo real
 window._verifUsers = {};
 function listenVerifiedUsers(){
-  onSnapshot(query(collection(db,'users'), where('verified','==',true)), snap => {
-    const ids = new Set(snap.docs.map(d=>d.id));
-    window._verifUsers = {};
-    ids.forEach(id=>{ window._verifUsers[id]=true; });
-    renderFeed();
-    renderProfileFeed();
+  return new Promise(resolve => {
+    let resolved = false;
+    // Escucha toda la colección users y filtra verificados localmente
+    // (evita problemas de índices en Firestore con where)
+    onSnapshot(collection(db,'users'), snap => {
+      window._verifUsers = {};
+      snap.docs.forEach(d => {
+        const data = d.data();
+        if(data.verified === true) window._verifUsers[d.id] = true;
+      });
+      console.log('[RF4] Usuarios verificados cargados:', Object.keys(window._verifUsers));
+      if(!resolved){ resolved=true; resolve(); }
+      else { renderFeed(); renderProfileFeed(); }
+    });
   });
 }
 
@@ -2411,9 +2419,10 @@ async function doReg(){
 
 function onLogin(){
   updateNavUI();
-  listenPosts();
-  listenStories();
-  listenVerifiedUsers();
+  listenVerifiedUsers().then(()=>{
+    listenPosts();
+    listenStories();
+  });
   startPresence();
   listenNotifs();
   listenTrofeosSidebar();
