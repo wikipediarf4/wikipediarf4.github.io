@@ -574,23 +574,23 @@ select.fi option{background:#fff;}
 .shop-item-btn.unequip{background:rgba(255,200,0,.15);border:1px solid rgba(255,200,0,.3);color:gold;}
 .shop-preview-modal{}
 /* MARCOS DE TIENDA */
-.ring-gold #profAvBig, .ring-gold.profile-av-wrap #profAvBig { box-shadow: 0 0 0 3px gold, 0 0 16px rgba(255,200,0,.5) !important; }
-.ring-fire #profAvBig, .ring-fire.profile-av-wrap #profAvBig { box-shadow: 0 0 0 3px #ff4500, 0 0 20px rgba(255,69,0,.6) !important; animation: ringFire 1.5s ease-in-out infinite alternate; }
-.ring-ice #profAvBig, .ring-ice.profile-av-wrap #profAvBig { box-shadow: 0 0 0 3px #00cfff, 0 0 20px rgba(0,207,255,.5) !important; animation: ringIce 2s ease-in-out infinite alternate; }
-.ring-fish #profAvBig, .ring-fish.profile-av-wrap #profAvBig { box-shadow: 0 0 0 3px #00ff88, 0 0 16px rgba(0,255,136,.4) !important; }
-.ring-legend #profAvBig, .ring-legend.profile-av-wrap #profAvBig { box-shadow: 0 0 0 4px gold, 0 0 0 7px rgba(255,200,0,.3), 0 0 30px rgba(255,200,0,.6) !important; animation: ringLegend 2s linear infinite; }
-@keyframes ringFire { from{box-shadow:0 0 0 3px #ff4500,0 0 16px rgba(255,69,0,.5);} to{box-shadow:0 0 0 3px #ff8c00,0 0 28px rgba(255,140,0,.8);} }
-@keyframes ringIce  { from{box-shadow:0 0 0 3px #00cfff,0 0 12px rgba(0,207,255,.4);} to{box-shadow:0 0 0 4px #80eaff,0 0 24px rgba(128,234,255,.7);} }
+/* ===== MARCOS — aplica a perfil propio, ajeno Y posts ===== */
+.ring-gold  #profAvBig, .ring-gold  .profile-av-big, .ring-gold  .post-av, .ring-gold  #upAv  { box-shadow:0 0 0 3px gold,0 0 16px rgba(255,200,0,.5) !important; }
+.ring-fire  #profAvBig, .ring-fire  .profile-av-big, .ring-fire  .post-av, .ring-fire  #upAv  { box-shadow:0 0 0 3px #ff4500,0 0 20px rgba(255,69,0,.6) !important; animation:ringFire 1.5s ease-in-out infinite alternate; }
+.ring-ice   #profAvBig, .ring-ice   .profile-av-big, .ring-ice   .post-av, .ring-ice   #upAv  { box-shadow:0 0 0 3px #00cfff,0 0 20px rgba(0,207,255,.5) !important; animation:ringIce 2s ease-in-out infinite alternate; }
+.ring-fish  #profAvBig, .ring-fish  .profile-av-big, .ring-fish  .post-av, .ring-fish  #upAv  { box-shadow:0 0 0 3px #00ff88,0 0 16px rgba(0,255,136,.4) !important; }
+.ring-legend #profAvBig,.ring-legend .profile-av-big,.ring-legend .post-av, .ring-legend #upAv { box-shadow:0 0 0 4px gold,0 0 0 7px rgba(255,200,0,.3),0 0 30px rgba(255,200,0,.6) !important; animation:ringLegend 2s linear infinite; }
+.ring-neon  #profAvBig, .ring-neon  .profile-av-big, .ring-neon  .post-av, .ring-neon  #upAv  { box-shadow:0 0 0 3px #b400ff,0 0 20px rgba(180,0,255,.6) !important; animation:ringNeon 1.5s ease-in-out infinite alternate; }
+.ring-galaxy #profAvBig,.ring-galaxy .profile-av-big,.ring-galaxy .post-av, .ring-galaxy #upAv { box-shadow:0 0 0 3px #7b2fff,0 0 0 6px rgba(123,47,255,.3),0 0 28px rgba(123,47,255,.5) !important; animation:ringGalaxy 3s linear infinite; }
+.ring-red   #profAvBig, .ring-red   .profile-av-big, .ring-red   .post-av, .ring-red   #upAv  { box-shadow:0 0 0 3px #e00,0 0 18px rgba(220,0,0,.6) !important; }
+.ring-rainbow #profAvBig,.ring-rainbow .profile-av-big,.ring-rainbow .post-av,.ring-rainbow #upAv { animation:ringRainbow 2s linear infinite !important; }
+.ring-platinum #profAvBig,.ring-platinum .profile-av-big,.ring-platinum .post-av,.ring-platinum #upAv { box-shadow:0 0 0 4px #c0c0c0,0 0 0 7px rgba(192,192,192,.25),0 0 22px rgba(192,192,192,.5) !important; }
+@keyframes ringFire   { from{box-shadow:0 0 0 3px #ff4500,0 0 16px rgba(255,69,0,.5);} to{box-shadow:0 0 0 3px #ff8c00,0 0 28px rgba(255,140,0,.8);} }
+@keyframes ringIce    { from{box-shadow:0 0 0 3px #00cfff,0 0 12px rgba(0,207,255,.4);} to{box-shadow:0 0 0 4px #80eaff,0 0 24px rgba(128,234,255,.7);} }
 @keyframes ringLegend { from{filter:hue-rotate(0deg);} to{filter:hue-rotate(30deg);} }
-/* nuevos marcos */
-.ring-neon .profile-av-big     { box-shadow:0 0 0 3px #b400ff,0 0 20px rgba(180,0,255,.6) !important; animation:ringNeon 1.5s ease-in-out infinite alternate; }
-.ring-galaxy .profile-av-big   { box-shadow:0 0 0 3px #7b2fff,0 0 0 6px rgba(123,47,255,.3),0 0 28px rgba(123,47,255,.5) !important; animation:ringGalaxy 3s linear infinite; }
-.ring-red .profile-av-big      { box-shadow:0 0 0 3px #e00,0 0 18px rgba(220,0,0,.6) !important; }
-.ring-rainbow .profile-av-big  { animation:ringRainbow 2s linear infinite !important; }
-.ring-platinum .profile-av-big { box-shadow:0 0 0 4px #c0c0c0,0 0 0 7px rgba(192,192,192,.25),0 0 22px rgba(192,192,192,.5) !important; }
-@keyframes ringNeon    { from{box-shadow:0 0 0 3px #b400ff,0 0 14px rgba(180,0,255,.5);} to{box-shadow:0 0 0 4px #e040ff,0 0 28px rgba(224,64,255,.8);} }
-@keyframes ringGalaxy  { 0%{box-shadow:0 0 0 3px #7b2fff,0 0 20px rgba(123,47,255,.5);}50%{box-shadow:0 0 0 4px #2f7fff,0 0 28px rgba(47,127,255,.6);}100%{box-shadow:0 0 0 3px #7b2fff,0 0 20px rgba(123,47,255,.5);} }
-@keyframes ringRainbow { 0%{box-shadow:0 0 0 3px red,0 0 14px rgba(255,0,0,.5);}17%{box-shadow:0 0 0 3px orange;}34%{box-shadow:0 0 0 3px yellow;}50%{box-shadow:0 0 0 3px green,0 0 14px rgba(0,200,0,.5);}67%{box-shadow:0 0 0 3px blue;}84%{box-shadow:0 0 0 3px violet;}100%{box-shadow:0 0 0 3px red,0 0 14px rgba(255,0,0,.5);} }
+@keyframes ringNeon   { from{box-shadow:0 0 0 3px #b400ff,0 0 14px rgba(180,0,255,.5);} to{box-shadow:0 0 0 4px #e040ff,0 0 28px rgba(224,64,255,.8);} }
+@keyframes ringGalaxy { 0%{box-shadow:0 0 0 3px #7b2fff,0 0 20px rgba(123,47,255,.5);}50%{box-shadow:0 0 0 4px #2f7fff,0 0 28px rgba(47,127,255,.6);}100%{box-shadow:0 0 0 3px #7b2fff,0 0 20px rgba(123,47,255,.5);} }
+@keyframes ringRainbow{ 0%{box-shadow:0 0 0 3px red,0 0 14px rgba(255,0,0,.5);}17%{box-shadow:0 0 0 3px orange;}34%{box-shadow:0 0 0 3px yellow;}50%{box-shadow:0 0 0 3px green,0 0 14px rgba(0,200,0,.5);}67%{box-shadow:0 0 0 3px blue;}84%{box-shadow:0 0 0 3px violet;}100%{box-shadow:0 0 0 3px red,0 0 14px rgba(255,0,0,.5);} }
 /* partículas tienda */
 @keyframes shopParticleFall { 0%{transform:translateY(0) rotate(0deg);opacity:.9;} 100%{transform:translateY(110vh) rotate(720deg);opacity:0;} }
 .profile-layout{display:grid;grid-template-columns:360px 1fr;gap:16px;padding:16px;max-width:1080px;margin:0 auto;}
@@ -2935,6 +2935,12 @@ function acceptTermsAndRegister(){
 
 // ===== PAGES =====
 window.gp = id => {
+  // Al salir del perfil ajeno: detener sus partículas y restaurar las del usuario propio
+  const currentPage = document.querySelector('.page.active');
+  if(currentPage && currentPage.id === 'page-userprofile' && id !== 'userprofile'){
+    _stopShopParticles();
+    if(_equippedItems?.efecto) setTimeout(()=>_startShopParticles(_equippedItems.efecto), 100);
+  }
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   const pg = document.getElementById('page-'+id);
   if(!pg) return;
@@ -3557,10 +3563,11 @@ function postHTML(p){
   const _postTheme = _postColorId ? (SHOP_ITEMS.find(i=>i.id===_postColorId)?.theme || '') : '';
   const _postBadge = _authorShop.badge ? (SHOP_ITEMS.find(i=>i.id===_authorShop.badge)?.preview || '') : '';
   const _postTitulo = _authorShop.titulo ? (()=>{ const t=SHOP_ITEMS.find(i=>i.id===_authorShop.titulo); return t ? t.emoji+' '+t.name : ''; })() : '';
+  const _postMarcoClass = _authorShop.marco ? (SHOP_ITEMS.find(i=>i.id===_authorShop.marco)?.effect || '') : '';
   return `<div class="post${isVerif?' post-verified':''}${_postTheme?' '+_postTheme:''}" id="post_${p.id}">
     ${isVerif?`<div class="verif-post-tag"><img src="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAAVABcDASIAAhEBAxEB/8QAGQABAAIDAAAAAAAAAAAAAAAAAAEIBAUH/8QAKRAAAQMDBAEBCQAAAAAAAAAAAQIDBAAFEQYHEiExCBMUFRYiQUJhgf/EABUBAQEAAAAAAAAAAAAAAAAAAAAG/8QAIxEAAQMDAgcAAAAAAAAAAAAAEQABAgQFURLwAxMUITFBYf/aAAwDAQACEQMRAD8As9uTuBYtCQmnbqXnZMgKMaMynKneJSFd+E45A9kZwcZNY22+5unddPSItsEqPMZCnDHkN4UWgQAvKcp8qAxnP87rmHqW06v5xg6kuFumS7IuJ7vJchJIcjlKjhaiQU/n0DgHBHRwa1WwVput53Ni36PZ/hlltLTzSAW1BI+kp9nzwObuXOSir99ABKRb8KxUErN1TyfWHclgfURvJ8Mpydyqo3DkhtJZgO4yd4+qzVKUqIVGoUlKk8VAKB+xFSAB4AFKURKUpRF//9k=" style="width:14px;height:14px;vertical-align:middle;display:inline-block;margin-left:1px;" title="Verificado"> VERIFICADO</div>`:''}
     <div class="post-header" style="position:relative;">
-      <div class="${isVerif?'post-av-wrap':''}">
+      <div class="${isVerif?'post-av-wrap':''} ${_postMarcoClass}" style="display:inline-block;border-radius:50%;">
         <div class="post-av" style="cursor:pointer;" onclick="openUserProfile('${p.userId}','${esc(p.userNick)}')">${p.userAv?`<img src="${p.userAv}">`:(p.userNick||'U')[0]}</div>
       </div>
       <div class="post-meta" style="cursor:pointer" onclick="openUserProfile('${p.userId}','${esc(p.userNick)}')">
@@ -7111,6 +7118,10 @@ async function _loadUserProfilePage(uid, nick){
         if(mItem?.effect) upAvWrapEl.classList.add(mItem.effect);
       }
     }
+
+    // Efecto de partículas del usuario visto
+    _stopShopParticles();
+    if(viewedEquipped.efecto) _startShopParticles(viewedEquipped.efecto);
 
     // Banner animado en el cover del perfil ajeno
     const upCoverEl = document.getElementById('upCover');
