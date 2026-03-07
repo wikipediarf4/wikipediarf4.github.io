@@ -10306,6 +10306,20 @@ function filterTrofeoFeed(filter, btn){
 }
 
 // ==== TROFEOS POR MAPA (solo ruizgustavo12) ====
+const FISH_IMGS = {
+  "Asp": "fish/asp.webp", "Bleak": "fish/bleak.webp", "Blue Bream": "fish/blue_bream.webp",
+  "Bream": "fish/bream.webp", "Burbot": "fish/burbot.webp", "Catfish": "fish/catfish.webp",
+  "Chinese Sleeper": "fish/chinese_sleeper.webp", "Chub": "fish/chub.webp",
+  "Common Carp": "fish/common_carp.webp", "Common Roach": "fish/common_roach.webp",
+  "Crucian Carp": "fish/crucian_carp.webp", "Dace": "fish/dace.webp",
+  "Donets Ruffe": "fish/donets_ruffe.webp", "Freshwater Crayfish": "fish/crayfish.webp",
+  "Frog": "fish/frog.webp", "Gibel Carp": "fish/gibel_carp.webp",
+  "Gudgeon": "fish/gudgeon.webp", "Ide": "fish/ide.webp", "Nase": "fish/nase.webp",
+  "Perch": "fish/perch.webp", "Pike": "fish/pike.webp", "River Mussel": "fish/river_mussel.webp",
+  "Ruffe": "fish/ruffe.webp", "Tench": "fish/tench.webp", "Volga Zander": "fish/volga_zander.webp",
+  "White Bream": "fish/white_bream.webp", "White-eye Bream": "fish/whiteeye_bream.webp",
+  "Zander": "fish/zander.webp", "Zebra Mussel": "fish/zebra_mussel.webp"
+};
 const TROFEOS_MAPA_DATA = {
   bindweed: {
     peces: [
@@ -10357,25 +10371,28 @@ function renderTrofMapaContent(){
   if(!data){ el.innerHTML='<div style="color:var(--muted);text-align:center;padding:40px;">Sin datos aun</div>'; return; }
   const q = (document.getElementById('trofMapaBuscar')?.value||'').toLowerCase();
   const peces = q ? data.peces.filter(p=>p.n.toLowerCase().includes(q)) : data.peces;
+  const cards = peces.map(function(p){
+    const img = FISH_IMGS[p.n]||'';
+    const imgH = img ? '<img src="'+img+'" style="width:72px;height:72px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.6));">' : '<div style="width:72px;height:72px;background:var(--bg3);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">🐟</div>';
+    return '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px;display:flex;flex-direction:column;align-items:center;gap:8px;transition:border-color .2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">'
+      + imgH
+      + '<div style="font-size:.78rem;font-weight:700;text-align:center;color:var(--text);">'+p.n+'</div>'
+      + '<div style="width:100%;display:flex;flex-direction:column;gap:3px;">'
+        + '<div style="display:flex;justify-content:space-between;font-size:.7rem;"><span style="color:var(--muted);">🏆 Trophy</span><span style="color:var(--gold);font-weight:700;">'+p.t+'</span></div>'
+        + '<div style="display:flex;justify-content:space-between;font-size:.7rem;"><span style="color:var(--muted);">✨ Rare</span><span style="color:#c084fc;font-weight:700;">'+p.r+'</span></div>'
+      + '</div>'
+    + '</div>';
+  }).join('');
   el.innerHTML =
-    '<div style="margin-bottom:14px;">' +
-      '<input id="trofMapaBuscar" placeholder="Buscar pez..." oninput="renderTrofMapaContent()" value="'+q+'" ' +
-      'style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:8px 16px;color:var(--text);font-size:.82rem;font-family:\'Exo 2\',sans-serif;outline:none;box-sizing:border-box;">' +
-    '</div>' +
-    '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;">' +
-      '<div style="display:grid;grid-template-columns:1fr 120px 120px;background:var(--bg3);padding:10px 16px;font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">' +
-        '<div>Pez</div><div style="text-align:center;">Trofeo</div><div style="text-align:center;">Trofeo Raro</div>' +
-      '</div>' +
-      peces.map(function(p,i){
-        return '<div style="display:grid;grid-template-columns:1fr 120px 120px;padding:10px 16px;border-top:1px solid var(--border);align-items:center;' + (i%2===0?'':'background:rgba(255,255,255,.025)') + '">' +
-          '<div style="font-size:.85rem;font-weight:600;">'+p.n+'</div>' +
-          '<div style="text-align:center;font-size:.83rem;color:var(--gold);font-weight:700;">'+p.t+'</div>' +
-          '<div style="text-align:center;font-size:.83rem;color:#c084fc;font-weight:700;">'+p.r+'</div>' +
-        '</div>';
-      }).join('') +
-      (peces.length===0 ? '<div style="text-align:center;padding:32px;color:var(--muted);font-size:.82rem;">Sin resultados</div>' : '') +
-    '</div>' +
-    '<div style="text-align:right;margin-top:8px;font-size:.68rem;color:var(--muted);">' + peces.length + ' peces &middot; Fuente: rf4h.ru</div>';
+    '<div style="margin-bottom:14px;">'
+      + '<input id="trofMapaBuscar" placeholder="Buscar pez..." oninput="renderTrofMapaContent()" value="'+q+'" '
+      + 'style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:8px 16px;color:var(--text);font-size:.82rem;font-family:'Exo 2',sans-serif;outline:none;box-sizing:border-box;">'
+    + '</div>'
+    + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:16px;">'
+      + cards
+      + (peces.length===0 ? '<div style="text-align:center;padding:32px;color:var(--muted);font-size:.82rem;grid-column:1/-1;">Sin resultados</div>' : '')
+    + '</div>'
+    + '<div style="text-align:right;font-size:.68rem;color:var(--muted);">' + peces.length + ' peces &middot; Fuente: rf4h.ru</div>';
 }
 window.switchTrofMapaTab = switchTrofMapaTab;
 window.renderTrofMapaContent = renderTrofMapaContent;
