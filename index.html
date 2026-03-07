@@ -3134,6 +3134,9 @@ const ROUTES = {
   '/carretes': 'carretes',
   '/parches': 'parches',
   '/casitrofeo': 'casitrofeo',
+  '/mensajes': 'mensajes',
+  '/notificaciones': 'notificaciones',
+  '/pez-semanal': 'pez-semanal',
 };
 
 // Map page IDs to clean URLs
@@ -3152,6 +3155,9 @@ const PAGE_TO_URL = {
   'carretes': '/carretes',
   'parches': '/parches',
   'casitrofeo': '/casitrofeo',
+  'mensajes': '/mensajes',
+  'notificaciones': '/notificaciones',
+  'pez-semanal': '/pez-semanal',
 };
 
 function navigateTo(id, pushState = true) {
@@ -3164,6 +3170,43 @@ function navigateTo(id, pushState = true) {
 // Handle browser back/forward
 window.addEventListener('popstate', (e) => {
   const path = window.location.pathname;
+  // Close overlays if navigating away
+  if(path !== '/mensajes' && !path.startsWith('/mensajes/')) {
+    const msg = document.getElementById('mMessenger');
+    if(msg && msg.classList.contains('open')) msg.classList.remove('open');
+  }
+  if(path !== '/notificaciones') {
+    const nd = document.getElementById('mNotif');
+    if(nd) nd.style.display = 'none';
+  }
+  // Handle user profile URLs
+  if(path.startsWith('/u/')) {
+    const nickSlug = path.slice(3);
+    // Try to find user by nick slug
+    if(window.CU) {
+      window.gp('userprofile', false);
+      // Try to load from state
+      if(e.state && e.state.uid) {
+        _loadUserProfilePage(e.state.uid, e.state.nick||nickSlug);
+      }
+    }
+    return;
+  }
+  if(path.startsWith('/mensajes/')) {
+    const msgEl = document.getElementById('mMessenger');
+    if(msgEl) { om('mMessenger'); renderMessengerList(); }
+    if(e.state && e.state.chatUid) openChatWith(e.state.chatUid, e.state.chatNick||'');
+    return;
+  }
+  if(path === '/mensajes') {
+    const msgEl = document.getElementById('mMessenger');
+    if(msgEl) { om('mMessenger'); renderMessengerList(); }
+    return;
+  }
+  if(path === '/notificaciones') {
+    openNotifDropdown();
+    return;
+  }
   const pageId = ROUTES[path] || 'home';
   window.gp(pageId, false);
 });
@@ -7643,7 +7686,7 @@ async function sendShopAnnouncementToAll(){
 // ===== USER PROFILE MODAL =====
 async function openUserProfile(uid, nick){
   // Si es el propio usuario, va al perfil propio
-  if(uid && uid === window.CU?.id){ gp('profile'); return; }
+  if(uid && uid === window.CU?.id){ gp('profile'); history.pushState({page:'profile'}, '', '/perfil'); return; }
   // Si no hay uid, busca por nick
   if(!uid && nick){
     try {
@@ -7653,8 +7696,11 @@ async function openUserProfile(uid, nick){
     } catch(e){}
   }
   if(!uid){ toast('Usuario no encontrado','err'); return; }
+  // Push URL /u/nick
+  const safeNick = (nick||'usuario').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  history.pushState({page:'userprofile', uid, nick}, '', '/u/' + safeNick);
   // Navega a la página de perfil
-  gp('userprofile');
+  gp('userprofile', false);
   _loadUserProfilePage(uid, nick||'');
 }
 
@@ -8310,6 +8356,7 @@ function playMsgSound(){
 function openMessenger(){
   om('mMessenger');
   renderMessengerList();
+  if(window.location.pathname !== '/mensajes') history.pushState({page:'mensajes'}, '', '/mensajes');
   // Mark chat notifs as read
   let changed = false;
   _notifs.forEach(n=>{ if(n.text?.startsWith('💬') && !n.read){ n.read=true; changed=true; } });
@@ -8325,6 +8372,7 @@ function closeMessenger(){
   const el = document.getElementById('mMessenger');
   if(el) el.classList.remove('open');
   document.getElementById('chatBubbleMin').style.display='none';
+  if(window.location.pathname.startsWith('/mensajes')) history.pushState({page:'home'}, '', '/');
 }
 
 function minimizeMessenger(){
@@ -8594,6 +8642,10 @@ function openChatWith(uid, nick){
   tryApplyChatGold(uid);
   _chatUserId = uid;
   _chatUserNick = nick;
+
+  // Update URL to /mensajes/nick
+  const safeNickUrl = (nick||'usuario').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  history.pushState({page:'mensajes', chatUid:uid, chatNick:nick}, '', '/mensajes/' + safeNickUrl);
 
   // Make sure messenger modal is open
   om('mMessenger');
@@ -8903,6 +8955,11 @@ async function submitPhotoComment(){
 }
 
 function backToMessengerList(){
+  if(!window.location.pathname.startsWith('/mensajes/') && window.location.pathname !== '/mensajes') {
+    // already handled
+  } else {
+    history.pushState({page:'mensajes'}, '', '/mensajes');
+  }
   if(_unsubChat){ _unsubChat(); _unsubChat=null; }
   _chatUserId = null;
   const chatWin = document.getElementById('chatWindow');
@@ -10447,6 +10504,13 @@ function filterChatSearch(val){
 function openNotifDropdown(){
   const dd = document.getElementById('mNotif');
   if(!dd) return;
+  // Push URL only when opening (not closing)
+  const willOpen = dd.style.display !== 'flex';
+  if(willOpen && window.location.pathname !== '/notificaciones') {
+    history.pushState({page:'notificaciones'}, '', '/notificaciones');
+  } else if(!willOpen && window.location.pathname === '/notificaciones') {
+    history.pushState({page:'home'}, '', '/');
+  }
   // Posicionar bajo el ícono campana
   const bell = document.getElementById('notifBellBtn');
   if(bell){
@@ -10484,6 +10548,7 @@ function closeNotifDropdown(){
   const dd = document.getElementById('mNotif');
   if(dd) dd.style.display = 'none';
   document.removeEventListener('click', _notifOutsideClick);
+  if(window.location.pathname === '/notificaciones') history.pushState({page:'home'}, '', '/');
 }
 function toggleNotifDropdown(e){
   e.stopPropagation();
