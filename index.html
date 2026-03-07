@@ -729,6 +729,7 @@ select.fi option{background:#fff;}
       <div class="sl-item" onclick="gp('torneos')"><span class="sl-item-icon">🏆</span> Torneos</div>
       <div class="sl-item" onclick="gp('casitrofeo')"><span class="sl-item-icon">🏅</span> Casi Trofeo</div>
       <div class="sl-item" onclick="gp('trofeos-feed');setNav(document.querySelector('.tb-nav-btn'))"><span class="sl-item-icon">🥇</span> Feed de Trofeos</div>
+      <div class="sl-item" onclick="gp('publica-trofeo')"><span class="sl-item-icon">🏆</span> Publica tu Trofeo</div>
       <div class="sl-item" onclick="gp('videos');loadVideos()"><span class="sl-item-icon">📹</span> Videos</div>
       <div class="sl-item" onclick="gp('carretes')"><span class="sl-item-icon">🎣</span> Buscar Carretes</div>
       <div class="sl-item"><span class="sl-item-icon">🔖</span> Guardados</div>
@@ -2210,12 +2211,132 @@ select.fi option{background:#fff;}
 </div>
 
 <!-- MAPAS PAGE -->
-<!-- Wiki Trofeos RF4 — sin iframe -->
+<!-- Wiki Trofeos RF4 (legacy redirect) -->
 <div class="page" id="page-trofeo" style="max-width:680px;margin:0 auto;padding:48px 16px 80px;text-align:center;">
   <div style="font-size:4rem;margin-bottom:16px;">🏆</div>
   <div style="font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:900;color:var(--gold);margin-bottom:8px;">Wiki Trofeos RF4</div>
-  <div style="font-size:.88rem;color:var(--muted);margin-bottom:28px;line-height:1.7;">La wiki de trofeos se abre en una nueva pestaña para mejor compatibilidad.</div>
-  <a href="https://rf4wikipedia.netlify.app" target="_blank" class="btn btn-p" style="font-size:.95rem;padding:12px 28px;text-decoration:none;display:inline-flex;align-items:center;gap:8px;">🏆 Abrir Wiki Trofeos RF4 ↗</a>
+  <div style="font-size:.88rem;color:var(--muted);margin-bottom:28px;line-height:1.7;">Accedé a la wiki de trofeos para publicar y consultar récords.</div>
+  <button class="btn btn-p" style="font-size:.95rem;padding:12px 28px;" onclick="gp('publica-trofeo')">🏆 Publica tu Trofeo</button>
+</div>
+
+<!-- PUBLICA TU TROFEO PAGE -->
+<div class="page" id="page-publica-trofeo" style="max-width:860px;margin:0 auto;padding:20px 12px 80px;">
+
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+    <div>
+      <div style="font-family:'Orbitron',monospace;font-size:1.15rem;font-weight:900;color:var(--gold);">🏆 Publica tu Trofeo</div>
+      <div style="font-size:.76rem;color:var(--muted);margin-top:3px;">Enviá tu trofeo a <a href="https://rf4wikipedia.netlify.app" target="_blank" style="color:var(--accent);">rf4wikipedia.netlify.app</a> para que quede en los récords oficiales</div>
+    </div>
+    <a href="https://rf4wikipedia.netlify.app" target="_blank" class="btn btn-s" style="font-size:.8rem;text-decoration:none;display:inline-flex;align-items:center;gap:5px;">↗ Abrir en pestaña</a>
+  </div>
+
+  <!-- Steps / info bar -->
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;">
+    <div style="flex:1;min-width:130px;background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.25);border-radius:var(--r);padding:10px 12px;text-align:center;">
+      <div style="font-size:1.3rem;">📸</div>
+      <div style="font-size:.72rem;font-weight:700;color:var(--gold);margin-top:4px;">1. Iniciá sesión</div>
+      <div style="font-size:.68rem;color:var(--muted);margin-top:2px;">Con tu cuenta de la wiki</div>
+    </div>
+    <div style="flex:1;min-width:130px;background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.25);border-radius:var(--r);padding:10px 12px;text-align:center;">
+      <div style="font-size:1.3rem;">🐟</div>
+      <div style="font-size:.72rem;font-weight:700;color:var(--gold);margin-top:4px;">2. Cargá tu pesca</div>
+      <div style="font-size:.68rem;color:var(--muted);margin-top:2px;">Foto, especie, peso y mapa</div>
+    </div>
+    <div style="flex:1;min-width:130px;background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.25);border-radius:var(--r);padding:10px 12px;text-align:center;">
+      <div style="font-size:1.3rem;">✅</div>
+      <div style="font-size:.72rem;font-weight:700;color:var(--gold);margin-top:4px;">3. Esperá aprobación</div>
+      <div style="font-size:.68rem;color:var(--muted);margin-top:2px;">El equipo lo revisa</div>
+    </div>
+    <div style="flex:1;min-width:130px;background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.25);border-radius:var(--r);padding:10px 12px;text-align:center;">
+      <div style="font-size:1.3rem;">🥇</div>
+      <div style="font-size:.72rem;font-weight:700;color:var(--gold);margin-top:4px;">4. ¡Récord publicado!</div>
+      <div style="font-size:.68rem;color:var(--muted);margin-top:2px;">Aparece en el Feed de Trofeos</div>
+    </div>
+  </div>
+
+  <!-- Wiki embed wrapper -->
+  <div id="wikiTrofeoWrapper" style="border-radius:var(--r);overflow:hidden;border:1.5px solid rgba(255,215,0,.3);background:var(--card);box-shadow:0 4px 24px rgba(0,0,0,.25);">
+
+    <!-- Toolbar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:rgba(255,215,0,.07);border-bottom:1px solid rgba(255,215,0,.18);">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:1rem;">🏆</span>
+        <span style="font-size:.78rem;font-weight:700;color:var(--gold);font-family:'Orbitron',monospace;">rf4wikipedia.netlify.app</span>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-s" style="font-size:.72rem;padding:3px 10px;" onclick="(function(){var f=document.getElementById('wikiTrofeoFrame');if(f){f.style.display='block';document.getElementById('wikiTrofeoFallback').style.display='none';f.src=f.src;}})()">↺ Recargar</button>
+        <a href="https://rf4wikipedia.netlify.app" target="_blank" class="btn btn-s" style="font-size:.72rem;padding:3px 10px;text-decoration:none;">↗ Nueva pestaña</a>
+      </div>
+    </div>
+
+    <!-- iframe (intento de embed) -->
+    <iframe
+      id="wikiTrofeoFrame"
+      src="https://rf4wikipedia.netlify.app"
+      style="width:100%;height:680px;border:none;display:block;background:#fff;"
+      allow="forms scripts"
+      title="Wiki Trofeos RF4"
+      loading="lazy"
+      onload="wikiFrameLoaded(this)"
+      onerror="wikiFrameError()"
+    ></iframe>
+
+    <!-- Fallback: se muestra si el iframe es bloqueado -->
+    <div id="wikiTrofeoFallback" style="display:none;padding:40px 24px 48px;text-align:center;">
+      <div style="font-size:3.2rem;margin-bottom:10px;">🏆</div>
+      <div style="font-family:'Orbitron',monospace;font-size:1rem;font-weight:900;color:var(--gold);margin-bottom:8px;">Wiki Trofeos RF4</div>
+      <div style="font-size:.82rem;color:var(--muted);margin-bottom:24px;line-height:1.7;max-width:420px;margin-left:auto;margin-right:auto;">
+        Tu navegador bloquea la vista integrada por seguridad. Hacé clic abajo para abrir la wiki, <strong style="color:var(--text);">iniciá sesión</strong> y publicá tu trofeo — ¡queda en los récords oficiales!
+      </div>
+      <!-- Botones principales -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:28px;">
+        <a href="https://rf4wikipedia.netlify.app" target="_blank"
+           style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--gold),#e6a800);color:#000;font-weight:800;font-size:.95rem;padding:13px 32px;border-radius:var(--r);box-shadow:0 4px 18px rgba(255,215,0,.35);transition:.2s;"
+           onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+          🌐 Abrir Wiki y publicar trofeo ↗
+        </a>
+        <a href="https://rf4wikipedia.netlify.app/login" target="_blank"
+           style="text-decoration:none;display:inline-flex;align-items:center;gap:7px;background:transparent;color:var(--accent);border:1.5px solid var(--accent);font-weight:700;font-size:.85rem;padding:9px 24px;border-radius:var(--r);transition:.2s;"
+           onmouseover="this.style.background='rgba(0,120,255,.1)'" onmouseout="this.style.background='transparent'">
+          🔑 Ir directo al Login ↗
+        </a>
+      </div>
+      <!-- Pasos resumidos -->
+      <div style="display:flex;justify-content:center;gap:6px;flex-wrap:wrap;max-width:500px;margin:0 auto;">
+        <div style="background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.2);border-radius:var(--rs);padding:8px 12px;font-size:.7rem;color:var(--muted);text-align:center;min-width:100px;">
+          <div style="font-size:1.2rem;margin-bottom:4px;">🔑</div><strong style="color:var(--text);">1. Iniciá sesión</strong><br>en la wiki
+        </div>
+        <div style="background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.2);border-radius:var(--rs);padding:8px 12px;font-size:.7rem;color:var(--muted);text-align:center;min-width:100px;">
+          <div style="font-size:1.2rem;margin-bottom:4px;">📸</div><strong style="color:var(--text);">2. Subí foto</strong><br>y datos del pez
+        </div>
+        <div style="background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.2);border-radius:var(--rs);padding:8px 12px;font-size:.7rem;color:var(--muted);text-align:center;min-width:100px;">
+          <div style="font-size:1.2rem;margin-bottom:4px;">✅</div><strong style="color:var(--text);">3. Esperá</strong><br>aprobación
+        </div>
+        <div style="background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.2);border-radius:var(--rs);padding:8px 12px;font-size:.7rem;color:var(--muted);text-align:center;min-width:100px;">
+          <div style="font-size:1.2rem;margin-bottom:4px;">🥇</div><strong style="color:var(--text);">4. ¡Récord</strong><br>publicado!
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Tips -->
+  <div style="margin-top:16px;background:rgba(0,120,255,.06);border:1px solid rgba(0,120,255,.2);border-radius:var(--r);padding:12px 16px;">
+    <div style="font-size:.75rem;font-weight:700;color:var(--accent);margin-bottom:6px;">💡 Consejos para que tu trofeo sea aprobado</div>
+    <div style="font-size:.73rem;color:var(--muted);line-height:1.7;">
+      📷 La foto debe mostrar claramente el pez y la captura en pantalla con el peso. &nbsp;·&nbsp;
+      🐟 Indicá la especie exacta y el mapa correcto. &nbsp;·&nbsp;
+      ⚖️ El peso debe superar el mínimo de trofeo de la especie. &nbsp;·&nbsp;
+      🚫 No se admiten ediciones ni trucajes.
+    </div>
+  </div>
+
+  <!-- Link to feed -->
+  <div style="margin-top:14px;text-align:center;">
+    <button class="btn btn-s" style="font-size:.8rem;" onclick="gp('trofeos-feed')">🥇 Ver Feed de Trofeos Aprobados</button>
+  </div>
+
 </div>
 
 <div class="page" id="page-casitrofeo" style="max-width:900px;margin:0 auto;padding:24px 16px 80px;">
@@ -2952,6 +3073,17 @@ window.gp = id => {
   if(id==='spots'){ loadSpots(); loadFriendSpots(); }
   if(id==='casitrofeo') renderMapPosts();
   if(id==='trofeos-feed') { listenTrofeosFeed(); document.getElementById('trofeoFeedBadge').style.display='inline-flex'; }
+  if(id==='publica-trofeo') {
+    const frame = document.getElementById('wikiTrofeoFrame');
+    if(frame && !frame.dataset.loaded) {
+      frame.dataset.loaded = '1';
+      frame._wikiTimer = setTimeout(() => { wikiFrameError(); }, 7000);
+    } else if(frame && frame.dataset.loaded) {
+      frame.style.display='block';
+      document.getElementById('wikiTrofeoFallback').style.display='none';
+      frame.src = frame.src;
+    }
+  }
   if(id==='parches') loadParches();
   if(id==='torneos') loadTorneos();
   if(id==='carretes') renderCarretesTable();
@@ -2959,6 +3091,19 @@ window.gp = id => {
 };
 function setNav(el){ document.querySelectorAll('.tb-nav-btn').forEach(b=>b.classList.remove('on')); el.classList.add('on'); }
 window.setNav = setNav;
+window.wikiFrameLoaded = function(frame) {
+  if(!frame) return;
+  if(frame._wikiTimer) { clearTimeout(frame._wikiTimer); frame._wikiTimer = null; }
+  var fallback = document.getElementById('wikiTrofeoFallback');
+  if(fallback) fallback.style.display = 'none';
+  frame.style.display = 'block';
+};
+window.wikiFrameError = function() {
+  var frame = document.getElementById('wikiTrofeoFrame');
+  var fallback = document.getElementById('wikiTrofeoFallback');
+  if(frame) frame.style.display = 'none';
+  if(fallback) fallback.style.display = 'block';
+};
 window.om = id => {
   const el = document.getElementById(id);
   if(!el) return;
