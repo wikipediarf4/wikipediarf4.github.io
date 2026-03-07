@@ -856,7 +856,7 @@ select.fi option{background:#fff;}
       <!-- Spots de amigos en inicio -->
       <div id="friendSpotsHome"></div>
       <!-- Posts -->
-      <div id="feedPosts"></div>
+      <div id="feedPosts"><div style="text-align:center;padding:40px;color:var(--muted);font-size:.85rem;">🎣 Cargando feed...</div></div>
     </div>
 
     <!-- RIGHT -->
@@ -3569,6 +3569,7 @@ let FISH_DB = [
 // ===== FISH_DB FIRESTORE SYNC =====
 const _FISH_DB_HARDCODED = FISH_DB.map(f=>({...f})); // backup
 
+let _fishDBReady = false;
 async function loadFishDB(){
   try {
     const snap = await getDoc(doc(db, 'config', 'fish_db'));
@@ -3583,6 +3584,10 @@ async function loadFishDB(){
   } catch(e){
     console.warn('[FishDB] Firestore load failed, using hardcoded:', e);
   }
+  _fishDBReady = true;
+  // If admin peces panel is open, render now
+  const panel = document.getElementById('admt-peces');
+  if(panel && panel.style.display !== 'none') renderAdminPeces();
 }
 
 async function saveFishDBToFirestore(){
@@ -10139,10 +10144,15 @@ function renderXPLevelsAdmin(){
 let _adminPecesEditIdx = null;
 
 function renderAdminPeces(){
-  const q = (document.getElementById('adminPecesSearch')?.value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
   const list = document.getElementById('adminPecesList');
   const countEl = document.getElementById('adminPecesCount');
   if(!list) return;
+  if(!_fishDBReady){
+    list.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted);">🎣 Cargando peces...</div>';
+    if(countEl) countEl.textContent = '';
+    return;
+  }
+  const q = (document.getElementById('adminPecesSearch')?.value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
   const filtered = FISH_DB.map((f,i)=>({...f,_i:i})).filter(f=>{
     const n = f.n.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
     return !q || n.includes(q);
