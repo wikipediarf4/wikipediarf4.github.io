@@ -872,7 +872,9 @@ select.fi option{background:#fff;}
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
             <div id="upName" style="font-family:'Orbitron',monospace;font-size:1.4rem;font-weight:900;"></div>
             <span id="upVerifBadge" style="display:none;font-size:1rem;" title="Verificado">✅</span>
+            <span id="upShopBadge" style="font-size:1.2rem;" title=""></span>
           </div>
+          <span id="upShopTitle" style="font-size:.72rem;font-weight:800;letter-spacing:.08em;color:var(--muted);"></span>
           <div id="upVerifBanner" style="display:none;" class="verif-banner" style="margin-top:4px;">
             <span style="font-size:.7rem;">✨</span><span style="font-size:.68rem;font-weight:800;color:gold;letter-spacing:.05em;">CUENTA VERIFICADA</span><span style="font-size:.7rem;">✨</span>
           </div>
@@ -2876,7 +2878,7 @@ function updateNavUI(){
   const shopNavBtn = document.getElementById('shopNavBtn');
   if(adminNavBtn) adminNavBtn.style.display = isAdmin ? 'inline-flex' : 'none';
   if(userMenuAdmin) userMenuAdmin.style.display = isAdmin ? 'flex' : 'none';
-  if(shopNavBtn) shopNavBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+  if(shopNavBtn) shopNavBtn.style.display = 'inline-flex'; // visible para todos
 }
 
 function renderShopPage(){
@@ -3504,8 +3506,10 @@ function postHTML(p){
   // Verificar estado en tiempo real desde el caché de usuarios verificados
   const isVerif = !!(p.userVerified || (window._verifUsers && window._verifUsers[p.userId]));
   const _isMyPost = window.CU && p.userId === window.CU.id;
-  const _postTheme = _isMyPost && window.CU?.shopEquipped?.postcolor
-    ? (SHOP_ITEMS.find(i=>i.id===window.CU.shopEquipped.postcolor)?.theme || '') : '';
+  // Tema de post: usar el guardado en el post (postTheme), o el equipado actualmente si es mío
+  const _postTheme = p.postTheme ||
+    (_isMyPost && window.CU?.shopEquipped?.postcolor
+      ? (SHOP_ITEMS.find(i=>i.id===window.CU.shopEquipped.postcolor)?.theme || '') : '');
   return `<div class="post${isVerif?' post-verified':''}${_postTheme?' '+_postTheme:''}" id="post_${p.id}">
     ${isVerif?`<div class="verif-post-tag">⭐ VERIFICADO</div>`:''}
     <div class="post-header" style="position:relative;">
@@ -3847,7 +3851,15 @@ function cancelHideRxnPop(id){ if(_rxnPops[id]){clearTimeout(_rxnPops[id]);delet
 
 async function doReact(pid, emoji){
   if(!window.CU){ toast('Inicia sesión para reaccionar','err'); return; }
-  const p = _posts.find(p=>p.id===pid); if(!p) return;
+  let p = _posts.find(p=>p.id===pid);
+  if(!p){
+    // Post not in local cache (e.g. viewing another user's profile) — fetch from Firestore
+    try {
+      const snap = await getDoc(doc(db,'posts',pid));
+      if(!snap.exists()){ toast('Publicación no encontrada','err'); return; }
+      p = {id:snap.id,...snap.data()};
+    } catch(e){ toast('Error al cargar post','err'); return; }
+  }
   const prev = p.reactions?.[window.CU.id] || null;
   const updates = {};
   if(prev){ updates[`reactionCounts.${prev}`] = increment(-1); }
@@ -3998,7 +4010,15 @@ async function submitComment(pid){
   // Close mention dropdown
   const mentionEl = document.getElementById('mention_'+pid);
   if(mentionEl) mentionEl.style.display='none';
-  const p = _posts.find(p=>p.id===pid);
+  let p = _posts.find(p=>p.id===pid);
+  if(!p){
+    // Not in local cache — fetch from Firestore
+    try {
+      const snap = await getDoc(doc(db,'posts',pid));
+      if(!snap.exists()){ toast('Post no encontrado','err'); return; }
+      p = {id:snap.id,...snap.data()};
+    } catch(e){ toast('Error al cargar post','err'); return; }
+  }
   if(p){
     const replyToNick = txt.startsWith('@') ? (txt.match(/^@(\S+)/)||[])[1]||'' : '';
     const newComments = [...(p.comments||[]), {userId:window.CU.id,nick:window.CU.nick,av:window.CU.av||'',text:txt,time:Date.now(),replyTo:replyToNick}];
@@ -4223,7 +4243,7 @@ function renderProfile(){
   renderXPUI();
   // Mostrar pestaña tienda solo para admin
   const shopTab = document.getElementById('ptShopTab');
-  if(shopTab) shopTab.style.display = (window.CU?.nick === 'ruizgustavo12') ? 'block' : 'none';
+  if(shopTab) shopTab.style.display = 'block'; // visible para todos
   // Cover
   if(window.CU.cover){ document.getElementById('profCover').style.backgroundImage=`url(${window.CU.cover})`; document.getElementById('profCover').style.backgroundSize='cover'; document.getElementById('profCoverInner').style.display='none'; }
   renderProfileFeed();
@@ -4628,7 +4648,11 @@ function renderShopGrid(){
       <div class="shop-item-name">${item.name}</div>
       <div class="shop-item-type">${CAT_LABEL[item.cat]||item.cat}</div>
       <div style="font-size:.62rem;color:var(--muted);margin-bottom:8px;line-height:1.35;">${item.desc}</div>
-      <div class="shop-item-price">🪙 ${item.price.toLocaleString()} coins</div>
+      <div class="shop-item-price" style="text-decoration:line-through;color:var(--muted);font-size:.63rem;">🪙 ${item.price.toLocaleString()} coins</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:5px;margin:3px 0 4px;">
+        <span style="background:linear-gradient(135deg,#00c853,#00e676);color:#000;font-size:.65rem;font-weight:900;padding:2px 8px;border-radius:100px;">✦ GRATIS</span>
+        <span style="font-size:.58rem;color:var(--muted);">30 días</span>
+      </div>
       <button class="shop-item-btn ${isEquipped?'unequip':'equip'}" onclick="toggleEquipItem('${item.id}')">
         ${isEquipped ? '✕ Desequipar' : '▶ Equipar'}
       </button>
@@ -6944,12 +6968,34 @@ async function _loadUserProfilePage(uid, nick){
     }
 
     // ── STATS ──
-    const userPosts = _posts.filter(p=>p.userId===uid);
+    // Fetch this user's posts from Firestore (not just local _posts cache) so profile is always complete
+    let userPosts = _posts.filter(p=>p.userId===uid);
+    if(!userPosts.length){
+      try {
+        const postsSnap = await getDocs(query(collection(db,'posts'), where('userId','==',uid)));
+        userPosts = postsSnap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.time||0)-(a.time||0));
+      } catch(e){ userPosts = []; }
+    }
     document.getElementById('upPostCount').textContent = userPosts.length;
     document.getElementById('upFriendCount').textContent = (u.friends||[]).length;
     const myFriends = window.CU?.friends || [];
     const mutualFriends = (window.CU?.friendsList||[]).filter(f=>(u.friends||[]).includes(f.id));
     document.getElementById('upMutualCount').textContent = mutualFriends.length;
+    // ── ÍTEMS EQUIPADOS del usuario visto ──
+    const viewedEquipped = u.shopEquipped || {};
+    // Badge
+    const vBadge = viewedEquipped.badge ? SHOP_ITEMS.find(i=>i.id===viewedEquipped.badge) : null;
+    const vTitle = viewedEquipped.titulo ? SHOP_ITEMS.find(i=>i.id===viewedEquipped.titulo) : null;
+    const vBadgeEl = document.getElementById('upShopBadge');
+    const vTitleEl = document.getElementById('upShopTitle');
+    if(vBadgeEl) vBadgeEl.textContent = vBadge ? vBadge.preview : '';
+    if(vTitleEl){
+      if(vTitle){
+        const isLeg = viewedEquipped.titulo==='titulo_legend';
+        vTitleEl.style.cssText=`font-size:.72rem;font-weight:800;letter-spacing:.08em;text-align:center;display:block;margin-top:2px;${isLeg?'background:linear-gradient(135deg,gold,#ff8c00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;':'color:var(--muted);'}`;
+        vTitleEl.textContent = `${vTitle.emoji} ${vTitle.name.toUpperCase()}`;
+      } else { vTitleEl.textContent=''; }
+    }
 
     // ── ACCIONES ──
     const isFriend = myFriends.includes(uid);
