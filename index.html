@@ -3775,11 +3775,12 @@ function renderTrofeos(data) {
     </div>`;
   }).join('');
 }
+function _norm(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
 function filterTrofeos(q) {
-  const kw = (q||'').toLowerCase().trim();
+  const kw = _norm(q).trim();
   let data = FISH_DB;
-  if(_trofChip) data = data.filter(f => f.n.toLowerCase().includes(_trofChip));
-  if(kw) data = data.filter(f => f.n.toLowerCase().includes(kw));
+  if(_trofChip) data = data.filter(f => _norm(f.n).includes(_trofChip));
+  if(kw) data = data.filter(f => _norm(f.n).includes(kw));
   renderTrofeos(data);
 }
 function setTrofChip(el, kw) {
