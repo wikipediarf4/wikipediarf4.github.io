@@ -621,10 +621,35 @@ select.fi option{background:var(--bg3);color:var(--text);}
 @keyframes shopParticleFall { 0%{transform:translateY(0) rotate(0deg);opacity:.9;} 100%{transform:translateY(110vh) rotate(720deg);opacity:0;} }
 .profile-layout{display:grid;grid-template-columns:360px 1fr;gap:16px;padding:16px;max-width:1080px;margin:0 auto;}
 @media(max-width:900px){.profile-layout{grid-template-columns:1fr;}}
-.profile-about-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:14px;}
-.pac-title{font-family:'Orbitron',monospace;font-size:.82rem;font-weight:700;color:var(--accent);margin-bottom:12px;}
-.pac-item{display:flex;align-items:center;gap:9px;font-size:.85rem;margin-bottom:9px;color:var(--muted);}
-.pac-item span{color:var(--text);}
+.profile-about-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:14px;box-shadow:0 4px 24px rgba(0,0,0,.3);transition:box-shadow .2s;}
+.profile-about-card:hover{box-shadow:0 6px 32px rgba(46,196,182,.08);}
+.pac-title{font-family:'Orbitron',monospace;font-size:.82rem;font-weight:700;color:var(--accent);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.pac-title::after{content:'';flex:1;height:1px;background:linear-gradient(to right,var(--border),transparent);}
+.pac-item{display:flex;align-items:center;gap:10px;font-size:.84rem;margin-bottom:8px;color:var(--muted);padding:7px 10px;border-radius:8px;transition:background .15s;}
+.pac-item:hover{background:rgba(46,196,182,.05);}
+.pac-item strong{color:var(--text);font-weight:600;}
+.pac-item .pac-icon{width:28px;height:28px;border-radius:8px;background:rgba(46,196,182,.1);display:inline-flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;}
+.pac-section{font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin:14px 0 6px;padding-bottom:5px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;}
+
+/* Profile link chips */
+.prof-link-chip{display:inline-flex;align-items:center;gap:7px;padding:6px 14px;border-radius:100px;background:rgba(46,196,182,.1);border:1px solid rgba(46,196,182,.2);color:var(--accent);font-size:.8rem;font-weight:600;text-decoration:none;transition:all .18s;margin:4px 4px 0 0;}
+.prof-link-chip:hover{background:rgba(46,196,182,.2);border-color:var(--accent);transform:translateY(-1px);box-shadow:0 4px 14px rgba(46,196,182,.2);}
+.prof-link-chip svg{width:14px;height:14px;fill:currentColor;flex-shrink:0;}
+.prof-links-wrap{display:flex;flex-wrap:wrap;margin-top:6px;}
+
+/* Email privacy badge */
+.email-privacy-badge{display:inline-flex;align-items:center;gap:4px;font-size:.68rem;padding:2px 8px;border-radius:100px;font-weight:700;margin-left:8px;}
+.email-privacy-public{background:rgba(66,183,42,.15);color:#42b72a;border:1px solid rgba(66,183,42,.25);}
+.email-privacy-friends{background:rgba(232,196,106,.15);color:var(--gold);border:1px solid rgba(232,196,106,.25);}
+.email-privacy-private{background:rgba(100,100,120,.15);color:var(--muted);border:1px solid rgba(100,100,120,.25);}
+
+/* DOB / Age display */
+.pac-dob-row{display:flex;flex-direction:column;gap:2px;}
+.pac-dob-row .pac-dob-label{font-size:.68rem;color:var(--muted);font-weight:600;}
+
+/* Edit profile section dividers */
+.ep-section{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin:18px 0 10px;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.03);border-left:3px solid var(--accent);}
+
 
 /* ===== STORY VIEWER ===== */
 .story-viewer{position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.97);display:none;align-items:center;justify-content:center;}
@@ -1081,27 +1106,44 @@ select.fi option{background:var(--bg3);color:var(--text);}
       <div id="ptAbout" style="display:none;margin-bottom:14px;">
         <div class="profile-about-card">
           <div class="pac-title">Información</div>
-          <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:10px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border);">🎣 Pesca</div>
-          <div class="pac-item" id="profFavFishRow" style="display:none">🐟 Pez favorito: <strong id="profFavFish">—</strong></div>
-          <div class="pac-item" id="profFavMapRow" style="display:none">🗺️ Mapa favorito: <strong id="profFavMap">—</strong></div>
-          <div class="pac-item" id="profTechRow" style="display:none">🎯 Técnica: <strong id="profTech">—</strong></div>
-          <div class="pac-item" id="profExpRow" style="display:none">⭐ Experiencia: <strong id="profExp">—</strong></div>
-          <div class="pac-item" id="profStreakRow" style="display:none;">🔥 Racha: <strong id="profStreakInfo">—</strong></div>
-          <div class="pac-item">🏅 Nivel: <strong id="profLevel">Novato</strong></div>
-          <div class="pac-item" id="profXpInfoRow" style="display:none;">⚡ XP Total: <strong id="profXpInfo">—</strong></div>
-          <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:12px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border);">👤 Personal</div>
-          <div class="pac-item" id="profEmailRow" style="display:none">✉️ Email: <strong id="profEmailEl">—</strong></div>
-          <div class="pac-item">📍 País: <strong id="profCountry">—</strong></div>
-          <div class="pac-item" id="profCityRow" style="display:none">🏙️ Ciudad: <strong id="profCity">—</strong></div>
-          <div class="pac-item" id="profAgeRow" style="display:none">🎂 Edad: <strong id="profAge">—</strong> años</div>
-          <div class="pac-item" id="profGenderRow" style="display:none">👥 Género: <strong id="profGender">—</strong></div>
-          <div class="pac-item">📅 Se unió en <strong id="profJoined">2024</strong></div>
-          <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:12px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border);">🌐 Redes y Contacto</div>
-          <div class="pac-item" id="profYTRow" style="display:none">▶️ YouTube: <a id="profYT" style="color:var(--accent);word-break:break-all;" target="_blank">—</a></div>
-          <div class="pac-item" id="profDCRow" style="display:none">💬 Discord: <strong id="profDC">—</strong></div>
-          <div class="pac-item" id="profTWRow" style="display:none">🐦 Twitch: <a id="profTW" style="color:var(--accent);" target="_blank">—</a></div>
-          <div class="pac-item" id="profWebRow" style="display:none">🌐 Web/Blog: <a id="profWeb" style="color:var(--accent);" target="_blank">—</a></div>
-          <button class="btn btn-s" style="width:100%;margin-top:12px;font-size:.8rem" onclick="openEditProfile()">✏ Editar información</button>
+
+          <div class="pac-section">🎣 Pesca</div>
+          <div class="pac-item" id="profFavFishRow" style="display:none"><span class="pac-icon">🐟</span><span style="flex:1">Pez favorito</span><strong id="profFavFish">—</strong></div>
+          <div class="pac-item" id="profFavMapRow" style="display:none"><span class="pac-icon">🗺️</span><span style="flex:1">Mapa favorito</span><strong id="profFavMap">—</strong></div>
+          <div class="pac-item" id="profTechRow" style="display:none"><span class="pac-icon">🎯</span><span style="flex:1">Técnica</span><strong id="profTech">—</strong></div>
+          <div class="pac-item" id="profExpRow" style="display:none"><span class="pac-icon">⭐</span><span style="flex:1">Experiencia</span><strong id="profExp">—</strong></div>
+          <div class="pac-item" id="profStreakRow" style="display:none;"><span class="pac-icon">🔥</span><span style="flex:1">Racha</span><strong id="profStreakInfo">—</strong></div>
+          <div class="pac-item"><span class="pac-icon">🏅</span><span style="flex:1">Nivel</span><strong id="profLevel">Novato</strong></div>
+          <div class="pac-item" id="profXpInfoRow" style="display:none;"><span class="pac-icon">⚡</span><span style="flex:1">XP Total</span><strong id="profXpInfo">—</strong></div>
+
+          <div class="pac-section">👤 Personal</div>
+          <div class="pac-item" id="profEmailRow" style="display:none">
+            <span class="pac-icon">✉️</span>
+            <span style="flex:1">Email</span>
+            <strong id="profEmailEl" style="font-family:monospace;letter-spacing:.5px;">—</strong>
+            <span id="profEmailPrivacyBadge" class="email-privacy-badge" style="display:none;"></span>
+          </div>
+          <div class="pac-item"><span class="pac-icon">📍</span><span style="flex:1">País</span><strong id="profCountry">—</strong></div>
+          <div class="pac-item" id="profCityRow" style="display:none"><span class="pac-icon">🏙️</span><span style="flex:1">Ciudad</span><strong id="profCity">—</strong></div>
+          <div class="pac-item" id="profAgeRow" style="display:none">
+            <span class="pac-icon">🎂</span>
+            <div style="flex:1">
+              <div style="color:var(--text);font-weight:600;"><span id="profAge">—</span> años</div>
+              <div id="profBirthdateDisplay" style="font-size:.72rem;color:var(--muted);margin-top:2px;"></div>
+            </div>
+          </div>
+          <div class="pac-item" id="profGenderRow" style="display:none"><span class="pac-icon">👥</span><span style="flex:1">Género</span><strong id="profGender">—</strong></div>
+          <div class="pac-item"><span class="pac-icon">📅</span><span style="flex:1">Se unió en</span><strong id="profJoined">2024</strong></div>
+
+          <div class="pac-section" id="profLinksSection" style="display:none">🌐 Redes y Contacto</div>
+          <div class="prof-links-wrap" id="profLinksWrap"></div>
+          <div class="pac-item" id="profDCRow" style="display:none"><span class="pac-icon">💬</span><span style="flex:1">Discord</span><strong id="profDC">—</strong></div>
+          <!-- Keep hidden IDs for JS compatibility -->
+          <div id="profYTRow" style="display:none"><a id="profYT" target="_blank"></a></div>
+          <div id="profTWRow" style="display:none"><a id="profTW" target="_blank"></a></div>
+          <div id="profWebRow" style="display:none"><a id="profWeb" target="_blank"></a></div>
+
+          <button class="btn btn-s" style="width:100%;margin-top:16px;font-size:.8rem;border-radius:10px;" onclick="openEditProfile()">✏ Editar información</button>
         </div>
       </div>
       <!-- Gallery section (hidden by default) -->
@@ -1644,7 +1686,18 @@ select.fi option{background:var(--bg3);color:var(--text);}
       <input class="fi" id="epNick" placeholder="Tu nick en RF4">
       <div id="epNickMsg" style="font-size:.68rem;margin-top:4px;display:none;"></div>
     </div>
-    <div class="fg"><label class="fl">✉️ Email público <span style="font-size:.7rem;color:var(--muted);font-weight:400;">(opcional, visible en tu perfil)</span></label><input class="fi" type="email" id="epEmailPublic" placeholder="contacto@ejemplo.com"></div>
+    <div class="fg">
+      <label class="fl">✉️ Email público <span style="font-size:.7rem;color:var(--muted);font-weight:400;">(opcional, se muestra enmascarado)</span></label>
+      <div style="display:flex;gap:8px;">
+        <input class="fi" type="email" id="epEmailPublic" placeholder="contacto@ejemplo.com" style="flex:1;">
+        <select class="fi" id="epEmailPrivacy" style="width:150px;flex-shrink:0;" title="Quién puede ver tu email">
+          <option value="public">🌐 Público</option>
+          <option value="friends">👥 Solo amigos</option>
+          <option value="private">🔒 Solo yo</option>
+        </select>
+      </div>
+      <div style="font-size:.65rem;color:var(--muted);margin-top:3px;">Tu email siempre se muestra enmascarado (ej: syn*@gm***.com)</div>
+    </div>
     <div class="fg"><label class="fl">Biografía</label><textarea class="fi" id="epBio" placeholder="Cuéntanos sobre tu experiencia en RF4..." style="min-height:70px;"></textarea></div>
     <div class="frow">
       <div class="fg"><label class="fl">País</label>
@@ -4879,20 +4932,88 @@ function renderProfile(){
   setInfoField('profTechRow','profTech', window.CU.favTech);
   setInfoField('profExpRow','profExp', window.CU.experience);
   document.getElementById('profCountry').textContent = window.CU.country||'No especificado';
-  setInfoField('profEmailRow','profEmailEl', window.CU.emailPublic);
+
+  // Email masking + privacy badge
+  (function(){
+    const email = window.CU.emailPublic;
+    const privacy = window.CU.emailPrivacy || 'public';
+    const row = document.getElementById('profEmailRow');
+    const el = document.getElementById('profEmailEl');
+    const badge = document.getElementById('profEmailPrivacyBadge');
+    if(!row||!el) return;
+    if(email){
+      row.style.display='flex';
+      // Mask: show first char + * + @ + first char of domain + **
+      const atIdx = email.indexOf('@');
+      let masked = email;
+      if(atIdx > 0){
+        const user = email.substring(0, atIdx);
+        const domain = email.substring(atIdx+1);
+        const domParts = domain.split('.');
+        const maskedUser = user[0] + '*'.repeat(Math.min(user.length-1,3));
+        const maskedDomain = domParts[0][0] + '*'.repeat(Math.min(domParts[0].length-1,2)) + (domParts.length>1 ? '.'+domParts[domParts.length-1] : '');
+        masked = maskedUser + '@' + maskedDomain;
+      }
+      el.textContent = masked;
+      if(badge){
+        badge.style.display='inline-flex';
+        const privLabels = {public:['🌐 Público','email-privacy-public'], friends:['👥 Amigos','email-privacy-friends'], private:['🔒 Solo yo','email-privacy-private']};
+        const [label, cls] = privLabels[privacy] || privLabels.public;
+        badge.textContent = label;
+        badge.className = 'email-privacy-badge ' + cls;
+      }
+    } else { row.style.display='none'; }
+  })();
+
   setInfoField('profCityRow','profCity', window.CU.city);
-  setInfoField('profAgeRow','profAge', window.CU.age);
+  // Age + birthdate display
+  (function(){
+    const row = document.getElementById('profAgeRow');
+    const ageEl = document.getElementById('profAge');
+    const bdEl = document.getElementById('profBirthdateDisplay');
+    const bd = window.CU.birthdate;
+    const age = window.CU.age;
+    if(row){ if(age||bd){ row.style.display='flex'; } else { row.style.display='none'; return; } }
+    if(ageEl && age) ageEl.textContent = age;
+    if(bdEl && bd){
+      try{
+        const d = new Date(bd+'T00:00:00');
+        const opts = {day:'numeric',month:'long',year:'numeric'};
+        bdEl.textContent = '📆 ' + d.toLocaleDateString('es-ES', opts);
+      }catch(e){ bdEl.textContent=''; }
+    }
+  })();
+
   setInfoField('profGenderRow','profGender', window.CU.gender);
   document.getElementById('profJoined').textContent = window.CU.joined||new Date().getFullYear();
 
-  // Social links
-  if(window.CU.social_yt){ document.getElementById('profYTRow').style.display='flex'; document.getElementById('profYT').textContent=window.CU.social_yt.replace(/https?:\/\/(www\.)?/,''); document.getElementById('profYT').href=window.CU.social_yt; }
-  else { document.getElementById('profYTRow').style.display='none'; }
+  // Social links as clickable chips
+  (function(){
+    const linksWrap = document.getElementById('profLinksWrap');
+    const linksSection = document.getElementById('profLinksSection');
+    if(!linksWrap) return;
+    const links = [];
+    const iconMap = {
+      yt: {icon:'<svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1c.5-1.9.5-5.8.5-5.8s0-3.9-.5-5.8zM9.75 15.5V8.5l6.25 3.5-6.25 3.5z"/></svg>', label:'YouTube', color:'#ff4444'},
+      tw: {icon:'<svg viewBox="0 0 24 24"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>', label:'Twitch', color:'#9147ff'},
+      web: {icon:'<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>', label:'Web', color:'var(--accent)'},
+    };
+    if(window.CU.social_yt) links.push({href:window.CU.social_yt, type:'yt'});
+    if(window.CU.social_tw) links.push({href:window.CU.social_tw, type:'tw'});
+    if(window.CU.social_web) links.push({href:window.CU.social_web, type:'web'});
+    // Keep hidden anchors updated for backward compat
+    ['profYT','profTW','profWeb'].forEach((id,i)=>{
+      const el=document.getElementById(id); if(el){ const src=[window.CU.social_yt,window.CU.social_tw,window.CU.social_web][i]; if(src)el.href=src; }
+    });
+    if(links.length===0){ if(linksSection)linksSection.style.display='none'; linksWrap.innerHTML=''; return; }
+    if(linksSection) linksSection.style.display='flex';
+    linksWrap.innerHTML = links.map(l=>{
+      const info = iconMap[l.type];
+      const shortUrl = l.href.replace(/https?:\/\/(www\.)?/,'').replace(/\/$/,'');
+      return `<a class="prof-link-chip" href="${l.href}" target="_blank" rel="noopener" style="--chip-color:${info.color}">${info.icon}<span>${shortUrl.length>28?shortUrl.substring(0,26)+'…':shortUrl}</span></a>`;
+    }).join('');
+  })();
   setInfoField('profDCRow','profDC', window.CU.social_dc);
-  if(window.CU.social_tw){ document.getElementById('profTWRow').style.display='flex'; document.getElementById('profTW').textContent=window.CU.social_tw.replace(/https?:\/\/(www\.)?/,''); document.getElementById('profTW').href=window.CU.social_tw; }
-  else { document.getElementById('profTWRow').style.display='none'; }
-  if(window.CU.social_web){ document.getElementById('profWebRow').style.display='flex'; document.getElementById('profWeb').textContent=window.CU.social_web.replace(/https?:\/\/(www\.)?/,''); document.getElementById('profWeb').href=window.CU.social_web; }
-  else { document.getElementById('profWebRow').style.display='none'; }
 
   // Level based on experience
   const lvlMap = {Principiante:'🐟 Principiante',Intermedio:'🎣 Intermedio',Avanzado:'⭐ Avanzado',Experto:'🏆 Experto',Profesional:'👑 Profesional'};
@@ -4962,6 +5083,7 @@ async function saveProfile(){
   window.CU.favMap = document.getElementById('epMap').value;
   window.CU.country = document.getElementById('epCountry').value;
   window.CU.emailPublic = document.getElementById('epEmailPublic').value.trim();
+  window.CU.emailPrivacy = document.getElementById('epEmailPrivacy')?.value || 'public';
   window.CU.city = document.getElementById('epCity').value.trim();
   window.CU.birthdate = document.getElementById('epBirthdate').value || '';
   if(window.CU.birthdate){
@@ -5015,6 +5137,7 @@ function openEditProfile(){
   document.getElementById('epMap').value = window.CU.favMap||'';
   document.getElementById('epCountry').value = window.CU.country||'';
   document.getElementById('epEmailPublic').value = window.CU.emailPublic||'';
+  if(document.getElementById('epEmailPrivacy')) document.getElementById('epEmailPrivacy').value = window.CU.emailPrivacy||'public';
   document.getElementById('epCity').value = window.CU.city||'';
   document.getElementById('epBirthdate').value = window.CU.birthdate||'';
   // Auto-calc age from birthdate
