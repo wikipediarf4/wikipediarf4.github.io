@@ -5875,10 +5875,12 @@ function listenNotifs(){
       }
     }
     renderNotifs(); updateNotifBadge(); updateMsgBadge();
-    // ✅ Re-render inmediato de la lista (sin destruir el snapshot de presencia)
+    // Re-render lista del messenger si está visible (sin destruir listener)
     if(_messengerOpen){
       const _ln_list = document.getElementById('messengerList');
-      if(_ln_list && _ln_list.style.display !== 'none') _ln_list.innerHTML = _buildMessengerHTML();
+      if(_ln_list && _ln_list.style.display !== 'none'){
+        _ln_list.innerHTML = _buildMessengerHTML();
+      }
     }
   });
 
@@ -5903,21 +5905,34 @@ function listenUnreadMsgsBadge(){
       limit(20)
     );
     const unsub = onSnapshot(q, snap=>{
-      const myData = window.CU || {};
-      const archived = myData.archivedChats || [];
-      const deleted  = myData.deletedChats  || [];
-      // Contar cuántos mensajes no leídos hay de esa persona
+      // Contar no leídos
       const unreadCount = snap.docs.filter(d=>{
         const m = d.data();
         return m.uid !== myId && !m.read && !(m.deletedFor||{})[myId];
       }).length;
+      // Buscar el último mensaje visible (no borrado para mí)
+      const visibleDoc = snap.docs.find(d=>!(d.data().deletedFor||{})[myId]);
       const lm = _chatLastMsgs[f.id] || {};
-      _chatLastMsgs[f.id] = { ...lm, unread: unreadCount > 0, unreadCount };
+      if(visibleDoc){
+        const md = visibleDoc.data();
+        _chatLastMsgs[f.id] = {
+          ...lm,
+          text: md.gif ? '🖼️ GIF' : (md.text||''),
+          time: md.time?.toMillis?.()||0,
+          mine: md.uid === myId,
+          unread: unreadCount > 0,
+          unreadCount
+        };
+      } else {
+        _chatLastMsgs[f.id] = { ...lm, unread: false, unreadCount: 0 };
+      }
       updateMsgBadge();
-      // ✅ Re-render inmediato sin destruir snapshot de presencia
+      // Re-render lista si está visible
       if(_messengerOpen){
         const _ub_list = document.getElementById('messengerList');
-        if(_ub_list && _ub_list.style.display !== 'none') _ub_list.innerHTML = _buildMessengerHTML();
+        if(_ub_list && _ub_list.style.display !== 'none'){
+          _ub_list.innerHTML = _buildMessengerHTML();
+        }
       }
     });
     _unsubMsgBadgeListeners.push(unsub);
@@ -8652,6 +8667,7 @@ function switchChatTab(tab){
 
 // Cache de IDs online para renderizar sin esperar evento de presencia
 let _messengerOnlineIds = new Set();
+let _messengerListUnsub = null;  // listener de presencia SOLO para la lista, separado del chat
 
 // Renderiza la lista del messenger con los datos actuales (sin esperar presencia)
 function _buildMessengerHTML(){
@@ -8670,10 +8686,12 @@ function _buildMessengerHTML(){
 
   let showFriends;
   if(_currentChatTab === 'archived'){
+    // Mostrar TODOS los archivados aunque no tengan mensajes cargados en _chatLastMsgs
     showFriends = friends.filter(f=>archived.includes(f.id) && !deletedChats.includes(f.id));
   } else if(_currentChatTab === 'unread'){
     showFriends = friends.filter(f=>!archived.includes(f.id) && !deletedChats.includes(f.id) && _chatLastMsgs[f.id]?.unread);
   } else {
+    // Tab "Todos": excluir archivados y borrados sin mensajes nuevos
     showFriends = friends.filter(f=>{
       if(archived.includes(f.id)) return false;
       if(deletedChats.includes(f.id)) return !!_chatLastMsgs[f.id];
@@ -8732,14 +8750,14 @@ function renderMessengerList(){
   const list = document.getElementById('messengerList');
   if(!list) return;
 
-  // ✅ Render inmediato con datos actuales (sin esperar snapshot de presencia)
+  // Render inmediato con datos que ya tenemos
   list.innerHTML = _buildMessengerHTML();
   if(!window._chatUserAvCache) window._chatUserAvCache = {};
   (window.CU?.friendsList||[]).forEach(f=>{ if(f.av) window._chatUserAvCache[f.id]=f.av; });
 
-  // Actualizar también snapshot de presencia para el indicador online
-  if(_presenceUnsub){ _presenceUnsub(); _presenceUnsub=null; }
-  _presenceUnsub = onSnapshot(collection(db,'presence'), async snap=>{
+  // Listener de presencia SEPARADO del chat (no se cancela al abrir chat)
+  if(_messengerListUnsub){ _messengerListUnsub(); _messengerListUnsub=null; }
+  _messengerListUnsub = onSnapshot(collection(db,'presence'), async snap=>{
     const now = Date.now();
     _messengerOnlineIds = new Set(
       snap.docs
@@ -8747,36 +8765,39 @@ function renderMessengerList(){
         .filter(u=>u.id!==window.CU?.id && now-u.ts<120000)
         .map(u=>u.id)
     );
-    // También actualizar _chatLastMsgs con el último mensaje de cada amigo
+    // Actualizar último mensaje de cada amigo
     const friends = window.CU?.friendsList || [];
     const myId = window.CU?.id;
+    if(!myId) return;
     await Promise.all(friends.map(async f=>{
       try {
         const chatId = [myId, f.id].sort().join('_');
-        const q = query(collection(db,'chats',chatId,'messages'), orderBy('time','desc'), limit(20));
+        const q = query(collection(db,'chats',chatId,'messages'), orderBy('time','desc'), limit(30));
         const s = await getDocs(q);
         const visible = s.docs.find(d=>!(d.data().deletedFor||{})[myId]);
         if(visible){
           const d = visible.data();
           const unreadCount = s.docs.filter(d2=>{ const m=d2.data(); return m.uid!==myId && !m.read && !(m.deletedFor||{})[myId]; }).length;
           _chatLastMsgs[f.id] = {
-            text: d.text||'',
+            text: d.text||d.gif?'GIF':'',
             time: d.time?.toMillis?.()||0,
             mine: d.uid===myId,
             unread: unreadCount > 0,
             unreadCount
           };
         } else {
-          delete _chatLastMsgs[f.id];
+          // Sin mensajes visibles pero puede estar archivado — mantener entrada vacía para que aparezca en "archivados"
+          if(!_chatLastMsgs[f.id]) _chatLastMsgs[f.id] = { text:'', time:0, mine:false, unread:false, unreadCount:0 };
         }
       } catch(e){}
     }));
-    // Re-render con datos frescos incluyendo presencia
+    // Re-render con datos frescos
     const list2 = document.getElementById('messengerList');
     if(list2 && list2.style.display !== 'none'){
       list2.innerHTML = _buildMessengerHTML();
       (window.CU?.friendsList||[]).forEach(f=>{ if(f.av && window._chatUserAvCache) window._chatUserAvCache[f.id]=f.av; });
     }
+    updateMsgBadge();
   });
 }
 
@@ -9113,6 +9134,8 @@ function backToMessengerList(){
   if(chatWin) chatWin.style.display='none';
   if(list) list.style.display='block';
   if(inputRow) inputRow.style.display='none';
+  // Render inmediato con datos actuales + relanzar listener de lista
+  if(list) list.innerHTML = _buildMessengerHTML();
   renderMessengerList();
 }
 
@@ -10789,7 +10812,16 @@ async function archiveChat(uid, nick){
     await updateDoc(doc(db,'users',window.CU.id),{archivedChats:arch});
   }
   toast(`💬 Chat con ${nick} archivado 📦`,'ok');
-  // Re-render inmediato de la lista (sin esperar presencia)
+  // Cambiar al tab archivados para que el usuario lo vea inmediatamente
+  _currentChatTab = 'archived';
+  ['all','unread','archived'].forEach(t=>{
+    const btn = document.getElementById('chatTab-'+t);
+    if(!btn) return;
+    const active = t==='archived';
+    btn.style.borderBottom = active ? '2px solid var(--accent)' : '2px solid transparent';
+    btn.style.color = active ? 'var(--accent)' : 'var(--muted)';
+    btn.style.fontWeight = active ? '700' : '600';
+  });
   const _archList = document.getElementById('messengerList');
   if(_archList && _archList.style.display !== 'none') _archList.innerHTML = _buildMessengerHTML();
 }
@@ -10799,6 +10831,16 @@ async function unarchiveChat(uid){
   window.CU.archivedChats = (window.CU.archivedChats||[]).filter(id=>id!==uid);
   await updateDoc(doc(db,'users',window.CU.id),{archivedChats:window.CU.archivedChats});
   toast('Chat desarchivado','ok');
+  // Volver al tab "Todos" después de desarchivar
+  _currentChatTab = 'all';
+  ['all','unread','archived'].forEach(t=>{
+    const btn = document.getElementById('chatTab-'+t);
+    if(!btn) return;
+    const active = t==='all';
+    btn.style.borderBottom = active ? '2px solid var(--accent)' : '2px solid transparent';
+    btn.style.color = active ? 'var(--accent)' : 'var(--muted)';
+    btn.style.fontWeight = active ? '700' : '600';
+  });
   const _uarchList = document.getElementById('messengerList');
   if(_uarchList && _uarchList.style.display !== 'none') _uarchList.innerHTML = _buildMessengerHTML();
 }
