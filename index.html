@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://storage.googleapis.com wss://*.firebaseio.com https://api.imgbb.com https://i.ibb.co data: blob:; connect-src 'self' https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://storage.googleapis.com wss://*.firebaseio.com https://api.imgbb.com https://i.ibb.co https://api.allorigins.win data: blob:; frame-src https://www.youtube.com https://*.youtube.com https://*.firebaseapp.com https://open.spotify.com https://*.spotify.com; img-src 'self' data: blob: https: http:;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://storage.googleapis.com wss://*.firebaseio.com https://api.imgbb.com https://i.ibb.co data: blob:; connect-src 'self' https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://storage.googleapis.com wss://*.firebaseio.com https://api.imgbb.com https://i.ibb.co https://api.allorigins.win data: blob:; frame-src https://www.youtube.com https://*.youtube.com https://*.firebaseapp.com https://open.spotify.com https://*.spotify.com https://www.tiktok.com https://*.tiktok.com; img-src 'self' data: blob: https: http:;">
 <title>RF4 Latam</title>
 
   <meta name="theme-color" content="#1877f2">
@@ -1159,10 +1159,10 @@ select.fi option{background:#fff;}
       <div id="mention_postText" style="display:none;position:absolute;bottom:calc(100% - 4px);left:0;right:0;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);min-width:200px;max-height:200px;overflow-y:auto;z-index:600;box-shadow:0 4px 16px rgba(0,0,0,.6);"></div>
     </div>
 
-    <!-- YouTube - siempre visible -->
+    <!-- YouTube + TikTok -->
     <div style="margin-bottom:10px;background:rgba(255,40,40,.06);border:1px solid rgba(255,40,40,.2);border-radius:var(--rs);padding:10px;">
-      <div style="font-size:.72rem;color:#ff6666;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:5px;">▶️ Link de YouTube <span style="color:var(--muted);font-weight:400;">(opcional)</span></div>
-      <input class="fi" id="ytUrlInput" placeholder="Pegá el link: https://www.youtube.com/watch?v=..." style="font-size:.82rem;margin-bottom:0;" oninput="previewYtEmbed(this.value)">
+      <div style="font-size:.72rem;color:#ff6666;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:5px;">▶️ Link de YouTube o TikTok <span style="color:var(--muted);font-weight:400;">(opcional)</span></div>
+      <input class="fi" id="ytUrlInput" placeholder="Pegá link de YouTube o TikTok..." style="font-size:.82rem;margin-bottom:0;" oninput="previewYtEmbed(this.value)">
       <div id="ytPreview" style="margin-top:8px;border-radius:var(--rs);overflow:hidden;display:none;"></div>
     </div>
 
@@ -2946,10 +2946,18 @@ function postHTML(p){
   let videoHTML = '';
   if(p.video){
     const ytId = extractYtId(p.video);
+    const ttId = extractTikTokId(p.video);
     if(ytId){
       videoHTML = `<div style="width:100%;aspect-ratio:16/9;border-radius:var(--rs);overflow:hidden;margin-bottom:10px;background:#000;">
         <iframe src="https://www.youtube.com/embed/${ytId}?rel=0" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           style="width:100%;height:100%;display:block;border:none;" loading="lazy"></iframe>
+      </div>`;
+    } else if(ttId){
+      videoHTML = `<div style="display:flex;justify-content:center;margin-bottom:10px;">
+        <div style="width:100%;max-width:340px;aspect-ratio:9/16;border-radius:var(--rs);overflow:hidden;background:#000;">
+          <iframe src="https://www.tiktok.com/embed/v2/${ttId}" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            style="width:100%;height:100%;display:block;border:none;" loading="lazy"></iframe>
+        </div>
       </div>`;
     } else {
       videoHTML = `<video src="${p.video}" controls style="width:100%;border-radius:var(--rs);margin-bottom:10px;max-height:320px;display:block;"></video>`;
@@ -4879,7 +4887,7 @@ async function submitGroupPost(){
   toast('¡Publicado en el grupo! 🎣','ok');
 }
 
-// ===== YOUTUBE HELPERS =====
+// ===== YOUTUBE + TIKTOK HELPERS =====
 function extractYtId(url){
   if(!url) return null;
   const patterns = [
@@ -4894,6 +4902,18 @@ function extractYtId(url){
     if(m) return m[1];
   }
   return null;
+}
+
+function extractTikTokId(url){
+  if(!url) return null;
+  // Formats: tiktok.com/@user/video/123456789 or vm.tiktok.com/ZMxxx
+  const m = url.match(/tiktok\.com\/@[^/]+\/video\/(\d+)/);
+  if(m) return m[1];
+  return null;
+}
+
+function isTikTok(url){
+  return url && (url.includes('tiktok.com') || url.includes('vm.tiktok.com'));
 }
 
 function openPostWithYt(){
@@ -4922,16 +4942,26 @@ function toggleYtInput(){
 function previewYtEmbed(url){
   const prev = document.getElementById('ytPreview');
   if(!prev) return;
-  const id = extractYtId(url);
-  if(id){
+  const ytId = extractYtId(url);
+  const ttId = extractTikTokId(url);
+  if(ytId){
     prev.style.display='block';
     prev.innerHTML = `<div style="width:100%;aspect-ratio:16/9;border-radius:var(--rs);overflow:hidden;background:#000;">
-      <iframe src="https://www.youtube.com/embed/${id}?rel=0" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      <iframe src="https://www.youtube.com/embed/${ytId}?rel=0" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         style="width:100%;height:100%;display:block;border:none;"></iframe>
-    </div><div style="font-size:.72rem;color:var(--green);margin-top:4px;">▶️ Video detectado correctamente</div>`;
+    </div><div style="font-size:.72rem;color:var(--green);margin-top:4px;">▶️ YouTube detectado correctamente</div>`;
+  } else if(ttId){
+    prev.style.display='block';
+    prev.innerHTML = `<div style="max-width:340px;margin:0 auto;aspect-ratio:9/16;border-radius:var(--rs);overflow:hidden;background:#000;">
+      <iframe src="https://www.tiktok.com/embed/v2/${ttId}" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        style="width:100%;height:100%;display:block;border:none;"></iframe>
+    </div><div style="font-size:.72rem;color:var(--green);margin-top:4px;">🎵 TikTok detectado correctamente</div>`;
+  } else if(isTikTok(url) && url.length > 10){
+    prev.style.display='block';
+    prev.innerHTML='<div style="font-size:.72rem;color:var(--warn);padding:4px;">⚠️ Usá el link completo del video de TikTok (con /video/ID)</div>';
   } else if(url.length > 5){
     prev.style.display='block';
-    prev.innerHTML='<div style="font-size:.72rem;color:var(--red);padding:4px;">⚠️ URL de YouTube no válida</div>';
+    prev.innerHTML='<div style="font-size:.72rem;color:var(--red);padding:4px;">⚠️ URL no válida. Pegá un link de YouTube o TikTok</div>';
   } else {
     prev.style.display='none';
     prev.innerHTML='';
