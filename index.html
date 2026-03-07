@@ -5743,7 +5743,9 @@ function _notifIcon(n){
 function renderNotifs(){
   const el = document.getElementById('notifList');
   if(!el) return;
-  const list = _notifTab==='unread' ? _notifs.filter(n=>!n.read) : _notifs;
+  // Excluir notificaciones de mensajes 💬 — esas van al ícono de chat, no a la campana
+  const noMsg = _notifs.filter(n=>!(n.text&&n.text.startsWith('💬')));
+  const list = _notifTab==='unread' ? noMsg.filter(n=>!n.read) : noMsg;
   if(!list.length){
     el.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--muted);">
       <div style="font-size:2.5rem;margin-bottom:10px;">${_notifTab==='unread'?'✓':'🔔'}</div>
@@ -5860,12 +5862,26 @@ function updateMsgBadge(){
   if(!el) return;
   const archived = window.CU?.archivedChats || [];
   const deleted  = window.CU?.deletedChats  || [];
-  // Contar solo chats con mensaje no leído, no archivados ni borrados
-  const unread = Object.entries(_chatLastMsgs).filter(([uid, lm])=>{
+
+  // Fuente 1: _chatLastMsgs (listeners en tiempo real por chat)
+  const unreadFromChats = Object.entries(_chatLastMsgs).filter(([uid, lm])=>{
     if(archived.includes(uid)) return false;
     if(deleted.includes(uid))  return false;
     return !!lm.unread;
   }).length;
+
+  // Fuente 2: _notifs con 💬 no leídas (siempre disponible inmediatamente)
+  // Contar cuántos remitentes distintos tienen mensajes no leídos
+  const unreadSenders = new Set(
+    _notifs
+      .filter(n=>!n.read && n.text && n.text.startsWith('💬'))
+      .map(n=>{ const m=n.text.match(/^💬\s*([^:]+):/); return m?m[1].trim():null; })
+      .filter(Boolean)
+  ).size;
+
+  // Usar el mayor de los dos para no subestimar
+  const unread = Math.max(unreadFromChats, unreadSenders);
+
   if(unread > 0){
     el.style.display='flex';
     el.textContent = unread > 9 ? '9+' : String(unread);
@@ -5886,14 +5902,27 @@ function listenNotifs(){
       if(d.friendsList) window.CU.friendsList = d.friendsList;
     }
     const newNotifs = d.notifs || [];
-    const prevUnread = _notifs.filter(n=>!n.read).length;
+    // Contar solo no-mensajes para detectar notifs reales nuevas
+    const prevNonMsgUnread = _notifs.filter(n=>!n.read && !(n.text&&n.text.startsWith('💬'))).length;
+    const prevMsgUnread    = _notifs.filter(n=>!n.read && n.text&&n.text.startsWith('💬')).length;
     _notifs = newNotifs;
-    const newUnread = _notifs.filter(n=>!n.read).length;
-    if(newUnread > prevUnread){
+    const newNonMsgUnread  = _notifs.filter(n=>!n.read && !(n.text&&n.text.startsWith('💬'))).length;
+    const newMsgUnread     = _notifs.filter(n=>!n.read && n.text&&n.text.startsWith('💬')).length;
+
+    // Actualizar badge de mensajes INMEDIATAMENTE cuando llega un 💬 nuevo
+    if(newMsgUnread > prevMsgUnread){
+      updateMsgBadge(); // badge del ícono de chat
       const latest = _notifs[0];
+      if(latest?.text?.startsWith('💬')){
+        playMsgSound();
+        showNotifToast(latest.text||'Nuevo mensaje');
+      }
+    }
+    // Notificaciones normales (no mensajes)
+    if(newNonMsgUnread > prevNonMsgUnread){
+      const latest = _notifs.find(n=>!n.read && !(n.text&&n.text.startsWith('💬')));
       if(latest){
-        if(latest.text?.startsWith('💬')) playMsgSound();
-        else playNotifSound();
+        playNotifSound();
         showNotifToast(latest.text||'Nueva notificación');
       }
     }
@@ -8521,13 +8550,13 @@ function openMessenger(){
   om('mMessenger');
   renderMessengerList();
   if(window.location.pathname !== '/mensajes') history.pushState({page:'mensajes'}, '', '/mensajes');
-  // Mark chat notifs as read
+  // Marcar todas las notifs 💬 como leídas al abrir el messenger
   let changed = false;
   _notifs.forEach(n=>{ if(n.text?.startsWith('💬') && !n.read){ n.read=true; changed=true; } });
   if(changed && window.CU){
     updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,30)}).catch(()=>{});
-    updateMsgBadge();
   }
+  updateMsgBadge(); // siempre actualizar al abrir
 }
 // Keep toggleMessenger as alias for backward compat
 function toggleMessenger(){ openMessenger(); }
@@ -8831,6 +8860,8 @@ function openChatWith(uid, nick){
   tryApplyChatGold(uid);
   _chatUserId = uid;
   _chatUserNick = nick;
+  // Marcar notifs de mensajes de este usuario como leídas
+  if(nick) markChatNotifsRead(nick);
 
   // Update URL to /mensajes/nick
   const safeNickUrl = (nick||'usuario').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
@@ -9211,6 +9242,21 @@ function setChatTyping(){
     try{ setDoc(doc(db,'presence',window.CU.id),{typingTo:'',typingAt:serverTimestamp()},{merge:true}); }catch(e){}
   }, 4000);
 }
+// Marcar notifs 💬 de un remitente específico como leídas
+function markChatNotifsRead(nick){
+  if(!nick || !window.CU) return;
+  let changed = false;
+  _notifs.forEach(n=>{
+    if(!n.read && n.text?.startsWith('💬') && n.text.includes(nick+':')){
+      n.read=true; changed=true;
+    }
+  });
+  if(changed){
+    updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,30)}).catch(()=>{});
+    updateMsgBadge();
+  }
+}
+
 async function sendChatMsg(gifUrl){
   if(!window.CU){ toast('Iniciá sesión primero','err'); return; }
   const inp = document.getElementById('chatInput');
