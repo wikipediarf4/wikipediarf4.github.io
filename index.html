@@ -931,8 +931,8 @@ select.fi option{background:#fff;}
 
 <!-- PAGE: PROFILE -->
 <div class="page" id="page-profile">
-  <div class="profile-cover" id="profCover" style="cursor:pointer;" onclick="openPhotoModal('cover')">
-    <div id="profCoverInner" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:5rem;opacity:.15">🎣</div>
+  <div class="profile-cover" id="profCover" style="cursor:pointer;">
+    <div id="profCoverInner" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:5rem;opacity:.15;pointer-events:none;">🎣</div>
     <!-- Canvas partículas doradas (solo verificado) -->
     <canvas id="verifParticles" style="display:none;"></canvas>
     <!-- Canvas banner animado tienda -->
@@ -948,7 +948,7 @@ select.fi option{background:#fff;}
       <div class="profile-name-row">
         <div>
           <div class="profile-av-wrap">
-            <div class="profile-av-big" id="profAvBig" style="cursor:pointer;" onclick="openPhotoModal('avatar')">👤</div>
+            <div class="profile-av-big" id="profAvBig" style="cursor:pointer;">👤</div>
             <div class="profile-av-edit" onclick="document.getElementById('avatarFileInput').click()">📷<input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="changeAvatar(this)"></div>
           </div>
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:2px;">
@@ -4164,7 +4164,11 @@ function insertMention(pid, nick){
 function renderProfile(){
   if(!window.CU) return;
   const avEl = document.getElementById('profAvBig');
-  avEl.innerHTML = CU.av ? `<img src="${CU.av}">` : CU.nick[0].toUpperCase();
+  avEl.innerHTML = CU.av ? `<img src="${CU.av}" style="pointer-events:none;width:100%;height:100%;object-fit:cover;">` : CU.nick[0].toUpperCase();
+  // Asignar clicks para ver foto grande
+  avEl.onclick = () => openPhotoModal('avatar');
+  const profCoverEl = document.getElementById('profCover');
+  if(profCoverEl) profCoverEl.onclick = () => openPhotoModal('cover');
   const isVerified = !!CU.verified;
 
   // ── COVER especial verificado ──
