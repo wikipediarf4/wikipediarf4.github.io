@@ -3043,15 +3043,46 @@ function onLogin(){
   });
   loadSavedAccounts();
   // Navigate to initial URL route after login
-  if (window._initialRoute) {
-    const route = window._initialRoute;
-    window._initialRoute = null;
-    setTimeout(() => window.gp(route, false), 500);
-  } else {
-    // Sync URL if user lands on root but URL says something else
-    const path = window.location.pathname;
-    const ROUTES_LOCAL = {'/amigos':'amigos','/tienda':'shop','/trofeos':'trofeos-feed','/galeria':'galeria','/videos':'videos','/spots':'spots','/torneos':'torneos','/perfil':'profile','/buscar-trofeo':'buscar-trofeo','/publica-trofeo':'publica-trofeo','/carretes':'carretes','/parches':'parches','/casitrofeo':'casitrofeo'};
-    if (ROUTES_LOCAL[path]) setTimeout(() => window.gp(ROUTES_LOCAL[path], false), 500);
+  const _initPath = window._initialPath || window.location.pathname;
+  window._initialPath = null;
+  window._initialRoute = null;
+  if (_initPath && _initPath !== '/' && _initPath !== '/home') {
+    setTimeout(() => {
+      // Handle /u/nick -> user profile
+      if (_initPath.startsWith('/u/')) {
+        const nickSlug = _initPath.slice(3);
+        window.gp('userprofile', false);
+        // Try to find user by nick slug from Firestore
+        getDocs(collection(db,'users')).then(snap => {
+          const found = snap.docs.find(d => {
+            const n = (d.data().nick||'').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+            return n === nickSlug;
+          });
+          if (found) _loadUserProfilePage(found.id, found.data().nick||nickSlug);
+        }).catch(()=>{});
+        return;
+      }
+      // Handle /mensajes/nick -> open chat
+      if (_initPath.startsWith('/mensajes/')) {
+        om('mMessenger');
+        renderMessengerList();
+        return;
+      }
+      // Handle /mensajes -> open messenger
+      if (_initPath === '/mensajes') {
+        om('mMessenger');
+        renderMessengerList();
+        return;
+      }
+      // Handle /notificaciones -> open notif dropdown
+      if (_initPath === '/notificaciones') {
+        openNotifDropdown();
+        return;
+      }
+      // Handle standard page routes
+      const pageId = ROUTES[_initPath];
+      if (pageId && pageId !== 'home') window.gp(pageId, false);
+    }, 600);
   }
 }
 
@@ -3214,9 +3245,12 @@ window.addEventListener('popstate', (e) => {
 // On page load, navigate to the correct page based on URL
 window.addEventListener('DOMContentLoaded', () => {
   const path = window.location.pathname;
+  // Save full path for after login (handles /u/nick, /mensajes/nick, etc.)
+  if (path && path !== '/' && path !== '/home') {
+    window._initialPath = path;
+  }
   const pageId = ROUTES[path];
   if (pageId && pageId !== 'home') {
-    // Will be called after auth loads
     window._initialRoute = pageId;
   }
 });
