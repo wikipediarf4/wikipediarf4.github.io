@@ -453,6 +453,30 @@ select.fi option{background:#fff;}
 .ptab{padding:12px 18px;font-size:.85rem;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;transition:all .2s;}
 .ptab:hover{background:var(--bg3);color:var(--text);}
 .ptab.on{color:var(--accent);border-bottom-color:var(--accent);}
+/* TIENDA */
+.shop-cat-btn{background:var(--bg3);border:1px solid var(--border);color:var(--muted);border-radius:100px;padding:5px 12px;font-size:.72rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:'Exo 2',sans-serif;}
+.shop-cat-btn.active,.shop-cat-btn:hover{background:rgba(255,200,0,.15);border-color:rgba(255,200,0,.4);color:gold;}
+.shop-item{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center;cursor:pointer;transition:all .25s;position:relative;}
+.shop-item:hover{border-color:rgba(255,200,0,.4);transform:translateY(-2px);box-shadow:0 4px 16px rgba(255,200,0,.1);}
+.shop-item.equipped{border-color:gold;background:rgba(255,200,0,.08);box-shadow:0 0 12px rgba(255,200,0,.2);}
+.shop-item-preview{font-size:2.2rem;margin-bottom:6px;display:block;}
+.shop-item-name{font-size:.72rem;font-weight:700;color:var(--text);margin-bottom:3px;}
+.shop-item-type{font-size:.6rem;color:var(--muted);margin-bottom:8px;}
+.shop-item-price{font-size:.7rem;font-weight:800;color:gold;}
+.shop-item-equipped-badge{position:absolute;top:6px;right:6px;background:gold;color:#000;font-size:.55rem;font-weight:900;border-radius:100px;padding:2px 6px;}
+.shop-item-btn{width:100%;margin-top:8px;padding:5px;font-size:.68rem;font-weight:700;border-radius:8px;border:none;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .2s;}
+.shop-item-btn.equip{background:linear-gradient(135deg,gold,#ff8c00);color:#000;}
+.shop-item-btn.unequip{background:rgba(255,200,0,.15);border:1px solid rgba(255,200,0,.3);color:gold;}
+.shop-preview-modal{}
+/* MARCOS DE TIENDA */
+.ring-gold #profAvBig, .ring-gold.profile-av-wrap #profAvBig { box-shadow: 0 0 0 3px gold, 0 0 16px rgba(255,200,0,.5) !important; }
+.ring-fire #profAvBig, .ring-fire.profile-av-wrap #profAvBig { box-shadow: 0 0 0 3px #ff4500, 0 0 20px rgba(255,69,0,.6) !important; animation: ringFire 1.5s ease-in-out infinite alternate; }
+.ring-ice #profAvBig, .ring-ice.profile-av-wrap #profAvBig { box-shadow: 0 0 0 3px #00cfff, 0 0 20px rgba(0,207,255,.5) !important; animation: ringIce 2s ease-in-out infinite alternate; }
+.ring-fish #profAvBig, .ring-fish.profile-av-wrap #profAvBig { box-shadow: 0 0 0 3px #00ff88, 0 0 16px rgba(0,255,136,.4) !important; }
+.ring-legend #profAvBig, .ring-legend.profile-av-wrap #profAvBig { box-shadow: 0 0 0 4px gold, 0 0 0 7px rgba(255,200,0,.3), 0 0 30px rgba(255,200,0,.6) !important; animation: ringLegend 2s linear infinite; }
+@keyframes ringFire { from{box-shadow:0 0 0 3px #ff4500,0 0 16px rgba(255,69,0,.5);} to{box-shadow:0 0 0 3px #ff8c00,0 0 28px rgba(255,140,0,.8);} }
+@keyframes ringIce  { from{box-shadow:0 0 0 3px #00cfff,0 0 12px rgba(0,207,255,.4);} to{box-shadow:0 0 0 4px #80eaff,0 0 24px rgba(128,234,255,.7);} }
+@keyframes ringLegend { from{filter:hue-rotate(0deg);} to{filter:hue-rotate(30deg);} }
 .profile-layout{display:grid;grid-template-columns:360px 1fr;gap:16px;padding:16px;max-width:1080px;margin:0 auto;}
 @media(max-width:900px){.profile-layout{grid-template-columns:1fr;}}
 .profile-about-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:14px;}
@@ -844,6 +868,7 @@ select.fi option{background:#fff;}
         <div class="ptab" onclick="swPTab(this,'ptAbout')">Información</div>
         <div class="ptab" onclick="swPTab(this,'ptGallery')">🖼 Galería</div>
         <div class="ptab" onclick="swPTab(this,'ptFriends')">Amigos</div>
+        <div class="ptab" id="ptShopTab" onclick="swPTab(this,'ptShop')" style="display:none;background:linear-gradient(135deg,rgba(255,200,0,.15),rgba(255,100,0,.1));color:gold;border-bottom:2px solid gold;">🛒 Tienda</div>
       </div>
     </div>
   </div>
@@ -908,6 +933,28 @@ select.fi option{background:#fff;}
           <div class="pac-title">Amigos</div>
           <div id="ptFriendsList" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;"></div>
           <div id="ptFriendsEmpty" style="display:none;text-align:center;padding:20px;color:var(--muted);font-size:.85rem;">Sin amigos aún</div>
+        </div>
+      </div>
+      <!-- TIENDA DE ÍTEMS (solo admin) -->
+      <div id="ptShop" style="display:none;margin-bottom:14px;">
+        <div style="background:linear-gradient(135deg,rgba(255,200,0,.08),rgba(255,100,0,.04));border:1px solid rgba(255,200,0,.25);border-radius:var(--r);padding:18px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+            <span style="font-family:'Orbitron',monospace;font-size:1rem;font-weight:900;background:linear-gradient(135deg,gold,#ff8c00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">🛒 TIENDA DE PERFIL</span>
+            <span style="font-size:.6rem;background:rgba(255,200,0,.15);border:1px solid rgba(255,200,0,.3);color:gold;border-radius:100px;padding:2px 8px;font-weight:700;">SOLO VOS</span>
+          </div>
+          <div style="font-size:.72rem;color:var(--muted);margin-bottom:16px;">Personalizá tu perfil con marcos, efectos y badges exclusivos</div>
+
+          <!-- Categorías -->
+          <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;">
+            <button class="shop-cat-btn active" onclick="filterShopCat(this,'all')">Todos</button>
+            <button class="shop-cat-btn" onclick="filterShopCat(this,'marco')">🖼 Marcos</button>
+            <button class="shop-cat-btn" onclick="filterShopCat(this,'badge')">🏅 Badges</button>
+            <button class="shop-cat-btn" onclick="filterShopCat(this,'efecto')">✨ Efectos</button>
+            <button class="shop-cat-btn" onclick="filterShopCat(this,'titulo')">📛 Títulos</button>
+          </div>
+
+          <!-- Grid de ítems -->
+          <div id="shopItemsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;"></div>
         </div>
       </div>
       <div id="profilePostBox" class="post-box" style="margin-bottom:14px">
@@ -2265,7 +2312,7 @@ function _stub(name){ return function(){ _q.push([name, arguments]); }; }
  'doReact','quickReact','saveProfile','openEditProfile','changeCover','changeAvatar',
  'previewPostImg','removePostImg','previewPostMedia','removePostMedia',
  'previewStoryImg','pickStoryEmoji','insertEmoji','insertFishTag',
- 'toggleComments','sharePost','toggleCmtMenu','editCmt','delCmt','quickCmtRxn','replyCmt','toggleReplies','showCmtRxnPop','hideCmtRxnPop','cancelHideCmtRxn','reactCmt','openImgLightbox','swPTab','reactChatMsg','showMsgRxnBar','hideMsgRxnBar','keepMsgRxnBar','showCmtMenu','hideCmtMenu','setChatTyping',
+ 'toggleComments','sharePost','toggleCmtMenu','editCmt','delCmt','quickCmtRxn','replyCmt','toggleReplies','showCmtRxnPop','hideCmtRxnPop','cancelHideCmtRxn','reactCmt','openImgLightbox','swPTab','reactChatMsg','showMsgRxnBar','hideMsgRxnBar','keepMsgRxnBar','showCmtMenu','hideCmtMenu','setChatTyping','filterShopCat','toggleEquipItem',
  'showRxnPop','schedHideRxnPop','cancelHideRxnPop',
  'openSV','closeSV','svNav','reactStory','submitStoryComment','deleteMyStory','doSearch',
  'reportPost','submitReport','loadAdminData','deleteAdminPost','resolveReport',
@@ -4039,6 +4086,9 @@ function renderProfile(){
       </div>`).join('');
   }
   renderXPUI();
+  // Mostrar pestaña tienda solo para admin
+  const shopTab = document.getElementById('ptShopTab');
+  if(shopTab) shopTab.style.display = (window.CU?.nick === 'ruizgustavo12') ? 'block' : 'none';
   // Cover
   if(window.CU.cover){ document.getElementById('profCover').style.backgroundImage=`url(${window.CU.cover})`; document.getElementById('profCover').style.backgroundSize='cover'; document.getElementById('profCoverInner').style.display='none'; }
   renderProfileFeed();
@@ -4120,17 +4170,121 @@ function swPTab(el, tabId){
   const aboutEl = document.getElementById('ptAbout');
   const galleryEl = document.getElementById('ptGallery');
   const friendsEl = document.getElementById('ptFriends');
+  const shopEl = document.getElementById('ptShop');
   const feedEl = document.getElementById('profileFeed');
   const postBox = document.getElementById('profilePostBox');
   const leftCol = document.getElementById('profileLeftCol');
   if(aboutEl) aboutEl.style.display = tabId==='ptAbout' ? 'block' : 'none';
   if(galleryEl) galleryEl.style.display = tabId==='ptGallery' ? 'block' : 'none';
   if(friendsEl) friendsEl.style.display = tabId==='ptFriends' ? 'block' : 'none';
+  if(shopEl) shopEl.style.display = tabId==='ptShop' ? 'block' : 'none';
   if(feedEl) feedEl.style.display = tabId==='ptPosts' ? 'block' : 'none';
   if(postBox) postBox.style.display = tabId==='ptPosts' ? 'block' : 'none';
   if(leftCol) leftCol.style.display = (tabId==='ptAbout' || tabId==='ptFriends') ? 'none' : 'block';
   if(tabId==='ptGallery') renderGallery();
   if(tabId==='ptFriends') renderProfileFriendsList();
+  if(tabId==='ptShop'){ loadShopEquipped().then(()=>renderShopGrid()); }
+}
+
+// ===== TIENDA DE ÍTEMS DE PERFIL (admin only) =====
+const SHOP_ITEMS = [
+  // MARCOS
+  { id:'marco_oro',     cat:'marco',  name:'Marco Dorado',      preview:'🟡', emoji:'⭕', price:500,  desc:'Borde dorado animado en tu avatar', effect:'ring-gold' },
+  { id:'marco_fuego',   cat:'marco',  name:'Marco de Fuego',    preview:'🔥', emoji:'🔥', price:800,  desc:'Llamas animadas alrededor de tu foto', effect:'ring-fire' },
+  { id:'marco_hielo',   cat:'marco',  name:'Marco Glacial',     preview:'❄️', emoji:'💠', price:800,  desc:'Cristales de hielo en tu avatar', effect:'ring-ice' },
+  { id:'marco_pesca',   cat:'marco',  name:'Marco Pescador',    preview:'🎣', emoji:'🎣', price:300,  desc:'Marco temático de pesca exclusivo', effect:'ring-fish' },
+  { id:'marco_legend',  cat:'marco',  name:'Marco Leyenda',     preview:'👑', emoji:'✨', price:1500, desc:'El marco más exclusivo de RF4 Latam', effect:'ring-legend', exclusive:true },
+  // BADGES
+  { id:'badge_shark',   cat:'badge',  name:'Tiburón',           preview:'🦈', emoji:'🦈', price:400,  desc:'Badge de tiburón en tu perfil' },
+  { id:'badge_trophy',  cat:'badge',  name:'Campeón',           preview:'🏆', emoji:'🏆', price:600,  desc:'Badge de trofeo dorado' },
+  { id:'badge_king',    cat:'badge',  name:'Rey del Río',       preview:'👑', emoji:'👑', price:900,  desc:'Badge exclusivo de realeza', exclusive:true },
+  { id:'badge_rf4',     cat:'badge',  name:'RF4 OG',            preview:'🎮', emoji:'🎮', price:350,  desc:'Badge de jugador original de RF4' },
+  { id:'badge_latam',   cat:'badge',  name:'Latino Power',      preview:'🌎', emoji:'🌎', price:300,  desc:'Badge de orgullo latinoamericano' },
+  // EFECTOS
+  { id:'efecto_confetti', cat:'efecto', name:'Confetti',        preview:'🎊', emoji:'🎊', price:700,  desc:'Lluvia de confetti en tus posts' },
+  { id:'efecto_stars',    cat:'efecto', name:'Estrellas',       preview:'⭐', emoji:'💫', price:500,  desc:'Estrellas flotantes en tu perfil' },
+  { id:'efecto_aurora',   cat:'efecto', name:'Aurora Boreal',   preview:'🌌', emoji:'🌈', price:1200, desc:'Efecto aurora en tu portada', exclusive:true },
+  { id:'efecto_peces',    cat:'efecto', name:'Lluvia de Peces', preview:'🐟', emoji:'🐠', price:600,  desc:'Pecesitos flotando en tu perfil' },
+  // TÍTULOS
+  { id:'titulo_jefe',     cat:'titulo', name:'El Jefe',         preview:'😎', emoji:'😎', price:800,  desc:'Título "El Jefe" bajo tu nombre' },
+  { id:'titulo_legend',   cat:'titulo', name:'Leyenda Viva',    preview:'⚡', emoji:'⚡', price:1200, desc:'Título "Leyenda Viva" animado', exclusive:true },
+  { id:'titulo_maestro',  cat:'titulo', name:'Maestro Pescador',preview:'🎓', emoji:'🎣', price:600,  desc:'Título "Maestro Pescador"' },
+  { id:'titulo_capitan',  cat:'titulo', name:'Capitán',         preview:'⚓', emoji:'⚓', price:400,  desc:'Título "Capitán" bajo tu nombre' },
+];
+
+let _shopFilter = 'all';
+let _equippedItems = {}; // { marco: 'marco_oro', badge: 'badge_shark', ... }
+
+function filterShopCat(btn, cat){
+  document.querySelectorAll('.shop-cat-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  _shopFilter = cat;
+  renderShopGrid();
+}
+
+function renderShopGrid(){
+  const grid = document.getElementById('shopItemsGrid');
+  if(!grid) return;
+  const items = _shopFilter === 'all' ? SHOP_ITEMS : SHOP_ITEMS.filter(i=>i.cat===_shopFilter);
+  grid.innerHTML = items.map(item => {
+    const isEquipped = _equippedItems[item.cat] === item.id;
+    return `
+    <div class="shop-item${isEquipped?' equipped':''}" id="sitem_${item.id}">
+      ${isEquipped ? '<div class="shop-item-equipped-badge">✓ ACTIVO</div>' : ''}
+      ${item.exclusive ? '<div style="position:absolute;top:6px;left:6px;background:linear-gradient(135deg,gold,#ff8c00);color:#000;font-size:.5rem;font-weight:900;border-radius:100px;padding:2px 6px;">EXCLUSIVO</div>' : ''}
+      <span class="shop-item-preview">${item.preview}</span>
+      <div class="shop-item-name">${item.name}</div>
+      <div class="shop-item-type">${{marco:'🖼 Marco',badge:'🏅 Badge',efecto:'✨ Efecto',titulo:'📛 Título'}[item.cat]}</div>
+      <div style="font-size:.65rem;color:var(--muted);margin-bottom:6px;line-height:1.3;">${item.desc}</div>
+      <div class="shop-item-price">🪙 ${item.price.toLocaleString()} RF4 coins</div>
+      <button class="shop-item-btn ${isEquipped?'unequip':'equip'}" onclick="toggleEquipItem('${item.id}')">
+        ${isEquipped ? '⬇ Desequipar' : '⬆ Equipar (GRATIS demo)'}
+      </button>
+    </div>`;
+  }).join('');
+}
+
+async function toggleEquipItem(itemId){
+  const item = SHOP_ITEMS.find(i=>i.id===itemId);
+  if(!item) return;
+  const alreadyEquipped = _equippedItems[item.cat] === itemId;
+  if(alreadyEquipped){
+    delete _equippedItems[item.cat];
+    toast(`${item.emoji} "${item.name}" desequipado`, 'inf');
+  } else {
+    _equippedItems[item.cat] = itemId;
+    toast(`${item.emoji} "${item.name}" ¡equipado!`, 'ok');
+  }
+  // Save to Firestore
+  try {
+    await setDoc(doc(db,'users',window.CU.id), { shopEquipped: _equippedItems }, { merge:true });
+    window.CU.shopEquipped = _equippedItems;
+  } catch(e){ console.warn('shop save error',e); }
+  renderShopGrid();
+  applyShopEffects();
+}
+
+function applyShopEffects(){
+  // Apply equipped marco to avatar
+  const avWrap = document.querySelector('.profile-av-wrap');
+  if(!avWrap) return;
+  avWrap.classList.remove('ring-gold','ring-fire','ring-ice','ring-fish','ring-legend');
+  const marco = _equippedItems.marco;
+  if(marco){
+    const item = SHOP_ITEMS.find(i=>i.id===marco);
+    if(item?.effect) avWrap.classList.add(item.effect);
+  }
+}
+
+async function loadShopEquipped(){
+  if(!window.CU?.id) return;
+  try {
+    const snap = await getDoc(doc(db,'users',window.CU.id));
+    if(snap.exists() && snap.data().shopEquipped){
+      _equippedItems = snap.data().shopEquipped;
+      window.CU.shopEquipped = _equippedItems;
+    }
+  } catch(e){}
 }
 
 // ===== PROFILE FRIENDS LIST =====
@@ -8456,7 +8610,7 @@ const _expose = {
   insertEmoji,insertFishTag,openEmojiPicker,insertEmojiChar,
   toggleComments,sharePost,
   reactCmt,editCmt,delCmt,quickCmtRxn,replyCmt,toggleReplies,
-  openImgLightbox,swPTab,
+  openImgLightbox,swPTab,filterShopCat,toggleEquipItem,
   showRxnPop,schedHideRxnPop,cancelHideRxnPop,
   openSV,closeSV,svNav,reactStory,reportStory,submitStoryComment,deleteMyStory,
   doSearch,
