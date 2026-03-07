@@ -1107,6 +1107,26 @@ select.fi option{background:#fff;}
     <div class="fb-left">
       <div style="font-family:'Orbitron',monospace;font-size:3.2rem;font-weight:900;color:#1877f2;line-height:1;margin-bottom:16px;">🎣 Charlas<span style="color:#f7b928;">RF4</span></div>
       <p style="font-size:1.25rem;color:#1c1e21;line-height:1.6;max-width:360px;">La red social de pesca para toda Latinoamérica. Compartí tus capturas, conocé otros pescadores y mejorá tu juego.</p>
+
+      <!-- Banderas -->
+      <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;align-items:center;">
+        <span style="font-size:1.9rem;" title="Brasil">🇧🇷</span>
+        <span style="font-size:1.9rem;" title="España">🇪🇸</span>
+        <span style="font-size:1.9rem;" title="Italia">🇮🇹</span>
+        <span style="font-size:1.9rem;" title="Argentina">🇦🇷</span>
+        <span style="font-size:1.9rem;" title="Uruguay">🇺🇾</span>
+        <span style="font-size:1.9rem;" title="Venezuela">🇻🇪</span>
+        <span style="font-size:1.9rem;" title="México">🇲🇽</span>
+        <span style="font-size:1.9rem;" title="Colombia">🇨🇴</span>
+        <span style="font-size:1.9rem;" title="Chile">🇨🇱</span>
+        <span style="font-size:1.9rem;" title="Perú">🇵🇪</span>
+      </div>
+      <div style="font-size:.75rem;color:#65676b;margin-top:6px;">Comunidad hispanohablante y más 🌎</div>
+
+      <!-- Botón beneficios verificado -->
+      <div onclick="document.getElementById('mVerifBenefits').style.display='flex'" style="margin-top:22px;display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#b8860b,#ffd700,#b8860b);background-size:200%;color:#000;padding:10px 18px;border-radius:8px;cursor:pointer;font-weight:800;font-size:.85rem;box-shadow:0 2px 12px rgba(255,215,0,.4);transition:transform .15s,box-shadow .15s;animation:verifBorderFlow 3s linear infinite;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(255,215,0,.6)'" onmouseout="this.style.transform='none';this.style.boxShadow='0 2px 12px rgba(255,215,0,.4)'">
+        ✅ Ver beneficios de cuenta verificada
+      </div>
     </div>
 
     <!-- DERECHA — Formularios -->
@@ -1160,12 +1180,96 @@ select.fi option{background:#fff;}
       </div>
 
       <!-- Footer -->
-      <div style="margin-top:20px;text-align:center;color:#65676b;font-size:.72rem;line-height:1.9;">
+      <div style="margin-top:16px;text-align:center;color:#65676b;font-size:.72rem;line-height:2;">
+        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;margin-bottom:8px;">
+          <span onclick="showTerms()" style="cursor:pointer;color:#1877f2;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Términos y condiciones</span>
+          <span style="color:#bcc0c4;">·</span>
+          <span onclick="document.getElementById('mVerifBenefits').style.display='flex'" style="cursor:pointer;color:#f7b928;font-weight:700;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">✅ Cuenta verificada</span>
+          <span style="color:#bcc0c4;">·</span>
+          <span style="color:#65676b;">Privacidad</span>
+        </div>
         <div>© 2025 CharlasRF4 · Creado por <strong style="color:#1c1e21;">ruizgustavo12</strong></div>
-        <div>Todos los derechos reservados</div>
       </div>
 
     </div><!-- end fb-right -->
+  </div>
+</div>
+
+<!-- Modal Beneficios Verificado -->
+<div id="mVerifBenefits" style="display:none;position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:16px;">
+  <div style="background:#fff;border-radius:12px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.3);position:relative;">
+    <!-- Header dorado -->
+    <div style="background:linear-gradient(135deg,#b8860b,#ffd700,#ffec6e,#ffa500);padding:28px 24px 20px;border-radius:12px 12px 0 0;text-align:center;position:relative;overflow:hidden;">
+      <div style="font-size:2.8rem;margin-bottom:6px;">👑</div>
+      <div style="font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:900;color:#000;letter-spacing:1px;">CUENTA VERIFICADA</div>
+      <div style="font-size:.82rem;color:rgba(0,0,0,.7);margin-top:4px;">Beneficios exclusivos para miembros verificados</div>
+    </div>
+    <!-- Contenido -->
+    <div style="padding:24px;">
+
+      <div style="display:grid;gap:12px;margin-bottom:20px;">
+
+        <div style="display:flex;align-items:flex-start;gap:12px;padding:14px;background:#fffbf0;border:1px solid rgba(255,215,0,.3);border-radius:8px;">
+          <span style="font-size:1.4rem;flex-shrink:0;">✅</span>
+          <div><div style="font-weight:700;font-size:.9rem;color:#1c1e21;">Insignia verificada</div><div style="font-size:.8rem;color:#65676b;margin-top:2px;">Tu perfil y publicaciones muestran el sello ✅ que distingue tu cuenta como confiable dentro de la comunidad.</div></div>
+        </div>
+
+        <div style="display:flex;align-items:flex-start;gap:12px;padding:14px;background:#fffbf0;border:1px solid rgba(255,215,0,.3);border-radius:8px;">
+          <span style="font-size:1.4rem;flex-shrink:0;">🌟</span>
+          <div><div style="font-weight:700;font-size:.9rem;color:#1c1e21;">Publicaciones destacadas</div><div style="font-size:.8rem;color:#65676b;margin-top:2px;">Tus posts tienen un diseño especial con borde dorado animado que los diferencia del resto en el feed.</div></div>
+        </div>
+
+        <div style="display:flex;align-items:flex-start;gap:12px;padding:14px;background:#fffbf0;border:1px solid rgba(255,215,0,.3);border-radius:8px;">
+          <span style="font-size:1.4rem;flex-shrink:0;">📌</span>
+          <div><div style="font-weight:700;font-size:.9rem;color:#1c1e21;">Fijar post en perfil</div><div style="font-size:.8rem;color:#65676b;margin-top:2px;">Podés elegir una publicación y dejarla fija en la parte superior de tu perfil para que siempre sea lo primero que vean.</div></div>
+        </div>
+
+        <div style="display:flex;align-items:flex-start;gap:12px;padding:14px;background:#fffbf0;border:1px solid rgba(255,215,0,.3);border-radius:8px;">
+          <span style="font-size:1.4rem;flex-shrink:0;">👁️</span>
+          <div><div style="font-weight:700;font-size:.9rem;color:#1c1e21;">Ver quién visitó tu perfil</div><div style="font-size:.8rem;color:#65676b;margin-top:2px;">Accedé a la lista de usuarios que visitaron tu perfil recientemente. Función exclusiva para verificados.</div></div>
+        </div>
+
+        <div style="display:flex;align-items:flex-start;gap:12px;padding:14px;background:#fffbf0;border:1px solid rgba(255,215,0,.3);border-radius:8px;">
+          <span style="font-size:1.4rem;flex-shrink:0;">🎭</span>
+          <div><div style="font-weight:700;font-size:.9rem;color:#1c1e21;">Modo anónimo</div><div style="font-size:.8rem;color:#65676b;margin-top:2px;">Publicá sin que tu nombre aparezca. Ideal para compartir tips o confesiones de pesca sin revelar tu identidad.</div></div>
+        </div>
+
+        <div style="display:flex;align-items:flex-start;gap:12px;padding:14px;background:#fffbf0;border:1px solid rgba(255,215,0,.3);border-radius:8px;">
+          <span style="font-size:1.4rem;flex-shrink:0;">⏳</span>
+          <div><div style="font-weight:700;font-size:.9rem;color:#1c1e21;">Historias de 48 horas</div><div style="font-size:.8rem;color:#65676b;margin-top:2px;">Tus historias duran el doble que las de los usuarios normales — 48 horas en lugar de 24.</div></div>
+        </div>
+
+        <div style="display:flex;align-items:flex-start;gap:12px;padding:14px;background:#fffbf0;border:1px solid rgba(255,215,0,.3);border-radius:8px;">
+          <span style="font-size:1.4rem;flex-shrink:0;">💬</span>
+          <div><div style="font-weight:700;font-size:.9rem;color:#1c1e21;">Reacciones extra en chats</div><div style="font-size:.8rem;color:#65676b;margin-top:2px;">Desbloqueás emojis adicionales para reaccionar en los mensajes privados.</div></div>
+        </div>
+
+        <div style="display:flex;align-items:flex-start;gap:12px;padding:14px;background:#fffbf0;border:1px solid rgba(255,215,0,.3);border-radius:8px;">
+          <span style="font-size:1.4rem;flex-shrink:0;">👥</span>
+          <div><div style="font-weight:700;font-size:.9rem;color:#1c1e21;">Ver vistas en tus historias</div><div style="font-size:.8rem;color:#65676b;margin-top:2px;">Sabé exactamente quiénes vieron tus historias. Solo los verificados tienen acceso a esta información.</div></div>
+        </div>
+
+      </div>
+
+      <!-- Coming soon -->
+      <div style="background:linear-gradient(135deg,rgba(24,119,242,.06),rgba(24,119,242,.03));border:1px solid rgba(24,119,242,.2);border-radius:8px;padding:14px;margin-bottom:20px;">
+        <div style="font-weight:700;font-size:.85rem;color:#1877f2;margin-bottom:6px;">🚀 Próximamente más beneficios...</div>
+        <div style="font-size:.78rem;color:#65676b;line-height:1.6;">Estamos trabajando en nuevas funciones exclusivas para cuentas verificadas: torneos privados, insignias especiales, estadísticas avanzadas y mucho más. ¡La comunidad sigue creciendo!</div>
+      </div>
+
+      <!-- Cómo obtenerla -->
+      <div style="background:#f0f8ff;border:1px solid rgba(24,119,242,.2);border-radius:8px;padding:14px;margin-bottom:20px;">
+        <div style="font-weight:700;font-size:.85rem;color:#1877f2;margin-bottom:6px;">¿Cómo obtengo la verificación?</div>
+        <div style="font-size:.78rem;color:#65676b;line-height:1.7;">
+          1. Creá tu cuenta y participá activamente en la comunidad.<br>
+          2. Desde tu perfil, solicitá la verificación con el botón correspondiente.<br>
+          3. El equipo de CharlasRF4 revisará tu solicitud.<br>
+          4. Una vez aprobada, recibirás tu insignia ✅ automáticamente.
+        </div>
+      </div>
+
+      <button onclick="document.getElementById('mVerifBenefits').style.display='none'" style="width:100%;padding:13px;background:#1877f2;color:#fff;border:none;border-radius:8px;font-size:1rem;font-weight:700;font-family:'Exo 2',sans-serif;cursor:pointer;">Entendido 👍</button>
+    </div>
   </div>
 </div>
 
