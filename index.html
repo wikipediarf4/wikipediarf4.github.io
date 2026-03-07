@@ -1594,7 +1594,11 @@ select.fi option{background:#fff;}
 
     <!-- Datos básicos -->
     <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">👤 Datos básicos</div>
-    <div class="fg"><label class="fl">Nick / Nombre *</label><input class="fi" id="epNick" placeholder="Tu nick en RF4"></div>
+    <div class="fg">
+      <label class="fl">Nick / Nombre *</label>
+      <input class="fi" id="epNick" placeholder="Tu nick en RF4">
+      <div id="epNickMsg" style="font-size:.68rem;margin-top:4px;display:none;"></div>
+    </div>
     <div class="fg"><label class="fl">✉️ Email público <span style="font-size:.7rem;color:var(--muted);font-weight:400;">(opcional, visible en tu perfil)</span></label><input class="fi" type="email" id="epEmailPublic" placeholder="contacto@ejemplo.com"></div>
     <div class="fg"><label class="fl">Biografía</label><textarea class="fi" id="epBio" placeholder="Cuéntanos sobre tu experiencia en RF4..." style="min-height:70px;"></textarea></div>
     <div class="frow">
@@ -1609,10 +1613,13 @@ select.fi option{background:#fff;}
       <div class="fg"><label class="fl">Ciudad</label><input class="fi" id="epCity" placeholder="Ej: Buenos Aires"></div>
     </div>
     <div class="frow">
-      <div class="fg"><label class="fl">Edad</label><input class="fi" type="number" id="epAge" placeholder="Ej: 25" min="10" max="99"></div>
+      <div class="fg">
+        <label class="fl">Edad <span style="font-size:.65rem;color:var(--muted);font-weight:400;">(calculada automáticamente)</span></label>
+        <input class="fi" type="text" id="epAge" placeholder="Se calcula desde tu fecha de nacimiento" readonly style="cursor:default;opacity:.7;">
+      </div>
       <div class="fg">
         <label class="fl">🎂 Fecha de nacimiento</label>
-        <input class="fi" type="date" id="epBirthdate" style="color-scheme:dark;">
+        <input class="fi" type="date" id="epBirthdate" style="color-scheme:dark;" oninput="calcAgeFromBirthdate()">
         <div style="font-size:.65rem;color:var(--muted);margin-top:3px;">Tus amigos serán notificados el día de tu cumpleaños 🎉</div>
       </div>
       <div class="fg"><label class="fl">Género</label>
@@ -4793,18 +4800,35 @@ function renderProfile(){
 
 async function saveProfile(){
   if(!window.CU) return;
-  window.CU.nick = document.getElementById('epNick').value.trim() || window.CU.nick;
+
+  // --- Nick change: 90-day cooldown ---
+  const newNick = document.getElementById('epNick').value.trim() || window.CU.nick;
+  const oldNick = window.CU.nick || '';
+  const nickChanged = newNick && newNick !== oldNick;
+  if(nickChanged){
+    const last = window.CU.nickLastChanged ? new Date(window.CU.nickLastChanged) : null;
+    const daysSince = last ? (Date.now() - last.getTime()) / (1000*60*60*24) : 999;
+    if(daysSince < 90){
+      const daysLeft = Math.ceil(90 - daysSince);
+      toast(`No podés cambiar el nick por ${daysLeft} días más. Contactá a ruizgustavo12 para cambios urgentes.`,'err');
+      document.getElementById('epNick').value = oldNick;
+      return;
+    }
+    window.CU.nick = newNick;
+    window.CU.nickLastChanged = new Date().toISOString();
+  }
+
   window.CU.bio = document.getElementById('epBio').value.trim();
   window.CU.favFish = document.getElementById('epFish').value.trim();
   window.CU.favMap = document.getElementById('epMap').value;
   window.CU.country = document.getElementById('epCountry').value;
   window.CU.emailPublic = document.getElementById('epEmailPublic').value.trim();
   window.CU.city = document.getElementById('epCity').value.trim();
-  window.CU.age = document.getElementById('epAge').value.trim();
   window.CU.birthdate = document.getElementById('epBirthdate').value || '';
   if(window.CU.birthdate){
     const bd=new Date(window.CU.birthdate);
     window.CU.birthdayMMDD = (bd.getMonth()+1).toString().padStart(2,'0')+'-'+bd.getDate().toString().padStart(2,'0');
+    window.CU.age = Math.floor((Date.now()-bd.getTime())/(365.25*24*3600*1000)).toString();
   }
   window.CU.gender = document.getElementById('epGender').value;
   window.CU.favTech = document.getElementById('epTech').value;
@@ -4820,15 +4844,47 @@ async function saveProfile(){
 
 function openEditProfile(){
   if(!window.CU) return;
-  document.getElementById('epNick').value = window.CU.nick||'';
+  // Nick field: check 90-day cooldown
+  const nickEl = document.getElementById('epNick');
+  const nickMsgEl = document.getElementById('epNickMsg');
+  nickEl.value = window.CU.nick||'';
+  const last = window.CU.nickLastChanged ? new Date(window.CU.nickLastChanged) : null;
+  const daysSince = last ? (Date.now()-last.getTime())/(1000*60*60*24) : 999;
+  if(daysSince < 90){
+    const daysLeft = Math.ceil(90-daysSince);
+    nickEl.readOnly = true;
+    nickEl.style.opacity = '.6';
+    nickEl.style.cursor = 'default';
+    nickMsgEl.innerHTML = `🔒 Podés cambiar tu nick en <strong>${daysLeft} días</strong>. Para cambios urgentes, contactá a <strong>ruizgustavo12</strong>.`;
+    nickMsgEl.style.color = 'var(--muted)';
+    nickMsgEl.style.display = 'block';
+  } else {
+    nickEl.readOnly = false;
+    nickEl.style.opacity = '';
+    nickEl.style.cursor = '';
+    if(last){
+      nickMsgEl.innerHTML = '✅ Podés cambiar tu nick (último cambio hace más de 90 días).';
+      nickMsgEl.style.color = 'var(--green)';
+      nickMsgEl.style.display = 'block';
+    } else {
+      nickMsgEl.style.display = 'none';
+    }
+  }
+
   document.getElementById('epBio').value = window.CU.bio||'';
   document.getElementById('epFish').value = window.CU.favFish||'';
   document.getElementById('epMap').value = window.CU.favMap||'';
   document.getElementById('epCountry').value = window.CU.country||'';
   document.getElementById('epEmailPublic').value = window.CU.emailPublic||'';
   document.getElementById('epCity').value = window.CU.city||'';
-  document.getElementById('epAge').value = window.CU.age||'';
   document.getElementById('epBirthdate').value = window.CU.birthdate||'';
+  // Auto-calc age from birthdate
+  if(window.CU.birthdate){
+    const bd=new Date(window.CU.birthdate);
+    document.getElementById('epAge').value = Math.floor((Date.now()-bd.getTime())/(365.25*24*3600*1000));
+  } else {
+    document.getElementById('epAge').value = window.CU.age||'';
+  }
   document.getElementById('epGender').value = window.CU.gender||'';
   document.getElementById('epTech').value = window.CU.favTech||'';
   document.getElementById('epExp').value = window.CU.experience||'';
@@ -4838,6 +4894,17 @@ function openEditProfile(){
   document.getElementById('epWeb').value = window.CU.social_web||'';
   om('mEditProfile');
   setTimeout(setupBioLimit,50);
+}
+
+function calcAgeFromBirthdate(){
+  const bd = document.getElementById('epBirthdate').value;
+  const ageEl = document.getElementById('epAge');
+  if(bd){
+    const age = Math.floor((Date.now()-new Date(bd).getTime())/(365.25*24*3600*1000));
+    ageEl.value = age > 0 && age < 120 ? age : '';
+  } else {
+    ageEl.value = '';
+  }
 }
 
 async function changeCover(input){
@@ -9970,7 +10037,7 @@ const _expose = {
   doLogin,doReg,showReg,showLogin,showTerms,closeTerms,acceptTermsAndRegister,
   submitPost,submitStory,submitComment,toggleLinkInput,clearPostLink,debounceLinkPreview,fetchLinkPreview,_autoLinkDetect,handleMentionInput,insertMention,searchMentionedUser,handlePostMentionInput,insertPostMention,focusPostTextAndAt,
   doReact,quickReact,
-  saveProfile,openEditProfile,
+  saveProfile,openEditProfile,calcAgeFromBirthdate,
   changeCover,changeAvatar,
   previewPostImg,removePostImg,previewPostMedia,removePostMedia,
   previewStoryImg,pickStoryEmoji,
