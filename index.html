@@ -699,6 +699,7 @@ select.fi option{background:#fff;}
     <button class="tb-nav-btn" id="pezSemanalNavBtn" onclick="openPezSemanalModal();setNav(this)" title="Pez de la Semana" style="font-size:.75rem;font-weight:700;">🐟 Pez Semanal</button>
     <button class="tb-nav-btn" onclick="gp('carretes');setNav(this);renderCarretesTable();" title="Buscar Carretes" style="font-size:.75rem;font-weight:700;">🎣 Carretes</button>
     <button class="tb-nav-btn" id="adminNavBtn" style="display:none;font-size:.75rem;font-weight:700;" onclick="gp('admin');setNav(this)" title="Panel Admin">🛡️ Admin</button>
+    <button class="tb-nav-btn" id="trofeoMapaNavBtn" style="display:none;font-size:.75rem;font-weight:700;" onclick="gp('trofeos-por-mapa');setNav(this)" title="Trofeos por Mapa">🗺️ Trofeos x Mapa</button>
   </div>
   <div class="tb-right">
     <div id="installPwaBtn" onclick="installPwa()" title="Instalar App" style="display:none;align-items:center;gap:5px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;border:none;padding:6px 12px;border-radius:100px;font-size:.75rem;font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;">📲 Instalar App</div>
@@ -2451,6 +2452,25 @@ select.fi option{background:#fff;}
   </div>
 </div>
 
+
+<!-- TROFEOS POR MAPA PAGE (solo ruizgustavo12) -->
+<div class="page" id="page-trofeos-por-mapa" style="max-width:860px;margin:0 auto;padding:24px 16px 80px;">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+    <div>
+      <div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:var(--gold);">&#128506;&#65039; Trofeos por Mapa</div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:3px;">Pesos minimos de trofeo por ubicacion &middot; solo vos ves esto</div>
+    </div>
+    <div style="background:rgba(255,68,68,.12);border:1px solid rgba(255,68,68,.3);color:var(--red);padding:3px 10px;border-radius:100px;font-size:.68rem;font-weight:700;">&#128274; PRIVADO &middot; PRUEBA</div>
+  </div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;" id="trofMapaTabs">
+    <button onclick="switchTrofMapaTab('bindweed',this)" id="trofTab-bindweed"
+      style="padding:7px 14px;border-radius:20px;border:1px solid var(--gold);background:rgba(255,215,0,.15);color:var(--gold);font-family:'Exo 2',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;">
+      &#127807; Winding Rivulet
+    </button>
+  </div>
+  <div id="trofMapaContent"></div>
+</div>
+
 <!-- PARCHES PAGE -->
 <div class="page" id="page-parches" style="max-width:760px;margin:0 auto;padding:24px 16px 80px;">
   <div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:var(--accent);margin-bottom:20px;" id="pageParchesTitle">🔧 Parches y Actualizaciones</div>
@@ -3158,6 +3178,8 @@ function updateNavUI(){
   const userMenuAdmin = document.getElementById('userMenuAdmin');
   const shopNavBtn = document.getElementById('shopNavBtn');
   if(adminNavBtn) adminNavBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+  const _tmBtn = document.getElementById('trofeoMapaNavBtn');
+  if(_tmBtn) _tmBtn.style.display = isAdmin ? 'inline-flex' : 'none';
   if(userMenuAdmin) userMenuAdmin.style.display = isAdmin ? 'flex' : 'none';
   if(shopNavBtn) shopNavBtn.style.display = 'inline-flex'; // visible para todos
 }
@@ -3309,6 +3331,7 @@ window.gp = (id, pushState = true) => {
   navigateTo(id, pushState);
   if(id==='profile') renderProfile();
   if(id==='admin') { loadAdminData(); loadPezSemana(); }
+  if(id==='trofeos-por-mapa'){ if(window.CU?.nick!=='ruizgustavo12') return; setTimeout(()=>switchTrofMapaTab(_trofMapaActivo, document.getElementById('trofTab-'+_trofMapaActivo)),50); }
   if(id==='spots'){ loadSpots(); loadFriendSpots(); }
   if(id==='casitrofeo') renderMapPosts();
   if(id==='trofeos-feed') { listenTrofeosFeed(); document.getElementById('trofeoFeedBadge').style.display='inline-flex'; }
@@ -10227,6 +10250,82 @@ function filterTrofeoFeed(filter, btn){
   }
   renderTrofeosFeed();
 }
+
+// ==== TROFEOS POR MAPA (solo ruizgustavo12) ====
+const TROFEOS_MAPA_DATA = {
+  bindweed: {
+    peces: [
+      {n:'Asp',             t:'8 kg',    r:'13 kg'},
+      {n:'Bleak',           t:'110 g',   r:'160 g'},
+      {n:'Blue Bream',      t:'750 g',   r:'1.1 kg'},
+      {n:'Bream',           t:'4.4 kg',  r:'7 kg'},
+      {n:'Burbot',          t:'9 kg',    r:'14 kg'},
+      {n:'Catfish',         t:'100 kg',  r:'200 kg'},
+      {n:'Chinese Sleeper', t:'400 g',   r:'700 g'},
+      {n:'Chub',            t:'4 kg',    r:'7 kg'},
+      {n:'Common Carp',     t:'20 kg',   r:'30 kg'},
+      {n:'Common Roach',    t:'1.2 kg',  r:'2 kg'},
+      {n:'Crucian Carp',    t:'1.8 kg',  r:'2.9 kg'},
+      {n:'Dace',            t:'250 g',   r:'390 g'},
+      {n:'Donets Ruffe',    t:'250 g',   r:'350 g'},
+      {n:'Freshwater Crayfish', t:'200 g', r:'330 g'},
+      {n:'Frog',            t:'190 g',   r:'250 g'},
+      {n:'Gibel Carp',      t:'1.9 kg',  r:'3.2 kg'},
+      {n:'Gudgeon',         t:'100 g',   r:'160 g'},
+      {n:'Ide',             t:'4 kg',    r:'6.5 kg'},
+      {n:'Nase',            t:'800 g',   r:'1.3 kg'},
+      {n:'Perch',           t:'1.6 kg',  r:'2.7 kg'},
+      {n:'Pike',            t:'12 kg',   r:'20 kg'},
+      {n:'River Mussel',    t:'190 g',   r:'280 g'},
+      {n:'Ruffe',           t:'140 g',   r:'220 g'},
+      {n:'Tench',           t:'4 kg',    r:'6 kg'},
+      {n:'Volga Zander',    t:'1.4 kg',  r:'2.2 kg'},
+      {n:'White Bream',     t:'800 g',   r:'1.2 kg'},
+      {n:'White-eye Bream', t:'600 g',   r:'900 g'},
+      {n:'Zander',          t:'8 kg',    r:'12 kg'},
+      {n:'Zebra Mussel',    t:'150 g',   r:'210 g'},
+    ]
+  }
+};
+let _trofMapaActivo = 'bindweed';
+function switchTrofMapaTab(mapId, btn){
+  _trofMapaActivo = mapId;
+  document.querySelectorAll('#trofMapaTabs button').forEach(b=>{
+    b.style.background='transparent'; b.style.color='var(--muted)'; b.style.borderColor='var(--border)';
+  });
+  if(btn){ btn.style.background='rgba(255,215,0,.15)'; btn.style.color='var(--gold)'; btn.style.borderColor='var(--gold)'; }
+  renderTrofMapaContent();
+}
+function renderTrofMapaContent(){
+  const el = document.getElementById('trofMapaContent');
+  if(!el) return;
+  const data = TROFEOS_MAPA_DATA[_trofMapaActivo];
+  if(!data){ el.innerHTML='<div style="color:var(--muted);text-align:center;padding:40px;">Sin datos aun</div>'; return; }
+  const q = (document.getElementById('trofMapaBuscar')?.value||'').toLowerCase();
+  const peces = q ? data.peces.filter(p=>p.n.toLowerCase().includes(q)) : data.peces;
+  el.innerHTML =
+    '<div style="margin-bottom:14px;">' +
+      '<input id="trofMapaBuscar" placeholder="Buscar pez..." oninput="renderTrofMapaContent()" value="'+q+'" ' +
+      'style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:8px 16px;color:var(--text);font-size:.82rem;font-family:\'Exo 2\',sans-serif;outline:none;box-sizing:border-box;">' +
+    '</div>' +
+    '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;">' +
+      '<div style="display:grid;grid-template-columns:1fr 120px 120px;background:var(--bg3);padding:10px 16px;font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">' +
+        '<div>Pez</div><div style="text-align:center;">Trofeo</div><div style="text-align:center;">Trofeo Raro</div>' +
+      '</div>' +
+      peces.map(function(p,i){
+        return '<div style="display:grid;grid-template-columns:1fr 120px 120px;padding:10px 16px;border-top:1px solid var(--border);align-items:center;' + (i%2===0?'':'background:rgba(255,255,255,.025)') + '">' +
+          '<div style="font-size:.85rem;font-weight:600;">'+p.n+'</div>' +
+          '<div style="text-align:center;font-size:.83rem;color:var(--gold);font-weight:700;">'+p.t+'</div>' +
+          '<div style="text-align:center;font-size:.83rem;color:#c084fc;font-weight:700;">'+p.r+'</div>' +
+        '</div>';
+      }).join('') +
+      (peces.length===0 ? '<div style="text-align:center;padding:32px;color:var(--muted);font-size:.82rem;">Sin resultados</div>' : '') +
+    '</div>' +
+    '<div style="text-align:right;margin-top:8px;font-size:.68rem;color:var(--muted);">' + peces.length + ' peces &middot; Fuente: rf4h.ru</div>';
+}
+window.switchTrofMapaTab = switchTrofMapaTab;
+window.renderTrofMapaContent = renderTrofMapaContent;
+
 window.filterTrofeoFeed = filterTrofeoFeed;
 window.renderShopPage = renderShopPage;
 window.renderShopGrid = renderShopGrid;
