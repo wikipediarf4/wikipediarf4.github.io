@@ -63,8 +63,8 @@ button{font-family:'Exo 2',sans-serif;cursor:pointer;}
 .tb-search input{background:none;border:none;outline:none;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.85rem;width:100%;}
 .tb-search input::placeholder{color:var(--muted);}
 .tb-nav{display:flex;gap:4px;}
-.tb-nav-btn{background:none;border:none;color:var(--muted);padding:8px 18px;border-radius:var(--rs);font-size:1.1rem;
-  transition:all .2s;position:relative;}
+.tb-nav-btn{background:none;border:none;color:var(--text);padding:8px 18px;border-radius:var(--rs);font-size:1.1rem;
+  transition:all .2s;position:relative;font-weight:700;}
 .tb-nav-btn:hover,.tb-nav-btn.on{color:var(--accent);background:rgba(24,119,242,.07);border-bottom:2px solid var(--accent);}
 .tb-right{display:flex;align-items:center;gap:6px;}
 .tb-icon-btn{width:40px;height:40px;border-radius:50%;background:#e4e6eb;border:none;
@@ -674,11 +674,11 @@ select.fi option{background:#fff;}
   <div class="tb-nav">
     <button class="tb-nav-btn on" onclick="gp('home');setNav(this)" title="Inicio">🏠</button>
     <button class="tb-nav-btn" onclick="gp('amigos');setNav(this);renderAmigosPage();" title="Amigos">👥</button>
-    <button class="tb-nav-btn" id="shopNavBtn" onclick="gp('shop');setNav(this);renderShopPage();" title="Tienda" style="display:none;color:gold;font-size:.75rem;font-weight:700;">🛒 Tienda</button>
-    <button class="tb-nav-btn" onclick="gp('trofeos-feed');setNav(this)" title="Feed de Trofeos Aprobados" style="color:var(--gold);font-size:.75rem;font-weight:700;">🥇 Trofeos</button>
-    <button class="tb-nav-btn" id="pezSemanalNavBtn" onclick="openPezSemanalModal();setNav(this)" title="Pez de la Semana" style="color:var(--green);font-size:.75rem;font-weight:700;">🐟 Pez Semanal</button>
-    <button class="tb-nav-btn" onclick="gp('carretes');setNav(this);renderCarretesTable();" title="Buscar Carretes" style="color:var(--accent);font-size:.75rem;font-weight:700;">🎣 Carretes</button>
-    <button class="tb-nav-btn" id="adminNavBtn" style="display:none;color:var(--red);font-size:.75rem;font-weight:700;" onclick="gp('admin');setNav(this)" title="Panel Admin">🛡️ Admin</button>
+    <button class="tb-nav-btn" id="shopNavBtn" onclick="gp('shop');setNav(this);renderShopPage();" title="Tienda" style="font-size:.75rem;font-weight:700;">🛒 Tienda</button>
+    <button class="tb-nav-btn" onclick="gp('trofeos-feed');setNav(this)" title="Feed de Trofeos Aprobados" style="font-size:.75rem;font-weight:700;">🥇 Trofeos</button>
+    <button class="tb-nav-btn" id="pezSemanalNavBtn" onclick="openPezSemanalModal();setNav(this)" title="Pez de la Semana" style="font-size:.75rem;font-weight:700;">🐟 Pez Semanal</button>
+    <button class="tb-nav-btn" onclick="gp('carretes');setNav(this);renderCarretesTable();" title="Buscar Carretes" style="font-size:.75rem;font-weight:700;">🎣 Carretes</button>
+    <button class="tb-nav-btn" id="adminNavBtn" style="display:none;font-size:.75rem;font-weight:700;" onclick="gp('admin');setNav(this)" title="Panel Admin">🛡️ Admin</button>
   </div>
   <div class="tb-right">
     <div id="installPwaBtn" onclick="installPwa()" title="Instalar App" style="display:none;align-items:center;gap:5px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;border:none;padding:6px 12px;border-radius:100px;font-size:.75rem;font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;">📲 Instalar App</div>
