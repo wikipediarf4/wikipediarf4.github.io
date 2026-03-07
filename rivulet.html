@@ -672,7 +672,7 @@ function filterFish(query) {
 </div>
 
 <script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
 import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
 import { getFirestore, collection, doc, addDoc, onSnapshot, query, orderBy, updateDoc, increment, serverTimestamp, getDoc } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
@@ -685,7 +685,7 @@ const firebaseConfig = {
   messagingSenderId: "345019626508",
   appId: "1:345019626508:web:d099ca499acb29eac12a29"
 };
-const app = initializeApp(firebaseConfig);
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 (async()=>{ try{ await setPersistence(auth, browserLocalPersistence); }catch(e){} })();
 const db = getFirestore(app);
