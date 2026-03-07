@@ -2595,12 +2595,6 @@ select.fi option{background:#fff;}
       <div style="font-size:.78rem;font-weight:700;color:var(--accent);margin-bottom:10px;">🐟 Captura (opcional)</div>
       <div class="frow">
         <div class="fg"><label class="fl">Pez capturado</label><input class="fi" id="spotFish" placeholder="Ej: Pike, Catfish..."></div>
-      </div>
-      <div class="frow">
-        <div class="fg"><label class="fl">Coordenadas</label><input class="fi" id="spotCoords2" placeholder="Ej: 119.121"></div>
-        <div class="fg"><label class="fl">Clip (link)</label><input class="fi" id="spotClip2" placeholder="Link del clip..."></div>
-      </div>
-      <div class="fg"><label class="fl">Cebo usado</label><input class="fi" id="spotBait2" placeholder="¿Qué cebo usaste?">
         <div class="fg"><label class="fl">Peso (kg)</label><input class="fi" type="number" step="0.001" id="spotWeight" placeholder="0.000"></div>
       </div>
       <div class="fg">
@@ -3243,22 +3237,22 @@ const ROUTES = {
 // Map page IDs to clean URLs
 const PAGE_TO_URL = {
   'home': '/',
-  'amigos': '/amigos',
-  'shop': '/tienda',
-  'trofeos-feed': '/trofeos',
-  'galeria': '/galeria',
-  'videos': '/videos',
-  'spots': '/spots',
-  'torneos': '/torneos',
-  'profile': '/perfil',
-  'buscar-trofeo': '/buscar-trofeo',
-  'publica-trofeo': '/publica-trofeo',
-  'carretes': '/carretes',
-  'parches': '/parches',
-  'casitrofeo': '/casitrofeo',
-  'mensajes': '/mensajes',
-  'notificaciones': '/notificaciones',
-  'pez-semanal': '/pez-semanal',
+  'amigos': '/chatrf4/amigos',
+  'shop': '/chatrf4/tienda',
+  'trofeos-feed': '/chatrf4/trofeos',
+  'galeria': '/chatrf4/galeria',
+  'videos': '/chatrf4/videos',
+  'spots': '/chatrf4/spots',
+  'torneos': '/chatrf4/torneos',
+  'profile': '/chatrf4/perfil',
+  'buscar-trofeo': '/chatrf4/buscar-trofeo',
+  'publica-trofeo': '/chatrf4/publica-trofeo',
+  'carretes': '/chatrf4/carretes',
+  'parches': '/chatrf4/parches',
+  'casitrofeo': '/chatrf4/casitrofeo',
+  'mensajes': '/chatrf4/mensajes',
+  'notificaciones': '/chatrf4/notificaciones',
+  'pez-semanal': '/chatrf4/pez-semanal',
 };
 
 function navigateTo(id, pushState = true) {
@@ -7885,7 +7879,7 @@ async function sendShopAnnouncementToAll(){
 // ===== USER PROFILE MODAL =====
 async function openUserProfile(uid, nick){
   // Si es el propio usuario, va al perfil propio
-  if(uid && uid === window.CU?.id){ gp('profile'); history.pushState({page:'profile'}, '', '/perfil'); return; }
+  if(uid && uid === window.CU?.id){ gp('profile'); history.pushState({page:'profile'}, '', '/chatrf4/perfil'); return; }
   // Si no hay uid, busca por nick
   if(!uid && nick){
     try {
@@ -7897,7 +7891,7 @@ async function openUserProfile(uid, nick){
   if(!uid){ toast('Usuario no encontrado','err'); return; }
   // Push URL /u/nick
   const safeNick = (nick||'usuario').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
-  history.pushState({page:'userprofile', uid, nick}, '', '/u/' + safeNick);
+  history.pushState({page:'userprofile', uid, nick}, '', '/chatrf4/u/' + safeNick);
   // Navega a la página de perfil
   gp('userprofile', false);
   _loadUserProfilePage(uid, nick||'');
@@ -8560,7 +8554,7 @@ function openMessenger(){
   _messengerOpen = true;
   om('mMessenger');
   renderMessengerList();
-  if(window.location.pathname !== '/mensajes') history.pushState({page:'mensajes'}, '', '/mensajes');
+  if(window.location.pathname !== '/chatrf4/mensajes') history.pushState({page:'mensajes'}, '', '/chatrf4/mensajes');
   // Marcar todas las notifs 💬 como leídas al abrir el messenger
   let changed = false;
   _notifs.forEach(n=>{ if(n.text?.startsWith('💬') && !n.read){ n.read=true; changed=true; } });
@@ -8577,7 +8571,7 @@ function closeMessenger(){
   const el = document.getElementById('mMessenger');
   if(el) el.classList.remove('open');
   document.getElementById('chatBubbleMin').style.display='none';
-  if(window.location.pathname.startsWith('/mensajes')) history.pushState({page:'home'}, '', '/');
+  if(window.location.pathname.startsWith('/chatrf4/mensajes')) history.pushState({page:'home'}, '', '/chatrf4/');
 }
 
 function minimizeMessenger(){
@@ -8876,7 +8870,7 @@ function openChatWith(uid, nick){
 
   // Update URL to /mensajes/nick
   const safeNickUrl = (nick||'usuario').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
-  history.pushState({page:'mensajes', chatUid:uid, chatNick:nick}, '', '/mensajes/' + safeNickUrl);
+  history.pushState({page:'mensajes', chatUid:uid, chatNick:nick}, '', '/chatrf4/mensajes/' + safeNickUrl);
 
   // Make sure messenger modal is open
   om('mMessenger');
@@ -9189,7 +9183,7 @@ function backToMessengerList(){
   if(!window.location.pathname.startsWith('/mensajes/') && window.location.pathname !== '/mensajes') {
     // already handled
   } else {
-    history.pushState({page:'mensajes'}, '', '/mensajes');
+    history.pushState({page:'mensajes'}, '', '/chatrf4/mensajes');
   }
   if(_unsubChat){ _unsubChat(); _unsubChat=null; }
   _chatUserId = null;
@@ -10309,7 +10303,6 @@ function filterTrofeoFeed(filter, btn){
 }
 
 // ==== TROFEOS POR MAPA (solo ruizgustavo12) ====
-const FISH_IMGS = {"Asp": "fish/asp.webp", "Bleak": "fish/bleak.webp", "Blue Bream": "fish/blue_bream.webp", "Bream": "fish/bream.webp", "Burbot": "fish/burbot.webp", "Catfish": "fish/catfish.webp", "Chinese Sleeper": "fish/chinese_sleeper.webp", "Chub": "fish/chub.webp", "Common Carp": "fish/common_carp.webp", "Common Roach": "fish/common_roach.webp", "Crucian Carp": "fish/crucian_carp.webp", "Dace": "fish/dace.webp", "Donets Ruffe": "fish/donets_ruffe.webp", "Freshwater Crayfish": "fish/crayfish.webp", "Frog": "fish/frog.webp", "Gibel Carp": "fish/gibel_carp.webp", "Gudgeon": "fish/gudgeon.webp", "Ide": "fish/ide.webp", "Nase": "fish/nase.webp", "Perch": "fish/perch.webp", "Pike": "fish/pike.webp", "River Mussel": "fish/river_mussel.webp", "Ruffe": "fish/ruffe.webp", "Tench": "fish/tench.webp", "Volga Zander": "fish/volga_zander.webp", "White Bream": "fish/white_bream.webp", "White-eye Bream": "fish/whiteeye_bream.webp", "Zander": "fish/zander.webp", "Zebra Mussel": "fish/zebra_mussel.webp"};
 const TROFEOS_MAPA_DATA = {
   bindweed: {
     peces: [
@@ -10361,155 +10354,26 @@ function renderTrofMapaContent(){
   if(!data){ el.innerHTML='<div style="color:var(--muted);text-align:center;padding:40px;">Sin datos aun</div>'; return; }
   const q = (document.getElementById('trofMapaBuscar')?.value||'').toLowerCase();
   const peces = q ? data.peces.filter(p=>p.n.toLowerCase().includes(q)) : data.peces;
-
-  const fishCards = peces.map(function(p){
-    const img = FISH_IMGS[p.n] || '';
-    const imgHtml = img ? '<img src="'+img+'" style="width:72px;height:72px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.6));">' : '<div style="width:72px;height:72px;background:var(--bg3);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">🐟</div>';
-    return '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:8px;transition:border-color .2s;" onmouseover="this.style.borderColor=\'var(--accent)\'" onmouseout="this.style.borderColor=\'var(--border)\'">'+
-      imgHtml +
-      '<div style="font-size:.82rem;font-weight:700;text-align:center;color:var(--text);">'+p.n+'</div>'+
-      '<div style="display:flex;flex-direction:column;gap:3px;width:100%;">'+
-        '<div style="display:flex;justify-content:space-between;font-size:.72rem;"><span style="color:var(--muted);">🏆 Trophy</span><span style="color:var(--gold);font-weight:700;">'+p.t+'</span></div>'+
-        '<div style="display:flex;justify-content:space-between;font-size:.72rem;"><span style="color:var(--muted);">✨ Rare</span><span style="color:#c084fc;font-weight:700;">'+p.r+'</span></div>'+
-      '</div>'+
-    '</div>';
-  }).join('');
-
   el.innerHTML =
-    '<div style="margin-bottom:14px;">'+
-      '<input id="trofMapaBuscar" placeholder="Buscar pez..." oninput="renderTrofMapaContent()" value="'+q+'" '+
-      'style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:8px 16px;color:var(--text);font-size:.82rem;font-family:\'Exo 2\',sans-serif;outline:none;box-sizing:border-box;">'+
-    '</div>'+
-    '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:32px;">'+
-      fishCards +
-      (peces.length===0 ? '<div style="text-align:center;padding:32px;color:var(--muted);font-size:.82rem;grid-column:1/-1;">Sin resultados</div>' : '') +
-    '</div>'+
-    '<div style="text-align:right;margin-bottom:24px;font-size:.68rem;color:var(--muted);">'+peces.length+' peces &middot; Fuente: rf4h.ru</div>'+
-    '<div id="trofMapaSpots">'+renderSpotsSection(_trofMapaActivo)+'</div>';
-
-  loadSpotsRealtime(_trofMapaActivo);
+    '<div style="margin-bottom:14px;">' +
+      '<input id="trofMapaBuscar" placeholder="Buscar pez..." oninput="renderTrofMapaContent()" value="'+q+'" ' +
+      'style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:8px 16px;color:var(--text);font-size:.82rem;font-family:\'Exo 2\',sans-serif;outline:none;box-sizing:border-box;">' +
+    '</div>' +
+    '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;">' +
+      '<div style="display:grid;grid-template-columns:1fr 120px 120px;background:var(--bg3);padding:10px 16px;font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">' +
+        '<div>Pez</div><div style="text-align:center;">Trofeo</div><div style="text-align:center;">Trofeo Raro</div>' +
+      '</div>' +
+      peces.map(function(p,i){
+        return '<div style="display:grid;grid-template-columns:1fr 120px 120px;padding:10px 16px;border-top:1px solid var(--border);align-items:center;' + (i%2===0?'':'background:rgba(255,255,255,.025)') + '">' +
+          '<div style="font-size:.85rem;font-weight:600;">'+p.n+'</div>' +
+          '<div style="text-align:center;font-size:.83rem;color:var(--gold);font-weight:700;">'+p.t+'</div>' +
+          '<div style="text-align:center;font-size:.83rem;color:#c084fc;font-weight:700;">'+p.r+'</div>' +
+        '</div>';
+      }).join('') +
+      (peces.length===0 ? '<div style="text-align:center;padding:32px;color:var(--muted);font-size:.82rem;">Sin resultados</div>' : '') +
+    '</div>' +
+    '<div style="text-align:right;margin-top:8px;font-size:.68rem;color:var(--muted);">' + peces.length + ' peces &middot; Fuente: rf4h.ru</div>';
 }
-
-function renderSpotsSection(mapId){
-  return '<div style="border-top:1px solid var(--border);padding-top:24px;">'+
-    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">'+
-      '<div style="font-size:.9rem;font-weight:800;color:var(--accent);">📍 Spots de la Comunidad</div>'+
-      (window.CU ? '<button onclick="openSpotForm(\'"+mapId+'\')" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;border:none;border-radius:8px;padding:8px 16px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:\'Exo 2\',sans-serif;">+ Compartir Spot</button>' : '<span style="font-size:.75rem;color:var(--muted);">Iniciá sesión para compartir spots</span>')+
-    '</div>'+
-    '<div id="spotsListEl" style="display:flex;flex-direction:column;gap:12px;"><div style="text-align:center;padding:24px;color:var(--muted);font-size:.82rem;">Cargando spots...</div></div>'+
-  '</div>';
-}
-
-let _spotsUnsub = null;
-function loadSpotsRealtime(mapId){
-  if(_spotsUnsub){ _spotsUnsub(); _spotsUnsub=null; }
-  if(typeof onSnapshot === 'undefined') return;
-  const q2 = query(collection(db,'mapSpots',mapId,'spots'), orderBy('time','desc'));
-  _spotsUnsub = onSnapshot(q2, snap=>{
-    const el = document.getElementById('spotsListEl');
-    if(!el) return;
-    if(snap.empty){ el.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted);font-size:.82rem;">Sin spots aún. ¡Sé el primero!</div>'; return; }
-    const REACTS = ['❤️','🔥','🎣','🏆','😮','👏'];
-    el.innerHTML = snap.docs.map(d=>{
-      const s=d.data(), sid=d.id;
-      const t=s.time?new Date(s.time.toDate()).toLocaleDateString('es-AR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'';
-      const imgH=s.imageUrl?'<img src="'+s.imageUrl+'" style="width:100%;max-height:220px;object-fit:cover;border-radius:8px;margin-bottom:10px;cursor:pointer;" onclick="window.open(\'"'+s.imageUrl+'\')">' :'';
-      const reacts=REACTS.map(r=>'<button onclick="reactMapSpot(\'"+sid+'\',"\'"+mapId+'\',"\'"+r+'\')" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:3px 8px;cursor:pointer;font-size:.8rem;color:var(--text);">'+r+(s.reactions&&s.reactions[r]?' '+s.reactions[r]:'')+'</button>').join('');
-      return '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;">'+
-        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">'+
-          '<div style="width:32px;height:32px;border-radius:50%;background:var(--bg3);overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent);font-size:.8rem;flex-shrink:0;">'+
-            (s.avatar?'<img src="'+s.avatar+'" style="width:100%;height:100%;object-fit:cover;">':(s.nick||' ?')[0].toUpperCase())+
-          '</div>'+
-          '<div><div style="font-size:.82rem;font-weight:700;color:var(--text);">'+esc(s.nick||'Usuario')+'</div><div style="font-size:.68rem;color:var(--muted);">'+t+'</div></div>'+
-        '</div>'+
-        imgH+
-        '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">'+
-          (s.coords?'<span style="background:rgba(46,196,182,.1);border:1px solid rgba(46,196,182,.3);color:var(--accent);border-radius:20px;padding:3px 10px;font-size:.72rem;">📍 '+esc(s.coords)+'</span>':'')+
-          (s.bait?'<span style="background:rgba(232,196,106,.1);border:1px solid rgba(232,196,106,.3);color:var(--gold);border-radius:20px;padding:3px 10px;font-size:.72rem;">🪱 '+esc(s.bait)+'</span>':'')+
-          (s.clip?'<a href="'+esc(s.clip)+'" target="_blank" style="background:rgba(192,132,252,.1);border:1px solid rgba(192,132,252,.3);color:#c084fc;border-radius:20px;padding:3px 10px;font-size:.72rem;text-decoration:none;">🎬 Ver clip</a>':'')+
-        '</div>'+
-        '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;">'+reacts+'</div>'+
-        '<button onclick="openMapComments(\'"+sid+'\',"\'"+mapId+'\')" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 12px;font-size:.72rem;cursor:pointer;font-family:\'Exo 2\',sans-serif;">💬 Comentarios '+(s.commentCount>0?'('+s.commentCount+')':'')+'</button>'+
-      '</div>';
-    }).join('');
-  });
-}
-
-function openSpotForm(mapId){
-  const modal = document.getElementById('mCreateSpot');
-  if(modal){ modal.dataset.mapId=mapId; om('mCreateSpot'); }
-}
-
-async function reactMapSpot(spotId, mapId, emoji){
-  if(!window.CU) return;
-  try{ await updateDoc(doc(db,'mapSpots',mapId,'spots',spotId),{['reactions.'+emoji]:increment(1)}); }catch(e){}
-}
-window.reactMapSpot = reactMapSpot;
-
-let _mapCommentsUnsub=null, _activeMapSpot=null, _activeMapId=null;
-function openMapComments(spotId, mapId){
-  _activeMapSpot=spotId; _activeMapId=mapId;
-  let modal=document.getElementById('mapCommentsModal');
-  if(!modal){
-    modal=document.createElement('div');
-    modal.id='mapCommentsModal';
-    modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;overflow-y:auto;padding:20px;display:flex;align-items:flex-start;justify-content:center;';
-    modal.innerHTML='<div style="max-width:520px;width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;position:relative;margin-top:60px;">'+
-      '<button onclick="closeMapComments()" style="position:absolute;top:10px;right:10px;background:var(--bg3);border:none;color:var(--text);border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:.9rem;">✕</button>'+
-      '<div style="font-size:.88rem;font-weight:800;color:var(--accent);margin-bottom:14px;">💬 Comentarios</div>'+
-      '<div id="mapCommentsList" style="max-height:280px;overflow-y:auto;margin-bottom:12px;display:flex;flex-direction:column;gap:8px;"></div>'+
-      '<div style="display:flex;gap:8px;">'+
-        '<input id="mapCommentInput" type="text" placeholder="Escribí un comentario..." maxlength="300" '+
-        'style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:\'Exo 2\',sans-serif;font-size:.82rem;padding:8px 12px;outline:none;" '+
-        'onkeydown="if(event.key===\'Enter\')sendMapComment()">'+
-        '<button onclick="sendMapComment()" style="background:var(--accent);color:#000;border:none;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer;">➤</button>'+
-      '</div>'+
-    '</div>';
-    document.body.appendChild(modal);
-  }
-  modal.style.display='flex';
-  if(_mapCommentsUnsub){_mapCommentsUnsub();_mapCommentsUnsub=null;}
-  const cq=query(collection(db,'mapSpots',mapId,'spots',spotId,'comments'),orderBy('time','asc'));
-  _mapCommentsUnsub=onSnapshot(cq,snap=>{
-    const el=document.getElementById('mapCommentsList');
-    if(!el)return;
-    if(snap.empty){el.innerHTML='<div style="text-align:center;color:var(--muted);font-size:.78rem;padding:16px;">Sin comentarios aún.</div>';return;}
-    el.innerHTML=snap.docs.map(d=>{
-      const c=d.data();
-      const t=c.time?new Date(c.time.toDate()).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}):'';
-      return '<div style="background:var(--bg3);border-radius:8px;padding:8px 10px;">'+
-        '<div style="display:flex;justify-content:space-between;margin-bottom:3px;">'+
-          '<span style="font-size:.72rem;font-weight:700;color:var(--accent);">'+esc(c.nick||'Usuario')+'</span>'+
-          '<span style="font-size:.68rem;color:var(--muted);">'+t+'</span>'+
-        '</div>'+
-        '<div style="font-size:.82rem;color:var(--text);">'+esc(c.text)+'</div>'+
-      '</div>';
-    }).join('');
-    el.scrollTop=el.scrollHeight;
-  });
-}
-function closeMapComments(){
-  const m=document.getElementById('mapCommentsModal');
-  if(m)m.style.display='none';
-  if(_mapCommentsUnsub){_mapCommentsUnsub();_mapCommentsUnsub=null;}
-}
-async function sendMapComment(){
-  if(!window.CU||!_activeMapSpot)return;
-  const inp=document.getElementById('mapCommentInput');
-  const text=inp.value.trim();
-  if(!text)return;
-  inp.value='';
-  await addDoc(collection(db,'mapSpots',_activeMapId,'spots',_activeMapSpot,'comments'),{
-    nick:window.CU.nick||window.CU.id, avatar:window.CU.avatar||'', text, time:serverTimestamp()
-  });
-  await updateDoc(doc(db,'mapSpots',_activeMapId,'spots',_activeMapSpot),{commentCount:increment(1)});
-}
-window.openMapComments=openMapComments;
-window.closeMapComments=closeMapComments;
-window.sendMapComment=sendMapComment;
-window.openSpotForm=openSpotForm;
-window.loadSpotsRealtime=loadSpotsRealtime;
-
 window.switchTrofMapaTab = switchTrofMapaTab;
 window.renderTrofMapaContent = renderTrofMapaContent;
 
@@ -10972,9 +10836,9 @@ function openNotifDropdown(){
   // Push URL only when opening (not closing)
   const willOpen = dd.style.display !== 'flex';
   if(willOpen && window.location.pathname !== '/notificaciones') {
-    history.pushState({page:'notificaciones'}, '', '/notificaciones');
+    history.pushState({page:'notificaciones'}, '', '/chatrf4/notificaciones');
   } else if(!willOpen && window.location.pathname === '/notificaciones') {
-    history.pushState({page:'home'}, '', '/');
+    history.pushState({page:'home'}, '', '/chatrf4/');
   }
   if(isMobile){
     // Mobile: full screen panel from top
@@ -11034,7 +10898,7 @@ function closeNotifDropdown(){
   if(dd) dd.style.display = 'none';
   document.body.style.overflow = '';
   document.removeEventListener('click', _notifOutsideClick);
-  if(window.location.pathname === '/notificaciones') history.pushState({page:'home'}, '', '/');
+  if(window.location.pathname === '/chatrf4/notificaciones') history.pushState({page:'home'}, '', '/chatrf4/');
 }
 function toggleNotifDropdown(e){
   e.stopPropagation();
@@ -11188,42 +11052,6 @@ async function deleteChatConfirm(uid, nick){
 Object.entries(_expose).forEach(([k,v])=>{ window[k]=v; });
 // Replay any calls that happened before module loaded
 if(window._q) window._q.forEach(([name,args])=>{ if(window[name]) window[name](...args); });
-
-
-// Patch submitSpot to support mapId from modal
-const _origSubmitSpot = window.submitSpot;
-window.submitSpot = async function(){
-  const modal = document.getElementById('mCreateSpot');
-  const mapId = modal?.dataset?.mapId;
-  if(mapId && window.CU){
-    // Use mapSpots collection
-    const txt = document.getElementById('spotText')?.value?.trim()||'';
-    const fish = document.getElementById('spotFish')?.value?.trim()||'';
-    const weight = document.getElementById('spotWeight')?.value||'';
-    const bait = document.getElementById('spotBait2')?.value?.trim()||'';
-    const coords = document.getElementById('spotCoords2')?.value?.trim()||'';
-    const clip = document.getElementById('spotClip2')?.value?.trim()||'';
-    const imgInput = document.getElementById('spotImgInput');
-    let imageUrl='';
-    if(imgInput?.files?.[0]){
-      try{
-        const r2=storageRef(storage,\`mapSpots/\${mapId}/\${Date.now()}_\${imgInput.files[0].name}\`);
-        await uploadBytes(r2,imgInput.files[0]);
-        imageUrl=await getDownloadURL(r2);
-      }catch(e){}
-    }
-    await addDoc(collection(db,'mapSpots',mapId,'spots'),{
-      nick:window.CU.nick||window.CU.id, avatar:window.CU.avatar||'',
-      coords, clip, bait, imageUrl, text:txt, fish, weight,
-      reactions:{}, commentCount:0, time:serverTimestamp()
-    });
-    cm('mCreateSpot');
-    toast('✓ Spot publicado!','ok');
-    loadSpotsRealtime(mapId);
-    return;
-  }
-  if(_origSubmitSpot) _origSubmitSpot();
-};
 
 // ===== START =====
 init();
