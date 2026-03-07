@@ -4439,7 +4439,7 @@ function postHTML(p){
     ${!p.sharedFrom ? linkHTML : ''}
     ${!p.sharedFrom && p.text?`<div class="post-text">${renderCommentText(p.text)}</div>`:''}
     ${!p.sharedFrom ? fishTag : ''}
-    ${!p.sharedFrom ? imgHTML : ''}
+    ${p.profileAction==='cover' && p.images&&p.images[0] ? `<div style="margin:0 0 10px;border-radius:var(--rs);overflow:hidden;position:relative;height:180px;background:var(--bg3);"><img src="${p.images[0]}" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy"><div style="position:absolute;bottom:8px;left:10px;background:rgba(0,0,0,.55);color:#fff;font-size:.72rem;padding:3px 10px;border-radius:100px;backdrop-filter:blur(6px);">📷 Nueva foto de portada</div></div>` : p.profileAction==='avatar' && p.images&&p.images[0] ? `<div style="margin:0 0 10px;display:flex;justify-content:center;"><div style="width:140px;height:140px;border-radius:50%;overflow:hidden;border:4px solid var(--accent);box-shadow:0 0 20px rgba(0,198,255,.3);"><img src="${p.images[0]}" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy"></div></div>` : (!p.sharedFrom ? imgHTML : '')}
     ${videoHTML}
     <div class="post-stats">
       <div class="post-rxn-summary" onclick="openReactionsModal('${p.id}')" style="${totalRxn>0?'cursor:pointer':'cursor:default'}">
@@ -5271,6 +5271,23 @@ async function changeCover(input){
   const url = await uploadImage(f, 'covers');
   window.CU.cover = url;
   await updateDoc(doc(db, 'users', window.CU.id), {cover: url});
+  // Publicar post automático
+  try {
+    await addDoc(collection(db,'posts'),{
+      userId: window.CU.id,
+      userNick: window.CU.nick,
+      userAv: window.CU.av||'',
+      userXp: window.CU.xp||0,
+      userVerified: window.CU.verified||false,
+      text: `📸 ${window.CU.nick} actualizó su foto de portada.`,
+      images: [url],
+      profileAction: 'cover',
+      fish:'', weight:0, map:'', tech:'',
+      video:'', link:null,
+      time: serverTimestamp(),
+      likes:0, comments:[], reactions:{}, reactionCounts:{}
+    });
+  } catch(e){ console.warn('cover post err',e); }
   renderProfile(); toast('Portada actualizada ✅','ok');
 }
 async function changeAvatar(input){
@@ -5282,6 +5299,23 @@ async function changeAvatar(input){
   // Update "Crear historia" card
   const sp = document.getElementById('storyAddPhoto');
   if(sp) sp.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;">`;
+  // Publicar post automático
+  try {
+    await addDoc(collection(db,'posts'),{
+      userId: window.CU.id,
+      userNick: window.CU.nick,
+      userAv: url,
+      userXp: window.CU.xp||0,
+      userVerified: window.CU.verified||false,
+      text: `🖼️ ${window.CU.nick} actualizó su foto de perfil.`,
+      images: [url],
+      profileAction: 'avatar',
+      fish:'', weight:0, map:'', tech:'',
+      video:'', link:null,
+      time: serverTimestamp(),
+      likes:0, comments:[], reactions:{}, reactionCounts:{}
+    });
+  } catch(e){ console.warn('avatar post err',e); }
   updateNavUI(); renderProfile(); toast('Foto actualizada ✅','ok');
 }
 
