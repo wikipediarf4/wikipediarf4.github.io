@@ -7397,8 +7397,7 @@ async function stopAndSendVoice(){
     const ext = mimeType.includes('ogg') ? 'ogg' : mimeType.includes('mp4') ? 'mp4' : 'webm';
     const formData = new FormData();
     formData.append('file', blob, 'voice_' + Date.now() + '.' + ext);
-    formData.append('upload_preset', 'charlasrf4');
-    formData.append('folder', 'voices');
+    formData.append('upload_preset', 'charlasrf4_audio');
 
     const res = await fetch('https://api.cloudinary.com/v1_1/da0n5tg3g/video/upload', {
       method: 'POST',
