@@ -477,6 +477,17 @@ select.fi option{background:#fff;}
 @keyframes ringFire { from{box-shadow:0 0 0 3px #ff4500,0 0 16px rgba(255,69,0,.5);} to{box-shadow:0 0 0 3px #ff8c00,0 0 28px rgba(255,140,0,.8);} }
 @keyframes ringIce  { from{box-shadow:0 0 0 3px #00cfff,0 0 12px rgba(0,207,255,.4);} to{box-shadow:0 0 0 4px #80eaff,0 0 24px rgba(128,234,255,.7);} }
 @keyframes ringLegend { from{filter:hue-rotate(0deg);} to{filter:hue-rotate(30deg);} }
+/* nuevos marcos */
+.ring-neon .profile-av-big     { box-shadow:0 0 0 3px #b400ff,0 0 20px rgba(180,0,255,.6) !important; animation:ringNeon 1.5s ease-in-out infinite alternate; }
+.ring-galaxy .profile-av-big   { box-shadow:0 0 0 3px #7b2fff,0 0 0 6px rgba(123,47,255,.3),0 0 28px rgba(123,47,255,.5) !important; animation:ringGalaxy 3s linear infinite; }
+.ring-red .profile-av-big      { box-shadow:0 0 0 3px #e00,0 0 18px rgba(220,0,0,.6) !important; }
+.ring-rainbow .profile-av-big  { animation:ringRainbow 2s linear infinite !important; }
+.ring-platinum .profile-av-big { box-shadow:0 0 0 4px #c0c0c0,0 0 0 7px rgba(192,192,192,.25),0 0 22px rgba(192,192,192,.5) !important; }
+@keyframes ringNeon    { from{box-shadow:0 0 0 3px #b400ff,0 0 14px rgba(180,0,255,.5);} to{box-shadow:0 0 0 4px #e040ff,0 0 28px rgba(224,64,255,.8);} }
+@keyframes ringGalaxy  { 0%{box-shadow:0 0 0 3px #7b2fff,0 0 20px rgba(123,47,255,.5);}50%{box-shadow:0 0 0 4px #2f7fff,0 0 28px rgba(47,127,255,.6);}100%{box-shadow:0 0 0 3px #7b2fff,0 0 20px rgba(123,47,255,.5);} }
+@keyframes ringRainbow { 0%{box-shadow:0 0 0 3px red,0 0 14px rgba(255,0,0,.5);}17%{box-shadow:0 0 0 3px orange;}34%{box-shadow:0 0 0 3px yellow;}50%{box-shadow:0 0 0 3px green,0 0 14px rgba(0,200,0,.5);}67%{box-shadow:0 0 0 3px blue;}84%{box-shadow:0 0 0 3px violet;}100%{box-shadow:0 0 0 3px red,0 0 14px rgba(255,0,0,.5);} }
+/* partículas tienda */
+@keyframes shopParticleFall { 0%{transform:translateY(0) rotate(0deg);opacity:.9;} 100%{transform:translateY(110vh) rotate(720deg);opacity:0;} }
 .profile-layout{display:grid;grid-template-columns:360px 1fr;gap:16px;padding:16px;max-width:1080px;margin:0 auto;}
 @media(max-width:900px){.profile-layout{grid-template-columns:1fr;}}
 .profile-about-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:14px;}
@@ -2690,6 +2701,7 @@ function onLogin(){
   loadAds();
   loadPezSemana();
   loadXPLevels();
+  loadShopEquipped(); // cargar ítems equipados de tienda
   // Update "Crear historia" card with user photo
   const storyPhoto = document.getElementById('storyAddPhoto');
   const storyPhotoInner = document.getElementById('storyAddPhotoInner');
@@ -4188,30 +4200,51 @@ function swPTab(el, tabId){
 
 // ===== TIENDA DE ÍTEMS DE PERFIL (admin only) =====
 const SHOP_ITEMS = [
-  // MARCOS
-  { id:'marco_oro',     cat:'marco',  name:'Marco Dorado',      preview:'🟡', emoji:'⭕', price:500,  desc:'Borde dorado animado en tu avatar', effect:'ring-gold' },
-  { id:'marco_fuego',   cat:'marco',  name:'Marco de Fuego',    preview:'🔥', emoji:'🔥', price:800,  desc:'Llamas animadas alrededor de tu foto', effect:'ring-fire' },
-  { id:'marco_hielo',   cat:'marco',  name:'Marco Glacial',     preview:'❄️', emoji:'💠', price:800,  desc:'Cristales de hielo en tu avatar', effect:'ring-ice' },
-  { id:'marco_pesca',   cat:'marco',  name:'Marco Pescador',    preview:'🎣', emoji:'🎣', price:300,  desc:'Marco temático de pesca exclusivo', effect:'ring-fish' },
-  { id:'marco_legend',  cat:'marco',  name:'Marco Leyenda',     preview:'👑', emoji:'✨', price:1500, desc:'El marco más exclusivo de RF4 Latam', effect:'ring-legend', exclusive:true },
-  // BADGES
-  { id:'badge_shark',   cat:'badge',  name:'Tiburón',           preview:'🦈', emoji:'🦈', price:400,  desc:'Badge de tiburón en tu perfil' },
-  { id:'badge_trophy',  cat:'badge',  name:'Campeón',           preview:'🏆', emoji:'🏆', price:600,  desc:'Badge de trofeo dorado' },
-  { id:'badge_king',    cat:'badge',  name:'Rey del Río',       preview:'👑', emoji:'👑', price:900,  desc:'Badge exclusivo de realeza', exclusive:true },
-  { id:'badge_rf4',     cat:'badge',  name:'RF4 OG',            preview:'🎮', emoji:'🎮', price:350,  desc:'Badge de jugador original de RF4' },
-  { id:'badge_latam',   cat:'badge',  name:'Latino Power',      preview:'🌎', emoji:'🌎', price:300,  desc:'Badge de orgullo latinoamericano' },
-  // EFECTOS
-  { id:'efecto_confetti', cat:'efecto', name:'Confetti',        preview:'🎊', emoji:'🎊', price:700,  desc:'Lluvia de confetti en tus posts' },
-  { id:'efecto_stars',    cat:'efecto', name:'Estrellas',       preview:'⭐', emoji:'💫', price:500,  desc:'Estrellas flotantes en tu perfil' },
-  { id:'efecto_aurora',   cat:'efecto', name:'Aurora Boreal',   preview:'🌌', emoji:'🌈', price:1200, desc:'Efecto aurora en tu portada', exclusive:true },
-  { id:'efecto_peces',    cat:'efecto', name:'Lluvia de Peces', preview:'🐟', emoji:'🐠', price:600,  desc:'Pecesitos flotando en tu perfil' },
-  // TÍTULOS
-  { id:'titulo_jefe',     cat:'titulo', name:'El Jefe',         preview:'😎', emoji:'😎', price:800,  desc:'Título "El Jefe" bajo tu nombre' },
-  { id:'titulo_legend',   cat:'titulo', name:'Leyenda Viva',    preview:'⚡', emoji:'⚡', price:1200, desc:'Título "Leyenda Viva" animado', exclusive:true },
-  { id:'titulo_maestro',  cat:'titulo', name:'Maestro Pescador',preview:'🎓', emoji:'🎣', price:600,  desc:'Título "Maestro Pescador"' },
-  { id:'titulo_capitan',  cat:'titulo', name:'Capitán',         preview:'⚓', emoji:'⚓', price:400,  desc:'Título "Capitán" bajo tu nombre' },
-];
+  // ── MARCOS ──
+  { id:'marco_oro',      cat:'marco',  name:'Marco Dorado',       preview:'🟡', emoji:'⭕', price:500,  desc:'Borde dorado clásico animado',          effect:'ring-gold' },
+  { id:'marco_fuego',    cat:'marco',  name:'Marco de Fuego',     preview:'🔥', emoji:'🔥', price:800,  desc:'Llamas pulsantes alrededor de tu foto',  effect:'ring-fire' },
+  { id:'marco_hielo',    cat:'marco',  name:'Marco Glacial',      preview:'❄️', emoji:'💠', price:800,  desc:'Resplandor helado en tu avatar',          effect:'ring-ice' },
+  { id:'marco_pesca',    cat:'marco',  name:'Marco Pescador',     preview:'🎣', emoji:'🎣', price:300,  desc:'Marco verde temático de pesca',           effect:'ring-fish' },
+  { id:'marco_legend',   cat:'marco',  name:'Marco Leyenda',      preview:'👑', emoji:'✨', price:1500, desc:'El marco más exclusivo de RF4 Latam',     effect:'ring-legend', exclusive:true },
+  { id:'marco_neon',     cat:'marco',  name:'Marco Neón',         preview:'💜', emoji:'💜', price:700,  desc:'Neón violeta vibrante',                  effect:'ring-neon' },
+  { id:'marco_galaxia',  cat:'marco',  name:'Marco Galaxia',      preview:'🌌', emoji:'🌌', price:1000, desc:'Cosmos girando en tu avatar',            effect:'ring-galaxy', exclusive:true },
+  { id:'marco_rojo',     cat:'marco',  name:'Marco Rojo Fuerte',  preview:'🔴', emoji:'🔴', price:400,  desc:'Rojo intenso, se destaca en el feed',    effect:'ring-red' },
+  { id:'marco_arcoiris', cat:'marco',  name:'Marco Arcoíris',     preview:'🌈', emoji:'🌈', price:900,  desc:'Colores cambiantes continuamente',        effect:'ring-rainbow', exclusive:true },
+  { id:'marco_platino',  cat:'marco',  name:'Marco Platino',      preview:'⚪', emoji:'⚪', price:1200, desc:'Plata brillante premium',                effect:'ring-platinum', exclusive:true },
+  // ── BADGES ──
+  { id:'badge_shark',    cat:'badge',  name:'Tiburón',            preview:'🦈', emoji:'🦈', price:400,  desc:'Badge de tiburón junto a tu nombre' },
+  { id:'badge_trophy',   cat:'badge',  name:'Campeón',            preview:'🏆', emoji:'🏆', price:600,  desc:'Badge de trofeo dorado' },
+  { id:'badge_king',     cat:'badge',  name:'Rey del Río',        preview:'👑', emoji:'👑', price:900,  desc:'Badge exclusivo de realeza', exclusive:true },
+  { id:'badge_rf4',      cat:'badge',  name:'RF4 OG',             preview:'🎮', emoji:'🎮', price:350,  desc:'Badge de jugador original de RF4' },
+  { id:'badge_latam',    cat:'badge',  name:'Latino Power',       preview:'🌎', emoji:'🌎', price:300,  desc:'Badge de orgullo latinoamericano' },
+  { id:'badge_dragon',   cat:'badge',  name:'Dragón',             preview:'🐉', emoji:'🐉', price:800,  desc:'Badge de dragón legendario', exclusive:true },
+  { id:'badge_ninja',    cat:'badge',  name:'Ninja',              preview:'🥷', emoji:'🥷', price:500,  desc:'Badge sigilo total' },
+  { id:'badge_wolf',     cat:'badge',  name:'Lobo Solitario',     preview:'🐺', emoji:'🐺', price:450,  desc:'Para los que pescan solos y ganan' },
+  { id:'badge_alien',    cat:'badge',  name:'Visitante',          preview:'👽', emoji:'👽', price:350,  desc:'Badge raro y misterioso' },
+  { id:'badge_fire',     cat:'badge',  name:'En Llamas',          preview:'🔥', emoji:'🔥', price:400,  desc:'Racha imparable' },
+  { id:'badge_dolar',    cat:'badge',  name:'Tiburón del Mercado',preview:'💰', emoji:'💰', price:700,  desc:'El que vende los mejores peces' },
+  // ── EFECTOS ──
+  { id:'efecto_confetti',  cat:'efecto', name:'Confetti',         preview:'🎊', emoji:'🎊', price:700,  desc:'Lluvia de confetti en tu perfil' },
+  { id:'efecto_stars',     cat:'efecto', name:'Estrellas',        preview:'⭐', emoji:'💫', price:500,  desc:'Estrellas flotantes animadas' },
+  { id:'efecto_aurora',    cat:'efecto', name:'Aurora Boreal',    preview:'🌌', emoji:'🌈', price:1200, desc:'Partículas de aurora en tu perfil', exclusive:true },
+  { id:'efecto_peces',     cat:'efecto', name:'Lluvia de Peces',  preview:'🐟', emoji:'🐠', price:600,  desc:'Pecesitos flotando en tu perfil' },
+  { id:'efecto_nieve',     cat:'efecto', name:'Nieve',            preview:'❄️', emoji:'🌨', price:550,  desc:'Nieve cayendo sobre tu perfil' },
+  { id:'efecto_burbujas',  cat:'efecto', name:'Burbujas',         preview:'🫧', emoji:'🫧', price:400,  desc:'Burbujas acuáticas subiendo' },
+  { id:'efecto_lightning', cat:'efecto', name:'Rayos',            preview:'⚡', emoji:'⚡', price:800,  desc:'Rayos eléctricos en tu perfil', exclusive:true },
+  { id:'efecto_hojas',     cat:'efecto', name:'Hojas Otoñales',   preview:'🍂', emoji:'🍁', price:450,  desc:'Hojas cayendo suavemente' },
+  // ── TÍTULOS ──
+  { id:'titulo_jefe',     cat:'titulo', name:'El Jefe',           preview:'😎', emoji:'😎', price:800,  desc:'Título "El Jefe" bajo tu nombre' },
+  { id:'titulo_legend',   cat:'titulo', name:'Leyenda Viva',      preview:'⚡', emoji:'⚡', price:1200, desc:'Título dorado animado', exclusive:true },
+  { id:'titulo_maestro',  cat:'titulo', name:'Maestro Pescador',  preview:'🎓', emoji:'🎣', price:600,  desc:'Título clásico de maestro' },
+  { id:'titulo_capitan',  cat:'titulo', name:'Capitán',           preview:'⚓', emoji:'⚓', price:400,  desc:'Capitán de la red social' },
+  { id:'titulo_sombra',   cat:'titulo', name:'La Sombra',         preview:'🌑', emoji:'🌑', price:700,  desc:'Misterioso y temido' },
+  { id:'titulo_bestia',   cat:'titulo', name:'La Bestia',         preview:'🦁', emoji:'🦁', price:900,  desc:'Domina las aguas', exclusive:true },
+  { id:'titulo_rookie',   cat:'titulo', name:'Rookie Imparable',  preview:'🚀', emoji:'🚀', price:300,  desc:'Nuevo pero letal' },
+  { id:'titulo_ghost',    cat:'titulo', name:'El Fantasma',       preview:'👻', emoji:'👻', price:500,  desc:'Aparece, pesca y desaparece' },
+]
 
+// Efectos de partículas activos
+let _shopParticleInterval = null;
 let _shopFilter = 'all';
 let _equippedItems = {}; // { marco: 'marco_oro', badge: 'badge_shark', ... }
 
@@ -4265,15 +4298,86 @@ async function toggleEquipItem(itemId){
 }
 
 function applyShopEffects(){
-  // Apply equipped marco to avatar
+  // ── MARCO en avatar ──
   const avWrap = document.querySelector('.profile-av-wrap');
-  if(!avWrap) return;
-  avWrap.classList.remove('ring-gold','ring-fire','ring-ice','ring-fish','ring-legend');
-  const marco = _equippedItems.marco;
-  if(marco){
-    const item = SHOP_ITEMS.find(i=>i.id===marco);
-    if(item?.effect) avWrap.classList.add(item.effect);
+  if(avWrap){
+    avWrap.classList.remove('ring-gold','ring-fire','ring-ice','ring-fish','ring-legend',
+      'ring-neon','ring-galaxy','ring-red','ring-rainbow','ring-platinum');
+    const marco = _equippedItems.marco;
+    if(marco){ const it=SHOP_ITEMS.find(i=>i.id===marco); if(it?.effect) avWrap.classList.add(it.effect); }
   }
+
+  // ── TÍTULO bajo el nombre ──
+  let titleEl = document.getElementById('shopTitleDisplay');
+  const tituloId = _equippedItems.titulo;
+  if(tituloId){
+    const tItem = SHOP_ITEMS.find(i=>i.id===tituloId);
+    if(tItem){
+      if(!titleEl){
+        titleEl = document.createElement('div');
+        titleEl.id = 'shopTitleDisplay';
+        const bioEl = document.getElementById('profBioEl');
+        if(bioEl) bioEl.insertAdjacentElement('beforebegin', titleEl);
+      }
+      const isLegend = tituloId==='titulo_legend';
+      titleEl.style.cssText=`font-size:.72rem;font-weight:800;letter-spacing:.08em;margin:3px 0 5px;text-align:center;${isLegend?'background:linear-gradient(135deg,gold,#ff8c00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:goldShimmer 2s ease-in-out infinite alternate;':'color:var(--muted);'}`;
+      titleEl.textContent = `${tItem.emoji} ${tItem.name.toUpperCase()}`;
+    }
+  } else {
+    if(titleEl) titleEl.remove();
+  }
+
+  // ── BADGE junto al nombre ──
+  let badgeShopEl = document.getElementById('shopBadgeDisplay');
+  const badgeId = _equippedItems.badge;
+  if(badgeId){
+    const bItem = SHOP_ITEMS.find(i=>i.id===badgeId);
+    if(bItem){
+      if(!badgeShopEl){
+        badgeShopEl = document.createElement('span');
+        badgeShopEl.id = 'shopBadgeDisplay';
+        badgeShopEl.style.cssText='font-size:1.2rem;cursor:default;';
+        const nameContainer = document.getElementById('profName')?.parentElement;
+        if(nameContainer) nameContainer.appendChild(badgeShopEl);
+      }
+      badgeShopEl.textContent = bItem.preview;
+      badgeShopEl.title = bItem.name;
+    }
+  } else {
+    if(badgeShopEl) badgeShopEl.remove();
+  }
+
+  // ── EFECTOS de partículas ──
+  _stopShopParticles();
+  const efectoId = _equippedItems.efecto;
+  if(efectoId) _startShopParticles(efectoId);
+}
+
+function _stopShopParticles(){
+  if(_shopParticleInterval){ clearInterval(_shopParticleInterval); _shopParticleInterval=null; }
+  document.querySelectorAll('.shop-particle').forEach(p=>p.remove());
+}
+
+function _startShopParticles(efectoId){
+  const PARTICLES = {
+    efecto_confetti:  ['🎊','🎉','🎈','✨','🎀'],
+    efecto_stars:     ['⭐','💫','✨','🌟','⚡'],
+    efecto_peces:     ['🐟','🐠','🐡','🎣','🦈'],
+    efecto_nieve:     ['❄️','🌨','⛄','💎','🔵'],
+    efecto_burbujas:  ['🫧','💧','🔵','⚪'],
+    efecto_lightning: ['⚡','🌩','💥','🔱'],
+    efecto_hojas:     ['🍂','🍁','🌿','🍃'],
+    efecto_aurora:    ['🌈','💜','💙','🟣','✨'],
+  };
+  const emojis = PARTICLES[efectoId] || ['✨'];
+  _shopParticleInterval = setInterval(()=>{
+    const p = document.createElement('div');
+    p.className = 'shop-particle';
+    p.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+    p.style.cssText = `position:fixed;left:${Math.random()*100}vw;top:-30px;font-size:${14+Math.random()*14}px;pointer-events:none;z-index:9999;animation:shopParticleFall ${2+Math.random()*3}s linear forwards;opacity:.85;`;
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(), 5500);
+  }, 700);
 }
 
 async function loadShopEquipped(){
@@ -4285,6 +4389,7 @@ async function loadShopEquipped(){
       window.CU.shopEquipped = _equippedItems;
     }
   } catch(e){}
+  applyShopEffects();
 }
 
 // ===== PROFILE FRIENDS LIST =====
