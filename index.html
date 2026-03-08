@@ -9705,7 +9705,6 @@ function renderMapPosts(){
 // ===== SHARE POST =====
 async function sharePost(pid){
   if(!window.CU){ toast('Inicia sesión para compartir','err'); return; }
-  // Get post from cache or Firestore
   let p = _posts.find(p=>p.id===pid);
   if(!p){
     try {
@@ -9714,49 +9713,115 @@ async function sharePost(pid){
       p = {id:snap.id,...snap.data()};
     } catch(e){ toast('Error al cargar post','err'); return; }
   }
-  // If it's already a shared post, share the ORIGINAL
   const realPid = p.sharedPostId || pid;
   const realNick = p.sharedFrom || p.userNick;
-
-  // Show share modal
   const existing = document.getElementById('_shareModal_'+pid);
   if(existing){ existing.remove(); return; }
+
+  const avHtml = window.CU?.av
+    ? `<img src="${window.CU.av}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
+    : `<div style="width:100%;height:100%;background:#1877f2;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:1rem;">${(window.CU?.nick||'?')[0].toUpperCase()}</div>`;
+
+  const postPreview = `
+    <div style="border:1px solid #e4e6eb;border-radius:10px;overflow:hidden;margin-top:4px;background:#fff;">
+      ${p.images&&p.images[0]?`<img src="${p.images[0]}" style="width:100%;max-height:200px;object-fit:cover;display:block;">` : ''}
+      <div style="padding:10px 12px;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+          <img src="${p.userAv||''}" onerror="this.style.display='none'" style="width:22px;height:22px;border-radius:50%;object-fit:cover;">
+          <span style="font-size:.78rem;font-weight:700;color:#050505;">${esc(realNick||'')}</span>
+        </div>
+        ${p.text?`<div style="font-size:.82rem;color:#65676b;line-height:1.4;">${esc((p.text||'').slice(0,120))}${(p.text||'').length>120?'...':''}</div>`:''}
+      </div>
+    </div>`;
+
   const modal = document.createElement('div');
   modal.id = '_shareModal_'+pid;
-  modal.style.cssText = 'position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px;';
   modal.innerHTML = `
-  <div style="background:var(--bg2);border-radius:14px;width:480px;max-width:95vw;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.5);">
-    <div style="display:flex;align-items:center;justify-content:center;padding:14px 16px;border-bottom:1px solid var(--border);position:relative;">
-      <span style="font-weight:700;font-size:1rem;color:var(--text);">Compartir publicación</span>
-      <button onclick="document.getElementById('_shareModal_${pid}').remove()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:var(--bg3);border:none;color:var(--text);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;">✕</button>
+  <div style="background:#fff;border-radius:14px;width:500px;max-width:100%;box-shadow:0 8px 40px rgba(0,0,0,.3);overflow:hidden;font-family:'Exo 2',sans-serif;">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:center;padding:16px;border-bottom:1px solid #e4e6eb;position:relative;">
+      <span style="font-weight:800;font-size:1.05rem;color:#050505;">Compartir</span>
+      <button onclick="document.getElementById('_shareModal_${pid}').remove()"
+        style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:#e4e6eb;border:none;color:#050505;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;font-weight:700;">✕</button>
     </div>
-    <div style="padding:16px;">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-        <div style="width:40px;height:40px;border-radius:50%;overflow:hidden;background:var(--bg3);flex-shrink:0;">
-          ${window.CU?.av ? `<img src="${window.CU.av}" style="width:100%;height:100%;object-fit:cover;">` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent);">${(window.CU?.nick||'?')[0]}</div>`}
-        </div>
-        <div>
-          <div style="font-size:.88rem;font-weight:700;color:var(--text);">${window.CU?.nick||''}</div>
-          <div style="font-size:.72rem;color:var(--muted);">En tu perfil · 🌐 Público</div>
-        </div>
-      </div>
-      <textarea id="_shareTxt_${pid}" placeholder="Di algo sobre esto..." style="width:100%;background:transparent;border:none;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.9rem;resize:none;outline:none;min-height:60px;"></textarea>
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);overflow:hidden;margin-top:8px;">
-        <div style="padding:10px 12px;display:flex;align-items:center;gap:8px;">
-          <div style="font-size:.8rem;font-weight:700;color:var(--muted);">🔁 Publicación de ${esc(realNick||'')}</div>
-        </div>
-        ${p.images&&p.images[0] ? `<img src="${p.images[0]}" style="width:100%;max-height:140px;object-fit:cover;display:block;">` : ''}
-        ${p.text ? `<div style="padding:8px 12px;font-size:.82rem;color:var(--muted);">${esc((p.text||'').slice(0,100))}${(p.text||'').length>100?'...':''}</div>` : ''}
+
+    <!-- User + Feed selector -->
+    <div style="padding:14px 16px 0;display:flex;align-items:center;gap:10px;">
+      <div style="width:42px;height:42px;flex-shrink:0;">${avHtml}</div>
+      <div>
+        <div style="font-size:.9rem;font-weight:700;color:#050505;">${window.CU?.nick||''}</div>
+        <button style="display:flex;align-items:center;gap:4px;background:#e4e6eb;border:none;border-radius:6px;padding:3px 8px;font-size:.72rem;font-weight:700;color:#050505;cursor:pointer;margin-top:3px;">
+          🌐 Público <span style="font-size:.6rem;">▼</span>
+        </button>
       </div>
     </div>
-    <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;">
-      <button onclick="document.getElementById('_shareModal_${pid}').remove()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700;">Cancelar</button>
-      <button onclick="_doSharePost('${pid}','${realPid}')" style="background:var(--accent);border:none;color:#000;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700;">🔁 Compartir</button>
+
+    <!-- Comment input -->
+    <div style="padding:10px 16px;display:flex;align-items:center;gap:10px;">
+      <textarea id="_shareTxt_${pid}" placeholder="Haz un comentario..."
+        style="flex:1;background:transparent;border:none;color:#050505;font-family:'Exo 2',sans-serif;font-size:.92rem;resize:none;outline:none;min-height:44px;max-height:100px;"
+        oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+      <span style="font-size:1.2rem;cursor:pointer;" onclick="openEmojiPicker(event,'_shareTxt_${pid}')">😊</span>
+    </div>
+
+    <!-- Compartir ahora button -->
+    <div style="padding:0 16px 12px;display:flex;justify-content:flex-end;">
+      <button onclick="_doSharePost('${pid}','${realPid}')"
+        style="background:#1877f2;border:none;color:#fff;padding:9px 20px;border-radius:8px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700;font-size:.88rem;"
+        onmouseover="this.style.background='#166fe5'" onmouseout="this.style.background='#1877f2'">Compartir ahora</button>
+    </div>
+
+    <!-- Divider -->
+    <div style="height:8px;background:#f0f2f5;"></div>
+
+    <!-- Post preview -->
+    <div style="padding:12px 16px;">${postPreview}</div>
+
+    <!-- Compartir en section -->
+    <div style="height:1px;background:#e4e6eb;margin:0 16px;"></div>
+    <div style="padding:12px 16px;">
+      <div style="font-size:.82rem;font-weight:700;color:#050505;margin-bottom:10px;">Compartir en</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button onclick="_doSharePost('${pid}','${realPid}')"
+          style="display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer;padding:6px 10px;border-radius:10px;min-width:60px;"
+          onmouseover="this.style.background='#f0f2f5'" onmouseout="this.style.background='none'">
+          <div style="width:40px;height:40px;background:#e4e6eb;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;">🔁</div>
+          <span style="font-size:.65rem;color:#050505;font-weight:600;">Feed</span>
+        </button>
+        <button onclick="navigator.clipboard.writeText(window.location.href+'#post_${pid}').then(()=>toast('¡Enlace copiado!','ok'));document.getElementById('_shareModal_${pid}').remove();"
+          style="display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer;padding:6px 10px;border-radius:10px;min-width:60px;"
+          onmouseover="this.style.background='#f0f2f5'" onmouseout="this.style.background='none'">
+          <div style="width:40px;height:40px;background:#e4e6eb;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;">🔗</div>
+          <span style="font-size:.65rem;color:#050505;font-weight:600;">Copiar enlace</span>
+        </button>
+        <button onclick="window.open('https://wa.me/?text='+encodeURIComponent(window.location.href+'#post_${pid}'),'_blank');document.getElementById('_shareModal_${pid}').remove();"
+          style="display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer;padding:6px 10px;border-radius:10px;min-width:60px;"
+          onmouseover="this.style.background='#f0f2f5'" onmouseout="this.style.background='none'">
+          <div style="width:40px;height:40px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;">💬</div>
+          <span style="font-size:.65rem;color:#050505;font-weight:600;">WhatsApp</span>
+        </button>
+        <button onclick="window.open('https://t.me/share/url?url='+encodeURIComponent(window.location.href+'#post_${pid}'),'_blank');document.getElementById('_shareModal_${pid}').remove();"
+          style="display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer;padding:6px 10px;border-radius:10px;min-width:60px;"
+          onmouseover="this.style.background='#f0f2f5'" onmouseout="this.style.background='none'">
+          <div style="width:40px;height:40px;background:#229ED9;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;">✈️</div>
+          <span style="font-size:.65rem;color:#050505;font-weight:600;">Telegram</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Cancelar -->
+    <div style="padding:10px 16px 16px;display:flex;justify-content:flex-end;border-top:1px solid #e4e6eb;">
+      <button onclick="document.getElementById('_shareModal_${pid}').remove()"
+        style="background:#e4e6eb;border:none;color:#050505;padding:9px 20px;border-radius:8px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700;font-size:.88rem;"
+        onmouseover="this.style.background='#ccd0d5'" onmouseout="this.style.background='#e4e6eb'">Cancelar</button>
     </div>
   </div>`;
+
   modal.addEventListener('click', e=>{ if(e.target===modal) modal.remove(); });
   document.body.appendChild(modal);
-  setTimeout(()=>document.getElementById('_shareTxt_'+pid)?.focus(),100);
+  setTimeout(()=>document.getElementById('_shareTxt_'+pid)?.focus(), 100);
 }
 
 async function _doSharePost(pid, realPid){
@@ -13797,7 +13862,7 @@ window.setUserRole         = setUserRole;
 // CHANGELOG — Solo visible para ruizgustavo12
 // Actualizar VERSION y CHANGES cada vez que se sube un index nuevo
 // ═══════════════════════════════════════════════════════
-const _CL_VERSION = '2026-03-08-v16';
+const _CL_VERSION = '2026-03-08-v17';
 const _CL_CHANGES = [
   { emoji:'🎨', text:'Historias: elegí color de fondo con 10 gradientes — preview en tiempo real mientras escribís' },
   { emoji:'😊', text:'Historias: botón emoji y GIF en el texto de la historia' },
