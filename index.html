@@ -926,7 +926,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
       <!-- PERFILES SUGERIDOS ALEATORIOS EN SIDEBAR RIGHT -->
       <div id="suggestedProfilesWidget" style="margin-bottom:14px;">
         <div class="sr-title" style="display:flex;align-items:center;justify-content:space-between;">
-          <span>👥 Personas que quizás conozcas</span>
+          <span>🆕 Nuevos Pescadores</span>
           <span style="font-size:.7rem;color:var(--accent);cursor:pointer;font-weight:600;" onclick="renderSuggestedUsers()">Actualizar</span>
         </div>
         <div id="suggestedUsersList"></div>
@@ -10445,35 +10445,40 @@ async function renderSuggestedUsers(){
   const el = document.getElementById('suggestedUsersList');
   if(!el) return;
   try {
-    const snap = await getDocs(collection(db,'users'));
+    const snap = await getDocs(query(collection(db,'users'), orderBy('createdAt','desc'), limit(8)));
     const allUsers = snap.docs.map(d=>({id:d.id,...d.data()}));
-    const myId = window.CU?.id || window.CU?.uid || '';
-    const myNick = (window.CU?.nick || '').toLowerCase();
+    const myId = window.CU?.id || '';
     const myFriends = window.CU?.friends || [];
-    // Filter out self and existing friends
-    const candidates = allUsers.filter(u => {
-      if(u.id === myId || u.uid === myId) return false;
-      if(myNick && (u.nick||'').toLowerCase() === myNick) return false;
-      if(myFriends.includes(u.id)) return false;
-      return true;
-    });
-    // Shuffle and pick up to 5
-    const shuffled = candidates.sort(()=>Math.random()-0.5).slice(0,5);
-    el.innerHTML = shuffled.length
-      ? shuffled.map(u=>`
-        <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:var(--r);">
-          <div style="width:34px;height:34px;border-radius:50%;border:1px solid var(--border);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;color:var(--accent);background:var(--bg3);flex-shrink:0;cursor:pointer;" onclick="openUserProfile('${u.id}','${(u.nick||'').replace(/'/g,"\\'")}')">
-            ${`<img src="${u.av||getDefaultAv(u.gender||'')}" style="width:100%;height:100%;object-fit:cover;">`}
+    const candidates = allUsers.filter(u => u.id !== myId && !myFriends.includes(u.id));
+    const newest = candidates.slice(0,5);
+    function _fmtDate(val){
+      if(!val) return '—';
+      let ms = val?.toMillis?.() || (typeof val==='number'?val:null) || (typeof val==='string'?new Date(val).getTime():null);
+      if(!ms) return '—';
+      const d = new Date(ms);
+      const day = String(d.getDate()).padStart(2,'0');
+      const mon = String(d.getMonth()+1).padStart(2,'0');
+      const yr = d.getFullYear();
+      const hh = String(d.getHours()).padStart(2,'0');
+      const mm = String(d.getMinutes()).padStart(2,'0');
+      return `${day}/${mon}/${yr} ${hh}:${mm}`;
+    }
+    el.innerHTML = newest.length
+      ? newest.map(u=>`
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--r);border-bottom:1px solid var(--border);">
+          <div style="width:36px;height:36px;border-radius:50%;border:2px solid var(--accent);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;color:var(--accent);background:var(--bg3);flex-shrink:0;cursor:pointer;" onclick="openUserProfile('${u.id}','${(u.nick||'').replace(/'/g,"\'")}')">
+            <img src="${u.av||getDefaultAv(u.gender||'')}" style="width:100%;height:100%;object-fit:cover;">
           </div>
           <div style="flex:1;min-width:0;">
-            <div style="font-size:.82rem;font-weight:700;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" onclick="openUserProfile('${u.id}','${(u.nick||'').replace(/'/g,"\\'")}'")">${esc(u.nick||'')}</div>
-            <div style="font-size:.68rem;color:var(--muted);">${u.country||'Pescador RF4'}</div>
+            <div style="font-size:.82rem;font-weight:700;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" onclick="openUserProfile('${u.id}','${(u.nick||'').replace(/'/g,"\'")}')">🎣 ${esc(u.nick||'')}</div>
+            <div style="font-size:.65rem;color:var(--muted);margin-top:1px;">📅 ${_fmtDate(u.createdAt)}</div>
+            <div style="font-size:.65rem;color:var(--muted);">${u.country||''}</div>
           </div>
-          <button onclick="sendFriendRequest('${u.id}','${(u.nick||'').replace(/'/g,"\\'")}','sidebar')"
-            style="background:rgba(0,198,255,.1);border:1px solid rgba(0,198,255,.3);color:var(--accent);padding:4px 8px;border-radius:var(--rs);font-size:.7rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;white-space:nowrap;">+ Añadir</button>
+          <button onclick="sendFriendRequest('${u.id}','${(u.nick||'').replace(/'/g,"\'")}','sidebar')"
+            style="background:rgba(0,198,255,.1);border:1px solid rgba(0,198,255,.3);color:var(--accent);padding:5px 9px;border-radius:var(--rs);font-size:.7rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;white-space:nowrap;flex-shrink:0;">+ Añadir</button>
         </div>`).join('')
-      : '<div style="font-size:.75rem;color:var(--muted);padding:4px 10px;">No hay sugerencias</div>';
-  } catch(e){}
+      : '<div style="font-size:.75rem;color:var(--muted);padding:4px 10px;">No hay nuevos pescadores aún</div>';
+  } catch(e){ console.error('renderSuggestedUsers',e); }
 }
 
 // ===== MAPAS =====
