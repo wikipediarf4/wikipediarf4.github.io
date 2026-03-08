@@ -56,20 +56,20 @@
   <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#18191a;--bg2:#242526;--bg3:#3a3b3c;--bg4:#4e4f50;
-  --accent:#2ec4b6;--accent2:#25a99d;--gold:#e8c46a;
-  --text:#e4e6eb;--muted:#b0b3b8;--border:#3e4042;
-  --green:#42b72a;--red:#fa3e3e;--warn:#e8c46a;
+  --bg:#f0f2f5;--bg2:#ffffff;--bg3:#f0f2f5;--bg4:#e4e6eb;
+  --accent:#2ec4b6;--accent2:#25a99d;--gold:#d4a017;
+  --text:#050505;--muted:#65676b;--border:#ced0d4;
+  --green:#42b72a;--red:#fa3e3e;--warn:#d4a017;
   --r:8px;--rs:6px;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'Exo 2',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
-::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-thumb{background:var(--accent);border-radius:3px;}
+::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-thumb{background:#bcc0c4;border-radius:3px;}
 a{text-decoration:none;color:inherit;}
 button{font-family:'Exo 2',sans-serif;cursor:pointer;}
 
 /* ===== TOPBAR ===== */
-.topbar{position:fixed;top:0;left:0;right:0;height:56px;background:#242526;border-bottom:1px solid var(--border);
+.topbar{position:fixed;top:0;left:0;right:0;height:56px;background:#ffffff;border-bottom:1px solid var(--border);
   display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:1000;box-shadow:0 2px 4px rgba(0,0,0,.1);}
 .tb-logo{font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:var(--accent);cursor:pointer;}
 .tb-logo span{color:var(--gold);}
@@ -105,13 +105,13 @@ button{font-family:'Exo 2',sans-serif;cursor:pointer;}
 /* ===== LEFT SIDEBAR ===== */
 .sidebar-left{padding:12px 8px;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;}
 .sl-profile{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r);cursor:pointer;transition:background .2s;margin-bottom:4px;}
-.sl-profile:hover{background:#1a2a3a;}
-.sl-av{width:36px;height:36px;border-radius:50%;border:2px solid var(--border);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:var(--accent);background:var(--bg4);flex-shrink:0;}
+.sl-profile:hover{background:#f2f2f2;}
+.sl-av{width:36px;height:36px;border-radius:50%;border:2px solid var(--border);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:var(--accent);background:#e4e6eb;flex-shrink:0;}
 .sl-av img{width:100%;height:100%;object-fit:cover;}
-.sl-name{font-size:.9rem;font-weight:700;}
+.sl-name{font-size:.9rem;font-weight:700;color:#050505;}
 .sl-divider{height:1px;background:var(--border);margin:8px 4px;}
-.sl-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r);cursor:pointer;transition:background .2s;font-size:.88rem;color:var(--text);}
-.sl-item:hover{background:#1a2a3a;color:var(--text);}
+.sl-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r);cursor:pointer;transition:background .2s;font-size:.88rem;color:#050505;font-weight:600;}
+.sl-item:hover{background:#f2f2f2;color:var(--text);}
 .sl-item-icon{font-size:1.1rem;width:24px;text-align:center;}
 .sl-section-title{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:8px 10px 4px;}
 
@@ -206,7 +206,7 @@ img[title="Verificado"]:hover{
 .post-verified{
   position:relative;
   border:1.5px solid rgba(255,215,0,.45) !important;
-  background:linear-gradient(180deg,rgba(255,215,0,.04) 0%,#fff 60%) !important;
+  background:linear-gradient(180deg,rgba(255,215,0,.06) 0%,#fffef5 100%) !important;
   animation:verifPostGlow 4s ease-in-out infinite;
   overflow:hidden;
 }
@@ -327,9 +327,9 @@ img[title="Verificado"]:hover{
 #carretesTable tbody td{padding:8px 8px;vertical-align:middle;}
 
 /* ===== POST BOX ===== */
-.post-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:16px;box-shadow:0 1px 2px rgba(0,0,0,.1);}
+.post-box{background:#ffffff;border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px;box-shadow:0 1px 2px rgba(0,0,0,.1);}
 .post-box-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-.post-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:10px 18px;
+.post-input{flex:1;background:#f0f2f5;border:1px solid transparent;border-radius:100px;padding:10px 18px;
   color:var(--muted);font-family:'Exo 2',sans-serif;font-size:.9rem;cursor:pointer;transition:all .2s;}
 .post-input:hover{background:#e4e6eb;color:var(--text);}
 .post-box-actions{display:flex;gap:4px;border-top:1px solid #dddfe2;padding-top:10px;}
@@ -338,7 +338,7 @@ img[title="Verificado"]:hover{
 .pba:hover{background:var(--bg3);color:var(--text);}
 
 /* ===== POST CARD ===== */
-.post{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:16px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.1);}
+.post{background:#ffffff;border:1px solid var(--border);border-radius:var(--r);margin-bottom:12px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.1);}
 /* ── TEMAS DE PUBLICACIÓN (tienda) ── */
 .post-theme-ocean    { background:linear-gradient(160deg,#0a1628,#0d2347) !important; border-color:rgba(0,150,255,.3) !important; box-shadow:0 0 20px rgba(0,100,255,.15) !important; }
 .post-theme-fuego    { background:linear-gradient(160deg,#1a0800,#2d0f00) !important; border-color:rgba(255,80,0,.35) !important; box-shadow:0 0 20px rgba(255,60,0,.2) !important; }
@@ -397,13 +397,13 @@ img[title="Verificado"]:hover{
 .rxn-btn:hover .rxn-tooltip{opacity:1!important;}
 
 /* COMMENTS */
-.comments-section{padding:8px 14px;display:none;}
+.comments-section{padding:8px 14px 12px;display:none;border-top:1px solid #ced0d4;}
 
 /* Reply button in comments */
 .cmt-reply-btn{background:none;border:none;font-size:.75rem;font-weight:700;color:var(--muted);cursor:pointer;padding:2px 6px;border-radius:100px;transition:color .15s;}
 .cmt-reply-btn:hover{color:var(--accent);}
 /* Comment that is a reply (@mention) gets a subtle left border */
-.comment-item.is-reply .comment-bubble{border-left:2px solid rgba(0,198,255,.25);padding-left:8px;}
+.comment-item.is-reply .comment-bubble{background:#f0f2f5;border-radius:18px;padding:8px 12px;display:inline-block;max-width:calc(100% - 8px);}
 
 /* Comment menu hover (CSS-only, no JS needed) */
 .cmt-menu-wrap{position:relative;flex-shrink:0;}
@@ -437,7 +437,7 @@ img[title="Verificado"]:hover{
 .streak-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:100px;font-size:.72rem;font-weight:700;background:rgba(255,100,0,.12);border:1px solid rgba(255,100,0,.35);color:#ff8c42;}
 
 /* ===== RIGHT SIDEBAR ===== */
-.sidebar-right{padding:12px 8px;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;}
+.sidebar-right{padding:12px 8px;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;background:var(--bg);}
 @media(max-width:1100px){.sidebar-right{display:none;}}
 .sr-title{font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;padding:0 4px;}
 .contact-item{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:var(--r);cursor:pointer;transition:background .2s;}
@@ -459,7 +459,7 @@ img[title="Verificado"]:hover{
 .sug-post-meta{font-size:.65rem;color:var(--muted);margin-top:3px;}
 
 /* ===== MODALS ===== */
-.mo{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);
+.mo{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.45);backdrop-filter:blur(3px);
   align-items:center;justify-content:center;padding:16px;}
 .mo.open{display:flex;}
 .modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);width:100%;
@@ -4159,7 +4159,7 @@ function postHTML(p){
     menuBtns += '<button onclick="toast(\'Comentario reportado\',\'ok\')" style="display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;color:#fa0;padding:10px 14px;cursor:pointer;font-size:.85rem;white-space:nowrap;">⚠️ Reportar</button>';
     const rxnBtnsHtml = CMT_RXNS.map(em=>'<button onclick="reactCmt(event,\''+p.id+'\','+ci+',\''+em+'\')" style="background:none;border:none;font-size:1.3rem;cursor:pointer;padding:3px;border-radius:50%;transition:transform .13s;" onmouseover="this.style.transform=\'scale(1.4) translateY(-4px)\'" onmouseout="this.style.transform=\'scale(1)\'">'+em+'</button>').join('');
     const isReply = c.text && c.text.startsWith('@');
-    return '<div class="comment-item'+(isReply?' is-reply':'')+'" style="align-items:flex-start;position:relative;">'
+    return '<div class="comment-item" style="display:flex;align-items:flex-start;position:relative;margin-bottom:6px;">'
       +'<div class="sl-av" style="width:32px;height:32px;font-size:.75rem;flex-shrink:0;cursor:pointer;margin-top:2px;" onclick="openUserProfile(\''+c.userId+'\',\''+esc(c.nick)+'\')">'+((c.av?'<img src="'+c.av+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">':esc((c.nick||'?')[0])))+'</div>'
       +'<div style="flex:1;min-width:0;">'
         +'<div class="comment-bubble" style="margin-bottom:3px;">'
@@ -4207,7 +4207,7 @@ function postHTML(p){
           r2Menu += '<button onclick="toast(\'Comentario reportado\',\'ok\')" style="display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;color:#fa0;padding:10px 14px;cursor:pointer;font-size:.85rem;white-space:nowrap;">⚠️ Reportar</button>';
           const r2RxnBtns = CMT_RXNS.map(em=>'<button onclick="reactCmt(event,\''+p.id+'\','+r2Idx+',\''+em+'\')" style="background:none;border:none;font-size:1.2rem;cursor:pointer;padding:3px;border-radius:50%;transition:transform .13s;" onmouseover="this.style.transform=\'scale(1.4) translateY(-4px)\'" onmouseout="this.style.transform=\'scale(1)\'">'+em+'</button>').join('');
           const avHTML = r2.av ? '<img src="'+r2.av+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">' : esc((r2.nick||'?')[0]);
-          return '<div class="comment-item" style="display:flex;align-items:flex-start;margin-top:6px;">'
+          return '<div class="comment-item" style="display:flex;align-items:flex-start;margin-top:4px;margin-bottom:4px;">'
             +'<div class="sl-av" style="width:28px;height:28px;font-size:.68rem;flex-shrink:0;cursor:pointer;margin-top:2px;" onclick="openUserProfile(\''+r2.userId+'\',\''+esc(r2.nick)+'\')">'+avHTML+'</div>'
             +'<div style="flex:1;min-width:0;">'
               +'<div class="comment-bubble" style="margin-bottom:3px;">'
@@ -4230,10 +4230,10 @@ function postHTML(p){
           +'</div>';
         }
         const repliesHTML = replies.slice(0,30).map(replyHTML).join('');
-        const label = replies.length === 1 ? '↩ Ver 1 respuesta' : '↩ Ver las '+replies.length+' respuestas';
-        return '<div style="margin-left:40px;margin-top:4px;padding-left:10px;border-left:2px solid var(--border);">'
-          +'<button onclick="toggleReplies(\''+rid+'\')" id="btn_'+rid+'" style="background:none;border:none;color:var(--accent);font-size:.78rem;font-weight:700;cursor:pointer;padding:4px 0;display:flex;align-items:center;gap:5px;">'+label+'</button>'
-          +'<div id="'+rid+'" style="display:none;">'+repliesHTML+'</div>'
+        const label = replies.length === 1 ? '1 respuesta' : replies.length+' respuestas';
+        return '<div style="margin-left:44px;margin-top:2px;">'
+          +'<button onclick="toggleReplies(\''+rid+'\')" id="btn_'+rid+'" style="background:none;border:none;color:#1877f2;font-size:.82rem;font-weight:700;cursor:pointer;padding:6px 0;">↩ '+label+'</button>'
+          +'<div id="'+rid+'" style="display:none;margin-top:4px;">'+repliesHTML+'</div>'
           +'</div>';
       })()
 
@@ -8712,26 +8712,26 @@ function renderSidebarOnline(online, offline){
     const initials = (u.nick||'?')[0].toUpperCase();
     const devIcon = u.device==='mobile' ? '📱' : '🖥️';
     const statusText = isOnline
-      ? `<span style="color:#4ade80;font-size:.58rem;font-weight:700;letter-spacing:.3px;">● EN LÍNEA · ${devIcon}</span>`
-      : `<span style="color:#aaa;font-size:.58rem;font-weight:600;">${fmtLastSeen(u.ts)} · ${devIcon}</span>`;
+      ? `<span style="color:#1877f2;font-size:.68rem;font-weight:600;">● En línea · ${devIcon}</span>`
+      : `<span style="color:#65676b;font-size:.68rem;">${fmtLastSeen(u.ts)} · ${devIcon}</span>`;
 
     // Color palette for banner: online = fire orange/red, offline = dark purple/grey
     const bannerBg = isOnline
-      ? 'linear-gradient(90deg,#1a0800 0%,#2d0f00 60%,#1a0800 100%)'
-      : 'linear-gradient(90deg,#12102a 0%,#1e1b3a 60%,#12102a 100%)';
-    const emberColor = isOnline ? '#ff6a00' : '#5a4fcf';
-    const glowColor  = isOnline ? 'rgba(255,80,0,.55)' : 'rgba(90,79,207,.4)';
-    const rimColor   = isOnline ? '#ff4500' : '#7c6fff';
+      ? '#ffffff'
+      : '#f0f2f5';
+    const emberColor = isOnline ? '#1877f2' : '#65676b';
+    const glowColor  = isOnline ? 'rgba(24,119,242,.15)' : 'rgba(0,0,0,.08)';
+    const rimColor   = isOnline ? '#1877f2' : '#ced0d4';
 
     // Unique canvas ID
     const cid = 'emb_'+u.id.replace(/[^a-z0-9]/gi,'_');
 
     return `
-      <div style="position:relative;margin-bottom:5px;border-radius:7px;overflow:hidden;cursor:pointer;
-           background:${bannerBg};border:1px solid ${isOnline?'rgba(255,90,0,.35)':'rgba(100,80,255,.25)'};
-           box-shadow:0 2px 10px ${glowColor};transition:box-shadow .2s,transform .15s;height:38px;display:flex;align-items:center;"
-           onmouseover="this.style.transform='scale(1.02)';this.style.boxShadow='0 4px 16px ${glowColor}'"
-           onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 2px 10px ${glowColor}'"
+      <div style="position:relative;margin-bottom:4px;border-radius:8px;overflow:hidden;cursor:pointer;
+           background:${bannerBg};border:1px solid ${isOnline?'rgba(24,119,242,.2)':'#ced0d4'};
+           box-shadow:0 1px 3px rgba(0,0,0,.1);transition:background .15s;height:42px;display:flex;align-items:center;"
+           onmouseover="this.style.background='#e7f3ff'"
+           onmouseout="this.style.background='${bannerBg}'"
            onclick="openUserProfile('${u.id}','${nick}')">
 
         <!-- Particle canvas background -->
@@ -8742,9 +8742,9 @@ function renderSidebarOnline(online, offline){
 
         <!-- Avatar -->
         <div style="position:relative;flex-shrink:0;margin:0 7px;z-index:2;">
-          <div style="width:26px;height:26px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;
-               font-size:.72rem;font-weight:700;color:#fff;background:${isOnline?'#b83200':'#3a2e7a'};
-               border:1.5px solid ${rimColor};box-shadow:0 0 6px ${glowColor};">
+          <div style="width:30px;height:30px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;
+               font-size:.75rem;font-weight:700;color:#fff;background:${isOnline?'#1877f2':'#65676b'};
+               border:2px solid ${isOnline?'#1877f2':'#ced0d4'};box-shadow:none;">
             ${u.av?`<img src="${u.av}" style="width:100%;height:100%;object-fit:cover;${isOnline?'':'filter:grayscale(.3);'}">`:`${initials}`}
           </div>
           ${isOnline?`<div style="position:absolute;bottom:-1px;right:-1px;width:8px;height:8px;border-radius:50%;background:#4ade80;border:1.5px solid #1a0800;"></div>`:''}
@@ -8752,9 +8752,8 @@ function renderSidebarOnline(online, offline){
 
         <!-- Text -->
         <div style="flex:1;min-width:0;z-index:2;">
-          <div style="font-size:.76rem;font-weight:700;color:#fff;font-family:'Exo 2',sans-serif;
-               white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-               text-shadow:0 0 8px ${isOnline?'rgba(255,120,0,.7)':'rgba(140,120,255,.6)'};">${nick}</div>
+          <div style="font-size:.82rem;font-weight:700;color:#050505;font-family:'Exo 2',sans-serif;
+               white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${nick}</div>
           ${statusText}
         </div>
 
