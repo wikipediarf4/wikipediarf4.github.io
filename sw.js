@@ -1,21 +1,25 @@
 // RF4 Social — Service Worker
 // Maneja cache, actualizaciones y rutas SPA correctamente
-
-const CACHE_NAME = 'rf4social-v3';
+const CACHE_NAME = 'rf4social-v4';
 const BASE = '/chatrf4';
 
-// Archivos a cachear en instalación
+// Solo cachear lo que existe seguro
 const PRECACHE = [
-  BASE + '/',
   BASE + '/index.html',
 ];
 
 // ── Instalación ──────────────────────────────────────────
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(PRECACHE))
+    caches.open(CACHE_NAME).then(cache =>
+      // addAll con manejo de errores — si algo falla no rompe todo
+      Promise.allSettled(
+        PRECACHE.map(url =>
+          cache.add(url).catch(err => console.warn('SW: no se pudo cachear', url, err))
+        )
+      )
+    )
   );
-  // NO hacer skipWaiting automático — esperar que el usuario haga clic en Actualizar
 });
 
 // ── Activación ───────────────────────────────────────────
@@ -41,7 +45,7 @@ self.addEventListener('fetch', event => {
   // Solo interceptar peticiones al mismo origen
   if (url.origin !== location.origin) return;
 
-  // Para navegación (HTML): siempre devolver index.html (SPA routing)
+  // Para navegación (HTML): siempre red primero, cache como fallback
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(BASE + '/index.html')
