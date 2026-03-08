@@ -9243,17 +9243,24 @@ async function startPresence(){
 }
 
 function listenPresence(){
-  onSnapshot(collection(db,'presence'), snap=>{
-    const now = Date.now();
-    const all = snap.docs.map(d=>({id:d.id,...d.data(),ts:d.data().last?.toMillis?.()||0}));
-    const online = all.filter(u=>now - u.ts < 120000);
-    const offline = all.filter(u=>now - u.ts >= 120000 && u.ts > 0)
-      .sort((a,b)=>b.ts-a.ts).slice(0,8); // últimos 8 desconectados recientes
-    renderContacts(online);
-    // Update sidebar online count badges
-    document.querySelectorAll('#onlineCount,#sidebarOnlineCount').forEach(el=>{ if(el) el.textContent=online.length; });
-    renderSidebarOnline(online, offline);
-  });
+  try {
+    onSnapshot(collection(db,'presence'), snap=>{
+      const now = Date.now();
+      const all = snap.docs.map(d=>({id:d.id,...d.data(),ts:d.data().last?.toMillis?.()||0}));
+      const online = all.filter(u=>now - u.ts < 120000);
+      const offline = all.filter(u=>now - u.ts >= 120000 && u.ts > 0)
+        .sort((a,b)=>b.ts-a.ts).slice(0,8);
+      renderContacts(online);
+      document.querySelectorAll('#onlineCount,#sidebarOnlineCount').forEach(el=>{ if(el) el.textContent=online.length; });
+      renderSidebarOnline(online, offline);
+    }, err=>{
+      console.warn('listenPresence error:', err.code, err.message);
+      const el = document.getElementById('sidebarOnlineList');
+      if(el) el.innerHTML = `<div style="font-size:.72rem;color:#ff7043;padding:8px 4px;">⚠️ Sin permiso en Firestore.<br><span style="color:var(--muted);">Agregá reglas para <b>presence</b></span></div>`;
+    });
+  } catch(e) {
+    console.error('listenPresence catch:', e);
+  }
 }
 
 function fmtLastSeen(ts){
@@ -11687,19 +11694,23 @@ const _YT_SEARCH_INSTANCES = [
 ];
 
 function playYouTube(videoId, title){
-  // Usar youtube-nocookie.com que tiene menos restricciones de embed
   const wrap = document.getElementById('musicPlayerWrap');
   const iframe = document.getElementById('spotifyEmbed');
+  const ytLink = document.getElementById('musicYTLink');
   if(!wrap || !iframe) return;
 
-  iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
+  if(ytLink) ytLink.href = `https://www.youtube.com/watch?v=${videoId}`;
+  wrap.dataset.currentVid = videoId;
+
+  // Resetear iframe completamente antes de cargar nuevo video
+  iframe.src = 'about:blank';
+  setTimeout(()=>{
+    iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
+  }, 80);
+
   iframe.style.height = '220px';
   wrap.style.display = 'block';
-
-  const ytLink = document.getElementById('musicYTLink');
-  if(ytLink) ytLink.href = `https://www.youtube.com/watch?v=${videoId}`;
-
-  setTimeout(()=>wrap.scrollIntoView({behavior:'smooth',block:'end'}), 100);
+  setTimeout(()=>wrap.scrollIntoView({behavior:'smooth',block:'end'}), 150);
   toast(`▶ ${title}`,'ok');
 }
 
