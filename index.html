@@ -1270,6 +1270,16 @@ select.fi option{background:var(--bg3);color:var(--text);}
 
     <div class="sv-text" id="svText"></div>
 
+    <!-- BARRA DE MÚSICA DEEZER -->
+    <div id="svMusicBar" style="display:none;position:absolute;bottom:120px;left:12px;right:12px;z-index:25;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:100px;padding:7px 14px;align-items:center;gap:10px;">
+      <img class="sv-music-cover" src="" style="width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1.5px solid rgba(255,255,255,.3);">
+      <div style="flex:1;min-width:0;">
+        <div class="sv-music-title" style="font-size:.75rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+        <div class="sv-music-artist" style="font-size:.65rem;color:rgba(255,255,255,.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+      </div>
+      <span style="font-size:.75rem;">🎵</span>
+    </div>
+
     <!-- BOTTOM BAR mejorado -->
     <div style="position:absolute;bottom:0;left:0;right:0;z-index:20;background:linear-gradient(transparent,rgba(0,0,0,.7) 40%);padding:20px 12px 14px;">
       <!-- Fila de reacciones rápidas -->
@@ -1700,6 +1710,30 @@ select.fi option{background:var(--bg3);color:var(--text);}
       </label>
       <div id="storyImgPrev" style="margin-top:8px"></div>
     </div>
+
+    <!-- MÚSICA DEEZER -->
+    <div class="fg">
+      <label class="fl">🎵 Música (opcional)</label>
+      <div style="display:flex;gap:6px;">
+        <input class="fi" id="storyMusicSearch" placeholder="Buscar canción o artista..." style="flex:1;" onkeydown="if(event.key==='Enter')searchStoryMusic()">
+        <button onclick="searchStoryMusic()" style="padding:0 14px;background:var(--accent);border:none;border-radius:var(--rs);color:#000;font-weight:700;font-size:.82rem;cursor:pointer;white-space:nowrap;">Buscar</button>
+      </div>
+      <!-- Resultados búsqueda -->
+      <div id="storyMusicResults" style="margin-top:8px;max-height:180px;overflow-y:auto;display:none;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);"></div>
+      <!-- Canción seleccionada -->
+      <div id="storyMusicSelected" style="display:none;margin-top:8px;background:rgba(46,196,182,.1);border:1px solid rgba(46,196,182,.3);border-radius:var(--rs);padding:10px;display:none;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <img id="storyMusicCover" src="" style="width:44px;height:44px;border-radius:6px;object-fit:cover;flex-shrink:0;">
+          <div style="flex:1;min-width:0;">
+            <div id="storyMusicTitle" style="font-size:.82rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+            <div id="storyMusicArtist" style="font-size:.72rem;color:var(--muted);"></div>
+          </div>
+          <button onclick="clearStoryMusic()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:4px;" title="Quitar música">✕</button>
+        </div>
+        <audio id="storyMusicPreview" controls style="width:100%;margin-top:8px;height:32px;border-radius:100px;" src=""></audio>
+      </div>
+    </div>
+
     <div class="fg"><label class="fl">Emoji / Sticker</label>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <span style="font-size:1.6rem;cursor:pointer" onclick="pickStoryEmoji('🐟')">🐟</span>
@@ -2853,10 +2887,10 @@ select.fi option{background:var(--bg3);color:var(--text);}
 
   <!-- Header -->
   <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px;">
-    <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#1ed760,#158a3e);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;box-shadow:0 4px 16px rgba(30,215,96,.35);">🎵</div>
+    <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#a238ff,#5c00d2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;box-shadow:0 4px 16px rgba(162,56,255,.35);">🎵</div>
     <div>
-      <div style="font-family:'Orbitron',monospace;font-size:1.15rem;font-weight:900;color:#ff0000;">🎵 Música · YouTube</div>
-      <div style="font-size:.75rem;color:var(--muted);margin-top:2px;">Buscá canciones, artistas o videos en YouTube</div>
+      <div style="font-family:'Orbitron',monospace;font-size:1.15rem;font-weight:900;color:#a238ff;">🎵 Música · Deezer</div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:2px;">Buscá canciones y escuchá previews de 30 segundos gratis</div>
     </div>
   </div>
 
@@ -2866,43 +2900,32 @@ select.fi option{background:var(--bg3);color:var(--text);}
       <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:1rem;pointer-events:none;">🔍</span>
       <input id="musicSearchInput" type="text" placeholder="Buscar canción, artista o álbum..."
         style="width:100%;padding:11px 12px 11px 38px;background:var(--bg3);border:1.5px solid var(--border);border-radius:12px;color:var(--text);font-size:.9rem;font-family:'Exo 2',sans-serif;outline:none;box-sizing:border-box;transition:border-color .2s;"
-        onfocus="this.style.borderColor='#1ed760'" onblur="this.style.borderColor='var(--border)'"
-        onkeydown="if(event.key==='Enter') searchSpotify()">
+        onfocus="this.style.borderColor='#a238ff'" onblur="this.style.borderColor='var(--border)'"
+        onkeydown="if(event.key==='Enter') searchDeezer()">
     </div>
-    <button onclick="searchSpotify()" style="padding:11px 20px;background:#1ed760;border:none;border-radius:12px;color:#000;font-size:.88rem;font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .2s;white-space:nowrap;"
-      onmouseover="this.style.background='#1fdf6a'" onmouseout="this.style.background='#1ed760'">Buscar</button>
-  </div>
-
-  <!-- Tabs de tipo de búsqueda -->
-  <div style="display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;" id="musicTypeTabs">
-    <button class="music-type-btn active" data-type="track" onclick="setMusicType('track',this)">🎵 Canciones</button>
-    <button class="music-type-btn" data-type="artist" onclick="setMusicType('artist',this)">🎤 Artistas</button>
-    <button class="music-type-btn" data-type="album" onclick="setMusicType('album',this)">💿 Álbumes</button>
-    <button class="music-type-btn" data-type="playlist" onclick="setMusicType('playlist',this)">📋 Playlists</button>
+    <button onclick="searchDeezer()" style="padding:11px 20px;background:#a238ff;border:none;border-radius:12px;color:#fff;font-size:.88rem;font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .2s;white-space:nowrap;"
+      onmouseover="this.style.background='#b84fff'" onmouseout="this.style.background='#a238ff'">Buscar</button>
   </div>
 
   <!-- Resultados de búsqueda -->
-  <div id="musicResults" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:20px;"></div>
+  <div id="musicResults" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-bottom:20px;"></div>
 
-  <!-- Reproductor YouTube - Modal -->
-  <div id="musicPlayerWrap" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:2px solid #ff0000;padding:10px 16px;box-shadow:0 -4px 24px rgba(0,0,0,.6);z-index:9999;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-      <span style="font-size:.72rem;font-weight:700;color:#ff0000;letter-spacing:.05em;">▶ REPRODUCIENDO EN YOUTUBE</span>
-      <div style="display:flex;gap:6px;align-items:center;">
-        <a id="musicYTLink" href="#" target="_blank" style="font-size:.72rem;color:var(--muted);text-decoration:none;padding:2px 8px;border:1px solid var(--border);border-radius:6px;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">↗ Abrir en YouTube</a>
-        <button onclick="closeMusicPlayer()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;padding:2px 8px;border-radius:6px;" onmouseover="this.style.color='#ff4444'" onmouseout="this.style.color='var(--muted)'">✕</button>
+  <!-- Reproductor fijo Deezer -->
+  <div id="musicPlayerWrap" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:2px solid #a238ff;padding:12px 16px;box-shadow:0 -4px 24px rgba(0,0,0,.6);z-index:9999;">
+    <div style="display:flex;align-items:center;gap:12px;max-width:700px;margin:0 auto;">
+      <img id="deezerCoverBig" src="" style="width:52px;height:52px;border-radius:8px;object-fit:cover;flex-shrink:0;">
+      <div style="flex:1;min-width:0;">
+        <div id="deezerTitleBig" style="font-size:.88rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+        <div id="deezerArtistBig" style="font-size:.75rem;color:var(--muted);"></div>
+        <audio id="deezerAudioPlayer" controls style="width:100%;height:28px;margin-top:4px;border-radius:100px;" src=""></audio>
       </div>
-    </div>
-    <div style="position:relative;width:100%;max-width:640px;margin:0 auto;">
-      <iframe id="spotifyEmbed" style="border-radius:10px;width:100%;border:none;height:200px;display:block;"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowfullscreen src=""></iframe>
+      <button onclick="closeMusicPlayer()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.2rem;padding:4px 8px;border-radius:6px;flex-shrink:0;" onmouseover="this.style.color='#ff4444'" onmouseout="this.style.color='var(--muted)'">✕</button>
     </div>
   </div>
 
-  <!-- Sugerencias iniciales (géneros/playlists destacadas) -->
+  <!-- Sugerencias iniciales -->
   <div id="musicSuggestions">
-    <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:12px;">🎧 Explorar géneros</div>
+    <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:12px;">🎧 Géneros populares</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;" id="musicGenreGrid"></div>
   </div>
 </div>
@@ -3043,7 +3066,7 @@ function _stub(name){ return function(){ _q.push([name, arguments]); }; }
  'previewSpotImg','removeSpotImg','submitSpot','loadSpots','toggleYtInput','previewYtEmbed','clearYtInput','extractYtId','openPostWithYt','loadFriendSpots','renderFriendSpotsInHome','openEditSpot','saveEditSpot','deleteSpot','scrollToPost',
  'renderSidebarFriends','renderSuggestedUsers','playNotifSound','showNotifToast','sendNotifToUserWithPost','openMessenger','loadVideos','filterVideos',
  'previewPezSemanaImg','submitPezSemana','deletePezSemana','loadPezSemana','openPezSemanalModal','openReactionsModal','buildRxnLabel',
- 'filterTrofeoFeed','listenTrofeosFeed','swSkillTab'
+ 'filterTrofeoFeed','listenTrofeosFeed','swSkillTab','searchStoryMusic','selectStoryMusic','clearStoryMusic','searchDeezer','playDeezer'
 ].forEach(fn => { window[fn] = _stub(fn); });
 </script>
 <script type="module">
@@ -4149,6 +4172,7 @@ function closeSV(){
   document.getElementById('storyViewer').classList.remove('open');
   if(_svAutoTimer){clearTimeout(_svAutoTimer);_svAutoTimer=null;}
   if(window._svViewsUnsub){ window._svViewsUnsub(); window._svViewsUnsub=null; }
+  if(window._svAudio){ window._svAudio.pause(); window._svAudio=null; }
 }
 
 // Registra vista y escucha contador en tiempo real
@@ -4284,6 +4308,29 @@ function renderSV(){
   // Clear comment input
   const cinp = document.getElementById('svCommentInput');
   if(cinp) cinp.value = '';
+
+  // --- MÚSICA DEEZER ---
+  // Detener audio anterior
+  if(window._svAudio){ window._svAudio.pause(); window._svAudio = null; }
+  const svMusic = document.getElementById('svMusicBar');
+  if(s.music && s.music.preview){
+    const audio = new Audio(s.music.preview);
+    audio.volume = 0.8;
+    audio.play().catch(()=>{});
+    window._svAudio = audio;
+    if(svMusic){
+      svMusic.style.display = 'flex';
+      const cover = svMusic.querySelector('.sv-music-cover');
+      const title = svMusic.querySelector('.sv-music-title');
+      const artist = svMusic.querySelector('.sv-music-artist');
+      if(cover) cover.src = s.music.cover || '';
+      if(title) title.textContent = s.music.title || '';
+      if(artist) artist.textContent = s.music.artist || '';
+    }
+  } else {
+    if(svMusic) svMusic.style.display = 'none';
+  }
+
   // progress bars
   const prog = document.getElementById('svProgress');
   prog.innerHTML = _stories.map((_,i)=>`<div class="sv-prog-bar"><div class="sv-prog-fill" id="svFill${i}" style="width:${i<_svIdx?100:0}%;transition:${i===_svIdx?'width '+SV_DURATION/1000+'s linear':'none'}"></div></div>`).join('');
@@ -4376,6 +4423,65 @@ async function deleteMyStory(){
   }
 }
 
+// ===== DEEZER MUSIC FOR STORIES =====
+let _storyMusic = null;
+
+async function searchStoryMusic(){
+  const q = document.getElementById('storyMusicSearch').value.trim();
+  if(!q) return;
+  const res = document.getElementById('storyMusicResults');
+  res.style.display = 'block';
+  res.innerHTML = '<div style="padding:10px;text-align:center;color:var(--muted);font-size:.8rem;">⏳ Buscando...</div>';
+  try {
+    const r = await fetch(`https://corsproxy.io/?${encodeURIComponent('https://api.deezer.com/search?q='+encodeURIComponent(q)+'&limit=8')}`);
+    const data = await r.json();
+    if(!data.data || !data.data.length){
+      res.innerHTML = '<div style="padding:10px;text-align:center;color:var(--muted);font-size:.8rem;">Sin resultados</div>';
+      return;
+    }
+    res.innerHTML = data.data.map(t => `
+      <div onclick="selectStoryMusic(${JSON.stringify({preview:t.preview,title:t.title,artist:t.artist.name,cover:t.album.cover_small}).replace(/"/g,'&quot;')})"
+        style="display:flex;align-items:center;gap:10px;padding:8px 10px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .15s;"
+        onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background=''">
+        <img src="${t.album.cover_small}" style="width:36px;height:36px;border-radius:4px;object-fit:cover;flex-shrink:0;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:.8rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(t.title)}</div>
+          <div style="font-size:.7rem;color:var(--muted);">${esc(t.artist.name)}</div>
+        </div>
+        <span style="font-size:.7rem;color:var(--accent);">▶ 30s</span>
+      </div>`).join('');
+  } catch(e){
+    res.innerHTML = '<div style="padding:10px;text-align:center;color:var(--muted);font-size:.8rem;">Error al buscar. Intentá de nuevo.</div>';
+  }
+}
+
+function selectStoryMusic(track){
+  _storyMusic = track;
+  document.getElementById('storyMusicResults').style.display = 'none';
+  document.getElementById('storyMusicSearch').value = '';
+  const sel = document.getElementById('storyMusicSelected');
+  sel.style.display = 'block';
+  document.getElementById('storyMusicCover').src = track.cover;
+  document.getElementById('storyMusicTitle').textContent = track.title;
+  document.getElementById('storyMusicArtist').textContent = track.artist;
+  document.getElementById('storyMusicPreview').src = track.preview;
+}
+
+function clearStoryMusic(){
+  _storyMusic = null;
+  const sel = document.getElementById('storyMusicSelected');
+  if(sel) { sel.style.display='none'; }
+  const audio = document.getElementById('storyMusicPreview');
+  if(audio){ audio.pause(); audio.src=''; }
+  const res = document.getElementById('storyMusicResults');
+  if(res) res.style.display='none';
+  const inp = document.getElementById('storyMusicSearch');
+  if(inp) inp.value='';
+}
+window.searchStoryMusic = searchStoryMusic;
+window.selectStoryMusic = selectStoryMusic;
+window.clearStoryMusic = clearStoryMusic;
+
 async function submitStory(){
   if(!window.CU){ toast('Inicia sesión primero','err'); return; }
   const text = document.getElementById('storyText').value.trim();
@@ -4386,11 +4492,13 @@ async function submitStory(){
   await addDoc(collection(db, 'stories'), {
     userId:window.CU.id, userNick:window.CU.nick, userAv:window.CU.av||'',
     text, emoji:_storyEmojiPick||'🎣', img:imgUrl, yt:'', time:serverTimestamp(),
-    userVerified:window.CU?.verified||false
+    userVerified:window.CU?.verified||false,
+    music: _storyMusic || null
   });
-  _storyImgData = null; _storyEmojiPick = '';
+  _storyImgData = null; _storyEmojiPick = ''; _storyMusic = null;
   document.getElementById('storyText').value='';
   document.getElementById('storyImgPrev').innerHTML='';
+  clearStoryMusic();
   cm('mAddStory');
   toast('Historia publicada 📖','ok');
 }
@@ -11920,109 +12028,80 @@ function getEmailPrivacy(){ return (window.CU && window.CU.emailPrivacy) || 'onl
 })();
 
 function setMusicType(type, btn){
-  // En YouTube no hay tipos, pero mantenemos compatibilidad
   document.querySelectorAll('.music-type-btn').forEach(b=>b.classList.remove('active'));
   if(btn) btn.classList.add('active');
 }
 
 function quickGenreSearch(q){
   document.getElementById('musicSearchInput').value = q;
-  searchSpotify(); // mismo nombre para no cambiar referencias
+  searchDeezer();
 }
 
-// Búsqueda usando YouTube oEmbed + iframe sin API key
-async function searchSpotify(){
+async function searchDeezer(){
   const q = (document.getElementById('musicSearchInput').value||'').trim();
   if(!q){ toast('Escribí algo para buscar 🎵','err'); return; }
-
   const resultsEl = document.getElementById('musicResults');
   const sugEl = document.getElementById('musicSuggestions');
   if(sugEl) sugEl.style.display = 'none';
-  resultsEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted);">
-    <div style="font-size:1.8rem;margin-bottom:8px;">🎵</div><div>Buscando en YouTube...</div></div>`;
-
-  // Usamos Invidious (instancia pública de YouTube sin API key)
-  const instances = _YT_SEARCH_INSTANCES;
-
-  for(const base of instances){
-    try {
-      const res = await fetch(`${base}/api/v1/search?q=${encodeURIComponent(q)}&type=video&fields=videoId,title,author,videoThumbnails&pretty=1`, {
-        signal: AbortSignal.timeout(5000)
-      });
-      if(!res.ok) continue;
-      const data = await res.json();
-      if(Array.isArray(data) && data.length){
-        renderYouTubeResults(data.slice(0,16), base);
-        return;
-      }
-    } catch(e){ continue; }
+  resultsEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted);"><div style="font-size:1.8rem;margin-bottom:8px;">🎵</div><div>Buscando en Deezer...</div></div>`;
+  try {
+    const res = await fetch('https://corsproxy.io/?'+encodeURIComponent('https://api.deezer.com/search?q='+encodeURIComponent(q)+'&limit=20'));
+    const data = await res.json();
+    if(!data.data||!data.data.length){
+      resultsEl.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted);">Sin resultados</div>`;
+      return;
+    }
+    renderDeezerResults(data.data);
+  } catch(e){
+    resultsEl.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted);">Error al buscar. Intentá de nuevo.</div>`;
   }
-
-  // Fallback: mostrar buscador directo embed
-  resultsEl.innerHTML = renderYTFallback(q);
 }
 
-function renderYouTubeResults(items, base){
+function searchSpotify(){ searchDeezer(); }
+
+function renderDeezerResults(tracks){
   const el = document.getElementById('musicResults');
-  el.innerHTML = items.map(v=>{
-    const thumb = v.videoThumbnails?.[3]?.url || v.videoThumbnails?.[0]?.url || '';
-    const title = esc(v.title||'');
-    const author = esc(v.author||'');
-    const vid = v.videoId;
-    return `<div class="music-card" onclick="playYouTube('${vid}','${title.replace(/'/g,"\\'")}')">
-      ${thumb ? `<img class="music-card-img" src="${thumb}" loading="lazy" alt="${title}" onerror="this.style.display='none'">` : `<div class="music-card-img" style="background:#111;display:flex;align-items:center;justify-content:center;font-size:2.5rem;">🎵</div>`}
-      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:44px;height:44px;background:rgba(255,0,0,.85);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;opacity:0;transition:opacity .2s;pointer-events:none;" class="music-yt-play">▶</div>
+  el.innerHTML = tracks.map(t => {
+    const safe = JSON.stringify({preview:t.preview,title:t.title,artist:t.artist.name,cover:t.album.cover_medium||t.album.cover_small}).replace(/"/g,'&quot;');
+    const hasPrev = !!t.preview;
+    return `<div class="music-card" onclick="playDeezer(${safe})" style="cursor:pointer;">
+      <div style="position:relative;">
+        <img class="music-card-img" src="${t.album.cover_medium||t.album.cover_small}" loading="lazy" alt="${esc(t.title)}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px 8px 0 0;display:block;">
+        ${hasPrev ? `<div style="position:absolute;bottom:6px;right:6px;background:rgba(162,56,255,.9);border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:.9rem;">▶</div>` : `<div style="position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.6);border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:#aaa;">🚫</div>`}
+      </div>
       <div class="music-card-body">
-        <div class="music-card-title">${title}</div>
-        <div class="music-card-sub">${author}</div>
+        <div class="music-card-title">${esc(t.title)}</div>
+        <div class="music-card-sub">${esc(t.artist.name)}</div>
+        ${hasPrev ? `<div style="font-size:.65rem;color:#a238ff;margin-top:3px;">▶ Preview 30s</div>` : `<div style="font-size:.65rem;color:var(--muted);margin-top:3px;">Sin preview</div>`}
       </div>
     </div>`;
   }).join('');
-  // Mostrar play icon on hover
-  el.querySelectorAll('.music-card').forEach(c=>{
-    c.addEventListener('mouseenter',()=>c.querySelector('.music-yt-play').style.opacity='1');
-    c.addEventListener('mouseleave',()=>c.querySelector('.music-yt-play').style.opacity='0');
-  });
 }
 
-function renderYTFallback(q){
-  return `<div style="grid-column:1/-1;text-align:center;padding:20px;">
-    <div style="font-size:.85rem;color:var(--muted);margin-bottom:14px;">Buscá en YouTube:</div>
-    <iframe style="width:100%;max-width:640px;height:360px;border-radius:12px;border:none;"
-      src="https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(q)}&autoplay=0"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-      allowfullscreen loading="lazy"></iframe>
-  </div>`;
-}
-
-// Instancias Invidious para búsqueda
-const _YT_SEARCH_INSTANCES = [
-  'https://inv.nadeko.net',
-  'https://invidious.privacydev.net',
-  'https://iv.melmac.space',
-];
-
-function playYouTube(videoId, title){
+function playDeezer(track){
+  if(!track.preview){ toast('Esta canción no tiene preview','err'); return; }
   const wrap = document.getElementById('musicPlayerWrap');
-  const iframe = document.getElementById('spotifyEmbed');
-  const ytLink = document.getElementById('musicYTLink');
-  if(!wrap || !iframe) return;
-
-  const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
-  iframe.setAttribute('src', embedUrl);
-  if(ytLink) ytLink.href = `https://www.youtube.com/watch?v=${videoId}`;
+  const audio = document.getElementById('deezerAudioPlayer');
+  const cover = document.getElementById('deezerCoverBig');
+  const titleEl = document.getElementById('deezerTitleBig');
+  const artistEl = document.getElementById('deezerArtistBig');
+  if(!wrap||!audio) return;
+  audio.src = track.preview;
+  if(cover) cover.src = track.cover||'';
+  if(titleEl) titleEl.textContent = track.title||'';
+  if(artistEl) artistEl.textContent = track.artist||'';
   wrap.style.display = 'block';
-  toast(`▶ ${title}`,'ok');
+  audio.play().catch(()=>{});
+  toast('▶ '+track.title,'ok');
 }
 
-// Alias para compatibilidad
-function playSpotify(type, id, title){ playYouTube(id, title); }
+function playSpotify(){}
 
 function closeMusicPlayer(){
   const wrap = document.getElementById('musicPlayerWrap');
-  const iframe = document.getElementById('spotifyEmbed');
+  const audio = document.getElementById('deezerAudioPlayer');
   if(wrap) wrap.style.display = 'none';
-  if(iframe) iframe.src = '';
+  if(audio){ audio.pause(); audio.src=''; }
 }
 
 // ===== EXPOSE TO HTML — sobreescribe los stubs =====
@@ -12031,7 +12110,7 @@ const _expose = {
   submitPost,submitStory,submitComment,toggleLinkInput,clearPostLink,debounceLinkPreview,fetchLinkPreview,_autoLinkDetect,handleMentionInput,insertMention,searchMentionedUser,handlePostMentionInput,insertPostMention,focusPostTextAndAt,
   doReact,quickReact,
   togglePassVis, maskEmail, startEmailChange, cancelEmailChange, sendVerifEmailForChange, confirmEmailChange,
-  setMusicType, quickGenreSearch, searchSpotify, playSpotify, closeMusicPlayer,
+  setMusicType, quickGenreSearch, searchSpotify, searchDeezer, playDeezer, playSpotify, closeMusicPlayer,
   _fetchPosts, _fetchStories,
   saveProfile,openEditProfile,calcAgeFromBirthdate,
   changeCover,changeAvatar,
