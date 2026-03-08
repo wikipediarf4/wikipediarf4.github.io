@@ -1698,10 +1698,67 @@ select.fi option{background:var(--bg3);color:var(--text);}
 
 <!-- Add Story -->
 <div class="mo" id="mAddStory">
-  <div class="modal modal-sm">
+  <div class="modal modal-sm" style="overflow-y:auto;max-height:92vh;">
     <button class="mcx" onclick="cm('mAddStory')">✕</button>
     <div class="mt">📖 Crear Historia</div>
-    <div class="fg"><label class="fl">Texto de la historia</label><textarea class="fi" id="storyText" placeholder="¿Qué pasó en tu pesca hoy?..."></textarea></div>
+
+    <!-- TEXTO + emoji + gif -->
+    <div class="fg">
+      <label class="fl">Texto de la historia</label>
+      <div style="position:relative;">
+        <textarea class="fi" id="storyText" placeholder="¿Qué pasó en tu pesca hoy?..." style="padding-bottom:36px;min-height:90px;"></textarea>
+        <div style="position:absolute;bottom:8px;left:8px;display:flex;gap:4px;">
+          <button onclick="openEmojiPicker(event,'storyText')" title="Emoji"
+            style="background:var(--bg3);border:none;font-size:1rem;cursor:pointer;padding:4px 7px;border-radius:8px;line-height:1;"
+            onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background='var(--bg3)'">😊</button>
+          <button onclick="_storyGifPicker()" title="GIF"
+            style="background:var(--bg3);border:none;font-size:.65rem;font-weight:900;color:var(--accent);cursor:pointer;padding:4px 7px;border-radius:8px;line-height:1;"
+            onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background='var(--bg3)'">GIF</button>
+        </div>
+      </div>
+      <!-- GIF picker historia -->
+      <div id="storyGifPicker" style="display:none;margin-top:6px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);padding:8px;">
+        <div style="display:flex;gap:6px;margin-bottom:6px;">
+          <input id="storyGifSearch" placeholder="Buscar GIF..."
+            style="flex:1;padding:6px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;color:var(--text);font-size:.8rem;outline:none;"
+            oninput="searchStoryGif()" onkeypress="if(event.key==='Enter')searchStoryGif()">
+          <button onclick="document.getElementById('storyGifPicker').style.display='none'"
+            style="background:var(--bg3);border:none;color:var(--muted);border-radius:50%;width:28px;height:28px;cursor:pointer;">✕</button>
+        </div>
+        <div id="storyGifResults" style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;max-height:160px;overflow-y:auto;">
+          <div style="grid-column:1/-1;text-align:center;padding:12px;color:var(--muted);font-size:.78rem;">Escribí para buscar GIFs 🎬</div>
+        </div>
+        <div id="storyGifSelected" style="display:none;margin-top:6px;">
+          <img id="storyGifImg" src="" style="max-width:100%;border-radius:8px;display:block;">
+          <button onclick="document.getElementById('storyGifSelected').style.display='none';window._storyGif=null;"
+            style="margin-top:4px;background:var(--bg3);border:none;color:var(--muted);font-size:.75rem;padding:3px 8px;border-radius:6px;cursor:pointer;">✕ Quitar GIF</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLOR DE FONDO -->
+    <div class="fg">
+      <label class="fl">🎨 Color de fondo (historia escrita)</label>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:8px;" id="storyBgGrid">
+        <div onclick="pickStoryBg('none')" title="Sin fondo"
+          style="height:40px;border-radius:10px;background:var(--bg3);border:2px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--muted);">Ninguno</div>
+        <div onclick="pickStoryBg('linear-gradient(135deg,#1877f2,#0a3d7c)')" style="height:40px;border-radius:10px;background:linear-gradient(135deg,#1877f2,#0a3d7c);cursor:pointer;border:2px solid transparent;"></div>
+        <div onclick="pickStoryBg('linear-gradient(135deg,#2ec4b6,#0a7c6e)')" style="height:40px;border-radius:10px;background:linear-gradient(135deg,#2ec4b6,#0a7c6e);cursor:pointer;border:2px solid transparent;"></div>
+        <div onclick="pickStoryBg('linear-gradient(135deg,#e41e3f,#7c0a1e)')" style="height:40px;border-radius:10px;background:linear-gradient(135deg,#e41e3f,#7c0a1e);cursor:pointer;border:2px solid transparent;"></div>
+        <div onclick="pickStoryBg('linear-gradient(135deg,#f5a623,#7c4a00)')" style="height:40px;border-radius:10px;background:linear-gradient(135deg,#f5a623,#7c4a00);cursor:pointer;border:2px solid transparent;"></div>
+        <div onclick="pickStoryBg('linear-gradient(135deg,#9b59b6,#4a0080)')" style="height:40px;border-radius:10px;background:linear-gradient(135deg,#9b59b6,#4a0080);cursor:pointer;border:2px solid transparent;"></div>
+        <div onclick="pickStoryBg('linear-gradient(135deg,#2ecc71,#0a4a1e)')" style="height:40px;border-radius:10px;background:linear-gradient(135deg,#2ecc71,#0a4a1e);cursor:pointer;border:2px solid transparent;"></div>
+        <div onclick="pickStoryBg('linear-gradient(135deg,#1a1a2e,#16213e,#0f3460)')" style="height:40px;border-radius:10px;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);cursor:pointer;border:2px solid transparent;"></div>
+        <div onclick="pickStoryBg('linear-gradient(135deg,#ff6b6b,#feca57)')" style="height:40px;border-radius:10px;background:linear-gradient(135deg,#ff6b6b,#feca57);cursor:pointer;border:2px solid transparent;"></div>
+        <div onclick="pickStoryBg('linear-gradient(135deg,#2c3e50,#4ca1af)')" style="height:40px;border-radius:10px;background:linear-gradient(135deg,#2c3e50,#4ca1af);cursor:pointer;border:2px solid transparent;"></div>
+      </div>
+      <!-- Preview del fondo con texto -->
+      <div id="storyBgPreview" style="display:none;border-radius:12px;padding:20px;text-align:center;min-height:80px;display:flex;align-items:center;justify-content:center;margin-top:4px;">
+        <span id="storyBgPreviewTxt" style="color:#fff;font-weight:700;font-size:.95rem;text-shadow:0 2px 8px rgba(0,0,0,.5);word-break:break-word;"></span>
+      </div>
+    </div>
+
+    <!-- IMAGEN -->
     <div class="fg">
       <label class="fl">Imagen (opcional)</label>
       <label style="display:flex;align-items:center;gap:8px;padding:10px;border:2px dashed var(--border);border-radius:var(--rs);cursor:pointer;color:var(--muted);font-size:.85rem">
@@ -1711,16 +1768,14 @@ select.fi option{background:var(--bg3);color:var(--text);}
       <div id="storyImgPrev" style="margin-top:8px"></div>
     </div>
 
-    <!-- MÚSICA DEEZER -->
+    <!-- MÚSICA -->
     <div class="fg">
       <label class="fl">🎵 Música (opcional)</label>
       <div style="position:relative;">
         <input class="fi" id="storyMusicSearch" placeholder="🔍 Buscar canción o artista..." style="flex:1;width:100%;padding-right:36px;" oninput="debounceStoryMusic()" onfocus="_showStoryMusicSuggestions()" onkeydown="if(event.key==='Enter')searchStoryMusic();if(event.key==='Escape')clearStoryMusic()">
         <span id="storyMusicSpinner" style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:.8rem;animation:spin 1s linear infinite;">⏳</span>
       </div>
-      <!-- Resultados búsqueda -->
-      <div id="storyMusicResults" style="margin-top:6px;max-height:260px;overflow-y:auto;display:none;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);box-shadow:0 8px 24px rgba(0,0,0,.3);"></div>
-      <!-- Canción seleccionada -->
+      <div id="storyMusicResults" style="margin-top:6px;max-height:240px;overflow-y:auto;display:none;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);box-shadow:0 8px 24px rgba(0,0,0,.3);"></div>
       <div id="storyMusicSelected" style="display:none;margin-top:8px;background:rgba(46,196,182,.08);border:1px solid rgba(46,196,182,.3);border-radius:var(--rs);padding:10px;">
         <div style="display:flex;align-items:center;gap:10px;">
           <img id="storyMusicCover" src="" style="width:44px;height:44px;border-radius:6px;object-fit:cover;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.3);">
@@ -1729,12 +1784,13 @@ select.fi option{background:var(--bg3);color:var(--text);}
             <div id="storyMusicArtist" style="font-size:.72rem;color:var(--muted);margin-top:2px;"></div>
             <div style="font-size:.65rem;color:var(--accent);margin-top:2px;">✅ Seleccionada — se reproducirá en la historia</div>
           </div>
-          <button onclick="clearStoryMusic()" style="background:rgba(255,255,255,.08);border:none;color:var(--muted);cursor:pointer;font-size:.8rem;padding:6px 8px;border-radius:6px;" title="Quitar música">✕ Quitar</button>
+          <button onclick="clearStoryMusic()" style="background:rgba(255,255,255,.08);border:none;color:var(--muted);cursor:pointer;font-size:.8rem;padding:6px 8px;border-radius:6px;">✕ Quitar</button>
         </div>
         <audio id="storyMusicPreview" controls style="width:100%;margin-top:8px;height:32px;border-radius:100px;" src=""></audio>
       </div>
     </div>
 
+    <!-- EMOJI / STICKER -->
     <div class="fg"><label class="fl">Emoji / Sticker</label>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <span style="font-size:1.6rem;cursor:pointer" onclick="pickStoryEmoji('🐟')">🐟</span>
@@ -4466,28 +4522,93 @@ const _DEEZER_PROXIES = [
 ];
 
 // Sugerencias rápidas mientras escriben (artistas populares de pesca/latam)
-const _MUSIC_SUGGESTIONS = {
-  'ka': ['Karol G','Kalimba','Kali Uchis'],
-  'ba': ['Bad Bunny','Bad Gyal','Banda MS'],
-  'ma': ['Maluma','Maná','Marama'],
-  'oz': ['Ozuna'],
-  'j ': ['J Balvin','J Alvarez'],
-  'ra': ['Rauw Alejandro','Rammstein','Radiohead'],
-  'na': ['Natti Natasha','Nicki Nicole'],
-  'be': ['Becky G','Beret'],
-  'ro': ['Rosalía','Romeo Santos','Rombai'],
-  'sha':['Shakira','Shawn Mendes'],
-  'ry': ['Ricky Martin','Ryan Castro'],
-  'ni': ['Nicki Nicole','Nio García'],
-  'an': ['Anuel AA','Anitta','Andy Rivera'],
-  'my': ['Myke Towers','Myke Towers'],
-  'fa': ['Farruko','Feid'],
-  'fe': ['Feid','Fer Palacio'],
-  'da': ['Daddy Yankee','Dalex'],
-  'se': ['Sebastián Yatra','Sia'],
-  'lu': ['Lunay','Luis Fonsi','Luis Miguel'],
-  'ar': ['Ariana Grande','Arcángel'],
-};
+// Sugerencias por prefijo (2-3 letras) — busca coincidencias en TODOS los artistas
+const _ALL_ARTISTS = [
+  'Karol G','Kalimba','Kali Uchis','Bad Bunny','Bad Gyal','Banda MS',
+  'Maluma','Maná','Marama','Marco Antonio Solís','Ozuna','J Balvin','J Alvarez',
+  'Rauw Alejandro','Rammstein','Radiohead','Natti Natasha','Nicki Nicole','Nicki Jam',
+  'Becky G','Beret','Rosalía','Romeo Santos','Rombai','Shakira','Shawn Mendes',
+  'Ricky Martin','Ryan Castro','Anuel AA','Anitta','Andy Rivera','Myke Towers',
+  'Farruko','Feid','Daddy Yankee','Dalex','Sebastián Yatra','Sia','Sech',
+  'Lunay','Luis Fonsi','Luis Miguel','Ariana Grande','Arcángel','Aventura',
+  'Bad Gyal','Bizarrap','Bryant Myers','Chris Brown','Christian Nodal',
+  'Dua Lipa','Ed Sheeran','Eminem','Enrique Iglesias','Fuerza Regida',
+  'Grupo Frontera','Harry Styles','Ivy Queen','Jay Wheeler','Jhay Cortez',
+  'Justin Bieber','Kanye West','Kendrick Lamar','La Ross Maria','Lil Baby',
+  'Marc Anthony','Maria Becerra','Mike Towers','Mora','Natanael Cano',
+  'Omar Montes','Paulo Londra','Peso Pluma','Prince Royce','Quevedo',
+  'Rakim y Ken-Y','Reggaeton','Residente','Sebastián Villalobos','Sfera Ebbasta',
+  'Tini','Tommy Torres','Trap Capos','Trueno','Yandel','Yielber Vides',
+];
+const _MUSIC_SUGGESTIONS = {}; // legacy — ahora usamos _ALL_ARTISTS dinámico
+
+function _getSuggestions(q){
+  if(!q || q.length < 2) return [];
+  const ql = q.toLowerCase();
+  return _ALL_ARTISTS.filter(a => a.toLowerCase().startsWith(ql) || a.toLowerCase().includes(ql)).slice(0,5);
+}
+
+// ===== STORY COLOR BG =====
+window._storyBg = null;
+window._storyGif = null;
+
+function pickStoryBg(bg){
+  window._storyBg = bg === 'none' ? null : bg;
+  // Highlight selected
+  document.querySelectorAll('#storyBgGrid > div').forEach(d=>d.style.border='2px solid transparent');
+  event.currentTarget.style.border = '2px solid var(--accent)';
+  // Preview
+  const preview = document.getElementById('storyBgPreview');
+  const previewTxt = document.getElementById('storyBgPreviewTxt');
+  if(window._storyBg){
+    preview.style.display = 'flex';
+    preview.style.background = window._storyBg;
+    const txt = document.getElementById('storyText').value.trim();
+    previewTxt.textContent = txt || 'Vista previa del texto aquí...';
+  } else {
+    preview.style.display = 'none';
+  }
+  // Update preview when text changes
+  document.getElementById('storyText').oninput = function(){
+    if(window._storyBg && previewTxt){
+      previewTxt.textContent = this.value.trim() || 'Vista previa del texto aquí...';
+    }
+  };
+}
+
+function _storyGifPicker(){
+  const picker = document.getElementById('storyGifPicker');
+  picker.style.display = picker.style.display === 'none' ? 'block' : 'none';
+  if(picker.style.display === 'block') document.getElementById('storyGifSearch')?.focus();
+}
+
+async function searchStoryGif(){
+  const q = document.getElementById('storyGifSearch')?.value.trim();
+  const res = document.getElementById('storyGifResults');
+  if(!res) return;
+  if(!q){ res.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:12px;color:var(--muted);font-size:.78rem;">Escribí para buscar GIFs 🎬</div>'; return; }
+  res.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:10px;color:var(--muted);font-size:.78rem;">Buscando...</div>';
+  try {
+    const r = await fetch(`https://api.tenor.com/v2/search?q=${encodeURIComponent(q)}&key=AIzaSyAyimkuYQYF_FXVALexPmHA5a7li72Bkr0&limit=12&media_filter=gif`);
+    const data = await r.json();
+    if(!data.results?.length){ res.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:10px;color:var(--muted);font-size:.78rem;">Sin resultados</div>'; return; }
+    res.innerHTML = data.results.map(g=>{
+      const url = g.media_formats?.gif?.url || g.media_formats?.tinygif?.url || '';
+      const preview = g.media_formats?.tinygif?.url || url;
+      return `<img src="${preview}" style="width:100%;border-radius:6px;cursor:pointer;object-fit:cover;aspect-ratio:1;"
+        onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'"
+        onclick="selectStoryGif('${url}','${preview}')">`;
+    }).join('');
+  } catch(e){ res.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:10px;color:var(--muted);font-size:.78rem;">Error al buscar</div>'; }
+}
+
+function selectStoryGif(url, preview){
+  window._storyGif = url;
+  document.getElementById('storyGifPicker').style.display = 'none';
+  const sel = document.getElementById('storyGifSelected');
+  const img = document.getElementById('storyGifImg');
+  if(sel && img){ sel.style.display='block'; img.src = preview || url; }
+}
 
 // Carga las canciones más usadas en historias desde Firestore
 window._popularStoryMusic = [];
@@ -4543,9 +4664,10 @@ function _showStoryMusicSuggestions(){
   }
 
   // Sugerencias por letra
-  if(staticSug.length && q.length >= 2){
+  const dynSug = _getSuggestions(q);
+  if(dynSug.length && q.length >= 2){
     html += `<div style="padding:8px 12px 4px;font-size:.68rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;">🎤 Artistas</div>`;
-    html += staticSug.map(s=>`
+    html += dynSug.map(s=>`
       <div onclick="document.getElementById('storyMusicSearch').value='${s}';searchStoryMusic();"
         style="display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--border);"
         onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
@@ -4574,14 +4696,12 @@ function debounceStoryMusic(){
   const res = document.getElementById('storyMusicResults');
   if(!q){ _showStoryMusicSuggestions(); return; }
 
-  // Sugerencias instantáneas mientras escriben (sin esperar API)
-  const key = q.toLowerCase().slice(0,3);
-  const key2 = q.toLowerCase().slice(0,2);
-  const suggestions = _MUSIC_SUGGESTIONS[key] || _MUSIC_SUGGESTIONS[key2] || [];
-  if(suggestions.length && q.length < 4){
+  // Sugerencias instantáneas mientras escriben — dinámica por cualquier prefijo
+  const suggestions = _getSuggestions(q);
+  if(suggestions.length){
     res.style.display = 'block';
     res.innerHTML = `
-      <div style="padding:8px 12px 4px;font-size:.68rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;">🎤 Artistas sugeridos</div>
+      <div style="padding:8px 12px 4px;font-size:.68rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;">🎤 Artistas</div>
       ${suggestions.map(s=>`
         <div onclick="document.getElementById('storyMusicSearch').value='${s}';searchStoryMusic();"
           style="display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--border);"
@@ -4725,11 +4845,15 @@ function clearStoryMusic(){
 window.searchStoryMusic = searchStoryMusic;
 window.selectStoryMusic = selectStoryMusic;
 window.clearStoryMusic = clearStoryMusic;
+window.pickStoryBg = pickStoryBg;
+window._storyGifPicker = _storyGifPicker;
+window.searchStoryGif = searchStoryGif;
+window.selectStoryGif = selectStoryGif;
 
 async function submitStory(){
   if(!window.CU){ toast('Inicia sesión primero','err'); return; }
   const text = document.getElementById('storyText').value.trim();
-  if(!text && !_storyImgData){ toast('Escribe algo o sube una imagen','err'); return; }
+  if(!text && !_storyImgData && !window._storyGif){ toast('Escribe algo o sube una imagen','err'); return; }
   toast('Publicando historia...','inf');
   let imgUrl = '';
   if(_storyImgData) imgUrl = await uploadImage(_storyImgData, 'stories');
@@ -4737,11 +4861,16 @@ async function submitStory(){
     userId:window.CU.id, userNick:window.CU.nick, userAv:window.CU.av||'',
     text, emoji:_storyEmojiPick||'🎣', img:imgUrl, yt:'', time:serverTimestamp(),
     userVerified:window.CU?.verified||false,
-    music: _storyMusic || null
+    music: _storyMusic || null,
+    bg: window._storyBg || null,
+    gif: window._storyGif || null
   });
   _storyImgData = null; _storyEmojiPick = ''; _storyMusic = null;
+  window._storyBg = null; window._storyGif = null;
   document.getElementById('storyText').value='';
   document.getElementById('storyImgPrev').innerHTML='';
+  document.getElementById('storyBgPreview').style.display='none';
+  document.getElementById('storyGifSelected').style.display='none';
   clearStoryMusic();
   cm('mAddStory');
   toast('Historia publicada 📖','ok');
@@ -13532,17 +13661,16 @@ window.setUserRole         = setUserRole;
 // CHANGELOG — Solo visible para ruizgustavo12
 // Actualizar VERSION y CHANGES cada vez que se sube un index nuevo
 // ═══════════════════════════════════════════════════════
-const _CL_VERSION = '2026-03-08-v14';
+const _CL_VERSION = '2026-03-08-v15';
 const _CL_CHANGES = [
-  { emoji:'🎵', text:'Búsqueda de música con debounce — resultados mientras escribís en YouTube y Deezer' },
-  { emoji:'▶',  text:'Preview hover en resultados de YouTube — hover 800ms y arranca el video mute' },
-  { emoji:'🔁', text:'Compartir publicaciones con modal estilo Facebook — podés escribir algo antes de compartir' },
-  { emoji:'💬', text:'Comentarios ya no cierran el modal al enviar — se actualizan en tiempo real' },
-  { emoji:'😍', text:'Reacciones actualizan el botón y contador al instante sin recargar el feed' },
-  { emoji:'🎵', text:'Música en historias: Enter para buscar, preview al hover en resultados Deezer' },
-  { emoji:'🐉', text:'Efecto Dragones en tienda — solo verificados pueden equiparlo' },
-  { emoji:'🏆', text:'Banner trofeo flotante 6 segundos — widget estático eliminado del feed' },
-  { emoji:'⚡', text:'Firebase optimizado: lecturas reducidas de 180k a ~40k por día' },
+  { emoji:'🎨', text:'Historias: elegí color de fondo con 10 gradientes — preview en tiempo real mientras escribís' },
+  { emoji:'😊', text:'Historias: botón emoji y GIF en el texto de la historia' },
+  { emoji:'🎤', text:'Música historias: sugerencias instantáneas al escribir — KAR → Karol G, BAD → Bad Bunny, etc.' },
+  { emoji:'🔥', text:'Música historias: canciones más usadas del sitio aparecen al tocar el campo (antes de escribir)' },
+  { emoji:'💬', text:'Comentarios: botón 😊 emoji y GIF en el input del comentario' },
+  { emoji:'⋯',  text:'Comentarios: 3 puntitos en cada comentario → Editar / Eliminar sin cerrar el modal' },
+  { emoji:'🔁', text:'Compartir publicaciones con modal estilo Facebook — escribí algo antes de compartir' },
+  { emoji:'😍', text:'Reacciones actualizan el botón y contador al instante sin recargar' },
 ];
 
 const _CL_KEY = 'cl_seen_' + _CL_VERSION;
