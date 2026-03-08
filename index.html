@@ -3159,7 +3159,7 @@ function updateNavUI(){
   const footer = document.getElementById('siteFooter');
   if(footer) footer.style.display='block';
   if(!window.CU) return;
-  const av = window.CU.av ? `<img src="${window.CU.av}">` : window.CU.nick[0].toUpperCase();
+  const av = `<img src="${window.CU.av||getDefaultAv(window.CU.gender||'')}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
   document.getElementById('navAv').innerHTML = av;
   document.getElementById('slAv').innerHTML = av;
   document.getElementById('slName').textContent = window.CU.nick;
@@ -3807,7 +3807,7 @@ function _renderViewersList(docs){
   });
   el.innerHTML = sorted.map(d=>{
     const v = typeof d.data === 'function' ? d.data() : d;
-    const av = v.viewerAv ? `<img src="${v.viewerAv}" style="width:100%;height:100%;object-fit:cover;">` : (v.viewerNick||'?')[0].toUpperCase();
+    const av = `<img src="${v.viewerAv||getDefaultAv('')}" style="width:100%;height:100%;object-fit:cover;">`;
     const t = v.time ? new Date(v.time).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}) : '';
     return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.06);">
       <div style="width:28px;height:28px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:var(--accent);flex-shrink:0;">${av}</div>
@@ -4210,7 +4210,7 @@ function postHTML(p){
     menuBtns += '<button onclick="toast(\'Comentario reportado\',\'ok\')" style="display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;color:#fa0;padding:10px 14px;cursor:pointer;font-size:.85rem;white-space:nowrap;">⚠️ Reportar</button>';
     const rxnBtnsHtml = CMT_RXNS.map(em=>'<button onclick="reactCmt(event,\''+p.id+'\','+ci+',\''+em+'\')" style="background:none;border:none;font-size:1.3rem;cursor:pointer;padding:3px;border-radius:50%;transition:transform .13s;" onmouseover="this.style.transform=\'scale(1.4) translateY(-4px)\'" onmouseout="this.style.transform=\'scale(1)\'">'+em+'</button>').join('');
     return '<div class="comment-item">'
-      +'<div class="sl-av" style="width:32px;height:32px;font-size:.75rem;flex-shrink:0;cursor:pointer;" onclick="openUserProfile(\''+c.userId+'\',\''+esc(c.nick)+'\')">'+((c.av?'<img src="'+c.av+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">':esc((c.nick||'?')[0])))+'</div>'
+      +'<div class="sl-av" style="width:32px;height:32px;font-size:.75rem;flex-shrink:0;cursor:pointer;" onclick="openUserProfile(\''+c.userId+'\',\''+esc(c.nick)+'\')">'+((c.av?'<img src="'+c.av+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">':'<img src="'+getDefaultAv(c.gender||'')+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">'))+'</div>'
       +'<div style="flex:1;min-width:0;">'
         +'<div style="position:relative;display:inline-block;max-width:100%;">'
           +'<div class="comment-bubble">'
@@ -4255,7 +4255,7 @@ function postHTML(p){
           if(rCanDel) r2Menu += '<button onclick="delCmt(event,\''+p.id+'\','+r2Idx+')" style="display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;color:#f55;padding:10px 14px;cursor:pointer;font-size:.85rem;white-space:nowrap;">🗑 Eliminar</button>';
           r2Menu += '<button onclick="toast(\'Comentario reportado\',\'ok\')" style="display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;color:#fa0;padding:10px 14px;cursor:pointer;font-size:.85rem;white-space:nowrap;">⚠️ Reportar</button>';
           const r2RxnBtns = CMT_RXNS.map(em=>'<button onclick="reactCmt(event,\''+p.id+'\','+r2Idx+',\''+em+'\')" style="background:none;border:none;font-size:1.2rem;cursor:pointer;padding:3px;border-radius:50%;transition:transform .13s;" onmouseover="this.style.transform=\'scale(1.4) translateY(-4px)\'" onmouseout="this.style.transform=\'scale(1)\'">'+em+'</button>').join('');
-          const avHTML = r2.av ? '<img src="'+r2.av+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">' : esc((r2.nick||'?')[0]);
+          const avHTML = '<img src="'+(r2.av||getDefaultAv(r2.gender||''))+('" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">');
           return '<div class="comment-item" style="display:flex;align-items:flex-start;margin-top:4px;margin-bottom:4px;">'
             +'<div class="sl-av" style="width:28px;height:28px;font-size:.68rem;flex-shrink:0;cursor:pointer;margin-top:2px;" onclick="openUserProfile(\''+r2.userId+'\',\''+esc(r2.nick)+'\')">'+avHTML+'</div>'
             +'<div style="flex:1;min-width:0;">'
@@ -4301,7 +4301,7 @@ function postHTML(p){
     ${isVerif?`<div class="verif-post-tag">✅ VERIFICADO</div>`:''}
     <div class="post-header" style="position:relative;">
       <div class="${isVerif?'post-av-wrap':''} ${_postMarcoClass}" style="display:inline-block;border-radius:50%;">
-        <div class="post-av" style="cursor:pointer;" onclick="openUserProfile('${p.userId}','${esc(p.userNick)}')">${p.userAv?`<img src="${p.userAv}">`:(p.userNick||'U')[0]}</div>
+        <div class="post-av" style="cursor:pointer;" onclick="openUserProfile('${p.userId}','${esc(p.userNick)}')">${`<img src="${p.userAv||getDefaultAv(p.userGender||'')}">` }</div>
       </div>
       <div class="post-meta" style="cursor:pointer" onclick="openUserProfile('${p.userId}','${esc(p.userNick)}')">
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
@@ -4615,7 +4615,7 @@ async function handlePostMentionInput(inp){
         const safeNick = (u.nick||'').replace(/"/g,'&quot;');
         return `<div data-nick="${safeNick}" style="padding:8px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:.83rem;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">`+
           `<div style="width:28px;height:28px;border-radius:50%;background:var(--accent);color:#000;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.78rem;overflow:hidden;flex-shrink:0;">`+
-          (u.av?`<img src="${u.av}" style="width:100%;height:100%;object-fit:cover;">`:(u.nick||'?')[0].toUpperCase())+
+          `<img src="${u.av||getDefaultAv(u.gender||'')}" style="width:100%;height:100%;object-fit:cover;">`+
           `</div><span>@${esc(u.nick||'')}</span></div>`;
       }).join('');
       mentionEl.onclick = (ev)=>{
@@ -4875,7 +4875,7 @@ async function handleMentionInput(inp, pid){
         const safeNick = (u.nick||'').replace(/"/g,'&quot;');
         return `<div data-nick="${safeNick}" style="padding:8px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:.83rem;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">`+
           `<div style="width:28px;height:28px;border-radius:50%;background:var(--accent);color:#000;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.78rem;overflow:hidden;flex-shrink:0;">`+
-          (u.av?`<img src="${u.av}" style="width:100%;height:100%;object-fit:cover;">`:(u.nick||'?')[0].toUpperCase())+
+          `<img src="${u.av||getDefaultAv(u.gender||'')}" style="width:100%;height:100%;object-fit:cover;">`+
           `</div><span>@${esc(u.nick||'')}</span></div>`;
       }).join('');
       // Use event delegation — no inline onclick with quotes
@@ -4903,7 +4903,7 @@ function insertMention(pid, nick){
 function renderProfile(){
   if(!window.CU) return;
   const avEl = document.getElementById('profAvBig');
-  avEl.innerHTML = CU.av ? `<img src="${CU.av}" style="pointer-events:none;width:100%;height:100%;object-fit:cover;">` : CU.nick[0].toUpperCase();
+  avEl.innerHTML = `<img src="${CU.av||getDefaultAv(CU.gender||'')}" style="pointer-events:none;width:100%;height:100%;object-fit:cover;">`;
   // Asignar clicks para ver foto grande
   avEl.onclick = () => openPhotoModal('avatar');
   const profCoverEl = document.getElementById('profCover');
@@ -5035,7 +5035,7 @@ function renderProfile(){
     friendsGrid.innerHTML = friends.slice(0,9).map(f=>`
       <div style="text-align:center;cursor:pointer;" onclick="openUserProfile('${f.id}','${(f.nick||'').replace(/'/g,"\\'")}')">
         <div style="width:100%;aspect-ratio:1;border-radius:var(--rs);background:var(--bg3);border:1px solid var(--border);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:800;color:var(--accent);margin-bottom:4px">
-          ${f.av?`<img src="${f.av}" style="width:100%;height:100%;object-fit:cover;">`:f.nick[0].toUpperCase()}
+          ${`<img src="${f.av||getDefaultAv(f.gender||'')}" style="width:100%;height:100%;object-fit:cover;">`}
         </div>
         <div style="font-size:.68rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f.nick}</div>
       </div>`).join('');
@@ -5740,7 +5740,7 @@ async function renderProfileFriendsList(userId) {
         : alreadyFriend && !isMe ? `<div style="margin-top:6px;font-size:.7rem;color:var(--green);text-align:center;font-weight:700;">✓ Amigos</div>` : '';
       return `<div onclick="openUserProfile('${fid}','${(f.nick||'').replace(/'/g,"\'")}');event.stopPropagation();" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer;transition:border-color .2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
         <div style="width:48px;height:48px;border-radius:50%;background:var(--bg4);border:2px solid var(--accent);margin:0 auto 8px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:700;">
-          ${f.av?`<img src="${f.av}" style="width:100%;height:100%;object-fit:cover;">`:(f.nick||'?')[0].toUpperCase()}
+          ${`<img src="${f.av||getDefaultAv(f.gender||'')}" style="width:100%;height:100%;object-fit:cover;">`}
         </div>
         <div style="font-size:.8rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(f.nick||'?')}</div>
         <div style="display:inline-block;font-size:.6rem;font-weight:700;padding:1px 7px;border-radius:100px;border:1px solid;color:${lvl.color};border-color:${lvl.border};background:${lvl.border.replace(/[\d.]+\)$/,'.1)')};margin-top:3px;">${lvl.name}</div>
@@ -5839,9 +5839,7 @@ function renderNotifs(){
     // Avatar del que generó la notif
     const fromAv = n.fromAv || n.visitorAv || '';
     const fromNick = n.fromNick || n.visitorNick || 'RF4';
-    const avInner = fromAv
-      ? `<img src="${fromAv}" style="width:100%;height:100%;object-fit:cover;">`
-      : `<span style="font-size:1.1rem;font-weight:800;color:var(--accent);">${(fromNick[0]||'R').toUpperCase()}</span>`;
+    const avInner = `<img src="${fromAv||getDefaultAv('')}" style="width:100%;height:100%;object-fit:cover;">`;
 
     if(n.type==='friendRequest'){
       const safeNick = (n.fromNick||'').replace(/['"<>&]/g,'');
@@ -6106,6 +6104,19 @@ function openImgLightboxById(postId, startIdx){
 }
 window.openImgLightboxById = openImgLightboxById;
 
+// ===== DEFAULT AVATAR BY GENDER =====
+function getDefaultAv(gender){
+  if(!gender || gender==='' || gender==='Masculino') return 'hombre.png';
+  if(gender==='Femenino') return 'mujer.png';
+  return 'hombre.png'; // Otro -> hombre por defecto
+}
+function userAv(av, gender){
+  return av || getDefaultAv(gender);
+}
+window.getDefaultAv = getDefaultAv;
+window.userAv = userAv;
+
+
 function openImgLightbox(src, allImgs, postId){
   _galImages = Array.isArray(allImgs) && allImgs.length ? allImgs : [src];
   _galIdx = _galImages.indexOf(src);
@@ -6134,13 +6145,11 @@ function openImgLightbox(src, allImgs, postId){
     ${r.e}<span id="_igRxnCnt_${r.e.codePointAt(0)}" style="font-size:.68rem;color:var(--muted);font-weight:700;min-width:8px;"></span>
   </button>`).join('');
 
-  const avHtml = window.CU && window.CU.av
-    ? `<img src="${window.CU.av}" style="width:100%;height:100%;object-fit:cover;">`
-    : (window.CU ? (window.CU.nick||'?')[0].toUpperCase() : '👤');
+  const avHtml = window.CU && `<img src="${window.CU.av||getDefaultAv(window.CU.gender||'')}" style="width:100%;height:100%;object-fit:cover;">`
 
   const postAvHtml = post && post.userAv
     ? `<img src="${post.userAv}" style="width:100%;height:100%;object-fit:cover;">`
-    : (post ? (post.userNick||'?')[0].toUpperCase() : '📷');
+    : `<img src="${post?(post.userAv||getDefaultAv('')):getDefaultAv('')}" style="width:100%;height:100%;object-fit:cover;">`;
 
   modal.innerHTML = `
   <style>
@@ -6279,7 +6288,7 @@ function igRenderComments(comments){
     return;
   }
   el.innerHTML = comments.map(c=>{
-    const av = c.av?`<img src="${c.av}" style="width:100%;height:100%;object-fit:cover;">`:(c.nick||'?')[0].toUpperCase();
+    const av = `<img src="${c.av||getDefaultAv(c.gender||'')}" style="width:100%;height:100%;object-fit:cover;">`;
     return `<div style="display:flex;gap:8px;align-items:flex-start;">
       <div style="width:28px;height:28px;border-radius:50%;background:var(--bg3);border:1.5px solid var(--accent);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:700;color:var(--accent);flex-shrink:0;">${av}</div>
       <div style="flex:1;min-width:0;background:var(--bg3);border-radius:10px;padding:6px 10px;">
@@ -6446,7 +6455,7 @@ async function loadAdminUsers(){
   document.getElementById('adminUsersList').innerHTML = users.length ? users.map(u=>`
     <div style="padding:12px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:center;">
       <div style="width:38px;height:38px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;flex-shrink:0;overflow:hidden;">
-        ${u.av?`<img src="${u.av}" style="width:100%;height:100%;object-fit:cover;">`:u.nick?u.nick[0].toUpperCase():'?'}
+        ${`<img src="${u.av||getDefaultAv(u.gender||'')}" style="width:100%;height:100%;object-fit:cover;">`}
       </div>
       <div style="flex:1;min-width:0;">
         <div style="font-size:.85rem;font-weight:700;display:flex;align-items:center;gap:5px;">
@@ -7300,7 +7309,7 @@ function spotCardHTML(s){
   return `<div id="spot_${s.id}" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:14px;overflow:hidden;">
     <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;">
       <div style="width:40px;height:40px;border-radius:50%;border:2px solid var(--accent);overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent);background:var(--bg3);flex-shrink:0;cursor:pointer;" onclick="openUserProfile('${s.userId}','${(s.userNick||'').replace(/'/g,"\'")}')">
-        ${s.userAv?`<img src="${s.userAv}" style="width:100%;height:100%;object-fit:cover;">`:(s.userNick||'?')[0].toUpperCase()}
+        ${`<img src="${s.userAv||getDefaultAv('')}" style="width:100%;height:100%;object-fit:cover;">`}
       </div>
       <div style="flex:1;">
         <div style="font-weight:700;font-size:.9rem;cursor:pointer;" onclick="openUserProfile('${s.userId}','${(s.userNick||'').replace(/'/g,"\'")}'")">${esc(s.userNick||'')}</div>
@@ -7408,7 +7417,7 @@ async function renderSidebarFriends(){
     ? friends.slice(0,6).map(f=>`
       <div class="sl-item" onclick="openUserProfile('${f.id}','${(f.nick||'').replace(/'/g,"\\'")}')">
         <div style="width:28px;height:28px;border-radius:50%;border:1px solid var(--accent);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:var(--accent);background:var(--bg3);flex-shrink:0;">
-          ${f.av?`<img src="${f.av}" style="width:100%;height:100%;object-fit:cover;">`:f.nick[0].toUpperCase()}
+          ${`<img src="${f.av||getDefaultAv(f.gender||'')}" style="width:100%;height:100%;object-fit:cover;">`}
         </div>
         <span style="font-size:.83rem;">${esc(f.nick)}</span>
       </div>`).join('')
@@ -7547,7 +7556,7 @@ async function loadVerifRequests(){
     el.innerHTML = reqs.map(r=>`
       <div style="display:flex;align-items:center;gap:12px;padding:14px;border-bottom:1px solid var(--border);background:${r.status==='approved'?'rgba(0,200,0,.04)':r.status==='rejected'?'rgba(255,0,0,.04)':'var(--bg2)'};">
         <div style="width:44px;height:44px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;background:var(--bg3);flex-shrink:0;${r.status==='approved'?'border:2px solid gold;box-shadow:0 0 8px rgba(255,215,0,.4);':'border:1px solid var(--border);'}">
-          ${r.av?`<img src="${r.av}" style="width:100%;height:100%;object-fit:cover;">`:(r.nick||'?')[0].toUpperCase()}
+          ${`<img src="${r.av||getDefaultAv(r.gender||'')}" style="width:100%;height:100%;object-fit:cover;">`}
         </div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:.88rem;font-weight:800;">${esc(r.nick||'')} ${r.status==='approved'?'✅':''}</div>
@@ -7998,7 +8007,7 @@ async function renderAmigosPage(){
       reqList.innerHTML = requests.map((n,i) => `
         <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;">
           <div style="width:56px;height:56px;border-radius:50%;border:2px solid var(--accent);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:700;color:var(--accent);background:var(--bg3);cursor:pointer;" onclick="openUserProfile('${n.fromId||''}','${(n.fromNick||'').replace(/'/g,"\\'")}')">
-            ${n.fromAv?`<img src="${n.fromAv}" style="width:100%;height:100%;object-fit:cover;">`:(n.fromNick||'?')[0].toUpperCase()}
+            ${`<img src="${n.fromAv||getDefaultAv('')}" style="width:100%;height:100%;object-fit:cover;">`}
           </div>
           <div style="font-size:.82rem;font-weight:700;cursor:pointer;" onclick="openUserProfile('${n.fromId||''}','${(n.fromNick||'').replace(/'/g,"\\'")}')}">${esc(n.fromNick||'')}</div>
           <div style="display:flex;gap:6px;width:100%;">
@@ -8034,7 +8043,7 @@ async function renderAmigosPage(){
     suggList.innerHTML = shuffled.map(u=>`
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;">
         <div style="width:64px;height:64px;border-radius:50%;border:2px solid var(--border);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700;color:var(--accent);background:var(--bg3);cursor:pointer;" onclick="openUserProfile('${u.id}','${(u.nick||'').replace(/'/g,"\\'")}')">
-          ${u.av?`<img src="${u.av}" style="width:100%;height:100%;object-fit:cover;">`:(u.nick||'?')[0].toUpperCase()}
+          ${`<img src="${u.av||getDefaultAv(u.gender||'')}" style="width:100%;height:100%;object-fit:cover;">`}
         </div>
         <div>
           <div style="font-size:.85rem;font-weight:700;cursor:pointer;" onclick="openUserProfile('${u.id}','${(u.nick||'').replace(/'/g,"\\'")}')}">${esc(u.nick||'')}</div>
@@ -8070,7 +8079,7 @@ async function renderSuggestedUsers(){
       ? shuffled.map(u=>`
         <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:var(--r);">
           <div style="width:34px;height:34px;border-radius:50%;border:1px solid var(--border);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;color:var(--accent);background:var(--bg3);flex-shrink:0;cursor:pointer;" onclick="openUserProfile('${u.id}','${(u.nick||'').replace(/'/g,"\\'")}')">
-            ${u.av?`<img src="${u.av}" style="width:100%;height:100%;object-fit:cover;">`:u.nick?u.nick[0].toUpperCase():'?'}
+            ${`<img src="${u.av||getDefaultAv(u.gender||'')}" style="width:100%;height:100%;object-fit:cover;">`}
           </div>
           <div style="flex:1;min-width:0;">
             <div style="font-size:.82rem;font-weight:700;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" onclick="openUserProfile('${u.id}','${(u.nick||'').replace(/'/g,"\\'")}'")">${esc(u.nick||'')}</div>
@@ -8541,7 +8550,7 @@ async function _loadUserProfilePage(uid, nick){
         const addBtn = (!isMe && !alrFriend) ? `<button onclick="sendFriendRequest('${fid}','${(f.nick||'').replace(/'/g,"\'")}','page');event.stopPropagation();" style="margin-top:5px;width:100%;padding:4px;background:var(--accent);border:none;border-radius:var(--rs);color:#000;font-size:.65rem;font-weight:700;cursor:pointer;">+ Agregar</button>` : alrFriend&&!isMe?`<div style="margin-top:5px;font-size:.65rem;color:var(--green);text-align:center;font-weight:700;">✓ Amigos</div>`:'';
         return `<div onclick="openUserProfile('${fid}','${(f.nick||'').replace(/'/g,"\'")}');" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer;transition:border-color .2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
           <div style="width:44px;height:44px;border-radius:50%;background:var(--bg4);margin:0 auto 6px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;${f.verified?'border:2px solid gold;':'border:1px solid var(--border);'}">
-            ${f.av?`<img src="${f.av}" style="width:100%;height:100%;object-fit:cover;">`:(f.nick||'?')[0].toUpperCase()}
+            ${`<img src="${f.av||getDefaultAv(f.gender||'')}" style="width:100%;height:100%;object-fit:cover;">`}
           </div>
           <div style="font-size:.72rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(f.nick||'?')}${f.verified?' ✅':''}</div>
           ${addBtn}
@@ -8782,7 +8791,7 @@ function renderSidebarOnline(online, offline){
   // Banner builder for each user
   function userBanner(u, isOnline){
     const nick = esc(u.nick||'?');
-    const initials = (u.nick||'?')[0].toUpperCase();
+    const initials = `<img src="${u.av||getDefaultAv(u.gender||'')}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
     const devIcon = u.device==='mobile' ? '📱' : '🖥️';
     const statusText = isOnline
       ? `<span style="color:#1877f2;font-size:.68rem;font-weight:600;">● En línea · ${devIcon}</span>`
@@ -9564,7 +9573,7 @@ function renderPhotoComments(comments){
   }
   el.innerHTML = comments.map(c=>{
     const time = c.time ? fmtT(typeof c.time==='number'?c.time:Date.now()) : '';
-    const av = c.av ? `<img src="${c.av}" style="width:100%;height:100%;object-fit:cover;">` : (c.nick||'?')[0].toUpperCase();
+    const av = `<img src="${c.av||getDefaultAv(c.gender||'')}" style="width:100%;height:100%;object-fit:cover;">`;
     return `<div style="display:flex;gap:8px;align-items:flex-start;">
       <div style="width:32px;height:32px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;overflow:hidden;flex-shrink:0;">${av}</div>
       <div style="flex:1;">
