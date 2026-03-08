@@ -1476,6 +1476,10 @@ select.fi option{background:var(--bg3);color:var(--text);}
           <span class="fb-forgot" onclick="doForgotPassword()">¿Olvidaste tu contraseña?</span>
         </div>
         <div class="fb-divider"></div>
+        <button onclick="doGoogleLogin()" style="width:100%;padding:12px;background:#fff;color:#3c4043;border:1.5px solid #dadce0;border-radius:6px;font-size:1rem;font-weight:600;font-family:'Exo 2',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;transition:box-shadow .15s;" onmouseover="this.style.boxShadow='0 2px 8px #0002'" onmouseout="this.style.boxShadow='none'">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:22px;height:22px;">
+          Continuar con Google
+        </button>
         <button class="fb-btn-create" onclick="showReg()">Crear cuenta nueva</button>
       </div>
 
@@ -2852,7 +2856,7 @@ function _stub(name){ return function(){ _q.push([name, arguments]); }; }
 <script type="module">
 // ===== FIREBASE SETUP (modular ESM — sin eval, compatible con CSP) =====
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, GoogleAuthProvider, signInWithPopup } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
 import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, addDoc, deleteDoc, onSnapshot, query, orderBy, limit, serverTimestamp, increment, where, deleteField } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
 
@@ -3151,6 +3155,45 @@ function getDemoStories(){
 function getDemoFriends(){
   // Returns real friends from CU data
   return window.CU?.friendsList || [];
+}
+
+// ===== GOOGLE LOGIN =====
+async function doGoogleLogin(){
+  const errEl = document.getElementById('lErr');
+  errEl.textContent = ''; errEl.style.display = 'none';
+  try {
+    const provider = new GoogleAuthProvider();
+    const cred = await signInWithPopup(auth, provider);
+    const user = cred.user;
+    const userRef = doc(db, 'users', user.uid);
+    const userSnap = await getDoc(userRef);
+    if(!userSnap.exists()){
+      // Usuario nuevo — crear perfil automáticamente
+      const nick = (user.displayName?.replace(/\s+/g,'') || 'User' + Date.now().toString().slice(-4));
+      const newUser = {
+        nick, nickLower: nick.toLowerCase(),
+        email: user.email,
+        av: user.photoURL || '',
+        cover: '', bio: '', country: '',
+        favFish: '', favMap: '',
+        social_yt: '', social_dc: '',
+        joined: new Date().getFullYear(),
+        posts: 0, friends: 0, likes: 0,
+        createdAt: serverTimestamp()
+      };
+      await setDoc(userRef, newUser);
+      window.CU = { id: user.uid, ...newUser };
+    } else {
+      window.CU = { id: user.uid, ...userSnap.data() };
+    }
+    document.getElementById('mAuth').style.display = 'none';
+    onLogin();
+    toast('¡Bienvenido ' + window.CU.nick + '! 🎣', 'ok');
+  } catch(e) {
+    if(e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') return;
+    errEl.style.display = 'block';
+    errEl.textContent = e.message;
+  }
 }
 
 // ===== AUTH =====
