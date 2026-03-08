@@ -3502,6 +3502,8 @@ window.gp = (id, pushState = true) => {
     if(resEl) resEl.innerHTML='';
     document.getElementById('musicSearchInput')?.focus();
   }
+  // Actualizar actividad en presencia Firebase
+  if(typeof updatePresenceActivity === 'function') updatePresenceActivity(id);
 };
 function setNav(el){ document.querySelectorAll('.tb-nav-btn').forEach(b=>b.classList.remove('on')); el.classList.add('on'); }
 window.setNav = setNav;
@@ -9193,7 +9195,38 @@ async function deleteMyPost(pid){
 }
 
 // ===== PRESENCE (ONLINE USERS) =====
-let _presenceInterval = null;
+// Mapa de páginas → actividad visible
+const _PAGE_ACTIVITY = {
+  'home':          {icon:'🏠', text:'en el inicio'},
+  'profile':       {icon:'👤', text:'viendo su perfil'},
+  'userprofile':   {icon:'👤', text:'viendo un perfil'},
+  'amigos':        {icon:'👥', text:'buscando amigos'},
+  'musica':        {icon:'🎵', text:'escuchando música'},
+  'videos':        {icon:'📹', text:'viendo videos'},
+  'spots':         {icon:'📍', text:'explorando spots'},
+  'trofeos-feed':  {icon:'🥇', text:'viendo trofeos'},
+  'publica-trofeo':{icon:'🏆', text:'publicando trofeo'},
+  'buscar-trofeo': {icon:'🔍', text:'buscando trofeos'},
+  'casitrofeo':    {icon:'🏅', text:'casi trofeo'},
+  'torneos':       {icon:'⚔️', text:'viendo torneos'},
+  'carretes':      {icon:'🎣', text:'buscando carretes'},
+  'parches':       {icon:'🔧', text:'viendo novedades'},
+  'shop':          {icon:'🛍️', text:'en la tienda'},
+  'admin':         {icon:'⚙️', text:'en administración'},
+};
+
+async function updatePresenceActivity(pageId){
+  if(!window.CU) return;
+  const act = _PAGE_ACTIVITY[pageId] || {icon:'📱', text:'navegando'};
+  try {
+    await setDoc(doc(db,'presence',window.CU.id), {
+      activity: act.text,
+      activityIcon: act.icon,
+      activityPage: pageId
+    }, {merge:true});
+  } catch(e){}
+}
+window.updatePresenceActivity = updatePresenceActivity;
 async function startPresence(){
   if(!window.CU) return;
   const presRef = doc(db,'presence',window.CU.id);
@@ -9301,7 +9334,11 @@ function renderSidebarOnline(online, offline){
       ? (dev==='mobile' ? '#00e676' : '#1877f2')
       : (dev==='mobile' ? '#bf360c' : '#5c6bc0');
     const statusText = isOnline
-      ? `<span style="font-size:.68rem;font-weight:600;color:${dev==='mobile'?'#00e676':'#42a5f5'};">● En línea</span>`
+      ? (() => {
+          const actIcon = u.activityIcon || '📱';
+          const actText = u.activity || 'en línea';
+          return `<span style="font-size:.65rem;color:${dev==='mobile'?'#00e676':'#42a5f5'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;display:block;">${actIcon} ${esc(actText)}</span>`;
+        })()
       : `<span style="font-size:.68rem;color:var(--muted);">${fmtLastSeen(u.ts)}</span>`;
 
     return `
