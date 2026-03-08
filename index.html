@@ -9041,8 +9041,41 @@ async function _loadUserProfilePage(uid, nick){
     const msgBtn = isFriend
       ? `<button onclick="openChatWith('${uid}','${uNick.replace(/'/g,"\'")}')" style="display:flex;align-items:center;gap:7px;padding:9px 18px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:.85rem;font-weight:700;font-family:'Exo 2',sans-serif;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background='var(--bg3)'">💬 Mensaje</button>`
       : `<button disabled title="Solo podés mensajear a tus amigos" style="display:flex;align-items:center;gap:7px;padding:9px 18px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:.85rem;font-weight:700;cursor:not-allowed;font-family:'Exo 2',sans-serif;opacity:.5;">🔒 Mensaje</button>`;
-    const followBtn = `<button style="display:flex;align-items:center;gap:7px;padding:9px 20px;background:var(--accent);border:none;color:#000;border-radius:8px;font-size:.85rem;font-weight:800;font-family:'Exo 2',sans-serif;cursor:pointer;transition:all .2s;" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">➕ Seguir</button>`;
-    document.getElementById('upActions').innerHTML = msgBtn + followBtn + friendBtn;
+    // ── BUEN PESCADOR (likes en tiempo real) ──
+    const myId = window.CU?.id;
+    const pescaLikes = u.pescaLikes || {};
+    const pescaCount = Object.keys(pescaLikes).length;
+    const yaLike = myId && !!pescaLikes[myId];
+    const pescaBtn = myId && myId !== uid
+      ? `<button id="btnPescador_${uid}" onclick="togglePescaLike('${uid}')" style="display:flex;align-items:center;gap:7px;padding:9px 18px;background:${yaLike?'rgba(46,196,182,.15)':'var(--bg3)'};border:1px solid ${yaLike?'var(--accent)':'var(--border)'};color:${yaLike?'var(--accent)':'var(--text)'};border-radius:8px;font-size:.85rem;font-weight:800;font-family:'Exo 2',sans-serif;cursor:pointer;transition:all .2s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+        🎣 Buen pescador <span id="pescaCount_${uid}" style="display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;border-radius:100px;background:${yaLike?'var(--accent)':'var(--bg4)'};color:${yaLike?'#000':'var(--muted)'};font-size:.72rem;font-weight:800;padding:0 5px;">${pescaCount}</span>
+      </button>`
+      : `<div style="display:flex;align-items:center;gap:7px;padding:9px 18px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;font-size:.85rem;font-weight:700;color:var(--muted);">
+          🎣 Buen pescador <span style="display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;border-radius:100px;background:var(--bg4);color:var(--muted);font-size:.72rem;font-weight:800;padding:0 5px;" id="pescaCount_${uid}">${pescaCount}</span>
+        </div>`;
+    document.getElementById('upActions').innerHTML = msgBtn + pescaBtn + friendBtn;
+
+    // Listener en tiempo real para el contador
+    if(window._pescaUnsub) window._pescaUnsub();
+    window._pescaUnsub = onSnapshot(doc(db,'users',uid), snap=>{
+      if(!snap.exists()) return;
+      const data = snap.data();
+      const likes = data.pescaLikes || {};
+      const count = Object.keys(likes).length;
+      const isLiked = myId && !!likes[myId];
+      const countEl = document.getElementById('pescaCount_'+uid);
+      if(countEl){
+        countEl.textContent = count;
+        countEl.style.background = isLiked ? 'var(--accent)' : 'var(--bg4)';
+        countEl.style.color = isLiked ? '#000' : 'var(--muted)';
+      }
+      const btn = document.getElementById('btnPescador_'+uid);
+      if(btn){
+        btn.style.background = isLiked ? 'rgba(46,196,182,.15)' : 'var(--bg3)';
+        btn.style.borderColor = isLiked ? 'var(--accent)' : 'var(--border)';
+        btn.style.color = isLiked ? 'var(--accent)' : 'var(--text)';
+      }
+    });
 
     // ── TAB POSTS ── Agregar posts al caché local para que doReact/submitComment funcionen
     userPosts.forEach(p=>{
@@ -12368,6 +12401,37 @@ if(window._q) window._q.forEach(([name,args])=>{ if(window[name]) window[name](.
 
 // ===== START =====
 init();
+
+// ============================================================
+// ===== BUEN PESCADOR (likes en tiempo real) ==================
+// ============================================================
+async function togglePescaLike(targetUid){
+  if(!window.CU){ toast('Iniciá sesión primero','err'); return; }
+  if(window.CU.id === targetUid){ toast('No podés darte "Buen pescador" a vos mismo 😄','err'); return; }
+  try {
+    const ref = doc(db,'users',targetUid);
+    const snap = await getDoc(ref);
+    if(!snap.exists()) return;
+    const likes = snap.data().pescaLikes || {};
+    const myId = window.CU.id;
+    if(likes[myId]){
+      delete likes[myId];
+      await updateDoc(ref, {pescaLikes: likes});
+      toast('Retiraste tu "Buen pescador" 🎣','inf');
+    } else {
+      likes[myId] = true;
+      await updateDoc(ref, {pescaLikes: likes});
+      toast('¡Le diste "Buen pescador" 🎣!','ok');
+      // Notificación al dueño del perfil
+      try {
+        const notifs = snap.data().notifs || [];
+        notifs.unshift({ type:'pescador', fromId:myId, fromNick:window.CU.nick, text:`🎣 ${window.CU.nick} te dio "Buen pescador"`, time:Date.now() });
+        await updateDoc(ref, { notifs: notifs.slice(0,50) });
+      } catch(e){}
+    }
+  } catch(e){ console.error(e); toast('Error','err'); }
+}
+window.togglePescaLike = togglePescaLike;
 
 // ============================================================
 // ===== PANEL INSIGNIAS & ROLES (admin) ======================
