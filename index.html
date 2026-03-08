@@ -2111,6 +2111,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
     <button class="adm-tab" onclick="swAdminTab(this,'admt-ads')">📢 Publicidad</button>
     <button class="adm-tab" onclick="swAdminTab(this,'admt-pezdelsemana')" style="background:rgba(0,230,118,.08);border-color:rgba(0,230,118,.3);color:var(--green);">🐟 Pez Semanal</button>
     <button class="adm-tab" onclick="swAdminTab(this,'admt-xplevels');renderXPLevelsAdmin();" style="background:rgba(255,215,0,.08);border-color:rgba(255,215,0,.3);color:var(--gold);">⚡ Niveles XP</button>
+    <button class="adm-tab" onclick="swAdminTab(this,'admt-insignias');loadInsigniasPanel();" style="background:rgba(46,196,182,.08);border-color:rgba(46,196,182,.3);color:var(--accent);">🎣 Insignias & Roles</button>
   </div>
 
   <!-- TAB: Reportes -->
@@ -2378,6 +2379,33 @@ select.fi option{background:var(--bg3);color:var(--text);}
         <div style="font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Vista previa de niveles</div>
         <div id="xpLevelsPreview" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
       </div>
+    </div>
+  </div>
+
+  <!-- TAB: Insignias & Roles -->
+  <div id="admt-insignias" style="display:none;">
+    <!-- Buscador -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+      <input id="insigniasSearch" class="fi" placeholder="🔍 Buscar usuario..." oninput="filterInsigniasPanel()" style="flex:1;min-width:200px;max-width:340px;">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <span style="font-size:.72rem;color:var(--muted);align-self:center;">Filtrar:</span>
+        <button onclick="filterInsigniasBy('todos')" id="ifbtn-todos" class="cfbtn active">Todos</button>
+        <button onclick="filterInsigniasBy('pescador')" id="ifbtn-pescador" class="cfbtn">⭐ Pescador</button>
+        <button onclick="filterInsigniasBy('activo')" id="ifbtn-activo" class="cfbtn">⭐ Activo</button>
+        <button onclick="filterInsigniasBy('pro')" id="ifbtn-pro" class="cfbtn">👑 Pro</button>
+      </div>
+    </div>
+
+    <!-- Leyenda insignias -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+      <span style="display:flex;align-items:center;gap:5px;padding:4px 12px;border-radius:100px;background:rgba(46,196,182,.12);border:1px solid rgba(46,196,182,.3);font-size:.75rem;color:var(--accent);font-weight:700;">⭐ Activo</span>
+      <span style="display:flex;align-items:center;gap:5px;padding:4px 12px;border-radius:100px;background:rgba(212,160,23,.12);border:1px solid rgba(212,160,23,.3);font-size:.75rem;color:var(--gold);font-weight:700;">👑 Pro</span>
+      <span style="display:flex;align-items:center;gap:5px;padding:4px 12px;border-radius:100px;background:rgba(66,183,42,.12);border:1px solid rgba(66,183,42,.3);font-size:.75rem;color:var(--green);font-weight:700;">⭐ Pescador</span>
+      <span style="margin-left:auto;font-size:.72rem;color:var(--muted);align-self:center;">Click en una insignia o rol para activar/desactivar → se guarda solo</span>
+    </div>
+
+    <div id="insigniasPanelList" style="display:grid;gap:8px;">
+      <div style="text-align:center;padding:30px;color:var(--muted);">Cargando usuarios...</div>
     </div>
   </div>
 
@@ -12340,6 +12368,143 @@ if(window._q) window._q.forEach(([name,args])=>{ if(window[name]) window[name](.
 
 // ===== START =====
 init();
+
+// ============================================================
+// ===== PANEL INSIGNIAS & ROLES (admin) ======================
+// ============================================================
+let _insigAllUsers = [];
+let _insigFilter   = 'todos';
+
+async function loadInsigniasPanel(){
+  const container = document.getElementById('insigniasPanelList');
+  if(!container) return;
+  container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">Cargando...</div>';
+  try {
+    const snap = await getDocs(collection(db,'users'));
+    _insigAllUsers = snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderInsigniasPanel();
+  } catch(e){
+    container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--red);">Error al cargar usuarios</div>';
+  }
+}
+
+function filterInsigniasBy(f){
+  _insigFilter = f;
+  ['todos','pescador','activo','pro'].forEach(k=>{
+    const b = document.getElementById('ifbtn-'+k);
+    if(b){ b.classList.toggle('active', k===f); }
+  });
+  renderInsigniasPanel();
+}
+
+function filterInsigniasPanel(){
+  renderInsigniasPanel();
+}
+
+function renderInsigniasPanel(){
+  const container = document.getElementById('insigniasPanelList');
+  if(!container) return;
+  const q = (document.getElementById('insigniasSearch')||{}).value?.toLowerCase()||'';
+  let users = _insigAllUsers.filter(u=>{
+    const match = !q || (u.nick||'').toLowerCase().includes(q) || (u.email||'').toLowerCase().includes(q);
+    if(!match) return false;
+    if(_insigFilter==='pescador') return (u.badges||[]).includes('pescador');
+    if(_insigFilter==='activo')   return (u.badges||[]).includes('activo');
+    if(_insigFilter==='pro')      return (u.badges||[]).includes('pro');
+    return true;
+  });
+
+  if(!users.length){
+    container.innerHTML='<div style="text-align:center;padding:30px;color:var(--muted);">Sin resultados</div>';
+    return;
+  }
+
+  const BADGE_DEFS = [
+    { key:'activo',   label:'⭐ Activo',   bg:'rgba(46,196,182,.15)',  border:'rgba(46,196,182,.4)',  color:'var(--accent)' },
+    { key:'pro',      label:'👑 Pro',       bg:'rgba(212,160,23,.15)',  border:'rgba(212,160,23,.4)',  color:'var(--gold)'   },
+    { key:'pescador', label:'⭐ Pescador',  bg:'rgba(66,183,42,.15)',   border:'rgba(66,183,42,.4)',   color:'var(--green)'  },
+  ];
+  const ROLE_DEFS = [
+    { key:'usuario',    label:'👤 Usuario',    bg:'rgba(100,150,255,.1)',  border:'rgba(100,150,255,.3)', color:'#6699ff' },
+    { key:'moderador',  label:'🛡️ Moderador',  bg:'rgba(66,183,42,.1)',    border:'rgba(66,183,42,.3)',   color:'var(--green)' },
+    { key:'admin',      label:'⚙️ Admin',       bg:'rgba(255,68,68,.1)',    border:'rgba(255,68,68,.3)',   color:'var(--red)'  },
+    { key:'dueño',      label:'👑 Dueño',       bg:'rgba(212,160,23,.15)', border:'rgba(212,160,23,.4)', color:'var(--gold)' },
+  ];
+
+  container.innerHTML = users.map(u=>{
+    const av = u.av ? `<img src="${u.av}" style="width:100%;height:100%;object-fit:cover;">` : `<span style="font-size:.9rem;font-weight:700;color:var(--accent);">${(u.nick||'?')[0].toUpperCase()}</span>`;
+    const badges = u.badges||[];
+    const currentRole = u.adminRole || 'usuario';
+
+    const badgeBtns = BADGE_DEFS.map(b=>{
+      const active = badges.includes(b.key);
+      return `<button onclick="toggleInsignia('${u.id}','${b.key}')" title="${active?'Quitar':'Dar'} ${b.label}"
+        style="padding:5px 12px;border-radius:100px;border:1px solid ${active?b.border:'var(--border)'};
+        background:${active?b.bg:'transparent'};color:${active?b.color:'var(--muted)'};
+        font-size:.75rem;font-weight:${active?700:500};cursor:pointer;font-family:'Exo 2',sans-serif;
+        transition:all .18s;">${b.label}${active?' ✓':' +'}</button>`;
+    }).join('');
+
+    const roleBtns = ROLE_DEFS.map(r=>{
+      const active = currentRole===r.key || (!u.adminRole && r.key==='usuario');
+      return `<button onclick="setUserRole('${u.id}','${r.key}')" title="Asignar rol ${r.label}"
+        style="padding:4px 10px;border-radius:100px;border:1px solid ${active?r.border:'var(--border)'};
+        background:${active?r.bg:'transparent'};color:${active?r.color:'var(--muted)'};
+        font-size:.72rem;font-weight:${active?700:500};cursor:pointer;font-family:'Exo 2',sans-serif;
+        transition:all .18s;">${r.label}</button>`;
+    }).join('');
+
+    return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='var(--bg2)'">
+      <!-- Avatar -->
+      <div style="width:38px;height:38px;border-radius:50%;border:2px solid var(--border);overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--bg4);flex-shrink:0;">${av}</div>
+      <!-- Nombre -->
+      <div style="min-width:120px;flex-shrink:0;">
+        <div style="font-weight:700;font-size:.88rem;">${esc(u.nick||'Sin nombre')}</div>
+        <div style="font-size:.7rem;color:var(--muted);">${esc(u.email||u.id)}</div>
+      </div>
+      <!-- Insignias -->
+      <div style="display:flex;gap:6px;flex-wrap:wrap;flex:1;align-items:center;">
+        <span style="font-size:.68rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Insignias:</span>
+        ${badgeBtns}
+      </div>
+      <!-- Roles -->
+      <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;">
+        <span style="font-size:.68rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Rol:</span>
+        ${roleBtns}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function toggleInsignia(userId, badge){
+  const u = _insigAllUsers.find(x=>x.id===userId);
+  if(!u) return;
+  const badges = [...(u.badges||[])];
+  const idx = badges.indexOf(badge);
+  if(idx>=0) badges.splice(idx,1); else badges.push(badge);
+  try {
+    await updateDoc(doc(db,'users',userId),{badges});
+    u.badges = badges;
+    renderInsigniasPanel();
+    toast(`${idx>=0?'Insignia quitada':'Insignia asignada'} ✓`,'ok');
+  } catch(e){ toast('Error al actualizar insignia','err'); console.error(e); }
+}
+
+async function setUserRole(userId, role){
+  const u = _insigAllUsers.find(x=>x.id===userId);
+  if(!u) return;
+  try {
+    await updateDoc(doc(db,'users',userId),{adminRole: role});
+    u.adminRole = role;
+    renderInsigniasPanel();
+    toast(`Rol actualizado a "${role}" ✓`,'ok');
+  } catch(e){ toast('Error al cambiar rol','err'); console.error(e); }
+}
+window.loadInsigniasPanel  = loadInsigniasPanel;
+window.filterInsigniasBy   = filterInsigniasBy;
+window.filterInsigniasPanel= filterInsigniasPanel;
+window.toggleInsignia      = toggleInsignia;
+window.setUserRole         = setUserRole;
 </script>
 <!-- ===== FOOTER ===== -->
 <div id="siteFooter" style="display:none;text-align:center;padding:24px 16px;color:var(--muted);font-size:.75rem;border-top:1px solid var(--border);margin-top:32px;line-height:2;">
