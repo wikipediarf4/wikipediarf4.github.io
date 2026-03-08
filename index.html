@@ -1446,7 +1446,10 @@ select.fi option{background:var(--bg3);color:var(--text);}
         <div id="savedAccountsList" style="margin-bottom:8px;"></div>
         <div id="lErr" style="color:#fa3e3e;font-size:.82rem;margin-bottom:10px;text-align:center;display:none;padding:8px;background:#fff0f0;border-radius:6px;border:1px solid #ffd0d0;"></div>
         <input class="fb-input" type="text" id="lEmail" placeholder="Correo electrónico o nick" autocomplete="username">
-        <input class="fb-input" type="password" id="lPass" placeholder="Contraseña" onkeypress="if(event.key==='Enter')doLogin()" style="margin-bottom:8px;">
+        <div style="position:relative;margin-bottom:8px;">
+          <input class="fb-input" type="password" id="lPass" placeholder="Contraseña" onkeypress="if(event.key==='Enter')doLogin()" style="margin-bottom:0;padding-right:44px;">
+          <button type="button" onclick="togglePassVis('lPass',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1rem;color:#65676b;padding:2px 4px;" title="Mostrar/ocultar contraseña">👁</button>
+        </div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
           <input type="checkbox" id="rememberMe" style="width:15px;height:15px;accent-color:#1877f2;cursor:pointer;">
           <label for="rememberMe" style="font-size:.83rem;color:#65676b;cursor:pointer;">Mantener sesión iniciada</label>
@@ -1474,7 +1477,10 @@ select.fi option{background:var(--bg3);color:var(--text);}
         </div>
         <div style="height:12px;"></div>
         <input class="fb-input" type="email" id="rEmail" placeholder="Correo electrónico">
-        <input class="fb-input" type="password" id="rPass" placeholder="Contraseña nueva (mín. 6)" onkeypress="if(event.key==='Enter')doReg()">
+        <div style="position:relative;margin-bottom:0;">
+          <input class="fb-input" type="password" id="rPass" placeholder="Contraseña nueva (mín. 6)" onkeypress="if(event.key==='Enter')doReg()" style="margin-bottom:0;padding-right:44px;">
+          <button type="button" onclick="togglePassVis('rPass',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1rem;color:#65676b;padding:2px 4px;" title="Mostrar/ocultar contraseña">👁</button>
+        </div>
         <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:14px;">
           <input type="checkbox" id="acceptTerms" style="width:15px;height:15px;accent-color:#1877f2;cursor:pointer;margin-top:3px;flex-shrink:0;">
           <label for="acceptTerms" style="font-size:.78rem;color:#65676b;cursor:pointer;line-height:1.5;">
@@ -1701,7 +1707,42 @@ select.fi option{background:var(--bg3);color:var(--text);}
       <input class="fi" id="epNick" placeholder="Tu nick en RF4">
       <div id="epNickMsg" style="font-size:.68rem;margin-top:4px;display:none;"></div>
     </div>
-    <div class="fg"><label class="fl">✉️ Email público <span style="font-size:.7rem;color:var(--muted);font-weight:400;">(opcional, visible en tu perfil)</span></label><input class="fi" type="email" id="epEmailPublic" placeholder="contacto@ejemplo.com"></div>
+    <div class="fg">
+      <label class="fl">✉️ Correo electrónico <span style="font-size:.7rem;color:var(--muted);font-weight:400;">(de tu cuenta)</span></label>
+      <!-- Correo enmascarado + botón cambiar -->
+      <div id="epEmailDisplay" style="display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:9px 12px;">
+        <span style="font-size:.88rem;color:var(--muted);">✉️</span>
+        <span id="epEmailMasked" style="font-size:.88rem;flex:1;color:var(--text);">—</span>
+        <button type="button" id="epEmailChangeBtn" onclick="startEmailChange()" style="font-size:.72rem;font-weight:700;color:var(--accent);background:none;border:none;cursor:pointer;padding:2px 6px;border-radius:6px;transition:background .15s;" onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background='none'">✏ Cambiar</button>
+      </div>
+      <!-- Formulario cambio email (oculto por defecto) -->
+      <div id="epEmailChangeForm" style="display:none;margin-top:8px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:12px;">
+        <div style="font-size:.75rem;font-weight:700;color:var(--accent);margin-bottom:8px;">🔐 Verificar correo actual primero</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:8px;">Para cambiar tu correo, primero debés confirmar el actual haciendo clic en el enlace de verificación que te enviamos.</div>
+        <button type="button" onclick="sendVerifEmailForChange()" style="font-size:.75rem;font-weight:700;background:var(--accent);color:#000;border:none;border-radius:8px;padding:7px 14px;cursor:pointer;margin-bottom:8px;">📧 Enviar verificación al correo actual</button>
+        <div id="epEmailVerifStatus" style="font-size:.72rem;color:var(--muted);margin-bottom:8px;display:none;"></div>
+        <div id="epEmailNewGroup" style="display:none;">
+          <input class="fi" type="email" id="epEmailNew" placeholder="Nuevo correo electrónico" style="margin-bottom:6px;">
+          <button type="button" onclick="confirmEmailChange()" class="btn btn-p" style="width:100%;font-size:.8rem;">✅ Confirmar nuevo correo</button>
+        </div>
+        <button type="button" onclick="cancelEmailChange()" style="font-size:.72rem;color:var(--muted);background:none;border:none;cursor:pointer;margin-top:4px;text-decoration:underline;">Cancelar</button>
+      </div>
+      <!-- Privacidad del email -->
+      <div style="margin-top:8px;">
+        <label class="fl" style="font-size:.7rem;margin-bottom:4px;">👁 ¿Quién puede ver tu correo?</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:.78rem;background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:5px 11px;transition:all .15s;" id="epEmailPriv_all">
+            <input type="radio" name="epEmailPrivacy" value="all" style="accent-color:var(--accent);"> 🌐 Todos
+          </label>
+          <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:.78rem;background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:5px 11px;transition:all .15s;" id="epEmailPriv_friends">
+            <input type="radio" name="epEmailPrivacy" value="friends"> 👥 Amigos
+          </label>
+          <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:.78rem;background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:5px 11px;transition:all .15s;" id="epEmailPriv_only">
+            <input type="radio" name="epEmailPrivacy" value="only"> 🔒 Solo yo
+          </label>
+        </div>
+      </div>
+    </div>
     <div class="fg"><label class="fl">Biografía</label><textarea class="fi" id="epBio" placeholder="Cuéntanos sobre tu experiencia en RF4..." style="min-height:70px;"></textarea></div>
     <div class="frow">
       <div class="fg"><label class="fl">País</label>
@@ -5254,7 +5295,19 @@ function renderProfile(){
   setInfoField('profTechRow','profTech', window.CU.favTech);
   setInfoField('profExpRow','profExp', window.CU.experience);
   document.getElementById('profCountry').textContent = window.CU.country||'No especificado';
-  setInfoField('profEmailRow','profEmailEl', window.CU.emailPublic);
+  // Email propio: siempre visible (es el dueño), mostrar enmascarado con etiqueta de privacidad
+  const _myEmail = (auth.currentUser && auth.currentUser.email) || window.CU.email || '';
+  const _emailPriv = window.CU.emailPrivacy || 'only';
+  const _privLabel = {all:'🌐 Todos',friends:'👥 Amigos',only:'🔒 Solo yo'}[_emailPriv]||'🔒 Solo yo';
+  if(_myEmail){
+    const emailRow = document.getElementById('profEmailRow');
+    const emailEl = document.getElementById('profEmailEl');
+    if(emailRow) emailRow.style.display='flex';
+    if(emailEl) emailEl.innerHTML = maskEmail(_myEmail) + ` <span style="font-size:.65rem;color:var(--muted);margin-left:6px;background:var(--bg3);padding:1px 6px;border-radius:100px;">${_privLabel}</span>`;
+  } else {
+    const emailRow = document.getElementById('profEmailRow');
+    if(emailRow) emailRow.style.display='none';
+  }
   setInfoField('profCityRow','profCity', window.CU.city);
   setInfoField('profAgeRow','profAge', window.CU.age);
   setInfoField('profGenderRow','profGender', window.CU.gender);
@@ -5337,7 +5390,9 @@ async function saveProfile(){
   window.CU.favFish = document.getElementById('epFish').value.trim();
   window.CU.favMap = document.getElementById('epMap').value;
   window.CU.country = document.getElementById('epCountry').value;
-  window.CU.emailPublic = document.getElementById('epEmailPublic').value.trim();
+  // Guardar privacidad del email
+  const privChecked = document.querySelector('input[name="epEmailPrivacy"]:checked');
+  window.CU.emailPrivacy = privChecked ? privChecked.value : 'only';
   window.CU.city = document.getElementById('epCity').value.trim();
   window.CU.birthdate = document.getElementById('epBirthdate').value || '';
   if(window.CU.birthdate){
@@ -5367,11 +5422,19 @@ function openEditProfile(){
   const daysSince = last ? (Date.now()-last.getTime())/(1000*60*60*24) : 999;
   if(daysSince < 90){
     const daysLeft = Math.ceil(90-daysSince);
+    const hoursLeft = Math.ceil((90*24*60*60*1000 - (Date.now()-last.getTime()))/(1000*60*60));
     nickEl.readOnly = true;
     nickEl.style.opacity = '.6';
     nickEl.style.cursor = 'default';
-    nickMsgEl.innerHTML = `🔒 Podés cambiar tu nick en <strong>${daysLeft} días</strong>. Para cambios urgentes, contactá a <strong>ruizgustavo12</strong>.`;
-    nickMsgEl.style.color = 'var(--muted)';
+    nickMsgEl.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;background:rgba(255,100,0,.08);border:1px solid rgba(255,100,0,.2);border-radius:8px;padding:8px 12px;">
+        <span style="font-size:1.4rem;">⏳</span>
+        <div>
+          <div style="font-size:.78rem;font-weight:700;color:#ff7043;">Nick bloqueado por cooldown</div>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:2px;">Disponible en <span style="font-weight:900;color:#ff7043;font-size:.85rem;">${daysLeft} días</span> (${hoursLeft}h)</div>
+          <div style="font-size:.65rem;color:var(--muted);margin-top:2px;">Cambio urgente: contactá a <strong>ruizgustavo12</strong></div>
+        </div>
+      </div>`;
     nickMsgEl.style.display = 'block';
   } else {
     nickEl.readOnly = false;
@@ -5390,7 +5453,16 @@ function openEditProfile(){
   document.getElementById('epFish').value = window.CU.favFish||'';
   document.getElementById('epMap').value = window.CU.favMap||'';
   document.getElementById('epCountry').value = window.CU.country||'';
-  document.getElementById('epEmailPublic').value = window.CU.emailPublic||'';
+  // Email: mostrar enmascarado
+  const realEmail = (auth.currentUser && auth.currentUser.email) || window.CU.email || '';
+  const maskedEl = document.getElementById('epEmailMasked');
+  if(maskedEl) maskedEl.textContent = maskEmail(realEmail);
+  // Cancelar form si estaba abierto
+  cancelEmailChange && cancelEmailChange();
+  // Privacidad email
+  const priv = window.CU.emailPrivacy || 'only';
+  const privRadios = document.querySelectorAll('input[name="epEmailPrivacy"]');
+  privRadios.forEach(r=>{ r.checked = (r.value === priv); });
   document.getElementById('epCity').value = window.CU.city||'';
   document.getElementById('epBirthdate').value = window.CU.birthdate||'';
   // Auto-calc age from birthdate
@@ -8818,7 +8890,14 @@ async function _loadUserProfilePage(uid, nick){
       u.favMap  ? `<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);"><span style="color:var(--muted);min-width:100px;font-size:.8rem;">Mapa favorito</span><span style="font-size:.82rem;">📍 ${esc(u.favMap)}</span></div>` : '',
       u.favTech ? `<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);"><span style="color:var(--muted);min-width:100px;font-size:.8rem;">Técnica</span><span style="font-size:.82rem;">${esc(u.favTech)}</span></div>` : '',
       u.joined  ? `<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);"><span style="color:var(--muted);min-width:100px;font-size:.8rem;">Miembro desde</span><span style="font-size:.82rem;">${u.joined}</span></div>` : '',
-      u.emailPublic ? `<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);"><span style="color:var(--muted);min-width:100px;font-size:.8rem;">Email</span><span style="font-size:.82rem;">✉️ ${esc(u.emailPublic)}</span></div>` : '',
+      (()=>{
+        const ep = u.emailPrivacy || 'only';
+        const myId = window.CU && window.CU.id;
+        const isFriendForEmail = (myFriends||[]).includes(uid);
+        const canSeeEmail = (ep==='all') || (ep==='friends' && isFriendForEmail);
+        const emailVal = canSeeEmail ? (u.emailPublic || u.email || '') : '';
+        return emailVal ? `<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);"><span style="color:var(--muted);min-width:100px;font-size:.8rem;">Email</span><span style="font-size:.82rem;">✉️ ${esc(emailVal)}</span></div>` : '';
+      })(),
       mutualFriends.length ? `<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);"><span style="color:var(--muted);min-width:100px;font-size:.8rem;">Amigos en común</span><span style="font-size:.82rem;color:var(--accent);">👥 ${mutualFriends.length}: ${mutualFriends.slice(0,3).map(f=>esc(f.nick||'')).join(', ')}${mutualFriends.length>3?' y más':''}</span></div>` : '',
     ].filter(Boolean).join('');
     document.getElementById('upTabInfo').innerHTML = infoRows || '<div style="color:var(--muted);padding:20px;text-align:center;font-size:.85rem;">Sin información disponible</div>';
@@ -11315,11 +11394,94 @@ function renderTrofeoSidebar(items){
   }).join('');
 }
 
+// ===== VER/OCULTAR CONTRASEÑA =====
+function togglePassVis(inputId, btn){
+  const inp = document.getElementById(inputId);
+  if(!inp) return;
+  if(inp.type === 'password'){
+    inp.type = 'text';
+    btn.textContent = '🙈';
+    btn.title = 'Ocultar contraseña';
+  } else {
+    inp.type = 'password';
+    btn.textContent = '👁';
+    btn.title = 'Mostrar contraseña';
+  }
+}
+
+// ===== ENMASCARAR EMAIL =====
+function maskEmail(email){
+  if(!email || !email.includes('@')) return '—';
+  const [user, domain] = email.split('@');
+  const [domName, ...domExt] = domain.split('.');
+  const maskUser = user.length <= 2 ? user[0]+'*' : user[0] + '*'.repeat(Math.min(user.length-2,4)) + user[user.length-1];
+  const maskDom = domName.length <= 2 ? domName[0]+'*' : domName[0]+'*'.repeat(Math.min(domName.length-1,2));
+  return maskUser + '@' + maskDom + '.' + domExt.join('.');
+}
+
+// ===== EMAIL CHANGE FLOW =====
+function startEmailChange(){
+  const form = document.getElementById('epEmailChangeForm');
+  const display = document.getElementById('epEmailDisplay');
+  if(form){ form.style.display='block'; }
+  if(display){ display.style.display='none'; }
+  document.getElementById('epEmailVerifStatus').style.display='none';
+  document.getElementById('epEmailNewGroup').style.display='none';
+}
+function cancelEmailChange(){
+  document.getElementById('epEmailChangeForm').style.display='none';
+  document.getElementById('epEmailDisplay').style.display='flex';
+}
+async function sendVerifEmailForChange(){
+  try {
+    const user = auth.currentUser;
+    if(!user){ toast('Sesión no encontrada','err'); return; }
+    await user.sendEmailVerification();
+    const statusEl = document.getElementById('epEmailVerifStatus');
+    statusEl.innerHTML = '✅ Verificación enviada a <strong>'+maskEmail(user.email)+'</strong>. Revisá tu bandeja y hacé clic en el enlace, luego volvé aquí.';
+    statusEl.style.color='var(--green)';
+    statusEl.style.display='block';
+    // Poll email verification
+    const pollBtn = document.getElementById('epEmailNewGroup');
+    let checks = 0;
+    const interval = setInterval(async ()=>{
+      await user.reload();
+      checks++;
+      if(user.emailVerified){
+        clearInterval(interval);
+        pollBtn.style.display='block';
+        statusEl.innerHTML='✅ Correo verificado. Ahora podés ingresar el nuevo correo.';
+      } else if(checks > 30){
+        clearInterval(interval);
+      }
+    }, 4000);
+    toast('Correo de verificación enviado 📧','ok');
+  } catch(e){
+    toast('Error al enviar verificación: '+e.message,'err');
+  }
+}
+async function confirmEmailChange(){
+  const newEmail = (document.getElementById('epEmailNew').value||'').trim();
+  if(!newEmail || !newEmail.includes('@')){ toast('Ingresá un correo válido','err'); return; }
+  try {
+    const user = auth.currentUser;
+    await user.verifyBeforeUpdateEmail(newEmail);
+    toast('Se envió un enlace de confirmación al nuevo correo. Una vez confirmado, el cambio se aplicará.','ok');
+    cancelEmailChange();
+  } catch(e){
+    toast('Error: '+e.message,'err');
+  }
+}
+
+// ===== PRIVACIDAD EMAIL — helper para renderizar en perfil =====
+function getEmailPrivacy(){ return (window.CU && window.CU.emailPrivacy) || 'only'; }
+
 // ===== EXPOSE TO HTML — sobreescribe los stubs =====
 const _expose = {
   doLogin,doReg,showReg,showLogin,showTerms,closeTerms,acceptTermsAndRegister,
   submitPost,submitStory,submitComment,toggleLinkInput,clearPostLink,debounceLinkPreview,fetchLinkPreview,_autoLinkDetect,handleMentionInput,insertMention,searchMentionedUser,handlePostMentionInput,insertPostMention,focusPostTextAndAt,
   doReact,quickReact,
+  togglePassVis, maskEmail, startEmailChange, cancelEmailChange, sendVerifEmailForChange, confirmEmailChange,
   saveProfile,openEditProfile,calcAgeFromBirthdate,
   changeCover,changeAvatar,
   previewPostImg,removePostImg,previewPostMedia,removePostMedia,
