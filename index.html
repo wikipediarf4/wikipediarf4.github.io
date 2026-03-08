@@ -397,13 +397,15 @@ img[title="Verificado"]:hover{
 .post-action-btn.active{color:var(--accent);}
 
 /* REACTION POPUP */
-.rxn-wrap{position:relative;}
-.rxn-popup{display:none;position:absolute;bottom:100%;left:0;
+.rxn-wrap{position:relative;padding-bottom:6px;margin-bottom:-6px;}
+/* El wrap cubre botón + popup sin gaps */
+.rxn-popup{display:none;position:absolute;bottom:0;left:0;
   background:#fff;border:1px solid var(--border);border-radius:100px;
-  padding:6px 10px;gap:4px;align-items:center;z-index:600;box-shadow:0 2px 12px rgba(0,0,0,.2);white-space:nowrap;
-  padding-bottom:12px;margin-bottom:-6px;}
+  padding:6px 10px;gap:4px;align-items:center;z-index:600;
+  box-shadow:0 2px 12px rgba(0,0,0,.2);white-space:nowrap;
+  transform:translateY(calc(-100% - 6px));}
 .rxn-popup.show{display:flex;animation:rxnPop .16s ease;}
-@keyframes rxnPop{from{opacity:0;transform:scale(.6) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes rxnPop{from{opacity:0;transform:translateY(calc(-100% - 6px)) scale(.6)}to{opacity:1;transform:translateY(calc(-100% - 6px)) scale(1)}}
 .rxn-btn{background:none;border:none;font-size:1.4rem;cursor:pointer;padding:2px 4px;border-radius:50%;transition:transform .13s;line-height:1;position:relative;}
 .rxn-btn:hover{transform:scale(1.6) translateY(-6px);}
 .rxn-btn:hover .rxn-tooltip{opacity:1!important;}
@@ -4564,7 +4566,8 @@ function closeSV(){
   document.getElementById('storyViewer').classList.remove('open');
   if(_svAutoTimer){clearTimeout(_svAutoTimer);_svAutoTimer=null;}
   if(window._svViewsUnsub){ window._svViewsUnsub(); window._svViewsUnsub=null; }
-  if(window._svAudio){ window._svAudio.pause(); window._svAudio=null; }
+  if(window._svAudio){ window._svAudio.pause(); window._svAudio.src=''; window._svAudio=null; }
+  window._svCurrentStoryId = null;
 }
 
 // Registra vista y escucha contador en tiempo real
@@ -4726,7 +4729,15 @@ function renderSV(){
   if(cinp) cinp.value = '';
 
   // --- MÚSICA DEEZER ---
-  if(window._svAudio){ window._svAudio.pause(); window._svAudio.src=''; window._svAudio = null; }
+  // Solo reiniciar audio si cambió de historia (distinto id)
+  if(window._svAudio && window._svCurrentStoryId !== s.id){
+    window._svAudio.pause(); window._svAudio.src=''; window._svAudio = null;
+  }
+  window._svCurrentStoryId = s.id;
+  // Si ya hay audio sonando para esta historia, no crear otro
+  if(window._svAudio && !window._svAudio.paused) {
+    // solo actualizar la barra visual, no tocar el audio
+  } else if(window._svAudio){ window._svAudio.pause(); window._svAudio.src=''; window._svAudio=null; }
   const svMusic = document.getElementById('svMusicBar');
 
   async function _svPlayMusic(previewUrl, musicData){
@@ -6402,7 +6413,7 @@ function insertPostMention(nick){
 // ===== REACTIONS =====
 const _rxnPops = {};
 function showRxnPop(id){ cancelHideRxnPop(id); document.getElementById('rxnp_'+id)?.classList.add('show'); }
-function schedHideRxnPop(id){ _rxnPops[id]=setTimeout(()=>{ document.getElementById('rxnp_'+id)?.classList.remove('show'); },500); }
+function schedHideRxnPop(id){ _rxnPops[id]=setTimeout(()=>{ document.getElementById('rxnp_'+id)?.classList.remove('show'); },800); }
 function cancelHideRxnPop(id){ if(_rxnPops[id]){clearTimeout(_rxnPops[id]);delete _rxnPops[id];} }
 
 async function doReact(pid, emoji){
