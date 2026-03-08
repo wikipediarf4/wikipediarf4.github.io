@@ -869,7 +869,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
     <div class="feed">
       <!-- Stories -->
       <div class="stories-row" id="storiesRow">
-        <div onclick="om('mAddStory')" style="border:none;border-radius:12px;overflow:hidden;cursor:pointer;position:relative;width:80px;height:140px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.15);transition:transform .2s,box-shadow .2s;" onmouseover="this.style.transform='scale(1.03)';this.style.boxShadow='0 4px 14px rgba(0,0,0,.22)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 2px 8px rgba(0,0,0,.15)'">
+        <div onclick="om('mAddStory');_loadPopularStoryMusic();" style="border:none;border-radius:12px;overflow:hidden;cursor:pointer;position:relative;width:80px;height:140px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.15);transition:transform .2s,box-shadow .2s;" onmouseover="this.style.transform='scale(1.03)';this.style.boxShadow='0 4px 14px rgba(0,0,0,.22)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 2px 8px rgba(0,0,0,.15)'">
           <!-- Top ~65%: user photo background -->
           <div id="storyAddPhoto" style="position:absolute;top:0;left:0;right:0;height:65%;background:var(--bg3);overflow:hidden;display:flex;align-items:center;justify-content:center;">
             <span id="storyAddPhotoInner" style="font-size:2.2rem;opacity:.3;">👤</span>
@@ -1715,7 +1715,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
     <div class="fg">
       <label class="fl">🎵 Música (opcional)</label>
       <div style="position:relative;">
-        <input class="fi" id="storyMusicSearch" placeholder="🔍 Buscar canción o artista..." style="flex:1;width:100%;padding-right:36px;" oninput="debounceStoryMusic()" onkeydown="if(event.key==='Enter')searchStoryMusic();if(event.key==='Escape')clearStoryMusic()">
+        <input class="fi" id="storyMusicSearch" placeholder="🔍 Buscar canción o artista..." style="flex:1;width:100%;padding-right:36px;" oninput="debounceStoryMusic()" onfocus="_showStoryMusicSuggestions()" onkeydown="if(event.key==='Enter')searchStoryMusic();if(event.key==='Escape')clearStoryMusic()">
         <span id="storyMusicSpinner" style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:.8rem;animation:spin 1s linear infinite;">⏳</span>
       </div>
       <!-- Resultados búsqueda -->
@@ -4489,11 +4489,90 @@ const _MUSIC_SUGGESTIONS = {
   'ar': ['Ariana Grande','Arcángel'],
 };
 
+// Carga las canciones más usadas en historias desde Firestore
+window._popularStoryMusic = [];
+async function _loadPopularStoryMusic(){
+  try {
+    const snaps = await getDocs(query(
+      collection(db,'stories'),
+      where('music','!=',null),
+      orderBy('music'),
+      limit(30)
+    ));
+    const counts = {};
+    snaps.forEach(d=>{
+      const m = d.data().music;
+      if(!m || !m.title) return;
+      const key = m.title+'||'+m.artist;
+      if(!counts[key]) counts[key] = {track:m, count:0};
+      counts[key].count++;
+    });
+    window._popularStoryMusic = Object.values(counts)
+      .sort((a,b)=>b.count-a.count)
+      .slice(0,8)
+      .map(x=>x.track);
+  } catch(e){ window._popularStoryMusic = []; }
+}
+
+function _showStoryMusicSuggestions(){
+  const res = document.getElementById('storyMusicResults');
+  if(!res) return;
+  const pop = window._popularStoryMusic || [];
+
+  // Sugerencias estáticas por letra
+  const q = (document.getElementById('storyMusicSearch').value||'').trim().toLowerCase();
+  const key3 = q.slice(0,3), key2 = q.slice(0,2);
+  const staticSug = _MUSIC_SUGGESTIONS[key3] || _MUSIC_SUGGESTIONS[key2] || [];
+
+  let html = '';
+
+  // Populares de historias del sitio
+  if(pop.length && !q){
+    html += `<div style="padding:8px 12px 4px;font-size:.68rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;">🔥 Populares en historias</div>`;
+    html += pop.map(t=>`
+      <div data-pop-preview="${t.preview||''}" data-pop-title="${(t.title||'').replace(/"/g,'')}" data-pop-artist="${(t.artist||'').replace(/"/g,'')}" data-pop-cover="${t.cover||''}"
+        style="display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--border);"
+        onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+        <img src="${t.cover||''}" style="width:36px;height:36px;border-radius:6px;object-fit:cover;flex-shrink:0;" onerror="this.style.display='none'">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:.82rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(t.title||'')}</div>
+          <div style="font-size:.7rem;color:var(--muted);">${esc(t.artist||'')}</div>
+        </div>
+        <span style="font-size:.65rem;color:var(--accent);">▶ 30s</span>
+      </div>`).join('');
+  }
+
+  // Sugerencias por letra
+  if(staticSug.length && q.length >= 2){
+    html += `<div style="padding:8px 12px 4px;font-size:.68rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;">🎤 Artistas</div>`;
+    html += staticSug.map(s=>`
+      <div onclick="document.getElementById('storyMusicSearch').value='${s}';searchStoryMusic();"
+        style="display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--border);"
+        onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+        <span style="font-size:1rem;">🎤</span>
+        <span style="font-size:.85rem;font-weight:700;color:var(--text);">${s}</span>
+        <span style="font-size:.7rem;color:var(--muted);margin-left:auto;">→ buscar</span>
+      </div>`).join('');
+  }
+
+  if(!html) return;
+  res.style.display = 'block';
+  res.innerHTML = html;
+
+  // Eventos click + hover para populares
+  res.querySelectorAll('[data-pop-title]').forEach(el=>{
+    const track = { preview:el.dataset.popPreview, title:el.dataset.popTitle, artist:el.dataset.popArtist, cover:el.dataset.popCover };
+    el.addEventListener('click', ()=> selectStoryMusic(track));
+    el.addEventListener('mouseenter', ()=> _hoverStoryPreview(track.preview, el));
+    el.addEventListener('mouseleave', ()=> _leaveStoryPreview(el));
+  });
+}
+
 function debounceStoryMusic(){
   clearTimeout(_storyMusicDebounce);
   const q = document.getElementById('storyMusicSearch').value.trim();
   const res = document.getElementById('storyMusicResults');
-  if(!q){ res.style.display='none'; return; }
+  if(!q){ _showStoryMusicSuggestions(); return; }
 
   // Sugerencias instantáneas mientras escriben (sin esperar API)
   const key = q.toLowerCase().slice(0,3);
@@ -4560,18 +4639,17 @@ async function searchStoryMusic(){
     return;
   }
 
-  res.innerHTML = tracks.map(t => {
-    const safeTrack = encodeURIComponent(JSON.stringify({preview:t.preview,title:t.title,artist:t.artist.name,cover:t.album.cover_small}));
+  // Guardamos los tracks en variable global para acceder por índice (evita problemas con JSON en onclick)
+  window._deezerTracks = tracks;
+
+  res.innerHTML = tracks.map((t,i) => {
     const dur = t.duration ? Math.floor(t.duration/60)+':'+String(t.duration%60).padStart(2,'0') : '';
-    return `<div
-      onclick="selectStoryMusic(JSON.parse(decodeURIComponent('${safeTrack}')))"
-      onmouseenter="_hoverStoryPreview('${(t.preview||'').replace(/'/g,'')}',this)"
-      onmouseleave="_leaveStoryPreview(this)"
+    return `<div data-ti="${i}"
       style="display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .15s;position:relative;"
       onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
       <div style="position:relative;flex-shrink:0;">
         <img src="${t.album.cover_small}" style="width:40px;height:40px;border-radius:6px;object-fit:cover;display:block;" loading="lazy">
-        <div class="sm-play-overlay" style="position:absolute;inset:0;background:rgba(0,0,0,.55);border-radius:6px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;font-size:.9rem;pointer-events:none;">▶</div>
+        <div class="sm-play-overlay" style="position:absolute;inset:0;background:rgba(0,0,0,.55);border-radius:6px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;font-size:1.1rem;pointer-events:none;">▶</div>
       </div>
       <div style="flex:1;min-width:0;">
         <div style="font-size:.82rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(t.title)}</div>
@@ -4584,10 +4662,21 @@ async function searchStoryMusic(){
     </div>`;
   }).join('');
 
-  // Overlay play al hover via JS (no depende de atributos inline)
-  res.querySelectorAll('div[onmouseenter]').forEach(el=>{
-    el.addEventListener('mouseenter',()=>{ const o=el.querySelector('.sm-play-overlay'); if(o)o.style.opacity='1'; });
-    el.addEventListener('mouseleave',()=>{ const o=el.querySelector('.sm-play-overlay'); if(o)o.style.opacity='0'; });
+  // Eventos via JS - click, hover preview, overlay
+  res.querySelectorAll('[data-ti]').forEach(el=>{
+    const i = parseInt(el.dataset.ti);
+    const t = window._deezerTracks[i];
+    if(!t) return;
+    const overlay = el.querySelector('.sm-play-overlay');
+    el.addEventListener('click', ()=> selectStoryMusic({preview:t.preview, title:t.title, artist:t.artist.name, cover:t.album.cover_small}));
+    el.addEventListener('mouseenter', ()=>{
+      if(overlay) overlay.style.opacity='1';
+      _hoverStoryPreview(t.preview, el);
+    });
+    el.addEventListener('mouseleave', ()=>{
+      if(overlay) overlay.style.opacity='0';
+      _leaveStoryPreview(el);
+    });
   });
 }
 
@@ -12441,7 +12530,32 @@ const _INVIDIOUS = [
   'https://invidious.privacyredirect.com',
   'https://inv.tux.pizza',
   'https://invidious.io.lol',
+  'https://invidious.fdn.fr',
+  'https://yewtu.be',
 ];
+
+// Fetch YouTube via Invidious con test de instancia activa
+async function _fetchYouTube(q){
+  for(const inv of _INVIDIOUS){
+    try {
+      const url = inv+'/api/v1/search?q='+encodeURIComponent(q)+'&type=video&fields=videoId,title,author,lengthSeconds,videoThumbnails&page=1';
+      const r = await fetch('https://api.allorigins.win/get?url='+encodeURIComponent(url), {signal:AbortSignal.timeout(6000)});
+      if(!r.ok) continue;
+      const raw = await r.json();
+      const videos = raw.contents ? JSON.parse(raw.contents) : raw;
+      if(Array.isArray(videos) && videos.length) return videos;
+    } catch(e){ continue; }
+    // también intentar directo sin proxy
+    try {
+      const url = inv+'/api/v1/search?q='+encodeURIComponent(q)+'&type=video&fields=videoId,title,author,lengthSeconds,videoThumbnails&page=1';
+      const r = await fetch(url, {signal:AbortSignal.timeout(4000)});
+      if(!r.ok) continue;
+      const videos = await r.json();
+      if(Array.isArray(videos) && videos.length) return videos;
+    } catch(e){ continue; }
+  }
+  return null;
+}
 
 function debounceMusicSearch(){
   clearTimeout(_musicDebounce);
@@ -12466,17 +12580,9 @@ async function searchDeezer(){
   if(sugEl) sugEl.style.display = 'none';
   resultsEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted);"><div style="font-size:1.8rem;margin-bottom:8px;animation:spin 1s linear infinite;display:inline-block;">⏳</div><div style="margin-top:8px;">Buscando en YouTube...</div></div>`;
   
-  // Intentar múltiples instancias de Invidious
-  for(const inv of _INVIDIOUS){
-    try {
-      const url = inv+'/api/v1/search?q='+encodeURIComponent(q)+'&type=video&fields=videoId,title,author,lengthSeconds,videoThumbnails&page=1';
-      const invRes = await fetch('https://corsproxy.io/?'+encodeURIComponent(url), {signal: AbortSignal.timeout(5000)});
-      if(invRes.ok){
-        const videos = await invRes.json();
-        if(videos && videos.length){ renderYouTubeResults(videos); return; }
-      }
-    } catch(e){ continue; }
-  }
+  // Intentar múltiples instancias de Invidious con fallback de proxy
+  const videos = await _fetchYouTube(q);
+  if(videos){ renderYouTubeResults(videos); return; }
   
   // Si todo falla — mostrar botón para abrir YouTube Music directamente
   resultsEl.innerHTML = `
