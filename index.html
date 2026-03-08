@@ -3246,6 +3246,7 @@ const ROUTES = {
 const PAGE_TO_URL = {};  // URL siempre queda en /chatrf4/
 
 function navigateTo(id, pushState = true) {
+  pushState = false; // URL siempre fija en /
   // URL siempre queda en /chatrf4/ — sin sub-rutas
 }
 
@@ -8464,7 +8465,7 @@ async function sendShopAnnouncementToAll(){
 // ===== USER PROFILE MODAL =====
 async function openUserProfile(uid, nick){
   // Si es el propio usuario, va al perfil propio
-  if(uid && uid === window.CU?.id){ gp('profile'); history.pushState({page:'profile'}, '', '/chatrf4/perfil'); return; }
+  if(uid && uid === window.CU?.id){ gp('profile');  return; }
   // Si no hay uid, busca por nick
   if(!uid && nick){
     try {
@@ -8476,7 +8477,7 @@ async function openUserProfile(uid, nick){
   if(!uid){ toast('Usuario no encontrado','err'); return; }
   // Push URL /u/nick
   const safeNick = (nick||'usuario').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
-  history.pushState({page:'userprofile', uid, nick}, '', '/chatrf4/u/' + safeNick);
+  
   // Navega a la página de perfil
   gp('userprofile', false);
   _loadUserProfilePage(uid, nick||'');
@@ -9489,7 +9490,7 @@ function openChatWith(uid, nick){
 
   // Update URL to /mensajes/nick
   const safeNickUrl = (nick||'usuario').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
-  history.pushState({page:'mensajes', chatUid:uid, chatNick:nick}, '', '/chatrf4/mensajes/' + safeNickUrl);
+  
 
   // Make sure messenger modal is open
   om('mMessenger');
@@ -9810,7 +9811,7 @@ function backToMessengerList(){
   if(!window.location.pathname.startsWith('/chatrf4/mensajes/') && window.location.pathname !== '/chatrf4/mensajes') {
     // already handled
   } else {
-    history.pushState({page:'mensajes'}, '', '/chatrf4/mensajes');
+    
   }
   if(_unsubChat){ _unsubChat(); _unsubChat=null; }
   _chatUserId = null;
@@ -11519,9 +11520,9 @@ function openNotifDropdown(){
   // Push URL only when opening (not closing)
   const willOpen = dd.style.display !== 'flex';
   if(willOpen && false) {
-    history.pushState({page:'notificaciones'}, '', '/chatrf4/notificaciones');
+    
   } else if(!willOpen && false) {
-    history.pushState({page:'home'}, '', '/chatrf4/');
+    
   }
   if(isMobile){
     // Mobile: full screen panel from top
