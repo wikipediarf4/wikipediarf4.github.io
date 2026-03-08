@@ -4552,6 +4552,29 @@ function _svStartTimer(){
     }else{closeSV();}
   },SV_DURATION);
 }
+function openStoryById(storyId, preferUserId){
+  // Buscar la historia en _stories por id
+  let idx = _stories.findIndex(s => s.id === storyId);
+  if(idx === -1 && preferUserId){
+    // Si no está cargada aún, buscar por userId como fallback
+    idx = _stories.findIndex(s => s.userId === preferUserId);
+  }
+  if(idx === -1){
+    // No está en memoria — ir a inicio y abrir historias
+    navTo('home');
+    toast('Abriendo historia...','inf');
+    setTimeout(()=>{
+      const idx2 = _stories.findIndex(s => s.id === storyId);
+      if(idx2 !== -1) openSV(idx2);
+    }, 1200);
+    return;
+  }
+  // Cerrar cualquier modal abierto
+  document.querySelectorAll('.modal.open').forEach(m=>m.classList.remove('open'));
+  navTo('home');
+  setTimeout(()=>openSV(idx), 200);
+}
+
 function openSV(idx){
   _svIdx=idx; renderSV();
   document.getElementById('storyViewer').classList.add('open');
@@ -4904,12 +4927,14 @@ async function reactStory(em){
         storyComment: true,
         storyImg: s.img || '',
         storyText: storyPreview,
+        storyId: s.id || '',
+        storyUserId: s.userId || '',
         time: serverTimestamp()
       });
       // Notif with preview to owner
       await sendNotifToUserStory(s.userId,
         `${em} ${window.CU.nick} reaccionó a tu historia`,
-        storyPreview, s.img || '');
+        storyPreview, s.img || '', s.id || '');
     } catch(e){ console.error('Error enviando reacción:', e); }
   }
 }
@@ -4933,12 +4958,14 @@ async function submitStoryComment(){
       storyComment: true,
       storyImg: s.img || '',
       storyText: storyPreview,
+      storyId: s.id || '',
+      storyUserId: s.userId || '',
       time: serverTimestamp()
     });
     // Notif with story preview
     await sendNotifToUserStory(s.userId,
       `💬 ${window.CU.nick} comentó tu historia: "${text.slice(0,40)}"`,
-      storyPreview, s.img || '');
+      storyPreview, s.img || '', s.id || '');
     toast(`Mensaje enviado a ${s.userNick} 💬`,'ok');
   } catch(e){
     console.error('Error enviando comentario:', e);
@@ -8216,8 +8243,9 @@ function renderNotifs(){
     // Notif normal
     const postId = n.postId||'';
     const bdayUid = n.bdayUid||'';
-    const clickable = !!(postId || bdayUid);
-    return `<div data-action="notif-click" data-postid="${postId}" data-bdayuid="${bdayUid}" data-bdaynick="${n.bdayNick||''}"
+    const storyId = n.storyId||'';
+    const clickable = !!(postId || bdayUid || storyId);
+    return `<div data-action="notif-click" data-postid="${postId}" data-bdayuid="${bdayUid}" data-bdaynick="${n.bdayNick||''}" data-storyid="${storyId}"
       style="display:flex;align-items:flex-start;gap:12px;padding:10px 16px;transition:background .15s;${isRead?'':'background:rgba(0,198,255,.05);'}cursor:${clickable?'pointer':'default'};"
       onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='${isRead?'':'rgba(0,198,255,.05)'}'">
       <div style="position:relative;flex-shrink:0;">
@@ -8226,7 +8254,15 @@ function renderNotifs(){
       </div>
       <div style="flex:1;min-width:0;">
         <div style="font-size:.83rem;line-height:1.45;">${n.text||''}</div>
-        ${n.storyPreview?`<div style="font-size:.72rem;color:var(--accent);margin-top:3px;padding:3px 8px;border-radius:6px;border-left:2px solid var(--accent);background:rgba(0,198,255,.06);">📖 "${esc(n.storyPreview)}"</div>`:''}
+        ${n.storyId ? `
+        <div style="margin-top:6px;border-radius:10px;overflow:hidden;border:1px solid rgba(0,198,255,.3);background:rgba(0,198,255,.06);cursor:pointer;">
+          ${n.storyImg ? `<img src="${n.storyImg}" style="width:100%;max-height:100px;object-fit:cover;display:block;">` : '<div style="width:100%;height:48px;background:linear-gradient(135deg,#0a2a4a,#0077b6);display:flex;align-items:center;justify-content:center;font-size:1.5rem;">🎣</div>'}
+          <div style="padding:5px 8px;display:flex;align-items:center;gap:5px;">
+            <span style="font-size:.65rem;color:var(--accent);font-weight:700;">📖 Historia</span>
+            ${n.storyPreview?`<span style="font-size:.65rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">"${esc(n.storyPreview)}"</span>`:''}
+            <span style="font-size:.62rem;color:rgba(0,198,255,.7);margin-left:auto;flex-shrink:0;">Ver →</span>
+          </div>
+        </div>` : n.storyPreview ? `<div style="font-size:.72rem;color:var(--accent);margin-top:3px;padding:3px 8px;border-radius:6px;border-left:2px solid var(--accent);background:rgba(0,198,255,.06);">📖 "${esc(n.storyPreview)}"</div>` : ''}
         <div style="font-size:.72rem;color:${isRead?'var(--muted)':'var(--accent)'};margin-top:4px;font-weight:${isRead?'400':'700'};">${fmtT(n.time)}</div>
       </div>
       ${!isRead?`<div style="width:10px;height:10px;background:var(--accent);border-radius:50%;flex-shrink:0;margin-top:4px;"></div>`:''}
@@ -8249,7 +8285,8 @@ function renderNotifs(){
     if(!row) return;
     const action = row.dataset.action;
     if(action==='notif-click'){
-      if(row.dataset.postid){ closeNotifDropdown(); scrollToPost(row.dataset.postid); }
+      if(row.dataset.storyid){ closeNotifDropdown(); openStoryById(row.dataset.storyid); }
+      else if(row.dataset.postid){ closeNotifDropdown(); scrollToPost(row.dataset.postid); }
       else if(row.dataset.bdayuid){ closeNotifDropdown(); openUserProfile(row.dataset.bdayuid, row.dataset.bdaynick); }
     } else if(action==='view-profile'){
       closeNotifDropdown(); openUserProfile(row.dataset.uid, row.dataset.nick);
@@ -10968,13 +11005,13 @@ async function doLogout(){
 }
 
 // ===== SEND NOTIFICATION TO ANY USER =====
-async function sendNotifToUserStory(uid, text, storyPreview, storyImg){
+async function sendNotifToUserStory(uid, text, storyPreview, storyImg, storyId){
   if(!uid || uid===window.CU?.id) return;
   try {
     const snap = await getDoc(doc(db,'users',uid));
     if(!snap.exists()) return;
     const notifs = snap.data().notifs || [];
-    notifs.unshift({text, time:Date.now(), read:false, storyComment:true, storyPreview: storyPreview||'', storyImg: storyImg||''});
+    notifs.unshift({text, time:Date.now(), read:false, storyComment:true, storyPreview: storyPreview||'', storyImg: storyImg||'', storyId: storyId||''});
     await updateDoc(doc(db,'users',uid), {notifs: notifs.slice(0,30)});
   } catch(e){ console.error('notif story error',e); }
 }
@@ -12282,12 +12319,14 @@ function openChatWith(uid, nick){
             const msgTopRxns = rxnEntries.slice(0,3).map(([,v])=>v).join('');
             const myMsgRxn = window.CU ? (msgRxns[window.CU.id]||'') : '';
             const rxnBtns = CHAT_RXNS.map(em=>`<button onclick="reactChatMsg('${chatId}','${m.id}','${em}')" style="background:${myMsgRxn===em?'rgba(0,198,255,.2)':'none'};border:none;font-size:1.25rem;cursor:pointer;padding:3px 5px;border-radius:50%;transition:transform .12s;" onmouseover="this.style.transform='scale(1.5) translateY(-4px)'" onmouseout="this.style.transform='scale(1)'">${em}</button>`).join('');
-            // Story messages get a special card layout
+            // Story messages get a special card layout — clickeable para abrir la historia
+            const _sId = m.storyId || '';
+            const _sUid = m.storyUserId || '';
             const storyCard = isStoryComment ? `
-              <div style="max-width:82%;border-radius:14px;overflow:hidden;border:1px solid rgba(0,198,255,.35);background:rgba(0,198,255,.07);margin-bottom:2px;">
-                ${storyImg ? `<img src="${storyImg}" style="width:100%;max-height:160px;object-fit:cover;display:block;border-bottom:1px solid rgba(0,198,255,.2);">` : ''}
+              <div onclick="${_sId ? `openStoryById('${_sId}','${_sUid}')` : ''}" style="max-width:82%;border-radius:14px;overflow:hidden;border:1px solid rgba(0,198,255,.35);background:rgba(0,198,255,.07);margin-bottom:2px;${_sId?'cursor:pointer;':''}transition:opacity .15s;" ${_sId?'onmouseover="this.style.opacity=\'0.82\'" onmouseout="this.style.opacity=\'1\'"':''}>
+                ${storyImg ? `<img src="${storyImg}" style="width:100%;max-height:160px;object-fit:cover;display:block;border-bottom:1px solid rgba(0,198,255,.2);">` : '<div style="width:100%;height:80px;background:linear-gradient(135deg,#0a2a4a,#0077b6);display:flex;align-items:center;justify-content:center;font-size:2rem;">🎣</div>'}
                 <div style="padding:10px 12px;">
-                  <div style="font-size:.68rem;color:var(--accent);font-weight:700;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">📖 Historia</div>
+                  <div style="font-size:.68rem;color:var(--accent);font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">📖 Historia ${_sId?'· <span style=\"color:rgba(0,198,255,.7)\">Toca para ver →</span>':''}</div>
                   ${m.storyText ? `<div style="font-size:.75rem;color:var(--muted);font-style:italic;margin-bottom:6px;padding:4px 8px;background:rgba(0,0,0,.2);border-radius:6px;border-left:2px solid var(--accent);">"${esc(m.storyText)}"</div>` : ''}
                   <div style="font-size:.84rem;color:var(--text);line-height:1.5;word-break:break-word;">${esc(m.text)}</div>
                 </div>
