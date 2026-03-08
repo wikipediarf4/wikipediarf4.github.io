@@ -3240,7 +3240,7 @@ function _stub(name){ return function(){ _q.push([name, arguments]); }; }
  'previewSpotImg','removeSpotImg','submitSpot','loadSpots','toggleYtInput','previewYtEmbed','clearYtInput','extractYtId','openPostWithYt','loadFriendSpots','renderFriendSpotsInHome','openEditSpot','saveEditSpot','deleteSpot','scrollToPost',
  'renderSidebarFriends','renderSuggestedUsers','playNotifSound','showNotifToast','sendNotifToUserWithPost','openMessenger','loadVideos','filterVideos',
  'previewPezSemanaImg','submitPezSemana','deletePezSemana','loadPezSemana','openPezSemanalModal','openReactionsModal','buildRxnLabel',
- 'filterTrofeoFeed','listenTrofeosFeed','swSkillTab','searchStoryMusic','selectStoryMusic','clearStoryMusic','searchDeezer','playDeezer','closeTrophyBanner','debounceStoryMusic','_hoverStoryPreview','_leaveStoryPreview','debounceMusicSearch','_doSharePost','_cmtOpenGif','searchCmtGifs','sendCmtGif','_toggleSharePrivacy','_setSharePrivacy','_txtMusicInput','_txtMusicFocus','_txtMusicSearch','_txtSelectTrack','_txtClearMusic'
+ 'filterTrofeoFeed','listenTrofeosFeed','swSkillTab','searchStoryMusic','selectStoryMusic','clearStoryMusic','searchDeezer','playDeezer','closeTrophyBanner','debounceStoryMusic','_hoverStoryPreview','_leaveStoryPreview','debounceMusicSearch','_doSharePost','_cmtOpenGif','searchCmtGifs','sendCmtGif','_toggleSharePrivacy','_setSharePrivacy','_txtMusicInput','_txtMusicFocus','_txtMusicSearch','_txtSelectTrack','_txtClearMusic','_txtSelectPopular','_txtSelectPopular'
 ].forEach(fn => { window[fn] = _stub(fn); });
 </script>
 <script type="module">
@@ -4673,8 +4673,17 @@ let _storyPreviewAudio = null;
 
 // Proxies Deezer en orden de prioridad
 const _DEEZER_PROXIES = [
+  // corsproxy.io — más confiable
   q => `https://corsproxy.io/?${encodeURIComponent('https://api.deezer.com/search?q='+encodeURIComponent(q)+'&limit=12')}`,
+  // allorigins — wraps in {contents}
   q => `https://api.allorigins.win/get?url=${encodeURIComponent('https://api.deezer.com/search?q='+encodeURIComponent(q)+'&limit=12')}`,
+  // cors.sh
+  q => { const u='https://api.deezer.com/search?q='+encodeURIComponent(q)+'&limit=12'; return `https://cors.sh/${u}`; },
+  // proxy.cors.st
+  q => `https://proxy.cors.st/https://api.deezer.com/search?q=${encodeURIComponent(q)}&limit=12`,
+  // crossorigin.me
+  q => `https://crossorigin.me/https://api.deezer.com/search?q=${encodeURIComponent(q)}&limit=12`,
+  // thingproxy
   q => `https://thingproxy.freeboard.io/fetch/https://api.deezer.com/search?q=${encodeURIComponent(q)}&limit=12`,
 ];
 
@@ -4936,15 +4945,30 @@ function _stopStoryPreview(){
 async function _fetchDeezer(q){
   for(const proxyFn of _DEEZER_PROXIES){
     try {
-      const r = await fetch(proxyFn(q), {signal: AbortSignal.timeout(5000)});
+      const url = proxyFn(q);
+      const r = await fetch(url, {signal: AbortSignal.timeout(7000)});
       if(!r.ok) continue;
-      const raw = await r.json();
+      const text = await r.text();
+      let raw;
+      try { raw = JSON.parse(text); } catch(e){ continue; }
       // allorigins wraps in {contents:'...'}
-      const data = raw.contents ? JSON.parse(raw.contents) : raw;
-      if(data.data && data.data.length) return data.data;
+      let data = raw;
+      if(raw.contents){
+        try { data = JSON.parse(raw.contents); } catch(e){ continue; }
+      }
+      if(data.data && data.data.length > 0){
+        // Normalize tracks
+        return data.data.map(t=>({
+          id: t.id,
+          title: t.title || '',
+          artist: t.artist?.name || '',
+          cover: t.album?.cover_medium || t.album?.cover || '',
+          preview: t.preview || ''
+        }));
+      }
     } catch(e){ continue; }
   }
-  return null;
+  return [];
 }
 
 async function searchStoryMusic(){
@@ -5082,27 +5106,66 @@ function _txtMusicInput(){
 function _txtMusicFocus(){
   const q = document.getElementById('txt_MusicSearch')?.value.trim() || '';
   _txtShowSuggestions(q);
+  // Also load popular from Firestore if available
+  _loadPopularStoryMusic();
 }
 
 function _txtShowSuggestions(q){
   const res = document.getElementById('txt_MusicResults');
   if(!res) return;
-  // Filter from artist list or show popular
-  const suggestions = q.length >= 1
-    ? _getSuggestions(q).slice(0,8)
-    : (_ALL_ARTISTS || []).slice(0,10);
-  
-  if(suggestions.length === 0){ res.style.display='none'; return; }
-  
-  res.style.display = 'block';
-  res.innerHTML = `<div style="padding:6px 10px;font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border);">Sugerencias</div>`
-    + suggestions.map(s=>`
-    <div onclick="document.getElementById('txt_MusicSearch').value='${s.replace(/'/g,"\'")}';_txtMusicSearch();"
-      style="display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;transition:background .12s;"
-      onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
-      <span style="font-size:1rem;">🎵</span>
-      <span style="font-size:.83rem;color:var(--text);font-weight:600;">${s}</span>
-    </div>`).join('');
+  if(q.length >= 2) return; // dejar que debounce lo maneje
+
+  const popular = (window._popularStoryTracks || []).slice(0,5);
+  const artists = q.length >= 1 ? _getSuggestions(q).slice(0,8) : (_ALL_ARTISTS||[]).slice(0,8);
+
+  let html = '';
+
+  if(popular.length > 0){
+    html += `<div style="padding:6px 12px 3px;font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;">🔥 Populares en historias</div>`;
+    popular.forEach((t,i) => {
+      html += '<div onclick="_txtSelectPopular('+i+')" style="display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--border);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">'
+        + '<img src="'+(t.cover||'')+'" style="width:36px;height:36px;border-radius:6px;object-fit:cover;flex-shrink:0;">'
+        + '<div style="flex:1;min-width:0;">'
+        + '<div style="font-size:.82rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(t.title||'')+'</div>'
+        + '<div style="font-size:.7rem;color:var(--muted);">'+esc(t.artist||'')+'</div>'
+        + '</div></div>';
+    });
+  }
+
+  if(artists.length > 0){
+    html += `<div style="padding:6px 12px 3px;font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;">🎤 Artistas sugeridos</div>`;
+    artists.forEach(s => {
+      html += '<div onclick="document.getElementById('txt_MusicSearch').value='+JSON.stringify(s)+';_txtMusicSearch();" style="display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">'
+        + '<span style="font-size:1rem;width:24px;text-align:center;">🎵</span>'
+        + '<span style="font-size:.83rem;color:var(--text);font-weight:600;">'+esc(s)+'</span>'
+        + '</div>';
+    });
+  }
+
+  if(!html){ res.style.display='none'; return; }
+  res.style.display='block';
+  res.innerHTML = html;
+}
+
+function _txtSelectPopular(i){
+  const t = window._popularStoryTracks?.[i];
+  if(!t) return;
+  window._storyMusic = { title:t.title, artist:t.artist, cover:t.cover, preview:t.preview };
+  const sel = document.getElementById('txt_MusicSelected');
+  const cover = document.getElementById('txt_MusicCover');
+  const ttl = document.getElementById('txt_MusicTitle');
+  const art = document.getElementById('txt_MusicArtist');
+  const audio = document.getElementById('txt_MusicPreview');
+  const res = document.getElementById('txt_MusicResults');
+  if(sel) sel.style.display='block';
+  if(cover) cover.src = t.cover||'';
+  if(ttl) ttl.textContent = t.title||'';
+  if(art) art.textContent = t.artist||'';
+  if(audio && t.preview){ audio.src=t.preview; audio.play().catch(()=>{}); }
+  if(res) res.style.display='none';
+  const inp = document.getElementById('txt_MusicSearch');
+  if(inp) inp.value = t.title||'';
+  _scUpdatePreview();
 }
 
 async function _txtMusicSearch(){
@@ -14129,7 +14192,7 @@ window.setUserRole         = setUserRole;
 // CHANGELOG — Solo visible para ruizgustavo12
 // Actualizar VERSION y CHANGES cada vez que se sube un index nuevo
 // ═══════════════════════════════════════════════════════
-const _CL_VERSION = '2026-03-08-v23';
+const _CL_VERSION = '2026-03-08-v26';
 const _CL_CHANGES = [
   { emoji:'🎨', text:'Historias: elegí color de fondo con 10 gradientes — preview en tiempo real mientras escribís' },
   { emoji:'😊', text:'Historias: botón emoji y GIF en el texto de la historia' },
