@@ -13577,9 +13577,6 @@ function _showChangelog(){
     _showChangelogModal();
   });
   document.body.appendChild(toast);
-  
-  // Auto-hide after 15s si no lo tocó
-  setTimeout(()=>{ const t=document.getElementById('_clToast'); if(t) t.style.animation='_clIn .3s reverse forwards'; setTimeout(()=>{ const t=document.getElementById('_clToast'); if(t) t.remove(); },300); }, 15000);
 }
 
 function _showChangelogModal(){
