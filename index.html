@@ -2800,10 +2800,23 @@ function listenPosts() {
   if (_unsubPosts) _unsubPosts();
   _unsubPosts = onSnapshot(query(collection(db, 'posts'), orderBy('time', 'desc')), snap => {
     _posts = snap.docs.map(d => ({ id: d.id, ...d.data(), time: d.data().time?.toMillis?.() || Date.now() }));
-    renderFeed();
-    renderProfileFeed();
+    const activePage = document.querySelector('.page.active');
+    const pageId = activePage ? activePage.id : '';
+    if(pageId === 'page-profile'){
+      renderProfileFeed();
+    } else {
+      renderFeed();
+    }
   });
 }
+
+
+
+
+
+
+
+
 
 function listenStories() {
   if (_unsubStories) _unsubStories();
@@ -8579,18 +8592,25 @@ function togglePostMenu(pid, e, ownerId){
   });
   const menu = document.getElementById('pmenu_' + pid);
   if(!menu) return;
-  // Owner check — use passed ownerId or fallback to data-owner
+
   const menuOwner = (ownerId || menu.dataset.owner || '').trim();
   const myId = (window.CU?.id || '').trim();
-  const isAdmin = window.CU?.nick === 'ruizgustavo12';
-  const isOwner = myId && (menuOwner === myId || isAdmin);
-  console.log('[PostMenu] ownerId:', menuOwner, 'myId:', myId, 'isOwner:', isOwner);
-  menu.querySelectorAll('[data-owner-only]').forEach(b => b.style.display = isOwner ? 'flex' : 'none');
-  menu.querySelectorAll('[data-other-only]').forEach(b => b.style.display = isOwner ? 'none' : 'flex');
-  // If owner and no visible buttons yet, force show edit/delete
-  if(isOwner){
-    menu.querySelectorAll('[data-owner-only]').forEach(b => { b.style.display='flex'; });
+  const isAdmin = !!(window.CU?.admin || window.CU?.nick === 'ruizgustavo12');
+  const isOwner = !!(myId && (menuOwner === myId || isAdmin));
+
+  // Always apply visibility based on ownership
+  menu.querySelectorAll('[data-owner-only]').forEach(b => {
+    b.style.display = isOwner ? 'flex' : 'none';
+  });
+  menu.querySelectorAll('[data-other-only]').forEach(b => {
+    b.style.display = isOwner ? 'none' : 'flex';
+  });
+
+  // If not logged in, show nothing sensitive
+  if(!myId){
+    menu.querySelectorAll('[data-owner-only],[data-other-only]').forEach(b => b.style.display='none');
   }
+
   const isOpen = menu.style.display === 'block';
   menu.style.display = isOpen ? 'none' : 'block';
   if(!isOpen){
