@@ -11,11 +11,11 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="RF4 Latam">
   <link rel="apple-touch-icon" href="/icon-192.png">
-  <link rel="manifest" href="/chatrf4/manifest.json">
+  <link rel="manifest" href="/manifest.json">
   <script>
     if('serviceWorker' in navigator){
       window.addEventListener('load', ()=>{
-        navigator.serviceWorker.register('/chatrf4/sw.js',{scope:'/chatrf4/'})
+        navigator.serviceWorker.register('/sw.js',{scope:'/'})
           .then(reg => {
             reg.addEventListener('updatefound', () => {
               const nw = reg.installing;
@@ -30,7 +30,7 @@
             });
           }).catch(err=>console.log('SW error:', err));
         navigator.serviceWorker.addEventListener('controllerchange', () => {
-          window.location.replace('https://ruizgustavo12.github.io/chatrf4/');
+          window.location.reload();
         });
       });
     }
@@ -963,7 +963,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
   <!-- Cover -->
   <div id="upCover" style="height:220px;background:linear-gradient(135deg,#0a1628,#1a2a3a);background-size:cover;background-position:center;position:relative;overflow:hidden;cursor:pointer;">
     <div id="upCoverInner" style="width:100%;height:100%;pointer-events:none;"></div>
-    <button onclick="event.stopPropagation();window.location.href='https://ruizgustavo12.github.io/chatrf4/'" style="position:absolute;top:14px;left:14px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.15);color:#fff;border-radius:100px;padding:6px 14px;font-size:.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:'Exo 2',sans-serif;backdrop-filter:blur(4px);z-index:10;">← Volver</button>
+    <button onclick="event.stopPropagation();window.location.href='https://wikipediarf4.github.io/'" style="position:absolute;top:14px;left:14px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.15);color:#fff;border-radius:100px;padding:6px 14px;font-size:.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:'Exo 2',sans-serif;backdrop-filter:blur(4px);z-index:10;">← Volver</button>
     <canvas id="upVerifParticles" style="display:none;position:absolute;inset:0;pointer-events:none;"></canvas>
     <div id="upVerifSeal" style="display:none;"></div>
   </div>
@@ -3221,25 +3221,25 @@ function acceptTermsAndRegister(){
 const ROUTES = {
   '/': 'home',
   '/home': 'home',
-  '/chatrf4/': 'home',
-  '/chatrf4': 'home',
-  '/chatrf4/home': 'home',
-  '/chatrf4/amigos': 'amigos',
-  '/chatrf4/tienda': 'shop',
-  '/chatrf4/trofeos': 'trofeos-feed',
-  '/chatrf4/galeria': 'galeria',
-  '/chatrf4/videos': 'videos',
-  '/chatrf4/spots': 'spots',
-  '/chatrf4/torneos': 'torneos',
-  '/chatrf4/perfil': 'profile',
-  '/chatrf4/buscar-trofeo': 'buscar-trofeo',
-  '/chatrf4/publica-trofeo': 'publica-trofeo',
-  '/chatrf4/carretes': 'carretes',
-  '/chatrf4/parches': 'parches',
-  '/chatrf4/casitrofeo': 'casitrofeo',
-  '/chatrf4/mensajes': 'mensajes',
-  '/chatrf4/notificaciones': 'notificaciones',
-  '/chatrf4/pez-semanal': 'pez-semanal',
+  '/': 'home',
+  '': 'home',
+  '/home': 'home',
+  '/amigos': 'amigos',
+  '/tienda': 'shop',
+  '/trofeos': 'trofeos-feed',
+  '/galeria': 'galeria',
+  '/videos': 'videos',
+  '/spots': 'spots',
+  '/torneos': 'torneos',
+  '/perfil': 'profile',
+  '/buscar-trofeo': 'buscar-trofeo',
+  '/publica-trofeo': 'publica-trofeo',
+  '/carretes': 'carretes',
+  '/parches': 'parches',
+  '/casitrofeo': 'casitrofeo',
+  '/mensajes': 'mensajes',
+  '/notificaciones': 'notificaciones',
+  '/pez-semanal': 'pez-semanal',
 };
 
 // Map page IDs to clean URLs
@@ -3254,17 +3254,17 @@ function navigateTo(id, pushState = true) {
 window.addEventListener('popstate', (e) => {
   const path = window.location.pathname;
   // Close overlays if navigating away
-  if(path !== '/chatrf4/mensajes' && !path.startsWith('/chatrf4/mensajes/')) {
+  if(path !== '/mensajes' && !path.startsWith('/mensajes/')) {
     const msg = document.getElementById('mMessenger');
     if(msg && msg.classList.contains('open')) msg.classList.remove('open');
   }
-  if(path !== '/chatrf4/notificaciones') {
+  if(path !== '/notificaciones') {
     const nd = document.getElementById('mNotif');
     if(nd) nd.style.display = 'none';
   }
   // Handle user profile URLs
-  if(path.startsWith('/chatrf4/u/')) {
-    const nickSlug = path.slice('/chatrf4/u/'.length);
+  if(path.startsWith('/u/')) {
+    const nickSlug = path.slice('/u/'.length);
     // Try to find user by nick slug
     if(window.CU) {
       window.gp('userprofile', false);
@@ -3275,18 +3275,18 @@ window.addEventListener('popstate', (e) => {
     }
     return;
   }
-  if(path.startsWith('/chatrf4/mensajes/')) {
+  if(path.startsWith('/mensajes/')) {
     const msgEl = document.getElementById('mMessenger');
     if(msgEl) { om('mMessenger'); renderMessengerList(); }
     if(e.state && e.state.chatUid) openChatWith(e.state.chatUid, e.state.chatNick||'');
     return;
   }
-  if(path === '/chatrf4/mensajes') {
+  if(path === '/mensajes') {
     const msgEl = document.getElementById('mMessenger');
     if(msgEl) { om('mMessenger'); renderMessengerList(); }
     return;
   }
-  if(path === '/chatrf4/notificaciones') {
+  if(path === '/notificaciones') {
     openNotifDropdown();
     return;
   }
@@ -3298,7 +3298,7 @@ window.addEventListener('popstate', (e) => {
 window.addEventListener('DOMContentLoaded', () => {
   const path = window.location.pathname;
   // Save full path for after login (handles /u/nick, /mensajes/nick, etc.)
-  if (path && path !== '/' && path !== '/home' && path !== '/chatrf4/' && path !== '/chatrf4') {
+  if (path && path !== '/' && path !== '/home' && path !== '/') {
     window._initialPath = path;
   }
   const pageId = ROUTES[path];
@@ -9808,7 +9808,7 @@ async function submitPhotoComment(){
 }
 
 function backToMessengerList(){
-  if(!window.location.pathname.startsWith('/chatrf4/mensajes/') && window.location.pathname !== '/chatrf4/mensajes') {
+  if(!window.location.pathname.startsWith('/mensajes/') && window.location.pathname !== '/mensajes') {
     // already handled
   } else {
     
