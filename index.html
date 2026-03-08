@@ -2666,7 +2666,7 @@ function _stub(name){ return function(){ _q.push([name, arguments]); }; }
  'doReact','quickReact','saveProfile','openEditProfile','changeCover','changeAvatar',
  'previewPostImg','removePostImg','previewPostMedia','removePostMedia',
  'previewStoryImg','pickStoryEmoji','insertEmoji','insertFishTag',
- 'toggleComments','sharePost','toggleCmtMenu','editCmt','delCmt','quickCmtRxn','replyCmt','toggleReplies','showCmtRxnPop','hideCmtRxnPop','cancelHideCmtRxn','reactCmt','openImgLightbox','swPTab','setAppTheme','reactChatMsg','showMsgRxnBar','hideMsgRxnBar','keepMsgRxnBar','showCmtMenu','hideCmtMenu','setChatTyping','filterShopCat','toggleEquipItem',
+ 'toggleComments','sharePost','toggleCmtMenu','editCmt','delCmt','quickCmtRxn','replyCmt','toggleReplies','showCmtRxnPop','hideCmtRxnPop','cancelHideCmtRxn','reactCmt','openImgLightbox','openImgLightboxById','swPTab','setAppTheme','reactChatMsg','showMsgRxnBar','hideMsgRxnBar','keepMsgRxnBar','showCmtMenu','hideCmtMenu','setChatTyping','filterShopCat','toggleEquipItem',
  'showRxnPop','schedHideRxnPop','cancelHideRxnPop',
  'openSV','closeSV','svNav','reactStory','submitStoryComment','deleteMyStory','doSearch',
  'reportPost','submitReport','loadAdminData','deleteAdminPost','resolveReport',
@@ -4090,11 +4090,45 @@ function postHTML(p){
   const topRxn = Object.entries(p.reactionCounts||{}).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([e])=>e).join('');
   const rxnBtns = REACTIONS.map(r=>`<button class="rxn-btn" onclick="doReact('${p.id}','${r.emoji}')" title="${r.label}" style="position:relative;">${r.emoji}<span style="position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;font-size:.58rem;white-space:nowrap;padding:2px 6px;border-radius:4px;pointer-events:none;opacity:0;transition:opacity .15s;" class="rxn-tooltip">${r.label}</span></button>`).join('');
   const fishTag = p.fish ? `<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(0,198,255,.08);border:1px solid rgba(0,198,255,.2);border-radius:100px;padding:4px 12px;font-size:.78rem;margin-bottom:10px;margin-left:14px"><span>🎣</span><strong>${p.fish}</strong>${p.weight?` · ${p.weight}kg`:''} ${p.map?`· ${p.map}`:''} ${p.tech?`· ${p.tech}`:''}</div>` : '';
-  // Store images globally for safe lightbox access
-  if(p.images&&p.images.length){ window._postImgsMap=window._postImgsMap||{}; window._postImgsMap[p.id]=p.images; }
-  const _imgCols = !p.images||p.images.length<=1?'1fr':p.images.length===2?'1fr 1fr':'1fr 1fr';
-  const _imgMaxH = !p.images||p.images.length<=1?'420px':'220px';
-  const imgHTML = (p.images&&p.images.length) ? '<div style="display:grid;grid-template-columns:'+_imgCols+';gap:3px;margin-bottom:10px;border-radius:var(--rs);overflow:hidden;">'+p.images.slice(0,4).map(function(img,ii){ const isLast=ii===3&&p.images.length>4; return '<div style="position:relative;overflow:hidden;cursor:pointer;" onclick="openImgLightboxById(\''+p.id+'\','+ii+')"><img src="'+img+'" style="width:100%;height:'+_imgMaxH+';object-fit:cover;display:block;transition:opacity .18s;" onmouseover="this.style.opacity=\'.82\'" onmouseout="this.style.opacity=\'1\'" loading="lazy">'+(isLast?'<div style="position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.5rem;font-weight:700;">+'+(p.images.length-3)+'</div>':'')+'</div>'; }).join('')+'</div>' : '';
+  // Store images globally for lightbox
+  window._postImgsMap = window._postImgsMap || {};
+  if(p.images&&p.images.length) window._postImgsMap[p.id] = p.images;
+  // Build image grid - Facebook style layout
+  var imgHTML = '';
+  if(p.images && p.images.length) {
+    var imgs = p.images;
+    var n = imgs.length;
+    var pid = p.id;
+    function _imgCell(img, ii, h, extraStyle) {
+      var isLastOverlay = ii===3 && n>4;
+      var overlayMore = n - 4;
+      return '<div style="position:relative;overflow:hidden;cursor:pointer;height:'+h+';'+(extraStyle||'')+'\'" onclick="(function(){window._postImgsMap=window._postImgsMap||{};window._postImgsMap[\''+pid+'\']=['+imgs.map(function(x){return'\''+x+'\''}).join(',')+'];openImgLightboxById(\''+pid+'\','+ii+');})()">'
+        + '<img src="'+img+'" style="width:100%;height:100%;object-fit:cover;display:block;transition:opacity .18s;" onmouseover="this.style.opacity=\'.82\'" onmouseout="this.style.opacity=\'1\'" loading="lazy">'
+        + (isLastOverlay ? '<div style="position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;color:#fff;font-size:2rem;font-weight:700;">+'+overlayMore+'</div>' : '')
+        + '</div>';
+    }
+    var grid = '';
+    if(n===1){
+      grid = '<div style="display:grid;grid-template-columns:1fr;gap:3px;">'+_imgCell(imgs[0],0,'420px','')+'</div>';
+    } else if(n===2){
+      grid = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;">'+_imgCell(imgs[0],0,'300px','')+_imgCell(imgs[1],1,'300px','')+'</div>';
+    } else if(n===3){
+      grid = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;">'
+        + _imgCell(imgs[0],0,'400px','grid-row:span 2;')
+        + _imgCell(imgs[1],1,'197px','')
+        + _imgCell(imgs[2],2,'197px','')
+        +'</div>';
+    } else {
+      // 4 or more: 2x2 grid, last cell shows +N overlay
+      grid = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;">'
+        + _imgCell(imgs[0],0,'220px','')
+        + _imgCell(imgs[1],1,'220px','')
+        + _imgCell(imgs[2],2,'220px','')
+        + _imgCell(imgs[3],3,'220px','')
+        +'</div>';
+    }
+    imgHTML = '<div style="margin-bottom:10px;border-radius:10px;overflow:hidden;">'+grid+'</div>';
+  }
   let videoHTML = '';
   if(p.video){
     const ytId = extractYtId(p.video);
@@ -4292,12 +4326,13 @@ function postHTML(p){
     ${!p.sharedFrom && p.text?`<div class="post-text">${renderCommentText(p.text)}</div>`:''}
     ${!p.sharedFrom ? fishTag : ''}
     ${(()=>{
-    if(p.images&&p.images.length){ window._postImgsMap=window._postImgsMap||{}; window._postImgsMap[p.id]=p.images; }
     if(p.profileAction==='cover' && p.images&&p.images[0]){
-      return `<div style="margin:0 0 10px;border-radius:var(--rs);overflow:hidden;position:relative;background:#f0f2f5;cursor:pointer;" onclick="openImgLightboxById('${p.id}',0)"><img src="${p.images[0]}" style="width:100%;max-height:340px;object-fit:cover;display:block;transition:opacity .2s;" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'" loading="lazy"><div style="position:absolute;bottom:8px;left:10px;background:rgba(0,0,0,.55);color:#fff;font-size:.72rem;padding:3px 10px;border-radius:100px;backdrop-filter:blur(6px);">📷 Nueva foto de portada</div></div>`;
+      var _imgs = p.images; var _pid = p.id;
+      var _imgsJson = _imgs.map(function(x){return "'"+x+"'"}).join(',');
+      return `<div style="margin:0 0 10px;border-radius:var(--rs);overflow:hidden;position:relative;background:#f0f2f5;cursor:pointer;" onclick="(function(){window._postImgsMap=window._postImgsMap||{};window._postImgsMap['${p.id}']=[${p.images.map(x=>"'"+x+"'").join(',')}];openImgLightboxById('${p.id}',0);})()"><img src="${p.images[0]}" style="width:100%;max-height:340px;object-fit:cover;display:block;transition:opacity .2s;" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'" loading="lazy"><div style="position:absolute;bottom:8px;left:10px;background:rgba(0,0,0,.55);color:#fff;font-size:.72rem;padding:3px 10px;border-radius:100px;backdrop-filter:blur(6px);">📷 Nueva foto de portada</div></div>`;
     }
     if(p.profileAction==='avatar' && p.images&&p.images[0]){
-      return `<div style="margin:0 0 10px;display:flex;justify-content:center;"><div style="width:140px;height:140px;border-radius:50%;overflow:hidden;border:4px solid var(--accent);box-shadow:0 0 20px rgba(0,198,255,.3);cursor:pointer;" onclick="openImgLightboxById('${p.id}',0)"><img src="${p.images[0]}" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy"></div></div>`;
+      return `<div style="margin:0 0 10px;display:flex;justify-content:center;"><div style="width:140px;height:140px;border-radius:50%;overflow:hidden;border:4px solid var(--accent);box-shadow:0 0 20px rgba(0,198,255,.3);cursor:pointer;" onclick="(function(){window._postImgsMap=window._postImgsMap||{};window._postImgsMap['${p.id}']=[${p.images.map(x=>"'"+x+"'").join(',')}];openImgLightboxById('${p.id}',0);})()"><img src="${p.images[0]}" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy"></div></div>`;
     }
     return !p.sharedFrom ? imgHTML : '';
   })()}
@@ -10814,7 +10849,7 @@ const _expose = {
   insertEmoji,insertFishTag,openEmojiPicker,insertEmojiChar,
   toggleComments,sharePost,
   reactCmt,editCmt,delCmt,quickCmtRxn,replyCmt,toggleReplies,
-  openImgLightbox,swPTab,filterShopCat,toggleEquipItem,
+  openImgLightbox,openImgLightboxById,swPTab,filterShopCat,toggleEquipItem,
   showRxnPop,schedHideRxnPop,cancelHideRxnPop,
   openSV,closeSV,svNav,reactStory,reportStory,submitStoryComment,deleteMyStory,
   doSearch,
