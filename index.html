@@ -11,11 +11,11 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="RF4 Latam">
   <link rel="apple-touch-icon" href="/icon-192.png">
-  <link rel="manifest" href="/manifest.json">
+  <link rel="manifest" href="/chatrf4/manifest.json">
   <script>
     if('serviceWorker' in navigator){
       window.addEventListener('load', ()=>{
-        navigator.serviceWorker.register('/sw.js',{scope:'/'})
+        navigator.serviceWorker.register('/chatrf4/sw.js',{scope:'/chatrf4/'})
           .then(reg => {
             reg.addEventListener('updatefound', () => {
               const nw = reg.installing;
@@ -30,7 +30,7 @@
             });
           }).catch(err=>console.log('SW error:', err));
         navigator.serviceWorker.addEventListener('controllerchange', () => {
-          window.location.replace('https://wikipediarf4.github.io/');
+          window.location.replace('https://ruizgustavo12.github.io/chatrf4/');
         });
       });
     }
@@ -940,7 +940,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
   <!-- Cover -->
   <div id="upCover" style="height:220px;background:linear-gradient(135deg,#0a1628,#1a2a3a);background-size:cover;background-position:center;position:relative;overflow:hidden;cursor:pointer;">
     <div id="upCoverInner" style="width:100%;height:100%;pointer-events:none;"></div>
-    <button onclick="event.stopPropagation();window.location.href='https://wikipediarf4.github.io/'" style="position:absolute;top:14px;left:14px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.15);color:#fff;border-radius:100px;padding:6px 14px;font-size:.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:'Exo 2',sans-serif;backdrop-filter:blur(4px);z-index:10;">← Volver</button>
+    <button onclick="event.stopPropagation();window.location.href='https://ruizgustavo12.github.io/chatrf4/'" style="position:absolute;top:14px;left:14px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.15);color:#fff;border-radius:100px;padding:6px 14px;font-size:.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:'Exo 2',sans-serif;backdrop-filter:blur(4px);z-index:10;">← Volver</button>
     <canvas id="upVerifParticles" style="display:none;position:absolute;inset:0;pointer-events:none;"></canvas>
     <div id="upVerifSeal" style="display:none;"></div>
   </div>
@@ -1392,7 +1392,10 @@ select.fi option{background:var(--bg3);color:var(--text);}
         <div id="savedAccountsList" style="margin-bottom:8px;"></div>
         <div id="lErr" style="color:#fa3e3e;font-size:.82rem;margin-bottom:10px;text-align:center;display:none;padding:8px;background:#fff0f0;border-radius:6px;border:1px solid #ffd0d0;"></div>
         <input class="fb-input" type="text" id="lEmail" placeholder="Correo electrónico o nick" autocomplete="username">
-        <input class="fb-input" type="password" id="lPass" placeholder="Contraseña" onkeypress="if(event.key==='Enter')doLogin()" style="margin-bottom:8px;">
+        <div style="position:relative;margin-bottom:8px;">
+          <input class="fb-input" type="password" id="lPass" placeholder="Contraseña" onkeypress="if(event.key==='Enter')doLogin()" style="margin-bottom:0;padding-right:44px;width:100%;box-sizing:border-box;">
+          <button type="button" onclick="const i=document.getElementById('lPass');const b=this;i.type=i.type==='password'?'text':'password';b.textContent=i.type==='password'?'👁️':'🙈';" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1rem;padding:0;line-height:1;">👁️</button>
+        </div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
           <input type="checkbox" id="rememberMe" style="width:15px;height:15px;accent-color:#1877f2;cursor:pointer;">
           <label for="rememberMe" style="font-size:.83rem;color:#65676b;cursor:pointer;">Mantener sesión iniciada</label>
@@ -1420,7 +1423,10 @@ select.fi option{background:var(--bg3);color:var(--text);}
         </div>
         <div style="height:12px;"></div>
         <input class="fb-input" type="email" id="rEmail" placeholder="Correo electrónico">
-        <input class="fb-input" type="password" id="rPass" placeholder="Contraseña nueva (mín. 6)" onkeypress="if(event.key==='Enter')doReg()">
+        <div style="position:relative;">
+          <input class="fb-input" type="password" id="rPass" placeholder="Contraseña nueva (mín. 6)" onkeypress="if(event.key==='Enter')doReg()" style="padding-right:44px;width:100%;box-sizing:border-box;">
+          <button type="button" onclick="const i=document.getElementById('rPass');const b=this;i.type=i.type==='password'?'text':'password';b.textContent=i.type==='password'?'👁️':'🙈';" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1rem;padding:0;line-height:1;">👁️</button>
+        </div>
         <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:14px;">
           <input type="checkbox" id="acceptTerms" style="width:15px;height:15px;accent-color:#1877f2;cursor:pointer;margin-top:3px;flex-shrink:0;">
           <label for="acceptTerms" style="font-size:.78rem;color:#65676b;cursor:pointer;line-height:1.5;">
@@ -3144,49 +3150,49 @@ function acceptTermsAndRegister(){
 const ROUTES = {
   '/': 'home',
   '/home': 'home',
-  '/': 'home',
-  '/': 'home',
-  '/home': 'home',
-  '/amigos': 'amigos',
-  '/tienda': 'shop',
-  '/trofeos': 'trofeos-feed',
-  '/galeria': 'galeria',
-  '/videos': 'videos',
-  '/spots': 'spots',
-  '/torneos': 'torneos',
-  '/perfil': 'profile',
-  '/buscar-trofeo': 'buscar-trofeo',
-  '/publica-trofeo': 'publica-trofeo',
-  '/carretes': 'carretes',
-  '/parches': 'parches',
-  '/casitrofeo': 'casitrofeo',
-  '/mensajes': 'mensajes',
-  '/notificaciones': 'notificaciones',
-  '/pez-semanal': 'pez-semanal',
+  '/chatrf4/': 'home',
+  '/chatrf4': 'home',
+  '/chatrf4/home': 'home',
+  '/chatrf4/amigos': 'amigos',
+  '/chatrf4/tienda': 'shop',
+  '/chatrf4/trofeos': 'trofeos-feed',
+  '/chatrf4/galeria': 'galeria',
+  '/chatrf4/videos': 'videos',
+  '/chatrf4/spots': 'spots',
+  '/chatrf4/torneos': 'torneos',
+  '/chatrf4/perfil': 'profile',
+  '/chatrf4/buscar-trofeo': 'buscar-trofeo',
+  '/chatrf4/publica-trofeo': 'publica-trofeo',
+  '/chatrf4/carretes': 'carretes',
+  '/chatrf4/parches': 'parches',
+  '/chatrf4/casitrofeo': 'casitrofeo',
+  '/chatrf4/mensajes': 'mensajes',
+  '/chatrf4/notificaciones': 'notificaciones',
+  '/chatrf4/pez-semanal': 'pez-semanal',
 };
 
 // Map page IDs to clean URLs
-const PAGE_TO_URL = {};  // URL siempre queda en /
+const PAGE_TO_URL = {};  // URL siempre queda en /chatrf4/
 
 function navigateTo(id, pushState = true) {
-  // URL siempre queda en / — sin sub-rutas
+  // URL siempre queda en /chatrf4/ — sin sub-rutas
 }
 
 // Handle browser back/forward
 window.addEventListener('popstate', (e) => {
   const path = window.location.pathname;
   // Close overlays if navigating away
-  if(path !== '/mensajes' && !path.startsWith('/mensajes/')) {
+  if(path !== '/chatrf4/mensajes' && !path.startsWith('/chatrf4/mensajes/')) {
     const msg = document.getElementById('mMessenger');
     if(msg && msg.classList.contains('open')) msg.classList.remove('open');
   }
-  if(path !== '/notificaciones') {
+  if(path !== '/chatrf4/notificaciones') {
     const nd = document.getElementById('mNotif');
     if(nd) nd.style.display = 'none';
   }
   // Handle user profile URLs
-  if(path.startsWith('/u/')) {
-    const nickSlug = path.slice('/u/'.length);
+  if(path.startsWith('/chatrf4/u/')) {
+    const nickSlug = path.slice('/chatrf4/u/'.length);
     // Try to find user by nick slug
     if(window.CU) {
       window.gp('userprofile', false);
@@ -3197,18 +3203,18 @@ window.addEventListener('popstate', (e) => {
     }
     return;
   }
-  if(path.startsWith('/mensajes/')) {
+  if(path.startsWith('/chatrf4/mensajes/')) {
     const msgEl = document.getElementById('mMessenger');
     if(msgEl) { om('mMessenger'); renderMessengerList(); }
     if(e.state && e.state.chatUid) openChatWith(e.state.chatUid, e.state.chatNick||'');
     return;
   }
-  if(path === '/mensajes') {
+  if(path === '/chatrf4/mensajes') {
     const msgEl = document.getElementById('mMessenger');
     if(msgEl) { om('mMessenger'); renderMessengerList(); }
     return;
   }
-  if(path === '/notificaciones') {
+  if(path === '/chatrf4/notificaciones') {
     openNotifDropdown();
     return;
   }
@@ -3220,7 +3226,7 @@ window.addEventListener('popstate', (e) => {
 window.addEventListener('DOMContentLoaded', () => {
   const path = window.location.pathname;
   // Save full path for after login (handles /u/nick, /mensajes/nick, etc.)
-  if (path && path !== '/' && path !== '/home' && path !== '/' && path !== '/') {
+  if (path && path !== '/' && path !== '/home' && path !== '/chatrf4/' && path !== '/chatrf4') {
     window._initialPath = path;
   }
   const pageId = ROUTES[path];
@@ -8108,7 +8114,7 @@ async function sendShopAnnouncementToAll(){
 // ===== USER PROFILE MODAL =====
 async function openUserProfile(uid, nick){
   // Si es el propio usuario, va al perfil propio
-  if(uid && uid === window.CU?.id){ gp('profile'); history.pushState({page:'profile'}, '', '/perfil'); return; }
+  if(uid && uid === window.CU?.id){ gp('profile'); history.pushState({page:'profile'}, '', '/chatrf4/perfil'); return; }
   // Si no hay uid, busca por nick
   if(!uid && nick){
     try {
@@ -8120,7 +8126,7 @@ async function openUserProfile(uid, nick){
   if(!uid){ toast('Usuario no encontrado','err'); return; }
   // Push URL /u/nick
   const safeNick = (nick||'usuario').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
-  history.pushState({page:'userprofile', uid, nick}, '', '/u/' + safeNick);
+  history.pushState({page:'userprofile', uid, nick}, '', '/chatrf4/u/' + safeNick);
   // Navega a la página de perfil
   gp('userprofile', false);
   _loadUserProfilePage(uid, nick||'');
@@ -9127,7 +9133,7 @@ function openChatWith(uid, nick){
 
   // Update URL to /mensajes/nick
   const safeNickUrl = (nick||'usuario').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
-  history.pushState({page:'mensajes', chatUid:uid, chatNick:nick}, '', '/mensajes/' + safeNickUrl);
+  history.pushState({page:'mensajes', chatUid:uid, chatNick:nick}, '', '/chatrf4/mensajes/' + safeNickUrl);
 
   // Make sure messenger modal is open
   om('mMessenger');
@@ -9445,10 +9451,10 @@ async function submitPhotoComment(){
 }
 
 function backToMessengerList(){
-  if(!window.location.pathname.startsWith('/mensajes/') && window.location.pathname !== '/mensajes') {
+  if(!window.location.pathname.startsWith('/chatrf4/mensajes/') && window.location.pathname !== '/chatrf4/mensajes') {
     // already handled
   } else {
-    history.pushState({page:'mensajes'}, '', '/mensajes');
+    history.pushState({page:'mensajes'}, '', '/chatrf4/mensajes');
   }
   if(_unsubChat){ _unsubChat(); _unsubChat=null; }
   _chatUserId = null;
@@ -11029,9 +11035,9 @@ function openNotifDropdown(){
   // Push URL only when opening (not closing)
   const willOpen = dd.style.display !== 'flex';
   if(willOpen && false) {
-    history.pushState({page:'notificaciones'}, '', '/notificaciones');
+    history.pushState({page:'notificaciones'}, '', '/chatrf4/notificaciones');
   } else if(!willOpen && false) {
-    history.pushState({page:'home'}, '', '/');
+    history.pushState({page:'home'}, '', '/chatrf4/');
   }
   if(isMobile){
     // Mobile: full screen panel from top
