@@ -3240,7 +3240,7 @@ function _stub(name){ return function(){ _q.push([name, arguments]); }; }
  'previewSpotImg','removeSpotImg','submitSpot','loadSpots','toggleYtInput','previewYtEmbed','clearYtInput','extractYtId','openPostWithYt','loadFriendSpots','renderFriendSpotsInHome','openEditSpot','saveEditSpot','deleteSpot','scrollToPost',
  'renderSidebarFriends','renderSuggestedUsers','playNotifSound','showNotifToast','sendNotifToUserWithPost','openMessenger','loadVideos','filterVideos',
  'previewPezSemanaImg','submitPezSemana','deletePezSemana','loadPezSemana','openPezSemanalModal','openReactionsModal','buildRxnLabel',
- 'filterTrofeoFeed','listenTrofeosFeed','swSkillTab','searchStoryMusic','selectStoryMusic','clearStoryMusic','searchDeezer','playDeezer','closeTrophyBanner','debounceStoryMusic','_hoverStoryPreview','_leaveStoryPreview','debounceMusicSearch','_doSharePost','_cmtOpenGif','searchCmtGifs','sendCmtGif','_toggleSharePrivacy','_setSharePrivacy','_txtMusicInput','_txtMusicFocus','_txtMusicSearch','_txtSelectTrack','_txtClearMusic','_txtSelectPopular','_txtSetSearch','_txtSelectPopular'
+ 'filterTrofeoFeed','listenTrofeosFeed','swSkillTab','searchStoryMusic','selectStoryMusic','clearStoryMusic','searchDeezer','playDeezer','closeTrophyBanner','debounceStoryMusic','_hoverStoryPreview','_leaveStoryPreview','debounceMusicSearch','_doSharePost','_cmtOpenGif','searchCmtGifs','sendCmtGif','_toggleSharePrivacy','_setSharePrivacy','_txtMusicInput','_txtMusicFocus','_txtMusicSearch','_txtSelectTrack','_txtClearMusic','_txtSelectPopular','_txtSetSearch'
 ].forEach(fn => { window[fn] = _stub(fn); });
 </script>
 <script type="module">
@@ -5240,7 +5240,14 @@ function _txtClearMusic(){
   _scUpdatePreview();
 }
 window._scUpdatePreview = _scUpdatePreview;
-window._scSubmit = _scSubmit;
+window._scSubmit        = _scSubmit;
+window._txtMusicInput   = _txtMusicInput;
+window._txtMusicFocus   = _txtMusicFocus;
+window._txtMusicSearch  = _txtMusicSearch;
+window._txtSelectTrack  = _txtSelectTrack;
+window._txtClearMusic   = _txtClearMusic;
+window._txtSelectPopular = _txtSelectPopular;
+window._txtSetSearch    = _txtSetSearch;
 
 async function _scSubmit(){ return submitStory(); }
 async function submitStory(){
@@ -14199,7 +14206,7 @@ window.setUserRole         = setUserRole;
 // CHANGELOG — Solo visible para ruizgustavo12
 // Actualizar VERSION y CHANGES cada vez que se sube un index nuevo
 // ═══════════════════════════════════════════════════════
-const _CL_VERSION = '2026-03-08-v29';
+const _CL_VERSION = '2026-03-08-v30';
 const _CL_CHANGES = [
   { emoji:'🎨', text:'Historias: elegí color de fondo con 10 gradientes — preview en tiempo real mientras escribís' },
   { emoji:'😊', text:'Historias: botón emoji y GIF en el texto de la historia' },
