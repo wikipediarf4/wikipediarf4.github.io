@@ -1374,9 +1374,9 @@ select.fi option{background:var(--bg3);color:var(--text);}
 
 <!-- SPLASH SCREEN: shown while Firebase checks session -->
 <div id="splashScreen" style="display:flex;position:fixed;inset:0;z-index:10000;background:#f0f2f5;align-items:center;justify-content:center;flex-direction:column;gap:18px;">
-  <img src="https://rf4social.netlify.app/favicon.ico" onerror="this.style.display='none'" style="width:72px;height:72px;border-radius:16px;">
-  <div style="font-family:'Orbitron',monospace;font-size:1.6rem;font-weight:900;color:#1a73e8;">Charlas<span style="color:#f5a623;">RF4</span></div>
-  <div style="width:44px;height:44px;border:4px solid #e0e0e0;border-top-color:#1a73e8;border-radius:50%;animation:splashSpin 0.8s linear infinite;"></div>
+  <img src="icon-512.png" onerror="this.style.display='none'" style="width:80px;height:80px;border-radius:16px;object-fit:contain;">
+  <div style="font-family:'Orbitron',monospace;font-size:1.6rem;font-weight:900;color:#1a73e8;">Wikipedia<span style="color:#f5a623;">RF4</span></div>
+  <div style="width:40px;height:40px;border:4px solid #e0e0e0;border-top-color:#1877f2;border-radius:50%;animation:splashSpin 0.8s linear infinite;"></div>
 </div>
 <style>@keyframes splashSpin{to{transform:rotate(360deg)}}</style>
 
@@ -2866,28 +2866,40 @@ function init(){
 
   // Persistence is set via top-level IIFE below
 
+  // Safety timeout — if Firebase takes too long, show login anyway
+  const _splashTimeout = setTimeout(()=>{
+    const splash = document.getElementById('splashScreen');
+    if(splash && splash.style.display !== 'none'){
+      splash.style.display = 'none';
+      document.getElementById('mAuth').style.display = 'block';
+    }
+  }, 6000);
+
   // Escuchar estado de auth
   onAuthStateChanged(auth, async user => {
+    clearTimeout(_splashTimeout);
     const splash = document.getElementById('splashScreen');
+    const hideSplash = () => { if(splash) splash.style.display = 'none'; };
     if (user) {
       try {
         const snap = await getDoc(doc(db, 'users', user.uid));
         if (snap.exists()) {
           window.CU = {id: user.uid, ...snap.data()};
           document.getElementById('mAuth').style.display = 'none';
-          if(splash) splash.style.display = 'none';
+          hideSplash();
           onLogin();
         } else {
-          if(splash) splash.style.display = 'none';
+          hideSplash();
           document.getElementById('mAuth').style.display = 'block';
         }
       } catch(e) {
-        if(splash) splash.style.display = 'none';
+        console.error('Auth error:', e);
+        hideSplash();
         document.getElementById('mAuth').style.display = 'block';
       }
     } else {
       window.CU = null;
-      if(splash) splash.style.display = 'none';
+      hideSplash();
       document.getElementById('mAuth').style.display = 'block';
     }
   });
@@ -4902,9 +4914,7 @@ async function _submitModalCmt(pid){
     // Re-open modal to refresh comment list
     const modal = document.getElementById('_cmtModal_'+pid);
     if(modal){ modal.remove(); toggleComments(pid); }
-    if(p.userId && p.userId !== window.CU.id) sendNotifToUserWithPost(p.userId, \`💬 \${window.CU.nick} comentó: "\${txt.slice(0,40)}"\`, pid);
-    }
-    if(p.userId && p.userId !== window.CU.id) sendNotifToUserWithPost(p.userId, `💬 ${window.CU.nick} comentó: "${txt.slice(0,40)}"`, pid);
+    if(p.userId && p.userId !== window.CU.id) sendNotifToUserWithPost(p.userId, '💬 ' + window.CU.nick + ' comentó tu publicación', pid);
   } catch(e){ console.error(e); }
 }
 
@@ -10221,29 +10231,35 @@ const STK_CATS = [
   {label:'Enojado',   emoji:'😠', color:'#e53935', q:'angry mad sticker'},
   {label:'Confundido',emoji:'😕', color:'#8d6e63', q:'confused thinking sticker'},
 ];
+const STK_API_KEY = '6JhiiqPRlv7emFmLUm5z9Q9palmKtLq6';
 
 function toggleStickerPicker(pickerId, targetId){
-  // Close all gif pickers
-  document.querySelectorAll('.gif-picker.open').forEach(p=>p.classList.remove('open'));
+  document.querySelectorAll('.gif-picker.open').forEach(function(p){ p.classList.remove('open'); });
   const picker = document.getElementById(pickerId);
   if(!picker) return;
   const isOpen = picker.classList.contains('open');
-  document.querySelectorAll('.stk-picker.open').forEach(p=>p.classList.remove('open'));
+  document.querySelectorAll('.stk-picker.open').forEach(function(p){ p.classList.remove('open'); });
   if(!isOpen){
     picker.classList.add('open');
     picker.dataset.target = targetId;
-    // Render categories
     const postId = pickerId.replace('stkpick_','');
     const catsEl = document.getElementById('stkcats_'+postId);
-    if(catsEl && !catsEl.innerHTML){
-      catsEl.innerHTML = STK_CATS.map(c=>`
-        <button class="stk-cat-btn" style="background:${c.color};" onclick="loadStickerCat('${c.q}','${pickerId}','${targetId}','${c.label}')">
-          <span style="font-size:1.3rem;">${c.emoji}</span>${c.label}
-        </button>`).join('');
-    }
+    if(catsEl && !catsEl.children.length) _renderStkCats(catsEl, pickerId, targetId);
     const inp = document.getElementById('stksearch_'+postId);
-    if(inp) setTimeout(()=>inp.focus(),100);
+    if(inp) setTimeout(function(){ inp.focus(); }, 100);
   }
+}
+
+function _renderStkCats(catsEl, pickerId, targetId){
+  catsEl.innerHTML = '';
+  STK_CATS.forEach(function(c){
+    const btn = document.createElement('button');
+    btn.className = 'stk-cat-btn';
+    btn.style.background = c.color;
+    btn.innerHTML = '<span style="font-size:1.3rem;">' + c.emoji + '</span>' + c.label;
+    btn.addEventListener('click', function(){ loadStickerCat(c.q, pickerId, targetId, c.label); });
+    catsEl.appendChild(btn);
+  });
 }
 
 function closeStickerPicker(pickerId){
@@ -10251,49 +10267,58 @@ function closeStickerPicker(pickerId){
   if(picker) picker.classList.remove('open');
 }
 
+function _makeStkHeader(pickerId, label){
+  const div = document.createElement('div');
+  div.style.cssText = 'display:flex;align-items:center;padding:4px 8px;border-bottom:1px solid #e4e6eb;';
+  const backBtn = document.createElement('button');
+  backBtn.className = 'stk-back';
+  backBtn.textContent = '← Volver';
+  backBtn.addEventListener('click', function(){ resetStickerCats(pickerId); });
+  const title = document.createElement('span');
+  title.style.cssText = 'font-size:.82rem;font-weight:700;color:#050505;flex:1;text-align:center;';
+  title.textContent = label;
+  div.appendChild(backBtn);
+  div.appendChild(title);
+  return div;
+}
+
 let _stkDebounce = null;
 async function loadStickerCat(query, pickerId, targetId, label){
   const postId = pickerId.replace('stkpick_','');
   const contentEl = document.getElementById('stkcontent_'+postId);
   if(!contentEl) return;
-  contentEl.innerHTML = `
-    <div style="display:flex;align-items:center;padding:4px 8px;border-bottom:1px solid #e4e6eb;">
-      <button class="stk-back" onclick="resetStickerCats('${pickerId}')">← Volver</button>
-      <span style="font-size:.82rem;font-weight:700;color:#050505;flex:1;text-align:center;">${label}</span>
-    </div>
-    <div class="stk-grid" id="stkgrid_${postId}">
-      <div style="grid-column:1/-1;text-align:center;padding:20px;color:#65676b;font-size:.82rem;">⏳ Cargando...</div>
-    </div>`;
+  contentEl.innerHTML = '';
+  contentEl.appendChild(_makeStkHeader(pickerId, label));
+  const grid = document.createElement('div');
+  grid.className = 'stk-grid';
+  grid.id = 'stkgrid_'+postId;
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:#65676b;font-size:.82rem;">⏳ Cargando...</div>';
+  contentEl.appendChild(grid);
   try {
-    const res = await fetch(\`https://api.giphy.com/v1/stickers/search?api_key=6JhiiqPRlv7emFmLUm5z9Q9palmKtLq6&q=\${encodeURIComponent(query)}&limit=15&rating=g\`);
+    const res = await fetch('https://api.giphy.com/v1/stickers/search?api_key=' + STK_API_KEY + '&limit=15&rating=g&q=' + encodeURIComponent(query));
     const data = await res.json();
     renderStickerResults(data.data, postId, pickerId, targetId);
   } catch(e){
-    const g = document.getElementById('stkgrid_'+postId);
-    if(g) g.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:12px;color:#65676b;">Error cargando</div>';
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:12px;color:#65676b;">Error cargando</div>';
   }
 }
 
 async function searchStickers(query, pickerId, targetId){
   clearTimeout(_stkDebounce);
   const postId = pickerId.replace('stkpick_','');
-  if(!query.trim()){
-    resetStickerCats(pickerId);
-    return;
-  }
-  _stkDebounce = setTimeout(async()=>{
+  if(!query.trim()){ resetStickerCats(pickerId); return; }
+  _stkDebounce = setTimeout(async function(){
     const contentEl = document.getElementById('stkcontent_'+postId);
     if(!contentEl) return;
-    contentEl.innerHTML = `
-      <div style="display:flex;align-items:center;padding:4px 8px;border-bottom:1px solid #e4e6eb;">
-        <button class="stk-back" onclick="resetStickerCats('${pickerId}')">← Volver</button>
-        <span style="font-size:.82rem;font-weight:700;color:#050505;flex:1;text-align:center;">${query}</span>
-      </div>
-      <div class="stk-grid" id="stkgrid_${postId}">
-        <div style="grid-column:1/-1;text-align:center;padding:20px;color:#65676b;">🔍 Buscando...</div>
-      </div>`;
+    contentEl.innerHTML = '';
+    contentEl.appendChild(_makeStkHeader(pickerId, query));
+    const grid = document.createElement('div');
+    grid.className = 'stk-grid';
+    grid.id = 'stkgrid_'+postId;
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:#65676b;">🔍 Buscando...</div>';
+    contentEl.appendChild(grid);
     try {
-      const res = await fetch(\`https://api.giphy.com/v1/stickers/search?api_key=6JhiiqPRlv7emFmLUm5z9Q9palmKtLq6&q=\${encodeURIComponent(query)}&limit=15&rating=g\`);
+      const res = await fetch('https://api.giphy.com/v1/stickers/search?api_key=' + STK_API_KEY + '&limit=15&rating=g&q=' + encodeURIComponent(query));
       const data = await res.json();
       renderStickerResults(data.data, postId, pickerId, targetId);
     } catch(e){}
@@ -10303,15 +10328,24 @@ async function searchStickers(query, pickerId, targetId){
 function renderStickerResults(stickers, postId, pickerId, targetId){
   const grid = document.getElementById('stkgrid_'+postId);
   if(!grid) return;
-  if(!stickers||!stickers.length){
-    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:16px;color:#65676b;">Sin resultados</div>';
+  if(!stickers || !stickers.length){
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:16px;color:#65676b;">Sin resultados</div>';
     return;
   }
-  grid.innerHTML = stickers.map(s=>{
-    const url = s.images?.fixed_height_small?.url || s.images?.original?.url;
-    const orig = s.images?.original?.url || url;
-    return \`<div class="stk-item" onclick="sendSticker('\${orig}','\${pickerId}','\${targetId}')"><img src="\${url}" loading="lazy" alt="sticker"></div>\`;
-  }).join('');
+  grid.innerHTML = '';
+  stickers.forEach(function(s){
+    const url = (s.images && s.images.fixed_height_small && s.images.fixed_height_small.url) || (s.images && s.images.original && s.images.original.url) || '';
+    const orig = (s.images && s.images.original && s.images.original.url) || url;
+    const item = document.createElement('div');
+    item.className = 'stk-item';
+    const img = document.createElement('img');
+    img.src = url;
+    img.loading = 'lazy';
+    img.alt = 'sticker';
+    item.appendChild(img);
+    item.addEventListener('click', function(){ sendSticker(orig, pickerId, targetId); });
+    grid.appendChild(item);
+  });
 }
 
 function resetStickerCats(pickerId){
@@ -10319,15 +10353,17 @@ function resetStickerCats(pickerId){
   const contentEl = document.getElementById('stkcontent_'+postId);
   const inp = document.getElementById('stksearch_'+postId);
   if(inp) inp.value = '';
-  if(contentEl) contentEl.innerHTML = \`<div class="stk-cats" id="stkcats_\${postId}">\${STK_CATS.map(c=>\`
-    <button class="stk-cat-btn" style="background:\${c.color};" onclick="loadStickerCat('\${c.q}','\${pickerId}',document.getElementById('\${pickerId}').dataset.target,'\${c.label}')">
-      <span style="font-size:1.3rem;">\${c.emoji}</span>\${c.label}
-    </button>\`).join('')}</div>\`;
+  if(contentEl){
+    contentEl.innerHTML = '<div class="stk-cats" id="stkcats_'+postId+'"></div>';
+    const catsEl = document.getElementById('stkcats_'+postId);
+    const picker = document.getElementById(pickerId);
+    const tgt = picker ? picker.dataset.target : '';
+    if(catsEl) _renderStkCats(catsEl, pickerId, tgt);
+  }
 }
 
 function sendSticker(gifUrl, pickerId, targetId){
   closeStickerPicker(pickerId);
-  // Same as sendGif — stickers are animated GIFs
   if(targetId === 'chatInput'){
     sendChatMsg(gifUrl);
   } else {
