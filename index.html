@@ -11562,8 +11562,8 @@ let _musicType = 'track';
       <div style="font-size:.78rem;font-weight:700;color:var(--text);margin-top:4px;">${g.label}</div>
     </div>`).join('');
 })();
-const _SPOTIFY_CLIENT_ID = ''; // sin clave pública — usamos oEmbed + search embed indirecto
-const _SPOTIFY_TOKEN_URL = 'https://accounts.spotify.com/api/token';
+const _SPOTIFY_CLIENT_ID = 'd4fbc1ee17fb47b886467872a9ebaf0a';
+const _SPOTIFY_CLIENT_SECRET = '72fe1ff824f94d95a5aef69aec5180a3';
 
 function setMusicType(type, btn){
   _musicType = type;
@@ -11576,12 +11576,11 @@ function quickGenreSearch(q){
   searchSpotify();
 }
 
-// Obtiene token de Spotify (Client Credentials via proxy CORS gratuito)
+// Obtiene token de Spotify (Client Credentials)
 let _spotToken = null, _spotTokenExp = 0;
 async function getSpotToken(){
   if(_spotToken && Date.now() < _spotTokenExp) return _spotToken;
-  // Usamos credenciales de app demo pública para búsqueda (solo lectura, sin datos de usuario)
-  const creds = btoa('a8b8d8c8e8f84a4b8c8d8e8f8a8b8c8d:e8f8a8b8c8d8e8f8a8b8c8d8e8f8a8b8');
+  const creds = btoa(_SPOTIFY_CLIENT_ID + ':' + _SPOTIFY_CLIENT_SECRET);
   try {
     const r = await fetch('https://accounts.spotify.com/api/token',{
       method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded','Authorization':'Basic '+creds},
