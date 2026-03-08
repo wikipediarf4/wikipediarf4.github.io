@@ -9292,6 +9292,7 @@ async function updatePresenceActivity(pageId){
   } catch(e){}
 }
 window.updatePresenceActivity = updatePresenceActivity;
+let _presenceInterval = null;
 async function startPresence(){
   if(!window.CU) return;
   const presRef = doc(db,'presence',window.CU.id);
