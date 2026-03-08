@@ -3089,7 +3089,7 @@ function _stub(name){ return function(){ _q.push([name, arguments]); }; }
  'previewSpotImg','removeSpotImg','submitSpot','loadSpots','toggleYtInput','previewYtEmbed','clearYtInput','extractYtId','openPostWithYt','loadFriendSpots','renderFriendSpotsInHome','openEditSpot','saveEditSpot','deleteSpot','scrollToPost',
  'renderSidebarFriends','renderSuggestedUsers','playNotifSound','showNotifToast','sendNotifToUserWithPost','openMessenger','loadVideos','filterVideos',
  'previewPezSemanaImg','submitPezSemana','deletePezSemana','loadPezSemana','openPezSemanalModal','openReactionsModal','buildRxnLabel',
- 'filterTrofeoFeed','listenTrofeosFeed','swSkillTab','searchStoryMusic','selectStoryMusic','clearStoryMusic','searchDeezer','playDeezer','closeTrophyBanner','debounceStoryMusic','_hoverStoryPreview','_leaveStoryPreview','debounceMusicSearch'
+ 'filterTrofeoFeed','listenTrofeosFeed','swSkillTab','searchStoryMusic','selectStoryMusic','clearStoryMusic','searchDeezer','playDeezer','closeTrophyBanner','debounceStoryMusic','_hoverStoryPreview','_leaveStoryPreview','debounceMusicSearch','_doSharePost'
 ].forEach(fn => { window[fn] = _stub(fn); });
 </script>
 <script type="module">
@@ -4972,7 +4972,7 @@ function postHTML(p){
   })()}
     ${videoHTML}
     <div class="post-stats">
-      <div class="post-rxn-summary" onclick="openReactionsModal('${p.id}')" style="${totalRxn>0?'cursor:pointer':'cursor:default'}">
+      <div class="post-rxn-summary" id="rxns_${p.id}" onclick="openReactionsModal('${p.id}')" style="${totalRxn>0?'cursor:pointer':'cursor:default'}">
         <span style="display:flex;gap:2px;align-items:center;">
           ${topRxn?`<span style="background:var(--bg3);border-radius:100px;padding:2px 8px;font-size:.82rem;">${topRxn}</span>`:''}
           ${totalRxn>0?`<span style="font-size:.78rem;color:var(--muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${buildRxnLabel(p)}</span>`:''}
@@ -5323,6 +5323,22 @@ async function doReact(pid, emoji){
   if(prev){ p.reactionCounts[prev] = Math.max(0,(p.reactionCounts[prev]||1)-1); }
   if(prev === emoji){ delete p.reactions[window.CU.id]; }
   else { p.reactions[window.CU.id] = emoji; p.reactionCounts[emoji] = (p.reactionCounts[emoji]||0)+1; }
+  // Update reaction button in feed immediately
+  const rxnBtn = document.getElementById('rxnt_'+pid);
+  if(rxnBtn){
+    const myNewRxn = prev===emoji ? null : emoji;
+    const rxnDef = REACTIONS.find(r=>r.emoji===myNewRxn);
+    rxnBtn.innerHTML = (myNewRxn||'👍') + ' <span style="font-size:.82rem;">' + (rxnDef?.label||'Me gusta') + '</span>';
+    rxnBtn.style.color = myNewRxn ? (rxnDef?.color||'var(--accent)') : '';
+    rxnBtn.classList.toggle('active', !!myNewRxn);
+  }
+  // Update reaction count in feed
+  const rxnSummary = document.getElementById('rxns_'+pid);
+  if(rxnSummary){
+    const total = Object.values(p.reactionCounts).reduce((a,b)=>a+(b||0),0);
+    const top = Object.entries(p.reactionCounts).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([e])=>e).join('');
+    rxnSummary.innerHTML = total>0 ? `<span style="background:var(--bg3);border-radius:100px;padding:2px 8px;font-size:.82rem;">${top}</span><span style="font-size:.78rem;color:var(--muted);"> ${total}</span>` : '';
+  }
   await updateDoc(doc(db, 'posts', pid), updates);
 }
 function quickReact(pid){ if(!window.CU){toast('Inicia sesión','err');return;} doReact(pid,'👍'); }
@@ -5440,12 +5456,22 @@ function toggleComments(pid){
     ${(totalRxns>0||cmts.length>0)?`
     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px;flex-shrink:0;">
       ${totalRxns>0?`<div style="display:flex;align-items:center;gap:4px;font-size:.85rem;color:#65676b;cursor:pointer;"><span style="font-size:1rem;">${topRxns}</span>${totalRxns}</div>`:'<div></div>'}
-      ${cmts.length>0?`<div style="font-size:.85rem;color:#65676b;cursor:pointer;">${cmts.length} comentario${cmts.length!==1?'s':''}</div>`:''}
+      ${cmts.length>0?`<div id="_cmtModalCount_${pid}" style="font-size:.85rem;color:#65676b;cursor:pointer;">${cmts.length} comentario${cmts.length!==1?'s':''}</div>`:'<div id="_cmtModalCount_'+pid+'"></div>'}
     </div>`:''}
 
     <!-- Action buttons -->
     <div style="display:flex;border-top:1px solid #e4e6eb;border-bottom:1px solid #e4e6eb;flex-shrink:0;">
-      <button onclick="doReact('${pid}','👍')" style="flex:1;background:none;border:none;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 4px;border-radius:0;cursor:pointer;font-size:.88rem;font-weight:700;color:#65676b;" onmouseover="this.style.background='#f2f2f2'" onmouseout="this.style.background='none'">👍 Me gusta</button>
+      <div style="flex:1;position:relative;">
+        <button id="_modalRxnBtn_${pid}" onclick="doReact('${pid}','👍')" 
+          onmouseenter="showRxnPop('_modal_${pid}')" onmouseleave="schedHideRxnPop('_modal_${pid}')"
+          style="width:100%;background:none;border:none;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 4px;border-radius:0;cursor:pointer;font-size:.88rem;font-weight:700;color:#65676b;" 
+          onmouseover="this.style.background='#f2f2f2'" onmouseout="this.style.background='none'">👍 Me gusta</button>
+        <div class="rxn-popup" id="rxnp__modal_${pid}" 
+          onmouseenter="cancelHideRxnPop('_modal_${pid}')" onmouseleave="schedHideRxnPop('_modal_${pid}')"
+          style="bottom:100%;top:auto;left:50%;transform:translateX(-50%);">
+          ${rxnBtns}
+        </div>
+      </div>
       <button onclick="document.getElementById('_cmtModalInp_${pid}').focus()" style="flex:1;background:none;border:none;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 4px;cursor:pointer;font-size:.88rem;font-weight:700;color:#65676b;" onmouseover="this.style.background='#f2f2f2'" onmouseout="this.style.background='none'">💬 Comentar</button>
       <button onclick="sharePost('${pid}')" style="flex:1;background:none;border:none;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 4px;cursor:pointer;font-size:.88rem;font-weight:700;color:#65676b;" onmouseover="this.style.background='#f2f2f2'" onmouseout="this.style.background='none'">↗ Compartir</button>
     </div>
@@ -5466,6 +5492,9 @@ function toggleComments(pid){
       </div>
     </div>
   </div>`;
+
+  // Store _buildCmtHtml on modal so _submitModalCmt can use it
+  modal._buildCmtHtml = _buildCmtHtml;
 
   // Close menu when clicking outside
   modal.addEventListener('click', e=>{
@@ -5511,21 +5540,37 @@ async function _submitModalCmt(pid){
   const inp = document.getElementById('_cmtModalInp_'+pid);
   if(!inp) return;
   const txt = inp.value.trim();
-  if(!txt || !window.CU) return;
+  if(!txt){ inp.focus(); return; }
+  if(!window.CU){ toast('Inicia sesión para comentar','err'); return; }
   inp.value = '';
+  inp.disabled = true;
   try {
     const pRef = doc(db,'posts',pid);
     const snap = await getDoc(pRef);
-    if(!snap.exists()) return;
+    if(!snap.exists()){ inp.disabled=false; return; }
     const p = snap.data();
     const newC = {userId:window.CU.id, nick:window.CU.nick, av:window.CU.av||'', verified:window.CU.verified||false, text:txt, time:Date.now()};
     const newComments = [...(p.comments||[]), newC];
     await updateDoc(pRef,{comments:newComments});
-    // Re-open modal to refresh comment list
-    const modal = document.getElementById('_cmtModal_'+pid);
-    if(modal){ modal.remove(); toggleComments(pid); }
+    // Update local cache
+    const localPost = (_posts||[]).find(lp=>lp.id===pid);
+    if(localPost) localPost.comments = newComments;
+    // Refresh comment list IN the modal without closing it
+    const listEl = document.getElementById('_cmtModalList_'+pid);
+    if(listEl){
+      // rebuild with updated comments
+      const modal = document.getElementById('_cmtModal_'+pid);
+      if(modal && modal._buildCmtHtml) listEl.innerHTML = modal._buildCmtHtml(newComments);
+      listEl.scrollTop = listEl.scrollHeight;
+    }
+    // Update comment count in modal header
+    const countEl = document.getElementById('_cmtModalCount_'+pid);
+    if(countEl) countEl.textContent = newComments.length + ' comentario' + (newComments.length!==1?'s':'');
     if(p.userId && p.userId !== window.CU.id) sendNotifToUserWithPost(p.userId, '💬 ' + window.CU.nick + ' comentó tu publicación', pid);
-  } catch(e){ console.error(e); }
+    addXP(3,'comentario');
+  } catch(e){ console.error(e); toast('Error al comentar','err'); }
+  inp.disabled = false;
+  inp.focus();
 }
 
 // ── Comment menu/edit/delete/reactions ──
@@ -9154,36 +9199,86 @@ function renderMapPosts(){
 // ===== SHARE POST =====
 async function sharePost(pid){
   if(!window.CU){ toast('Inicia sesión para compartir','err'); return; }
-  const p = _posts.find(p=>p.id===pid);
+  // Get post from cache or Firestore
+  let p = _posts.find(p=>p.id===pid);
+  if(!p){
+    try {
+      const snap = await getDoc(doc(db,'posts',pid));
+      if(!snap.exists()){ toast('Post no encontrado','err'); return; }
+      p = {id:snap.id,...snap.data()};
+    } catch(e){ toast('Error al cargar post','err'); return; }
+  }
+  // If it's already a shared post, share the ORIGINAL
+  const realPid = p.sharedPostId || pid;
+  const realNick = p.sharedFrom || p.userNick;
+
+  // Show share modal
+  const existing = document.getElementById('_shareModal_'+pid);
+  if(existing){ existing.remove(); return; }
+  const modal = document.createElement('div');
+  modal.id = '_shareModal_'+pid;
+  modal.style.cssText = 'position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;';
+  modal.innerHTML = `
+  <div style="background:var(--bg2);border-radius:14px;width:480px;max-width:95vw;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.5);">
+    <div style="display:flex;align-items:center;justify-content:center;padding:14px 16px;border-bottom:1px solid var(--border);position:relative;">
+      <span style="font-weight:700;font-size:1rem;color:var(--text);">Compartir publicación</span>
+      <button onclick="document.getElementById('_shareModal_${pid}').remove()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:var(--bg3);border:none;color:var(--text);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;">✕</button>
+    </div>
+    <div style="padding:16px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+        <div style="width:40px;height:40px;border-radius:50%;overflow:hidden;background:var(--bg3);flex-shrink:0;">
+          ${window.CU?.av ? `<img src="${window.CU.av}" style="width:100%;height:100%;object-fit:cover;">` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent);">${(window.CU?.nick||'?')[0]}</div>`}
+        </div>
+        <div>
+          <div style="font-size:.88rem;font-weight:700;color:var(--text);">${window.CU?.nick||''}</div>
+          <div style="font-size:.72rem;color:var(--muted);">En tu perfil · 🌐 Público</div>
+        </div>
+      </div>
+      <textarea id="_shareTxt_${pid}" placeholder="Di algo sobre esto..." style="width:100%;background:transparent;border:none;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.9rem;resize:none;outline:none;min-height:60px;"></textarea>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);overflow:hidden;margin-top:8px;">
+        <div style="padding:10px 12px;display:flex;align-items:center;gap:8px;">
+          <div style="font-size:.8rem;font-weight:700;color:var(--muted);">🔁 Publicación de ${esc(realNick||'')}</div>
+        </div>
+        ${p.images&&p.images[0] ? `<img src="${p.images[0]}" style="width:100%;max-height:140px;object-fit:cover;display:block;">` : ''}
+        ${p.text ? `<div style="padding:8px 12px;font-size:.82rem;color:var(--muted);">${esc((p.text||'').slice(0,100))}${(p.text||'').length>100?'...':''}</div>` : ''}
+      </div>
+    </div>
+    <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;">
+      <button onclick="document.getElementById('_shareModal_${pid}').remove()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700;">Cancelar</button>
+      <button onclick="_doSharePost('${pid}','${realPid}')" style="background:var(--accent);border:none;color:#000;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700;">🔁 Compartir</button>
+    </div>
+  </div>`;
+  modal.addEventListener('click', e=>{ if(e.target===modal) modal.remove(); });
+  document.body.appendChild(modal);
+  setTimeout(()=>document.getElementById('_shareTxt_'+pid)?.focus(),100);
+}
+
+async function _doSharePost(pid, realPid){
+  if(!window.CU) return;
+  const txt = document.getElementById('_shareTxt_'+pid)?.value.trim()||'';
+  const modal = document.getElementById('_shareModal_'+pid);
+  if(modal) modal.remove();
+  let p = _posts.find(p=>p.id===(realPid||pid));
+  if(!p){
+    try {
+      const snap = await getDoc(doc(db,'posts',(realPid||pid)));
+      if(snap.exists()) p = {id:snap.id,...snap.data()};
+    } catch(e){}
+  }
   if(!p){ toast('Post no encontrado','err'); return; }
   try {
-    await navigator.clipboard.writeText(window.location.href+'#post_'+pid);
-  } catch(e){}
-  // Create shared copy in user's feed
-  await addDoc(collection(db,'posts'),{
-    userId: window.CU.id, userNick: window.CU.nick, userAv: window.CU.av||'',
-    text: '', fish: '', weight: 0, map: '', tech: '', images: [],
-    time: serverTimestamp(), likes:0, comments:[], reactions:{}, reactionCounts:{},
-    sharedFrom: p.userNick, sharedPostId: pid,
-    sharedSnapshot: {
-      text: p.text||'',
-      images: p.images||[],
-      video: p.video||'',
-      userNick: p.userNick||'',
-      userAv: p.userAv||'',
-      fish: p.fish||'',
-      weight: p.weight||0
-    }
-  });
-  // Increment share count on original post
-  try {
-    await updateDoc(doc(db,'posts',pid), { shares: (p.shares||0)+1 });
-  } catch(e){}
-  // Notify original post owner
-  if(p.userId && p.userId !== window.CU.id){
-    sendNotifToUserWithPost(p.userId, `🔁 ${window.CU.nick} compartió tu publicación`, p.id);
-  }
-  toast('¡Publicación compartida en tu perfil! 📋','ok');
+    await addDoc(collection(db,'posts'),{
+      userId: window.CU.id, userNick: window.CU.nick, userAv: window.CU.av||'',
+      text: txt, fish: '', weight: 0, map: '', tech: '', images: [],
+      time: serverTimestamp(), likes:0, comments:[], reactions:{}, reactionCounts:{},
+      sharedFrom: p.userNick, sharedPostId: p.id,
+      sharedSnapshot: { text:p.text||'', images:p.images||[], video:p.video||'', userNick:p.userNick||'', userAv:p.userAv||'', fish:p.fish||'', weight:p.weight||0 }
+    });
+    await updateDoc(doc(db,'posts',p.id), { shares: increment(1) }).catch(()=>{});
+    if(p.userId && p.userId !== window.CU.id) sendNotifToUserWithPost(p.userId, `🔁 ${window.CU.nick} compartió tu publicación`, p.id);
+    toast('¡Publicación compartida! 🔁','ok');
+    _fetchPosts();
+  } catch(e){ toast('Error al compartir','err'); }
 }
 
 // ===== USER MENU & LOGOUT =====
