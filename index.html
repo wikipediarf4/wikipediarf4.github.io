@@ -1282,18 +1282,9 @@ select.fi option{background:var(--bg3);color:var(--text);}
 
     <!-- BOTTOM BAR mejorado -->
     <div style="position:absolute;bottom:0;left:0;right:0;z-index:20;background:linear-gradient(transparent,rgba(0,0,0,.7) 40%);padding:20px 12px 14px;">
-      <!-- Fila de reacciones rápidas -->
-      <div id="svReactWrap" style="position:relative;margin-bottom:10px;">
-        <div style="display:flex;align-items:center;gap:6px;">
-          <button id="svReactBtn"
-            onclick="var p=document.getElementById('svReactPop');p.style.display=p.style.display==='flex'?'none':'flex';"
-            style="background:rgba(255,255,255,.15);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:100px;padding:5px 12px;font-size:1rem;cursor:pointer;display:flex;align-items:center;gap:5px;transition:transform .15s;font-family:'Exo 2',sans-serif;"
-            onmouseover="this.style.transform='scale(1.07)'" onmouseout="this.style.transform='scale(1)'">
-            👍 <span style="font-size:.72rem;font-weight:700;">Reaccionar</span>
-          </button>
-          <!-- Reaction emoji popup — floats UP -->
-          <div id="svReactPop" style="display:none;position:absolute;bottom:calc(100% + 8px);left:0;background:rgba(18,28,42,.97);border:1px solid rgba(255,255,255,.18);border-radius:100px;padding:7px 12px;gap:5px;align-items:center;box-shadow:0 6px 28px rgba(0,0,0,.75);white-space:nowrap;z-index:200;">
-          </div>
+      <!-- Reacciones directas visibles -->
+      <div id="svReactWrap" style="margin-bottom:10px;">
+        <div id="svReactPop" style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
         </div>
       </div>
       <!-- Caja de comentario -->
@@ -3256,7 +3247,7 @@ function init(){
       splash.style.display = 'none';
       document.getElementById('mAuth').style.display = 'block';
     }
-  }, 6000);
+  }, 3000);
 
   // Escuchar estado de auth
   onAuthStateChanged(auth, async user => {
@@ -4303,8 +4294,6 @@ function renderSV(){
   const isOwn  = window.CU && s.userId === window.CU.id;
   if(delBtn) delBtn.style.display = isOwn ? 'block' : 'none';
   if(repBtn) repBtn.style.display = (!isOwn && window.CU) ? 'block' : 'none';
-  const pop2 = document.getElementById('svReactPop');
-  if(pop2) pop2.style.display = 'none';
   // Clear comment input
   const cinp = document.getElementById('svCommentInput');
   if(cinp) cinp.value = '';
@@ -12841,16 +12830,16 @@ window.setUserRole         = setUserRole;
 </div>
 <script>
 (function svEmojiInit_done(){
-  // Story reaction popup buttons
+  // Story reactions — directamente visibles, sin popup
   var pop = document.getElementById('svReactPop');
   if(pop){
     ['❤️','😮','😂','🎣','👏','🔥','😍','🐟','🏆','💀'].forEach(function(em){
       var b=document.createElement('button');
       b.textContent=em; b.title=em;
-      b.style.cssText='background:none;border:none;font-size:1.5rem;cursor:pointer;transition:transform .15s;border-radius:50%;padding:3px;';
-      b.onmouseover=function(){this.style.transform='scale(1.45) translateY(-5px)';};
-      b.onmouseout =function(){this.style.transform='scale(1) translateY(0)';};
-      b.onclick    =function(){ if(typeof reactStory==='function')reactStory(em); document.getElementById('svReactPop').style.display='none'; };
+      b.style.cssText='background:rgba(255,255,255,.15);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.2);font-size:1.4rem;cursor:pointer;transition:transform .15s,background .15s;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;padding:0;';
+      b.onmouseover=function(){this.style.transform='scale(1.3) translateY(-4px)';this.style.background='rgba(255,255,255,.28)';};
+      b.onmouseout =function(){this.style.transform='scale(1) translateY(0)';this.style.background='rgba(255,255,255,.15)';};
+      b.onclick    =function(){ if(typeof reactStory==='function') reactStory(em); };
       pop.appendChild(b);
     });
   }
@@ -12867,12 +12856,6 @@ window.setUserRole         = setUserRole;
       bar.appendChild(b);
     });
   }
-  // Close popup on outside click
-  document.addEventListener('click',function(ev){
-    var p=document.getElementById('svReactPop');
-    var w=document.getElementById('svReactWrap');
-    if(p&&w&&!w.contains(ev.target))p.style.display='none';
-  });
 })();
 </script>
 
