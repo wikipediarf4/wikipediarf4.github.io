@@ -631,8 +631,6 @@ select.fi option{background:var(--bg3);color:var(--text);}
 .shop-item-price{font-size:.7rem;font-weight:800;color:gold;}
 .shop-item-equipped-badge{position:absolute;top:6px;right:6px;background:gold;color:#000;font-size:.55rem;font-weight:900;border-radius:100px;padding:2px 6px;}
 .shop-item-btn{width:100%;margin-top:8px;padding:5px;font-size:.68rem;font-weight:700;border-radius:8px;border:none;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .2s;}
-.shop-item-locked{ opacity:.75; }
-.shop-item-locked:hover{ border-color:rgba(0,114,255,.4) !important; box-shadow:0 4px 16px rgba(0,114,255,.1) !important; }
 .shop-item-btn.equip{background:linear-gradient(135deg,gold,#ff8c00);color:#000;}
 .shop-item-btn.unequip{background:rgba(255,200,0,.15);border:1px solid rgba(255,200,0,.3);color:gold;}
 .shop-preview-modal{}
@@ -805,7 +803,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
 <div id="trophyBanner" style="display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:9990;width:calc(100% - 32px);max-width:420px;background:linear-gradient(135deg,#1a1400,#2a1e00);border:1.5px solid rgba(255,215,0,.5);border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.5),0 0 24px rgba(255,215,0,.12);overflow:hidden;cursor:pointer;animation:trophyBannerIn .4s cubic-bezier(.34,1.56,.64,1) forwards;" onclick="closeTrophyBanner();gp('trofeos-feed')">
   <!-- Barra de progreso -->
   <div style="height:3px;background:rgba(255,215,0,.15);">
-    <div id="trophyBannerBar" style="height:100%;background:linear-gradient(90deg,var(--gold),#ffb300);width:100%;transition:width 6s linear;"></div>
+    <div id="trophyBannerBar" style="height:100%;background:linear-gradient(90deg,var(--gold),#ffb300);width:100%;transition:width 30s linear;"></div>
   </div>
   <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;">
     <div id="trophyBannerImg" style="width:52px;height:52px;border-radius:10px;overflow:hidden;flex-shrink:0;background:rgba(255,215,0,.1);display:flex;align-items:center;justify-content:center;font-size:1.8rem;border:1px solid rgba(255,215,0,.25);">🏆</div>
@@ -882,6 +880,22 @@ select.fi option{background:var(--bg3);color:var(--text);}
           <div style="position:absolute;bottom:calc(38% - 14px);left:50%;transform:translateX(-50%);width:28px;height:28px;border-radius:50%;background:#1877f2;border:2px solid var(--bg2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:900;color:#fff;z-index:3;box-shadow:0 2px 6px rgba(24,119,242,.5);">+</div>
         </div>
         <!-- Stories se renderizan con JS -->
+      </div>
+
+      <!-- Último trofeo aprobado -->
+      <div id="homeTrophyWidget" style="display:none;background:linear-gradient(135deg,rgba(255,215,0,.08),rgba(255,165,0,.04));border:1px solid rgba(255,215,0,.3);border-radius:var(--r);margin-bottom:14px;overflow:hidden;cursor:pointer;" onclick="gp('trofeos-feed')" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='rgba(255,215,0,.3)'">
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid rgba(255,215,0,.15);">
+          <span style="font-size:.72rem;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1px;">🥇 Nuevo Trofeo Aprobado</span>
+          <span style="font-size:.68rem;color:var(--muted);margin-left:auto;" id="homeTrophyTime"></span>
+        </div>
+        <div style="display:flex;gap:12px;padding:10px 12px;align-items:center;">
+          <div id="homeTrophyImg" style="width:64px;height:64px;border-radius:var(--rs);overflow:hidden;flex-shrink:0;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:2rem;">🏆</div>
+          <div style="flex:1;min-width:0;">
+            <div id="homeTrophyFish" style="font-family:'Orbitron',monospace;font-size:.95rem;font-weight:900;color:var(--gold);"></div>
+            <div id="homeTrophyWeight" style="font-size:1.1rem;font-weight:800;color:var(--text);margin-top:2px;"></div>
+            <div id="homeTrophyNick" style="font-size:.75rem;color:var(--muted);margin-top:2px;"></div>
+          </div>
+        </div>
       </div>
 
       <!-- Post Box -->
@@ -3090,7 +3104,7 @@ function _stub(name){ return function(){ _q.push([name, arguments]); }; }
 // ===== FIREBASE SETUP (modular ESM — sin eval, compatible con CSP) =====
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, GoogleAuthProvider, signInWithPopup } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, addDoc, deleteDoc, onSnapshot, query, orderBy, limit, serverTimestamp, increment, where, deleteField, Timestamp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, addDoc, deleteDoc, onSnapshot, query, orderBy, limit, serverTimestamp, increment, where, deleteField } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
 
 const firebaseConfig = {
@@ -3210,7 +3224,7 @@ async function listenPosts() {
   await _fetchPosts();
   // Polling cada 2 minutos en lugar de onSnapshot continuo
   if(_postsPollingInterval) clearInterval(_postsPollingInterval);
-  _postsPollingInterval = setInterval(_fetchPosts, 480000); // OPTIMIZADO: cada 8 min
+  _postsPollingInterval = setInterval(_fetchPosts, 300000); // Optimizado: cada 5 min
 }
 
 async function _fetchPosts(){
@@ -6065,7 +6079,6 @@ const SHOP_ITEMS = [
   { id:'efecto_burbujas',  cat:'efecto', name:'Burbujas',         preview:'🫧', emoji:'🫧', price:400,  desc:'Burbujas acuáticas subiendo' },
   { id:'efecto_lightning', cat:'efecto', name:'Rayos',            preview:'⚡', emoji:'⚡', price:800,  desc:'Rayos eléctricos en tu perfil', exclusive:true },
   { id:'efecto_hojas',     cat:'efecto', name:'Hojas Otoñales',   preview:'🍂', emoji:'🍁', price:450,  desc:'Hojas cayendo suavemente' },
-  { id:'efecto_dragones',  cat:'efecto', name:'Dragones',         preview:'🐉', emoji:'🐉', price:2500, desc:'Dragones volando alrededor de tu perfil', exclusive:true, soloVerificado:true },
   // ── TÍTULOS ──
   { id:'titulo_jefe',     cat:'titulo', name:'El Jefe',           preview:'😎', emoji:'😎', price:800,  desc:'Título "El Jefe" bajo tu nombre' },
   { id:'titulo_legend',   cat:'titulo', name:'Leyenda Viva',      preview:'⚡', emoji:'⚡', price:1200, desc:'Título dorado animado', exclusive:true },
@@ -6330,10 +6343,9 @@ function renderShopGrid(){
     const postPreview = item.cat==='postcolor' ? `<div class="${item.theme}" style="border-radius:8px;padding:8px 10px;margin-bottom:8px;font-size:.63rem;color:#ddd;line-height:1.5;text-align:left;"><div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;"><div style="width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.2);flex-shrink:0;"></div><span style="font-weight:700;">ruizgustavo12</span></div><div>🎣 ¡Gran pesca hoy!</div></div>` : '';
     const bannerPreview = item.cat==='banner' ? `<div style="width:100%;height:60px;border-radius:8px;margin-bottom:8px;overflow:hidden;position:relative;background:${item.id==='banner_fuego'?'linear-gradient(180deg,#0a0000,#2d0800)':item.id==='banner_flores'?'linear-gradient(180deg,#0d0018,#2d0060)':item.id==='banner_ocean'?'linear-gradient(180deg,#00050f,#002050)':item.id==='banner_aurora'?'linear-gradient(180deg,#000508,#001a15)':item.id==='banner_galaxy'?'linear-gradient(180deg,#000005,#0a0020)':'linear-gradient(180deg,#050507,#101018)'};display:flex;align-items:center;justify-content:center;font-size:1.8rem;">${item.preview}</div>` : '';
     return `
-    <div class="shop-item${isEquipped?' equipped':''}${item.soloVerificado&&!window.CU?.verified?' shop-item-locked':''}" id="sitem_${item.id}">
+    <div class="shop-item${isEquipped?' equipped':''}" id="sitem_${item.id}">
       ${isEquipped ? '<div class="shop-item-equipped-badge">✓ ACTIVO</div>' : ''}
       ${item.exclusive ? '<div style="position:absolute;top:6px;left:6px;background:linear-gradient(135deg,gold,#ff8c00);color:#000;font-size:.5rem;font-weight:900;border-radius:100px;padding:2px 6px;">✦ EXCL.</div>' : ''}
-      ${item.soloVerificado ? '<div style="position:absolute;top:6px;left:6px;background:linear-gradient(135deg,#00c6ff,#0072ff);color:#fff;font-size:.5rem;font-weight:900;border-radius:100px;padding:2px 6px;">✅ SOLO VERIFICADOS</div>' : ''}
       ${postPreview}
       ${bannerPreview}
       ${!item.theme && !item.bannerFn ? `<span style="font-size:2.2rem;display:block;margin-bottom:6px;">${item.preview}</span>` : ''}
@@ -6345,10 +6357,9 @@ function renderShopGrid(){
         <span style="background:linear-gradient(135deg,#00c853,#00e676);color:#000;font-size:.65rem;font-weight:900;padding:2px 8px;border-radius:100px;">✦ GRATIS</span>
         <span style="font-size:.58rem;color:var(--muted);">30 días</span>
       </div>
-      ${item.soloVerificado && !window.CU?.verified
-        ? `<button class="shop-item-btn" style="background:rgba(0,114,255,.12);border:1px solid rgba(0,114,255,.3);color:#0072ff;" onclick="toast('🔒 Este efecto es solo para usuarios verificados ✅','err')">🔒 Solo Verificados</button>`
-        : `<button class="shop-item-btn ${isEquipped?'unequip':'equip'}" onclick="toggleEquipItem('${item.id}')">${isEquipped ? '✕ Desequipar' : '▶ Equipar'}</button>`
-      }
+      <button class="shop-item-btn ${isEquipped?'unequip':'equip'}" onclick="toggleEquipItem('${item.id}')">
+        ${isEquipped ? '✕ Desequipar' : '▶ Equipar'}
+      </button>
     </div>`;
   }).join('');
   if(grid) grid.innerHTML = _shopHTML;
@@ -6459,97 +6470,9 @@ function applyShopEffects(){
 function _stopShopParticles(){
   if(_shopParticleInterval){ clearInterval(_shopParticleInterval); _shopParticleInterval=null; }
   document.querySelectorAll('.shop-particle').forEach(p=>p.remove());
-  // Detener dragones
-  if(window._dragonAnimId){ cancelAnimationFrame(window._dragonAnimId); window._dragonAnimId=null; }
-  const dc = document.getElementById('dragonCanvas');
-  if(dc) dc.remove();
-}
-
-function _startDragonEffect(){
-  const existing = document.getElementById('dragonCanvas');
-  if(existing) existing.remove();
-
-  const canvas = document.createElement('canvas');
-  canvas.id = 'dragonCanvas';
-  canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;';
-  document.body.appendChild(canvas);
-  const ctx = canvas.getContext('2d');
-
-  const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
-  resize();
-  window.addEventListener('resize', resize);
-
-  // Obtener posición del avatar del perfil
-  const getAvatarCenter = () => {
-    const av = document.querySelector('.profile-av-wrap img') || document.querySelector('.profile-av-wrap');
-    if(av){
-      const r = av.getBoundingClientRect();
-      return { x: r.left + r.width/2, y: r.top + r.height/2, r: Math.max(r.width, r.height)/2 + 30 };
-    }
-    return { x: window.innerWidth/2, y: window.innerHeight/2 - 50, r: 80 };
-  };
-
-  const DRAGON_EMOJI = '🐉';
-  const NUM_DRAGONS = 3;
-  const dragons = Array.from({length: NUM_DRAGONS}, (_, i) => ({
-    angle: (i / NUM_DRAGONS) * Math.PI * 2,
-    speed: 0.008 + Math.random() * 0.004,
-    orbitR: 90 + i * 18,
-    size: 22 + i * 4,
-    wobble: Math.random() * Math.PI * 2,
-    wobbleSpeed: 0.03 + Math.random() * 0.02,
-    trail: []
-  }));
-
-  const draw = () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const center = getAvatarCenter();
-
-    dragons.forEach(d => {
-      d.angle += d.speed;
-      d.wobble += d.wobbleSpeed;
-
-      const x = center.x + Math.cos(d.angle) * (d.orbitR + Math.sin(d.wobble) * 10);
-      const y = center.y + Math.sin(d.angle) * (d.orbitR * 0.45 + Math.sin(d.wobble) * 6);
-
-      // Trazar trail de fuego
-      d.trail.push({x, y, a: 1});
-      if(d.trail.length > 12) d.trail.shift();
-      d.trail.forEach((pt, i) => {
-        const alpha = (i / d.trail.length) * 0.5;
-        const size = (i / d.trail.length) * d.size * 0.5;
-        ctx.save();
-        ctx.globalAlpha = alpha;
-        ctx.font = `${size}px serif`;
-        ctx.fillText('🔥', pt.x - size/2, pt.y + size/2);
-        ctx.restore();
-      });
-
-      // Dragón
-      ctx.save();
-      ctx.font = `${d.size}px serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      // Flip según dirección
-      if(Math.cos(d.angle) < 0){
-        ctx.scale(-1, 1);
-        ctx.fillText(DRAGON_EMOJI, -x, y);
-      } else {
-        ctx.fillText(DRAGON_EMOJI, x, y);
-      }
-      ctx.restore();
-    });
-
-    window._dragonAnimId = requestAnimationFrame(draw);
-  };
-  draw();
 }
 
 function _startShopParticles(efectoId){
-  if(efectoId === 'efecto_dragones'){
-    _startDragonEffect();
-    return;
-  }
   const PARTICLES = {
     efecto_confetti:  ['🎊','🎉','🎈','✨','🎀'],
     efecto_stars:     ['⭐','💫','✨','🌟','⚡'],
@@ -6905,7 +6828,7 @@ async function _fetchUnreadMsgs(){
   await Promise.all(friends.map(async f=>{
     try {
       const chatId = [myId, f.id].sort().join('_');
-      const q = query(collection(db,'chats',chatId,'messages'), orderBy('time','desc'), limit(5)); // OPTIMIZADO: limit 5 en vez de 15
+      const q = query(collection(db,'chats',chatId,'messages'), orderBy('time','desc'), limit(15));
       const snap = await getDocs(q);
       const unreadCount = snap.docs.filter(d=>{
         const m = d.data();
@@ -6940,7 +6863,7 @@ function listenUnreadMsgsBadge(){
   if(_msgBadgeInterval) clearInterval(_msgBadgeInterval);
   _fetchUnreadMsgs();
   // Polling cada 90 segundos en vez de onSnapshot por cada amigo
-  _msgBadgeInterval = setInterval(_fetchUnreadMsgs, 180000); // OPTIMIZADO: cada 3 min en vez de 90s
+  _msgBadgeInterval = setInterval(_fetchUnreadMsgs, 90000);
 }
 
 // ===== MESSENGER =====
@@ -9741,24 +9664,19 @@ async function startPresence(){
   await setDoc(presRef, {nick:window.CU.nick, av:window.CU.av||'', last:serverTimestamp(), device:_device}, {merge:true});
   _presenceInterval = setInterval(async()=>{
     if(window.CU) await setDoc(presRef,{nick:window.CU.nick,av:window.CU.av||'',last:serverTimestamp(),device:_device},{merge:true});
-  }, 240000); // OPTIMIZADO: cada 4 min en vez de 2 min
+  }, 120000); // Optimizado: cada 2 min en vez de 30 seg
   listenPresence();
 }
 
 let _presencePollingInterval = null;
 async function _fetchPresence(){
   try {
-    // OPTIMIZADO: solo lee usuarios activos en últimos 5 min (1 query filtrada vs toda la colección)
-    const since = Timestamp.fromMillis(Date.now() - 300000); // 5 minutos
-    const onlineSnap = await getDocs(query(collection(db,'presence'), where('last','>',since), limit(50)));
+    const snap = await getDocs(collection(db,'presence'));
     const now = Date.now();
-    const online = onlineSnap.docs.map(d=>({id:d.id,...d.data(),ts:d.data().last?.toMillis?.()||0}));
-    // offline: usamos cache local para no hacer otra query
-    const offline = Object.values(window._presenceCache||{})
-      .filter(u=> now - u.ts >= 300000 && now - u.ts < 3600000)
+    const all = snap.docs.map(d=>({id:d.id,...d.data(),ts:d.data().last?.toMillis?.()||0}));
+    const online = all.filter(u=>now - u.ts < 180000);
+    const offline = all.filter(u=>now - u.ts >= 180000 && u.ts > 0)
       .sort((a,b)=>b.ts-a.ts).slice(0,8);
-    // actualizar cache
-    online.forEach(u=>{ if(!window._presenceCache) window._presenceCache={}; window._presenceCache[u.id]=u; });
     renderContacts(online);
     document.querySelectorAll('#onlineCount,#sidebarOnlineCount').forEach(el=>{ if(el) el.textContent=online.length; });
     renderSidebarOnline(online, offline);
@@ -9771,8 +9689,7 @@ async function _fetchPresence(){
 function listenPresence(){
   _fetchPresence();
   if(_presencePollingInterval) clearInterval(_presencePollingInterval);
-  // OPTIMIZADO: cada 5 min en vez de 3 min (era 180s, ahora 300s)
-  _presencePollingInterval = setInterval(_fetchPresence, 300000);
+  _presencePollingInterval = setInterval(_fetchPresence, 180000);
 }
 
 function fmtLastSeen(ts){
@@ -11871,8 +11788,28 @@ function listenTrofeosSidebar(){
 }
 
 function renderHomeTrophyWidget(t){
-  if(!t) return;
-  // Solo el banner flotante, el widget estático fue eliminado
+  const widget = document.getElementById('homeTrophyWidget');
+  if(!widget) return;
+  if(!t){ widget.style.display='none'; return; }
+  const fish = t.fish||t.especie||'?';
+  const weight = t.weight||t.peso||0;
+  const nick = t.userNick||t.submittedBy||t.nick||'?';
+  const images = t.images||[];
+  const imgUrl = images[0]||t.imageUrl||t.img||'';
+  const time = t.createdAt?.toMillis?.() || t.createdAt || Date.now();
+  const imgEl = document.getElementById('homeTrophyImg');
+  const fishEl = document.getElementById('homeTrophyFish');
+  const weightEl = document.getElementById('homeTrophyWeight');
+  const nickEl = document.getElementById('homeTrophyNick');
+  const timeEl = document.getElementById('homeTrophyTime');
+  if(imgEl) imgEl.innerHTML = imgUrl ? `<img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover;">` : '🏆';
+  if(fishEl) fishEl.textContent = fish;
+  if(weightEl) weightEl.textContent = weight ? weight + ' kg' : '';
+  if(nickEl) nickEl.textContent = '👤 ' + nick;
+  if(timeEl) timeEl.textContent = fmtT(time);
+  widget.style.display = 'block';
+
+  // Banner toast — solo una vez por sesión
   if(!sessionStorage.getItem('_trophyBannerShown')) {
     sessionStorage.setItem('_trophyBannerShown','1');
     showTrophyBanner(t);
@@ -11902,7 +11839,7 @@ function showTrophyBanner(t){
   if(bar){ requestAnimationFrame(()=>requestAnimationFrame(()=>{ bar.style.width='0%'; })); }
   // Cerrar automáticamente a los 30s
   if(_trophyBannerTimer) clearTimeout(_trophyBannerTimer);
-  _trophyBannerTimer = setTimeout(()=>closeTrophyBanner(), 6000);
+  _trophyBannerTimer = setTimeout(()=>closeTrophyBanner(), 30000);
 }
 
 function closeTrophyBanner(){
