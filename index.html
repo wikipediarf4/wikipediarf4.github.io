@@ -1303,15 +1303,11 @@ select.fi option{background:var(--bg3);color:var(--text);}
             ❤️ Me gusta
           </button>
         </div>
-        <!-- Popup reacciones flotante -->
+        <!-- Popup reacciones flotante — hardcoded, animadas estilo Facebook -->
         <div id="svReactPop"
-          style="display:none;position:absolute;bottom:calc(100% + 8px);left:0;background:rgba(30,30,30,.92);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.15);border-radius:100px;padding:6px 10px;flex-direction:row;gap:4px;align-items:center;box-shadow:0 4px 24px rgba(0,0,0,.5);z-index:30;"
+          style="display:none;position:absolute;bottom:calc(100% + 10px);left:0;background:rgba(24,24,24,.95);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.15);border-radius:100px;padding:7px 12px;flex-direction:row;gap:2px;align-items:center;box-shadow:0 6px 28px rgba(0,0,0,.6);z-index:30;"
           onmouseleave="this.style.display='none'">
-          ${['❤️','😂','😮','😢','😡','👍','🔥','🎣','🏆','👏'].map(em=>`
-            <button onclick="reactStory('${em}');document.getElementById('svReactPop').style.display='none';"
-              style="background:none;border:none;font-size:1.6rem;cursor:pointer;padding:4px;border-radius:50%;transition:transform .15s,background .15s;line-height:1;"
-              onmouseover="this.style.transform='scale(1.4) translateY(-4px)';this.style.background='rgba(255,255,255,.1)'"
-              onmouseout="this.style.transform='scale(1)';this.style.background='none'">${em}</button>`).join('')}
+          <button onclick="reactStory('❤️');document.getElementById('svReactPop').style.display='none';" style="background:none;border:none;font-size:1.7rem;cursor:pointer;padding:4px 5px;border-radius:50%;transition:transform .18s,background .15s;line-height:1;" onmouseover="this.style.transform='scale(1.5) translateY(-5px)';this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.transform='scale(1)';this.style.background='none'">❤️</button><button onclick="reactStory('😂');document.getElementById('svReactPop').style.display='none';" style="background:none;border:none;font-size:1.7rem;cursor:pointer;padding:4px 5px;border-radius:50%;transition:transform .18s,background .15s;line-height:1;" onmouseover="this.style.transform='scale(1.5) translateY(-5px)';this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.transform='scale(1)';this.style.background='none'">😂</button><button onclick="reactStory('😮');document.getElementById('svReactPop').style.display='none';" style="background:none;border:none;font-size:1.7rem;cursor:pointer;padding:4px 5px;border-radius:50%;transition:transform .18s,background .15s;line-height:1;" onmouseover="this.style.transform='scale(1.5) translateY(-5px)';this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.transform='scale(1)';this.style.background='none'">😮</button><button onclick="reactStory('😢');document.getElementById('svReactPop').style.display='none';" style="background:none;border:none;font-size:1.7rem;cursor:pointer;padding:4px 5px;border-radius:50%;transition:transform .18s,background .15s;line-height:1;" onmouseover="this.style.transform='scale(1.5) translateY(-5px)';this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.transform='scale(1)';this.style.background='none'">😢</button><button onclick="reactStory('😡');document.getElementById('svReactPop').style.display='none';" style="background:none;border:none;font-size:1.7rem;cursor:pointer;padding:4px 5px;border-radius:50%;transition:transform .18s,background .15s;line-height:1;" onmouseover="this.style.transform='scale(1.5) translateY(-5px)';this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.transform='scale(1)';this.style.background='none'">😡</button><button onclick="reactStory('👍');document.getElementById('svReactPop').style.display='none';" style="background:none;border:none;font-size:1.7rem;cursor:pointer;padding:4px 5px;border-radius:50%;transition:transform .18s,background .15s;line-height:1;" onmouseover="this.style.transform='scale(1.5) translateY(-5px)';this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.transform='scale(1)';this.style.background='none'">👍</button><button onclick="reactStory('🔥');document.getElementById('svReactPop').style.display='none';" style="background:none;border:none;font-size:1.7rem;cursor:pointer;padding:4px 5px;border-radius:50%;transition:transform .18s,background .15s;line-height:1;" onmouseover="this.style.transform='scale(1.5) translateY(-5px)';this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.transform='scale(1)';this.style.background='none'">🔥</button><button onclick="reactStory('🎣');document.getElementById('svReactPop').style.display='none';" style="background:none;border:none;font-size:1.7rem;cursor:pointer;padding:4px 5px;border-radius:50%;transition:transform .18s,background .15s;line-height:1;" onmouseover="this.style.transform='scale(1.5) translateY(-5px)';this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.transform='scale(1)';this.style.background='none'">🎣</button><button onclick="reactStory('🏆');document.getElementById('svReactPop').style.display='none';" style="background:none;border:none;font-size:1.7rem;cursor:pointer;padding:4px 5px;border-radius:50%;transition:transform .18s,background .15s;line-height:1;" onmouseover="this.style.transform='scale(1.5) translateY(-5px)';this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.transform='scale(1)';this.style.background='none'">🏆</button><button onclick="reactStory('👏');document.getElementById('svReactPop').style.display='none';" style="background:none;border:none;font-size:1.7rem;cursor:pointer;padding:4px 5px;border-radius:50%;transition:transform .18s,background .15s;line-height:1;" onmouseover="this.style.transform='scale(1.5) translateY(-5px)';this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.transform='scale(1)';this.style.background='none'">👏</button>
         </div>
       </div>
       <!-- Caja de comentario -->
@@ -1831,28 +1827,36 @@ select.fi option{background:var(--bg3);color:var(--text);}
           </div>
         </div>
 
-        <!-- Music -->
+        <!-- Música — SIEMPRE VISIBLE, IDs únicos con prefijo txt_ -->
         <div>
-          <label style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:block;">🎵 Agregar música</label>
-          <button onclick="_scToggleMusic()" style="display:flex;align-items:center;gap:10px;width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;cursor:pointer;color:var(--text);">
-            <span style="font-size:1.1rem;">🎵</span>
-            <span style="font-size:.85rem;font-weight:600;">Agregar música</span>
-          </button>
-          <div id="_scMusicPanel" style="display:none;margin-top:8px;">
-            <input class="fi" id="storyMusicSearch" placeholder="🔍 Buscar canción..." style="width:100%;box-sizing:border-box;" oninput="debounceStoryMusic()" onfocus="_showStoryMusicSuggestions()" onkeydown="if(event.key==='Enter')searchStoryMusic()">
-            <span id="storyMusicSpinner" style="display:none;font-size:.8rem;">⏳</span>
-            <div id="storyMusicResults" style="max-height:200px;overflow-y:auto;display:none;background:var(--bg3);border:1px solid var(--border);border-radius:10px;margin-top:4px;"></div>
-            <div id="storyMusicSelected" style="display:none;margin-top:6px;background:rgba(46,196,182,.08);border:1px solid rgba(46,196,182,.3);border-radius:10px;padding:8px;">
-              <div style="display:flex;align-items:center;gap:8px;">
-                <img id="storyMusicCover" src="" style="width:36px;height:36px;border-radius:6px;object-fit:cover;flex-shrink:0;">
-                <div style="flex:1;min-width:0;">
-                  <div id="storyMusicTitle" style="font-size:.78rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
-                  <div id="storyMusicArtist" style="font-size:.68rem;color:var(--muted);"></div>
-                </div>
-                <button onclick="clearStoryMusic()" style="background:none;border:none;color:var(--muted);cursor:pointer;">✕</button>
+          <label style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:block;">🎵 Música (opcional)</label>
+          <!-- Search box con lupa -->
+          <div style="position:relative;">
+            <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:.85rem;pointer-events:none;">🔍</span>
+            <input id="txt_MusicSearch"
+              placeholder="Buscar canción o artista..."
+              autocomplete="off"
+              style="width:100%;box-sizing:border-box;padding:9px 36px 9px 32px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.85rem;outline:none;"
+              oninput="_txtMusicInput()"
+              onfocus="_txtMusicFocus()"
+              onkeydown="if(event.key==='Enter'){event.preventDefault();_txtMusicSearch();}"
+            >
+            <button onclick="_txtMusicSearch()" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:var(--accent);border:none;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:.7rem;font-weight:700;color:#000;">Buscar</button>
+          </div>
+          <span id="txt_MusicSpinner" style="display:none;font-size:.75rem;color:var(--muted);padding:4px 0;display:block;text-align:center;">⏳ Buscando...</span>
+          <!-- Resultados / sugerencias -->
+          <div id="txt_MusicResults" style="max-height:220px;overflow-y:auto;display:none;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-top:4px;box-shadow:0 4px 16px rgba(0,0,0,.2);"></div>
+          <!-- Canción seleccionada -->
+          <div id="txt_MusicSelected" style="display:none;margin-top:8px;background:rgba(46,196,182,.08);border:1px solid rgba(46,196,182,.3);border-radius:10px;padding:10px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <img id="txt_MusicCover" src="" style="width:42px;height:42px;border-radius:8px;object-fit:cover;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.3);">
+              <div style="flex:1;min-width:0;">
+                <div id="txt_MusicTitle" style="font-size:.82rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+                <div id="txt_MusicArtist" style="font-size:.72rem;color:var(--muted);margin-top:2px;"></div>
               </div>
-              <audio id="storyMusicPreview" controls style="width:100%;margin-top:6px;height:28px;" src=""></audio>
+              <button onclick="_txtClearMusic()" style="background:rgba(255,255,255,.1);border:none;color:var(--muted);width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center;">✕</button>
             </div>
+            <audio id="txt_MusicPreview" controls style="width:100%;margin-top:8px;height:28px;" src=""></audio>
           </div>
         </div>
       </div>
@@ -3236,7 +3240,7 @@ function _stub(name){ return function(){ _q.push([name, arguments]); }; }
  'previewSpotImg','removeSpotImg','submitSpot','loadSpots','toggleYtInput','previewYtEmbed','clearYtInput','extractYtId','openPostWithYt','loadFriendSpots','renderFriendSpotsInHome','openEditSpot','saveEditSpot','deleteSpot','scrollToPost',
  'renderSidebarFriends','renderSuggestedUsers','playNotifSound','showNotifToast','sendNotifToUserWithPost','openMessenger','loadVideos','filterVideos',
  'previewPezSemanaImg','submitPezSemana','deletePezSemana','loadPezSemana','openPezSemanalModal','openReactionsModal','buildRxnLabel',
- 'filterTrofeoFeed','listenTrofeosFeed','swSkillTab','searchStoryMusic','selectStoryMusic','clearStoryMusic','searchDeezer','playDeezer','closeTrophyBanner','debounceStoryMusic','_hoverStoryPreview','_leaveStoryPreview','debounceMusicSearch','_doSharePost','_cmtOpenGif','searchCmtGifs','sendCmtGif','_toggleSharePrivacy','_setSharePrivacy'
+ 'filterTrofeoFeed','listenTrofeosFeed','swSkillTab','searchStoryMusic','selectStoryMusic','clearStoryMusic','searchDeezer','playDeezer','closeTrophyBanner','debounceStoryMusic','_hoverStoryPreview','_leaveStoryPreview','debounceMusicSearch','_doSharePost','_cmtOpenGif','searchCmtGifs','sendCmtGif','_toggleSharePrivacy','_setSharePrivacy','_txtMusicInput','_txtMusicFocus','_txtMusicSearch','_txtSelectTrack','_txtClearMusic'
 ].forEach(fn => { window[fn] = _stub(fn); });
 </script>
 <script type="module">
@@ -5060,6 +5064,111 @@ window.selectStoryGif = selectStoryGif;
 window.openStoryChooser = openStoryChooser;
 window._scSetMode = _scSetMode;
 window._scToggleMusic = _scToggleMusic;
+
+// ===== MÚSICA MODO TEXTO (IDs únicos txt_) =====
+let _txtMusicDebounce = null;
+
+function _txtMusicInput(){
+  const q = document.getElementById('txt_MusicSearch')?.value.trim() || '';
+  clearTimeout(_txtMusicDebounce);
+  if(q.length < 2){
+    // Show suggestions when short
+    _txtShowSuggestions(q);
+    return;
+  }
+  _txtMusicDebounce = setTimeout(()=> _txtMusicSearch(), 400);
+}
+
+function _txtMusicFocus(){
+  const q = document.getElementById('txt_MusicSearch')?.value.trim() || '';
+  _txtShowSuggestions(q);
+}
+
+function _txtShowSuggestions(q){
+  const res = document.getElementById('txt_MusicResults');
+  if(!res) return;
+  // Filter from artist list or show popular
+  const suggestions = q.length >= 1
+    ? _getSuggestions(q).slice(0,8)
+    : (_ALL_ARTISTS || []).slice(0,10);
+  
+  if(suggestions.length === 0){ res.style.display='none'; return; }
+  
+  res.style.display = 'block';
+  res.innerHTML = `<div style="padding:6px 10px;font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border);">Sugerencias</div>`
+    + suggestions.map(s=>`
+    <div onclick="document.getElementById('txt_MusicSearch').value='${s.replace(/'/g,"\'")}';_txtMusicSearch();"
+      style="display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;transition:background .12s;"
+      onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+      <span style="font-size:1rem;">🎵</span>
+      <span style="font-size:.83rem;color:var(--text);font-weight:600;">${s}</span>
+    </div>`).join('');
+}
+
+async function _txtMusicSearch(){
+  const q = document.getElementById('txt_MusicSearch')?.value.trim();
+  if(!q) return;
+  const res = document.getElementById('txt_MusicResults');
+  const spin = document.getElementById('txt_MusicSpinner');
+  if(!res) return;
+  if(spin){ spin.style.display='block'; }
+  res.style.display = 'block';
+  res.innerHTML = '<div style="text-align:center;padding:14px;color:var(--muted);font-size:.8rem;">⏳ Buscando en Deezer...</div>';
+
+  const tracks = await _fetchDeezer(q);
+  if(spin) spin.style.display='none';
+
+  if(!tracks || tracks.length === 0){
+    res.innerHTML = '<div style="text-align:center;padding:14px;color:var(--muted);font-size:.8rem;">😕 Sin resultados para "'+q+'"</div>';
+    return;
+  }
+
+  window._txtDeezerTracks = tracks;
+  res.innerHTML = tracks.slice(0,8).map((t,i) => `
+    <div onclick="_txtSelectTrack(${i})"
+      style="display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .12s;"
+      onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+      <img src="${t.cover||''}" style="width:40px;height:40px;border-radius:6px;object-fit:cover;flex-shrink:0;" onerror="this.src=''">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:.82rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.title||''}</div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:1px;">${t.artist||''}</div>
+      </div>
+      ${t.preview ? `<span style="font-size:.7rem;color:var(--accent);">▶ 30s</span>` : ''}
+    </div>`).join('');
+}
+
+function _txtSelectTrack(i){
+  const t = window._txtDeezerTracks?.[i];
+  if(!t) return;
+  // Save to storyMusic
+  window._storyMusic = { title: t.title, artist: t.artist, cover: t.cover, preview: t.preview };
+  // Show selected
+  const sel = document.getElementById('txt_MusicSelected');
+  const cover = document.getElementById('txt_MusicCover');
+  const title = document.getElementById('txt_MusicTitle');
+  const artist = document.getElementById('txt_MusicArtist');
+  const audio = document.getElementById('txt_MusicPreview');
+  const res = document.getElementById('txt_MusicResults');
+  if(sel) sel.style.display='block';
+  if(cover) cover.src = t.cover||'';
+  if(title) title.textContent = t.title||'';
+  if(artist) artist.textContent = t.artist||'';
+  if(audio){ audio.src = t.preview||''; if(t.preview) audio.play().catch(()=>{}); }
+  if(res) res.style.display='none';
+  // Update preview bar
+  _scUpdatePreview();
+}
+
+function _txtClearMusic(){
+  window._storyMusic = null;
+  const sel = document.getElementById('txt_MusicSelected');
+  const audio = document.getElementById('txt_MusicPreview');
+  const inp = document.getElementById('txt_MusicSearch');
+  if(sel) sel.style.display='none';
+  if(audio){ audio.pause(); audio.src=''; }
+  if(inp) inp.value='';
+  _scUpdatePreview();
+}
 window._scUpdatePreview = _scUpdatePreview;
 window._scSubmit = _scSubmit;
 
@@ -5067,6 +5176,8 @@ async function _scSubmit(){ return submitStory(); }
 async function submitStory(){
   if(!window.CU){ toast('Inicia sesión primero','err'); return; }
   const mode = window._scMode || 'photo';
+  // In text mode, music is stored in window._storyMusic (set by _txtSelectTrack)
+  // In photo mode, music comes from storyMusicSearch flow (same window._storyMusic)
   const textEl = mode==='text' ? document.getElementById('storyTextText') : document.getElementById('storyText');
   const text = textEl?.value.trim() || '';
   if(!text && !_storyImgData && !window._storyGif){ toast('Escribe algo o sube una imagen','err'); return; }
@@ -14001,7 +14112,7 @@ window.setUserRole         = setUserRole;
 // CHANGELOG — Solo visible para ruizgustavo12
 // Actualizar VERSION y CHANGES cada vez que se sube un index nuevo
 // ═══════════════════════════════════════════════════════
-const _CL_VERSION = '2026-03-08-v20';
+const _CL_VERSION = '2026-03-08-v22';
 const _CL_CHANGES = [
   { emoji:'🎨', text:'Historias: elegí color de fondo con 10 gradientes — preview en tiempo real mientras escribís' },
   { emoji:'😊', text:'Historias: botón emoji y GIF en el texto de la historia' },
