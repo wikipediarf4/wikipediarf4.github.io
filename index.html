@@ -5808,13 +5808,25 @@ function _renderProfileFeedHTML(el, mine){
     if(pp) pinnedH=`<div style='margin-bottom:6px;'><span class='pinned-label'>📌 Post fijado</span>${postHTML(pp)}</div>`;
   }
   const rest=mine.filter(p=>p.id!==window.CU?.pinnedPostId);
-  const newHTML = pinnedH+(rest.length?rest.map(p=>postHTML(p)).join(''):(!pinnedH?`<div style="text-align:center;padding:40px;color:var(--muted)">Sin publicaciones aún. ¡Comparte tu primera pesca!</div>`:''));
-  if(!el.children.length){ el.innerHTML = newHTML; return; }
 
-  // Smart update igual que renderFeed
+  // Si no hay posts propios en el DOM todavía → render completo
+  const hasOwnPosts = rest.some(p=>document.getElementById('post_'+p.id));
+  if(!hasOwnPosts){
+    el.innerHTML = pinnedH+(rest.length?rest.map(p=>postHTML(p)).join(''):(!pinnedH?`<div style="text-align:center;padding:40px;color:var(--muted)">Sin publicaciones aún. ¡Comparte tu primera pesca!</div>`:''));
+    window.scrollTo(0, scrollY);
+    return;
+  }
+
+  // Smart update: solo reemplazar stats/actions/comments
   rest.forEach(p=>{
     const existing = document.getElementById('post_'+p.id);
-    if(!existing) return;
+    if(!existing){
+      // Post nuevo — insertar al principio
+      const tmp0 = document.createElement('div');
+      tmp0.innerHTML = postHTML(p);
+      el.insertBefore(tmp0.firstElementChild, el.firstChild);
+      return;
+    }
     const tmp = document.createElement('div');
     tmp.innerHTML = postHTML(p);
     const newPost = tmp.firstElementChild;
@@ -6282,7 +6294,12 @@ async function submitPost(){
   const postMentionEl = document.getElementById('mention_postText');
   if(postMentionEl) postMentionEl.style.display='none';
 
-  const linkData = (linkUrl && window._pendingLinkData) ? window._pendingLinkData : (linkUrl ? { url:linkUrl, title:linkUrl, desc:'', img:'', site:'' } : null);
+  // Detectar URL en texto si no se usó el input de link
+  const _textUrl = (!linkUrl && text) ? (text.match(/https?:\/\/[^\s]+/)||[])[0]||'' : '';
+  const _finalLinkUrl = linkUrl || _textUrl;
+  const linkData = _finalLinkUrl
+    ? (window._pendingLinkData?.url === _finalLinkUrl ? window._pendingLinkData : { url:_finalLinkUrl, title:_finalLinkUrl, desc:'', img:'', site:'' })
+    : null;
   const newPostRef = await addDoc(collection(db,'posts'),{
     userId:window.CU.id, userNick:window.CU.nick, userAv:window.CU.av||'', userXp:window.CU.xp||0, userVerified:window.CU.verified||false,
     text, fish, weight, map, tech,
