@@ -818,7 +818,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
       <div class="sl-item" onclick="gp('trofeos-feed');setNav(document.querySelector('.tb-nav-btn'))"><span class="sl-item-icon">🥇</span> Feed de Trofeos</div>
       <div class="sl-item" onclick="gp('publica-trofeo')"><span class="sl-item-icon">🏆</span> Publica tu Trofeo</div>
       <div class="sl-item" onclick="gp('buscar-trofeo')"><span class="sl-item-icon">🔍</span> Buscar Trofeo</div>
-      <div class="sl-item" onclick="gp('videos');loadVideos()"><span class="sl-item-icon">📹</span> Videos</div>
+      <div class="sl-item" onclick="gp('videos')"><span class="sl-item-icon">📈</span> Subir Skill</div>
       <div class="sl-item" onclick="gp('musica')" id="slMusicaBtn" style="background:linear-gradient(90deg,rgba(255,0,0,.08),transparent);border-left:3px solid #ff0000;"><span class="sl-item-icon">🎵</span> Música</div>
       <div class="sl-item" onclick="gp('carretes')"><span class="sl-item-icon">🎣</span> Buscar Carretes</div>
       <div class="sl-item"><span class="sl-item-icon">🔖</span> Guardados</div>
@@ -2684,6 +2684,171 @@ select.fi option{background:var(--bg3);color:var(--text);}
 
 
 <!-- PAGE: MÚSICA -->
+<!-- ===== SUBIR SKILL PAGE ===== -->
+<div class="page" id="page-videos" style="max-width:760px;margin:0 auto;padding:24px 16px 80px;">
+
+  <!-- Header -->
+  <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;">
+    <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#1a7a74);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;box-shadow:0 4px 16px rgba(46,196,182,.35);">📈</div>
+    <div>
+      <div style="font-family:'Orbitron',monospace;font-size:1.15rem;font-weight:900;color:var(--accent);">📈 Subir Skill</div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:2px;">Guías para subir habilidades en Russian Fishing 4</div>
+    </div>
+  </div>
+
+  <!-- Tabs de guías -->
+  <div style="display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap;" id="skillTabBtns">
+    <button onclick="swSkillTab('cebo')" id="stCebo" style="padding:7px 16px;border-radius:100px;font-family:'Exo 2',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;border:1px solid var(--accent);background:rgba(46,196,182,.15);color:var(--accent);">🧱 Cebo Molido</button>
+    <button onclick="swSkillTab('cosecha')" id="stCosecha" style="padding:7px 16px;border-radius:100px;font-family:'Exo 2',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--muted);">🪱 Cosecha de Cebos</button>
+    <button onclick="swSkillTab('señuelos')" id="stSenuelos" style="padding:7px 16px;border-radius:100px;font-family:'Exo 2',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--muted);">🎣 Fab. de Señuelos</button>
+  </div>
+
+  <!-- ===== GUÍA 1: CEBO MOLIDO ===== -->
+  <div id="skill-cebo">
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px;">
+      <div style="font-family:'Orbitron',monospace;font-size:1rem;font-weight:800;color:var(--accent);margin-bottom:6px;">🧱 Cebo Molido (Groundbait)</div>
+      <div style="font-size:.82rem;color:var(--muted);line-height:1.5;">Fabricá recetas con el nombre <strong style="color:var(--gold);">#Eliminar</strong> para poder encontrarlas y borrarlas fácilmente después.<br>
+      <strong>Base recomendada:</strong> Productos Caseros · <strong>Feed</strong><br>
+      <strong>Atrayente base:</strong> Aceite de cáñamo Helen Van Zandt</div>
+    </div>
+
+    <!-- Tabla -->
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;">
+      <div style="padding:14px 16px;background:rgba(46,196,182,.08);border-bottom:1px solid var(--border);font-family:'Orbitron',monospace;font-size:.78rem;font-weight:700;color:var(--accent);letter-spacing:.5px;">TABLA DE PROGRESIÓN</div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:.82rem;">
+          <thead>
+            <tr style="background:var(--bg3);">
+              <th style="padding:10px 14px;text-align:left;color:var(--muted);font-weight:700;font-size:.75rem;border-bottom:1px solid var(--border);">NIVEL</th>
+              <th style="padding:10px 14px;text-align:left;color:var(--muted);font-weight:700;font-size:.75rem;border-bottom:1px solid var(--border);">INGREDIENTES</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border);"><td style="padding:10px 14px;color:var(--gold);font-weight:700;white-space:nowrap;">0% – 15%</td><td style="padding:10px 14px;color:var(--text);">Galletas molidas</td></tr>
+            <tr style="border-bottom:1px solid var(--border);background:rgba(255,255,255,.02);"><td style="padding:10px 14px;color:var(--gold);font-weight:700;white-space:nowrap;">15% – 30%</td><td style="padding:10px 14px;color:var(--text);">Alimento <span style="font-size:.72rem;color:var(--muted);">★</span></td></tr>
+            <tr style="border-bottom:1px solid var(--border);"><td style="padding:10px 14px;color:var(--gold);font-weight:700;white-space:nowrap;">30% – 40%</td><td style="padding:10px 14px;color:var(--text);">Alimento <span style="font-size:.72rem;color:var(--muted);">★</span> + Atrayente de aceite de anís</td></tr>
+            <tr style="border-bottom:1px solid var(--border);background:rgba(255,255,255,.02);"><td style="padding:10px 14px;color:var(--gold);font-weight:700;white-space:nowrap;">40% – 50%</td><td style="padding:10px 14px;color:var(--text);">Alimento <span style="font-size:.72rem;color:var(--muted);">★</span> + Atrayente de hinojo</td></tr>
+            <tr style="border-bottom:1px solid var(--border);"><td style="padding:10px 14px;color:var(--gold);font-weight:700;white-space:nowrap;">50% – 60%</td><td style="padding:10px 14px;color:var(--text);">Alimento <span style="font-size:.72rem;color:var(--muted);">★</span> + Atrayente de aceite de cáñamo</td></tr>
+            <tr style="border-bottom:1px solid var(--border);background:rgba(255,255,255,.02);"><td style="padding:10px 14px;color:var(--gold);font-weight:700;white-space:nowrap;">60% – 70%</td><td style="padding:10px 14px;color:var(--text);">Alimento <span style="font-size:.72rem;color:var(--muted);">★</span> + Atrayente de miel</td></tr>
+            <tr style="border-bottom:1px solid var(--border);"><td style="padding:10px 14px;color:var(--gold);font-weight:700;white-space:nowrap;">70% – 80%</td><td style="padding:10px 14px;color:var(--text);">Semilla de girasol</td></tr>
+            <tr style="border-bottom:1px solid var(--border);background:rgba(255,255,255,.02);"><td style="padding:10px 14px;color:var(--gold);font-weight:700;white-space:nowrap;">80% – 85%</td><td style="padding:10px 14px;color:var(--text);">Alimento <span style="font-size:.72rem;color:var(--muted);">★</span> + Atrayente de ciruelas rojas</td></tr>
+            <tr style="border-bottom:1px solid var(--border);"><td style="padding:10px 14px;color:var(--gold);font-weight:700;white-space:nowrap;">85% – 90%</td><td style="padding:10px 14px;color:var(--text);">Alimento <span style="font-size:.72rem;color:var(--muted);">★</span> + Atrayente de linaza</td></tr>
+            <tr style="border-bottom:1px solid var(--border);background:rgba(255,255,255,.02);"><td style="padding:10px 14px;color:var(--gold);font-weight:700;white-space:nowrap;">90% – 95%</td><td style="padding:10px 14px;color:var(--text);">Alimento <span style="font-size:.72rem;color:var(--muted);">★</span> + Atrayente para salmón</td></tr>
+            <tr><td style="padding:10px 14px;color:var(--gold);font-weight:700;white-space:nowrap;">95% – 100%</td><td style="padding:10px 14px;color:var(--text);">Pienso <span style="font-size:.72rem;color:var(--muted);">★</span> + Almendra amarga</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="padding:12px 16px;background:rgba(255,255,255,.02);border-top:1px solid var(--border);font-size:.73rem;color:var(--muted);">
+        <span style="color:var(--muted);">★</span> <em>Alimento/Pienso se compra en el mercado de agricultores de Winding Rivulet.</em>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== GUÍA 2: COSECHA DE CEBOS ===== -->
+  <div id="skill-cosecha" style="display:none;">
+    <!-- Herramientas -->
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px;">
+      <div style="font-family:'Orbitron',monospace;font-size:1rem;font-weight:800;color:var(--accent);margin-bottom:12px;">🛠️ Herramientas necesarias</div>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:.82rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg3);border-radius:var(--rs);border:1px solid var(--border);">
+          <span style="color:var(--text);">🪱 Pala Fiskarna</span>
+          <span style="color:var(--gold);font-weight:700;">38 🪙</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg3);border-radius:var(--rs);border:1px solid var(--border);">
+          <span style="color:var(--text);">🩸 Pala Fiskarna (gusanos de sangre)</span>
+          <span style="color:var(--gold);font-weight:700;">289 🪙</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg3);border-radius:var(--rs);border:1px solid var(--border);">
+          <span style="color:var(--text);">🔪 Cuchillo fileteador Fiskarna <span style="font-size:.72rem;color:var(--muted);">(corta peces &gt;500g desde skill 50%)</span></span>
+          <span style="color:var(--gold);font-weight:700;">48.90 🪙</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg3);border-radius:var(--rs);border:1px solid var(--border);">
+          <span style="color:var(--text);">🪣 Cubo de cebo Syberia LF12 <span style="font-size:.72rem;color:var(--muted);">(cebo vivo desde skill 65%)</span></span>
+          <span style="color:var(--gold);font-weight:700;">967 🪙</span>
+        </div>
+        <div style="padding:10px 12px;background:rgba(212,160,23,.07);border-radius:var(--rs);border:1px solid rgba(212,160,23,.3);">
+          <div style="font-size:.78rem;color:var(--gold);font-weight:700;margin-bottom:4px;">🔪 Cuchillo fileteador profesional Fiskarna — 5.430.67 🪙</div>
+          <div style="font-size:.73rem;color:var(--muted);">Necesario para: carne de mejillón cebra, mejillón de río, vieira, mejillón, cangrejo, colas de cangrejo de río.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla -->
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:16px;">
+      <div style="padding:14px 16px;background:rgba(46,196,182,.08);border-bottom:1px solid var(--border);font-family:'Orbitron',monospace;font-size:.78rem;font-weight:700;color:var(--accent);letter-spacing:.5px;">TABLA DE PROGRESIÓN</div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:.82rem;">
+          <thead>
+            <tr style="background:var(--bg3);">
+              <th style="padding:10px 14px;text-align:left;color:var(--muted);font-weight:700;font-size:.75rem;border-bottom:1px solid var(--border);">NIVEL</th>
+              <th style="padding:10px 14px;text-align:left;color:var(--muted);font-weight:700;font-size:.75rem;border-bottom:1px solid var(--border);">CARNADA</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border);"><td style="padding:10px 14px;color:var(--gold);font-weight:700;white-space:nowrap;">0% – 20%</td><td style="padding:10px 14px;color:var(--text);">Pan mojado</td></tr>
+            <tr style="border-bottom:1px solid var(--border);background:rgba(255,255,255,.02);"><td style="padding:10px 14px;color:var(--gold);font-weight:700;white-space:nowrap;">20% – 30%</td><td style="padding:10px 14px;color:var(--text);">Cebada perlada</td></tr>
+            <tr style="border-bottom:1px solid var(--border);"><td style="padding:10px 14px;color:var(--gold);font-weight:700;white-space:nowrap;">30% – 35%</td><td style="padding:10px 14px;color:var(--text);">Sémola</td></tr>
+            <tr style="border-bottom:1px solid var(--border);background:rgba(255,255,255,.02);"><td style="padding:10px 14px;color:var(--gold);font-weight:700;white-space:nowrap;">35% – 50%</td><td style="padding:10px 14px;color:var(--text);">Masa de ajo</td></tr>
+            <tr><td style="padding:10px 14px;color:var(--gold);font-weight:700;white-space:nowrap;">50% – 100%</td><td style="padding:10px 14px;color:var(--text);">Masa de huevo</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Receta masa de huevo -->
+    <div style="background:var(--bg2);border:1px solid rgba(46,196,182,.3);border-radius:var(--r);padding:16px;">
+      <div style="font-size:.82rem;font-weight:700;color:var(--accent);margin-bottom:8px;">📋 Receta: Masa de huevo</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:.8rem;">
+        <span style="padding:5px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:100px;color:var(--text);">🌾 Harina de trigo</span>
+        <span style="padding:5px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:100px;color:var(--text);">🥚 Huevo de gallina</span>
+        <span style="padding:5px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:100px;color:var(--text);">🧂 Paquete de sal</span>
+      </div>
+      <div style="font-size:.73rem;color:var(--muted);margin-top:8px;">1 porción de cada ingrediente.</div>
+    </div>
+  </div>
+
+  <!-- ===== GUÍA 3: FABRICACIÓN DE SEÑUELOS ===== -->
+  <div id="skill-senuelos" style="display:none;">
+    <!-- Herramientas -->
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px;">
+      <div style="font-family:'Orbitron',monospace;font-size:1rem;font-weight:800;color:var(--accent);margin-bottom:12px;">🛠️ Ejemplo: Cuchara de lucioperca (Zander spoon)</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:.8rem;">
+        <span style="padding:5px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:100px;color:var(--text);">🔧 Molde Fiskarna Zander spoon</span>
+        <span style="padding:5px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:100px;color:var(--text);">🪝 Anzuelo triple (opcional)</span>
+        <span style="padding:5px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:100px;color:var(--text);">🔩 Barra de estaño Fiskarna</span>
+        <span style="padding:5px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:100px;color:var(--text);">📄 Lija Fiskarna</span>
+      </div>
+    </div>
+
+    <!-- Tabla -->
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;">
+      <div style="padding:14px 16px;background:rgba(46,196,182,.08);border-bottom:1px solid var(--border);font-family:'Orbitron',monospace;font-size:.78rem;font-weight:700;color:var(--accent);letter-spacing:.5px;">TABLA DE PROGRESIÓN</div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:.82rem;">
+          <thead>
+            <tr style="background:var(--bg3);">
+              <th style="padding:10px 14px;text-align:left;color:var(--muted);font-weight:700;font-size:.75rem;border-bottom:1px solid var(--border);">NIVEL</th>
+              <th style="padding:10px 14px;text-align:left;color:var(--muted);font-weight:700;font-size:.75rem;border-bottom:1px solid var(--border);">SEÑUELO A FABRICAR</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border);"><td style="padding:10px 14px;color:var(--gold);font-weight:700;white-space:nowrap;">0% – 20%</td><td style="padding:10px 14px;color:var(--text);">Cuchara de Novgorod</td></tr>
+            <tr style="border-bottom:1px solid var(--border);background:rgba(255,255,255,.02);"><td style="padding:10px 14px;color:var(--gold);font-weight:700;white-space:nowrap;">20% – 36%</td><td style="padding:10px 14px;color:var(--text);">Pez de gomaespuma 001</td></tr>
+            <tr style="border-bottom:1px solid var(--border);"><td style="padding:10px 14px;color:var(--gold);font-weight:700;white-space:nowrap;">36% – 50%</td><td style="padding:10px 14px;color:var(--text);">Cuchara pequeña del Bajo Volga</td></tr>
+            <tr style="border-bottom:1px solid var(--border);background:rgba(255,255,255,.02);"><td style="padding:10px 14px;color:var(--gold);font-weight:700;white-space:nowrap;">50% – 68.7%</td><td style="padding:10px 14px;color:var(--text);">Cuchara larga de Serdobsk</td></tr>
+            <tr><td style="padding:10px 14px;color:var(--gold);font-weight:700;white-space:nowrap;">68.7% – 100%</td><td style="padding:10px 14px;color:var(--text);">Cuchara de lucioperca (Zander spoon)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Volver al inicio -->
+  <div style="margin-top:28px;text-align:center;">
+    <button onclick="gp('home')" style="padding:11px 28px;background:var(--bg3);border:1.5px solid var(--border);border-radius:100px;color:var(--muted);font-family:'Exo 2',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">← Volver al inicio</button>
+  </div>
+</div>
+
 <div class="page" id="page-musica" style="max-width:900px;margin:0 auto;padding:20px 16px 80px;">
 
   <!-- Header -->
@@ -2878,7 +3043,7 @@ function _stub(name){ return function(){ _q.push([name, arguments]); }; }
  'previewSpotImg','removeSpotImg','submitSpot','loadSpots','toggleYtInput','previewYtEmbed','clearYtInput','extractYtId','openPostWithYt','loadFriendSpots','renderFriendSpotsInHome','openEditSpot','saveEditSpot','deleteSpot','scrollToPost',
  'renderSidebarFriends','renderSuggestedUsers','playNotifSound','showNotifToast','sendNotifToUserWithPost','openMessenger','loadVideos','filterVideos',
  'previewPezSemanaImg','submitPezSemana','deletePezSemana','loadPezSemana','openPezSemanalModal','openReactionsModal','buildRxnLabel',
- 'filterTrofeoFeed','listenTrofeosFeed'
+ 'filterTrofeoFeed','listenTrofeosFeed','swSkillTab'
 ].forEach(fn => { window[fn] = _stub(fn); });
 </script>
 <script type="module">
@@ -10816,6 +10981,25 @@ document.addEventListener('click', function(e){
     document.querySelectorAll('.gif-picker.open').forEach(p=>p.classList.remove('open'));
   }
 });
+
+// ===== SUBIR SKILL - TAB SWITCHER =====
+function swSkillTab(tab) {
+  const tabs = { cebo: 'stCebo', cosecha: 'stCosecha', 'señuelos': 'stSenuelos' };
+  const panels = { cebo: 'skill-cebo', cosecha: 'skill-cosecha', 'señuelos': 'skill-senuelos' };
+  Object.keys(tabs).forEach(k => {
+    const btn = document.getElementById(tabs[k]);
+    const panel = document.getElementById(panels[k]);
+    if (!btn || !panel) return;
+    if (k === tab) {
+      btn.style.cssText = 'padding:7px 16px;border-radius:100px;font-family:\'Exo 2\',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;border:1px solid var(--accent);background:rgba(46,196,182,.15);color:var(--accent);';
+      panel.style.display = '';
+    } else {
+      btn.style.cssText = 'padding:7px 16px;border-radius:100px;font-family:\'Exo 2\',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--muted);';
+      panel.style.display = 'none';
+    }
+  });
+}
+window.swSkillTab = swSkillTab;
 
 // ===== VIDEOS SECTION =====
 let _videosFilter = 'all';
