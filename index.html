@@ -62,6 +62,39 @@
   --green:#42b72a;--red:#fa3e3e;--warn:#e8c46a;
   --r:8px;--rs:6px;
 }
+/* ===== TEMAS GLOBALES ===== */
+body.theme-facebook{
+  --bg:#18243a;--bg2:#1e2f4a;--bg3:#243759;--bg4:#2a3f66;
+  --accent:#1877f2;--accent2:#166fe5;--gold:#e8c46a;
+  --text:#e4e9f0;--muted:#8ab4f8;--border:#2d4a7a;
+  --green:#42b72a;--red:#fa3e3e;--warn:#e8c46a;
+  background-image:linear-gradient(160deg,#18243a 0%,#1c3159 60%,#0e1e3c 100%) !important;
+}
+body.theme-facebook .topbar{ background:#1c2f4e !important; border-bottom-color:#2d4a7a !important; }
+body.theme-facebook .post, body.theme-facebook .post-box{ background:#1e2f4a !important; border-color:#2d4a7a !important; }
+body.theme-facebook .tb-logo{ color:#8ab4f8 !important; }
+body.theme-facebook .tb-nav-btn.on, body.theme-facebook .tb-nav-btn:hover{ color:#1877f2 !important; border-bottom-color:#1877f2 !important; }
+body.theme-facebook ::-webkit-scrollbar-thumb{ background:#1877f2 !important; }
+
+body.theme-instagram{
+  --bg:#0d0710;--bg2:#170a18;--bg3:#1f0f22;--bg4:#271428;
+  --accent:#e1306c;--accent2:#c13060;--gold:#f09433;
+  --text:#f0e0f0;--muted:#c490b0;--border:#3a1535;
+  --green:#42b72a;--red:#fa3e3e;--warn:#f09433;
+  background-image:linear-gradient(160deg,#0d0710 0%,#1a0a1a 50%,#0d1008 100%) !important;
+}
+body.theme-instagram .topbar{ background:#12081a !important; border-bottom-color:#3a1535 !important; }
+body.theme-instagram .post, body.theme-instagram .post-box{ background:#170a18 !important; border-color:#3a1535 !important; }
+body.theme-instagram .tb-logo{ background:linear-gradient(90deg,#f09433,#e6683c,#cc2366,#bc1888);-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
+body.theme-instagram .tb-nav-btn.on, body.theme-instagram .tb-nav-btn:hover{ color:#e1306c !important; border-bottom-color:#e1306c !important; }
+body.theme-instagram ::-webkit-scrollbar-thumb{ background:linear-gradient(#f09433,#e1306c) !important; }
+
+body.theme-rf4{
+  --bg:#0a0a0a;--bg2:#111111;--bg3:#141414;--bg4:#1a1a1a;
+  --accent:#2ec4b6;--accent2:#25a99d;--gold:#e8c46a;
+  --text:#d4e8f0;--muted:#7aa8c0;--border:#1e3a4a;
+  --green:#42b72a;--red:#fa3e3e;--warn:#e8c46a;
+}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'Exo 2',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;
 background-image:
@@ -1054,6 +1087,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
         <div class="ptab" onclick="swPTab(this,'ptGallery')">🖼 Galería</div>
         <div class="ptab" onclick="swPTab(this,'ptFriends')">Amigos</div>
         <div class="ptab" id="ptShopTab" onclick="swPTab(this,'ptShop')" style="display:none;background:linear-gradient(135deg,rgba(255,200,0,.15),rgba(255,100,0,.1));color:gold;border-bottom:2px solid gold;">🛒 Tienda</div>
+        <div class="ptab" onclick="swPTab(this,'ptFondo')" style="background:linear-gradient(135deg,rgba(46,196,182,.12),rgba(100,50,255,.08));color:var(--accent);border-bottom:2px solid var(--accent);">🎨 Fondo</div>
       </div>
     </div>
   </div>
@@ -1142,6 +1176,51 @@ select.fi option{background:var(--bg3);color:var(--text);}
 
           <!-- Grid de ítems -->
           <div id="shopItemsGridProfile" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;"></div>
+        </div>
+      </div>
+      <div id="ptFondo" style="display:none;margin-bottom:14px;">
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px;">
+          <div style="font-family:'Orbitron',monospace;font-size:.95rem;font-weight:900;color:var(--accent);margin-bottom:6px;">🎨 ELEGÍ TU FONDO</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-bottom:20px;">Personalizá la apariencia de toda la app. Solo vos lo ves.</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;">
+
+            <!-- FONDO 1: Facebook -->
+            <div id="themeCard_facebook" onclick="setAppTheme('facebook')" style="cursor:pointer;border-radius:12px;overflow:hidden;border:2px solid rgba(24,119,242,.4);transition:all .2s;position:relative;" onmouseover="this.style.transform='scale(1.03)';this.style.borderColor='#1877f2'" onmouseout="this.style.transform='scale(1)';this.style.borderColor='rgba(24,119,242,.4)'">
+              <div style="height:90px;background:linear-gradient(160deg,#1a2a4a 0%,#1c3159 50%,#0e1e3c 100%);display:flex;align-items:center;justify-content:center;gap:10px;">
+                <div style="width:36px;height:36px;background:#1877f2;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:900;color:#fff;font-family:sans-serif;">f</div>
+                <div style="color:#1877f2;font-weight:700;font-size:1rem;">Facebook</div>
+              </div>
+              <div style="background:#111927;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:.8rem;color:#8ab4f8;font-weight:600;">Azul clásico</span>
+                <span id="themeCheck_facebook" style="display:none;color:#1877f2;font-size:1.1rem;">✔</span>
+              </div>
+            </div>
+
+            <!-- FONDO 2: Instagram -->
+            <div id="themeCard_instagram" onclick="setAppTheme('instagram')" style="cursor:pointer;border-radius:12px;overflow:hidden;border:2px solid rgba(225,48,108,.4);transition:all .2s;position:relative;" onmouseover="this.style.transform='scale(1.03)';this.style.borderColor='#e1306c'" onmouseout="this.style.transform='scale(1)';this.style.borderColor='rgba(225,48,108,.4)'">
+              <div style="height:90px;background:linear-gradient(135deg,#1a0a1a 0%,#2a0a20 50%,#1a0810 100%);display:flex;align-items:center;justify-content:center;gap:10px;">
+                <div style="width:36px;height:36px;background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;">📷</div>
+                <div style="background:linear-gradient(90deg,#f09433,#e6683c,#cc2366,#bc1888);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;font-size:1rem;">Instagram</div>
+              </div>
+              <div style="background:#180a15;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:.8rem;color:#e1306c;font-weight:600;">Rosa degradado</span>
+                <span id="themeCheck_instagram" style="display:none;color:#e1306c;font-size:1.1rem;">✔</span>
+              </div>
+            </div>
+
+            <!-- FONDO 3: RF4 Profundo -->
+            <div id="themeCard_rf4" onclick="setAppTheme('rf4')" style="cursor:pointer;border-radius:12px;overflow:hidden;border:2px solid rgba(46,196,182,.4);transition:all .2s;position:relative;" onmouseover="this.style.transform='scale(1.03)';this.style.borderColor='#2ec4b6'" onmouseout="this.style.transform='scale(1)';this.style.borderColor='rgba(46,196,182,.4)'">
+              <div style="height:90px;background:linear-gradient(160deg,#0a0a0a 0%,#061218 50%,#0a1a10 100%);display:flex;align-items:center;justify-content:center;gap:10px;">
+                <div style="font-size:1.8rem;">🎣</div>
+                <div style="color:#2ec4b6;font-weight:900;font-size:1rem;font-family:'Orbitron',monospace;">RF4 Latam</div>
+              </div>
+              <div style="background:#070d0b;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:.8rem;color:#2ec4b6;font-weight:600;">Oscuro original</span>
+                <span id="themeCheck_rf4" style="display:none;color:#2ec4b6;font-size:1.1rem;">✔</span>
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
       <div id="profilePostBox" class="post-box" style="margin-bottom:14px">
@@ -6259,6 +6338,49 @@ function igDownload(){
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 window.igNav=igNav; window.igNavTo=igNavTo; window.igReact=igReact;
+
+// ===== TEMAS GLOBALES DE APP =====
+const _THEMES = {
+  facebook: 'Facebook',
+  instagram: 'Instagram',
+  rf4: 'RF4 Latam'
+};
+
+function setAppTheme(theme){
+  // Remove all theme classes
+  document.body.classList.remove('theme-facebook','theme-instagram','theme-rf4');
+  if(theme && theme !== 'rf4') document.body.classList.add('theme-'+theme);
+  // Save to localStorage
+  try{ localStorage.setItem('crf4_appTheme', theme||'rf4'); }catch(e){}
+  // Update checkmarks
+  Object.keys(_THEMES).forEach(t=>{
+    const card = document.getElementById('themeCard_'+t);
+    const chk = document.getElementById('themeCheck_'+t);
+    const active = t === theme;
+    if(chk) chk.style.display = active ? 'inline' : 'none';
+    if(card) card.style.borderWidth = active ? '2.5px' : '2px';
+    if(card) card.style.boxShadow = active ? (
+      t==='facebook' ? '0 0 18px rgba(24,119,242,.4)' :
+      t==='instagram' ? '0 0 18px rgba(225,48,108,.4)' :
+      '0 0 18px rgba(46,196,182,.4)'
+    ) : 'none';
+  });
+  // Also update meta theme-color
+  const colors = {facebook:'#1877f2', instagram:'#e1306c', rf4:'#2ec4b6'};
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if(meta) meta.content = colors[theme] || colors.rf4;
+}
+
+function loadSavedTheme(){
+  try{
+    const t = localStorage.getItem('crf4_appTheme') || 'rf4';
+    setAppTheme(t);
+  }catch(e){}
+}
+
+// Apply saved theme on load
+loadSavedTheme();
+window.setAppTheme = setAppTheme;
 window.igSubmitComment=igSubmitComment; window.igShare=igShare; window.igDownload=igDownload;
 window.openImgLightbox=openImgLightbox;
 window.openImgLightboxById=openImgLightboxById;
