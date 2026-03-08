@@ -902,10 +902,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
 
       <!-- Spots de amigos en inicio -->
       <div id="friendSpotsHome"></div>
-      <!-- Botón refrescar -->
-      <div style="text-align:center;margin-bottom:8px;">
-        <button onclick="listenPosts();listenStories();toast('Feed actualizado 🎣','ok');" style="background:var(--bg3);border:1px solid var(--border);color:var(--muted);border-radius:20px;padding:5px 18px;font-size:.75rem;cursor:pointer;font-family:'Exo 2',sans-serif;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">↻ Actualizar feed</button>
-      </div>
+
       <!-- Posts -->
       <div id="feedPosts"><div style="text-align:center;padding:40px;color:var(--muted);font-size:.85rem;">🎣 Cargando feed...</div></div>
     </div>
@@ -6211,7 +6208,7 @@ function _buildLinkCard(lnk){
   var sitePart=lnk.site?'<div style="font-size:.63rem;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;font-weight:700;">'+esc(lnk.site)+'</div>':'';
   var descPart=lnk.desc?'<div style="font-size:.78rem;color:var(--muted);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:3px;">'+esc(lnk.desc)+'</div>':'';
   return '<div style="margin:0 0 10px;">'
-    +'<a href="'+esc(lnk.url)+'" target="_blank" rel="noopener" style="display:block;text-decoration:none;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--bg3);transition:opacity .15s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">'
+    +'<a href="'+esc(lnk.url)+'" target="_blank" rel="noopener" style="display:block;text-decoration:none;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--bg3);transition:opacity .15s;" onmouseover="this.style.opacity=\'0.85\'" onmouseout="this.style.opacity=\'1\'">'
     +imgPart
     +'<div style="padding:10px 14px 12px;">'+sitePart
     +'<div style="font-size:.88rem;font-weight:700;color:var(--text);line-height:1.35;">'+esc(lnk.title||lnk.url)+'</div>'
