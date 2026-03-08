@@ -1448,7 +1448,155 @@ select.fi option{background:var(--bg3);color:var(--text);}
 </style>
 
 <!-- SPLASH SCREEN: shown while Firebase checks session -->
-<div id="splashScreen" style="display:flex;position:fixed;inset:0;z-index:10000;background:#f0f2f5;align-items:center;justify-content:center;flex-direction:column;gap:18px;">
+<!-- MAINTENANCE SCREEN -->
+<div id="maintenanceScreen" style="display:flex;position:fixed;inset:0;z-index:10001;background:#0a0d12;align-items:center;justify-content:center;overflow:hidden;">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap');
+    #maintenanceScreen * { box-sizing: border-box; }
+    @keyframes _mFloat { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-18px) rotate(3deg)} }
+    @keyframes _mPulse { 0%,100%{opacity:.4;transform:scale(1)} 50%{opacity:.9;transform:scale(1.05)} }
+    @keyframes _mGlow  { 0%,100%{text-shadow:0 0 20px #e8a020,0 0 40px #e8a020} 50%{text-shadow:0 0 40px #ffcc44,0 0 80px #e8a020,0 0 120px #c87010} }
+    @keyframes _mSlide { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes _mBgMove { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+    @keyframes _mSpin   { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+    @keyframes _mBlob   { 0%,100%{border-radius:60% 40% 30% 70%/60% 30% 70% 40%} 50%{border-radius:30% 60% 70% 40%/50% 60% 30% 60%} }
+    @keyframes _mBlink  { 0%,100%{opacity:1} 50%{opacity:0} }
+    @keyframes _mCountdown { from{stroke-dashoffset:251} to{stroke-dashoffset:0} }
+    #_mCard { animation: _mSlide .8s cubic-bezier(.16,1,.3,1) both; }
+    #_mIcon { animation: _mFloat 4s ease-in-out infinite; }
+    #_mTitle { animation: _mGlow 3s ease-in-out infinite; }
+    ._mBlob1 { animation: _mBlob 8s ease-in-out infinite, _mBgMove 12s ease-in-out infinite; }
+    ._mBlob2 { animation: _mBlob 10s ease-in-out infinite reverse, _mBgMove 15s ease-in-out infinite reverse; }
+    ._mLine1 { animation: _mSlide .6s .2s cubic-bezier(.16,1,.3,1) both; }
+    ._mLine2 { animation: _mSlide .6s .35s cubic-bezier(.16,1,.3,1) both; }
+    ._mLine3 { animation: _mSlide .6s .5s cubic-bezier(.16,1,.3,1) both; }
+    ._mLine4 { animation: _mSlide .6s .65s cubic-bezier(.16,1,.3,1) both; }
+    ._mLine5 { animation: _mSlide .6s .8s cubic-bezier(.16,1,.3,1) both; }
+    #_mBlink  { animation: _mBlink 1.2s ease-in-out infinite; }
+    ._mGear   { animation: _mSpin 6s linear infinite; transform-origin:center; }
+    ._mGear2  { animation: _mSpin 4s linear infinite reverse; transform-origin:center; }
+    ._mPulseRing { animation: _mPulse 2s ease-in-out infinite; }
+  </style>
+  <!-- Blobs de fondo -->
+  <div class="_mBlob1" style="position:absolute;width:500px;height:500px;top:-100px;left:-150px;background:linear-gradient(135deg,rgba(232,160,32,.12),rgba(255,180,50,.06));filter:blur(60px);pointer-events:none;"></div>
+  <div class="_mBlob2" style="position:absolute;width:600px;height:400px;bottom:-100px;right:-150px;background:linear-gradient(135deg,rgba(232,160,32,.08),rgba(200,120,16,.05));filter:blur(80px);pointer-events:none;"></div>
+  <!-- Grid lines decorativas -->
+  <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(232,160,32,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(232,160,32,.04) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;"></div>
+  <!-- Esquinas decorativas -->
+  <div style="position:absolute;top:20px;left:20px;width:40px;height:40px;border-top:2px solid rgba(232,160,32,.5);border-left:2px solid rgba(232,160,32,.5);border-radius:4px 0 0 0;"></div>
+  <div style="position:absolute;top:20px;right:20px;width:40px;height:40px;border-top:2px solid rgba(232,160,32,.5);border-right:2px solid rgba(232,160,32,.5);border-radius:0 4px 0 0;"></div>
+  <div style="position:absolute;bottom:20px;left:20px;width:40px;height:40px;border-bottom:2px solid rgba(232,160,32,.5);border-left:2px solid rgba(232,160,32,.5);border-radius:0 0 0 4px;"></div>
+  <div style="position:absolute;bottom:20px;right:20px;width:40px;height:40px;border-bottom:2px solid rgba(232,160,32,.5);border-right:2px solid rgba(232,160,32,.5);border-radius:0 0 4px 0;"></div>
+
+  <!-- Card principal -->
+  <div id="_mCard" style="position:relative;z-index:2;max-width:600px;width:90%;padding:48px 44px;background:linear-gradient(145deg,rgba(20,25,35,.95),rgba(14,18,26,.98));border:1px solid rgba(232,160,32,.25);border-radius:20px;box-shadow:0 0 0 1px rgba(232,160,32,.08),0 32px 80px rgba(0,0,0,.7),inset 0 1px 0 rgba(232,160,32,.15);text-align:center;">
+    
+    <!-- Engranajes SVG animados -->
+    <div id="_mIcon" style="margin-bottom:24px;position:relative;display:inline-block;">
+      <svg width="90" height="90" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Engranaje grande -->
+        <g class="_mGear" style="transform-box:fill-box;">
+          <path d="M45 20a25 25 0 1 0 0 50 25 25 0 0 0 0-50zm0 8a17 17 0 1 1 0 34 17 17 0 0 1 0-34z" fill="rgba(232,160,32,.15)" stroke="rgba(232,160,32,.7)" stroke-width="1.5"/>
+          <rect x="41" y="10" width="8" height="10" rx="2" fill="rgba(232,160,32,.7)"/>
+          <rect x="41" y="70" width="8" height="10" rx="2" fill="rgba(232,160,32,.7)"/>
+          <rect x="10" y="41" width="10" height="8" rx="2" fill="rgba(232,160,32,.7)"/>
+          <rect x="70" y="41" width="10" height="8" rx="2" fill="rgba(232,160,32,.7)"/>
+          <rect x="18.7" y="18.7" width="8" height="10" rx="2" transform="rotate(45 22.7 23.7)" fill="rgba(232,160,32,.7)"/>
+          <rect x="63.3" y="61.3" width="8" height="10" rx="2" transform="rotate(45 67.3 66.3)" fill="rgba(232,160,32,.7)"/>
+          <rect x="61.3" y="18.7" width="8" height="10" rx="2" transform="rotate(-45 65.3 23.7)" fill="rgba(232,160,32,.7)"/>
+          <rect x="18.7" y="61.3" width="8" height="10" rx="2" transform="rotate(-45 22.7 66.3)" fill="rgba(232,160,32,.7)"/>
+        </g>
+        <!-- Engranaje pequeño esquina -->
+        <g class="_mGear2" style="transform-box:fill-box;transform-origin:72px 72px;">
+          <circle cx="72" cy="72" r="10" fill="rgba(232,160,32,.1)" stroke="rgba(232,160,32,.5)" stroke-width="1.5"/>
+          <circle cx="72" cy="72" r="4" fill="rgba(232,160,32,.4)"/>
+          <rect x="69" y="60" width="6" height="7" rx="1.5" fill="rgba(232,160,32,.5)"/>
+          <rect x="69" y="77" width="6" height="7" rx="1.5" fill="rgba(232,160,32,.5)"/>
+          <rect x="63" y="69" width="7" height="6" rx="1.5" fill="rgba(232,160,32,.5)"/>
+          <rect x="74" y="69" width="7" height="6" rx="1.5" fill="rgba(232,160,32,.5)"/>
+        </g>
+        <!-- Círculo pulsante interior -->
+        <circle cx="45" cy="45" r="8" fill="rgba(232,160,32,.3)" class="_mPulseRing"/>
+        <circle cx="45" cy="45" r="4" fill="rgba(232,160,32,.8)"/>
+      </svg>
+    </div>
+
+    <!-- Badge estado -->
+    <div class="_mLine1" style="display:inline-flex;align-items:center;gap:8px;background:rgba(232,160,32,.1);border:1px solid rgba(232,160,32,.3);border-radius:100px;padding:5px 16px 5px 10px;margin-bottom:20px;">
+      <span id="_mBlink" style="width:8px;height:8px;background:#e8a020;border-radius:50%;display:inline-block;box-shadow:0 0 8px #e8a020;"></span>
+      <span style="font-family:'Orbitron',monospace;font-size:.62rem;font-weight:700;color:#e8a020;letter-spacing:2px;text-transform:uppercase;">EN MANTENIMIENTO</span>
+    </div>
+
+    <!-- Título principal -->
+    <div class="_mLine2">
+      <div id="_mTitle" style="font-family:'Orbitron',monospace;font-size:1.9rem;font-weight:900;color:#e8a020;line-height:1.1;margin-bottom:6px;letter-spacing:-0.5px;">WikipediaRF4</div>
+      <div style="font-family:'Orbitron',monospace;font-size:.72rem;font-weight:400;color:rgba(232,160,32,.5);letter-spacing:4px;text-transform:uppercase;margin-bottom:28px;">Red Social · Pesca Deportiva</div>
+    </div>
+
+    <!-- Separador -->
+    <div class="_mLine3" style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+      <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(232,160,32,.3));"></div>
+      <span style="font-size:1.1rem;">🔧</span>
+      <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(232,160,32,.3),transparent);"></div>
+    </div>
+
+    <!-- Aviso principal -->
+    <div class="_mLine3" style="background:rgba(232,160,32,.07);border:1px solid rgba(232,160,32,.2);border-radius:12px;padding:20px 24px;margin-bottom:20px;text-align:left;">
+      <div style="font-family:'Orbitron',monospace;font-size:.68rem;font-weight:700;color:#e8a020;letter-spacing:1.5px;margin-bottom:12px;text-transform:uppercase;">🚧 Aviso importante</div>
+      <div style="font-family:'Exo 2',sans-serif;font-size:.88rem;color:rgba(255,255,255,.8);line-height:1.7;">
+        La comunidad se encuentra <strong style="color:#fff;">cerrada temporalmente</strong> por mantenimiento y mejoras en la plataforma. Detectamos varios errores que podrían afectar su experiencia.
+      </div>
+    </div>
+
+    <!-- Info cuentas -->
+    <div class="_mLine4" style="display:flex;gap:10px;margin-bottom:20px;">
+      <div style="flex:1;background:rgba(0,200,100,.06);border:1px solid rgba(0,200,100,.2);border-radius:10px;padding:14px 12px;text-align:center;">
+        <div style="font-size:1.3rem;margin-bottom:4px;">🔒</div>
+        <div style="font-family:'Exo 2',sans-serif;font-size:.72rem;font-weight:700;color:rgba(0,200,100,.9);margin-bottom:3px;">Cuentas seguras</div>
+        <div style="font-family:'Exo 2',sans-serif;font-size:.65rem;color:rgba(255,255,255,.45);line-height:1.4;">Todos los datos y usuarios están intactos. Nada se eliminará.</div>
+      </div>
+      <div style="flex:1;background:rgba(232,160,32,.06);border:1px solid rgba(232,160,32,.2);border-radius:10px;padding:14px 12px;text-align:center;">
+        <div style="font-size:1.3rem;margin-bottom:4px;">⏳</div>
+        <div style="font-family:'Exo 2',sans-serif;font-size:.72rem;font-weight:700;color:#e8a020;margin-bottom:3px;">Volvemos pronto</div>
+        <div style="font-family:'Exo 2',sans-serif;font-size:.65rem;color:rgba(255,255,255,.45);line-height:1.4;">Cuando esté todo arreglado reabriremos para todos.</div>
+      </div>
+    </div>
+
+    <!-- Mensaje final -->
+    <div class="_mLine5" style="font-family:'Exo 2',sans-serif;font-size:.8rem;color:rgba(255,255,255,.35);line-height:1.6;margin-bottom:24px;">
+      🙏 Gracias por la comprensión y el apoyo.<br>
+      <span style="color:rgba(232,160,32,.5);font-weight:600;">¡Volvemos pronto con una comunidad mucho mejor!</span>
+    </div>
+
+    <!-- Footer firma -->
+    <div class="_mLine5" style="border-top:1px solid rgba(232,160,32,.1);padding-top:16px;">
+      <div style="font-family:'Orbitron',monospace;font-size:.58rem;font-weight:700;color:rgba(232,160,32,.35);letter-spacing:2px;text-transform:uppercase;">WikipediaRF4 · Equipo de desarrollo</div>
+    </div>
+
+    <!-- Botón oculto admin - doble click en el logo -->
+    <div id="_mAdminHint" style="position:absolute;bottom:12px;right:16px;opacity:0;pointer-events:none;font-family:'Exo 2',sans-serif;font-size:.6rem;color:rgba(232,160,32,.4);">admin</div>
+  </div>
+
+  <!-- Admin login button - invisible, activated by secret click -->
+  <div id="_mAdminBtn" style="position:fixed;bottom:0;left:0;right:0;height:60px;cursor:default;" onclick="_mAdminClick()" title=""></div>
+  
+  <script>
+    var _mClicks = 0, _mTimer = null;
+    function _mAdminClick(){
+      _mClicks++;
+      clearTimeout(_mTimer);
+      _mTimer = setTimeout(function(){ _mClicks=0; }, 2000);
+      if(_mClicks >= 5){
+        _mClicks = 0;
+        document.getElementById('maintenanceScreen').style.display = 'none';
+        var s = document.getElementById('splashScreen');
+        if(s) s.style.display = 'flex';
+      }
+    }
+  </script>
+</div>
+
+<div id="splashScreen" style="display:none;position:fixed;inset:0;z-index:10000;background:#f0f2f5;align-items:center;justify-content:center;flex-direction:column;gap:18px;">
   <img src="icon-512.png" onerror="this.style.display='none'" style="width:80px;height:80px;border-radius:16px;object-fit:contain;">
   <div style="font-family:'Orbitron',monospace;font-size:1.6rem;font-weight:900;color:#1a73e8;">Wikipedia<span style="color:#f5a623;">RF4</span></div>
   <div style="width:40px;height:40px;border:4px solid #e0e0e0;border-top-color:#1877f2;border-radius:50%;animation:splashSpin 0.8s linear infinite;"></div>
@@ -3442,6 +3590,20 @@ function init(){
         const snap = await getDoc(doc(db, 'users', user.uid));
         if (snap.exists()) {
           window.CU = {id: user.uid, ...snap.data()};
+          // MAINTENANCE MODE: solo admins pueden acceder
+          const _isAdmin = window.CU.nick === 'ruizgustavo12' || window.CU.email === 'synxyes@gmail.com';
+          if(!_isAdmin){
+            // No admin: mostrar cartel de mantenimiento, cerrar sesión
+            setTimeout(async()=>{ 
+              try{ await signOut(auth); }catch(e){}
+              window.CU = null;
+              document.getElementById('mAuth').style.display = 'none';
+              const ms = document.getElementById('maintenanceScreen');
+              if(ms) ms.style.display = 'flex';
+            }, 500);
+            return;
+          }
+          document.getElementById('maintenanceScreen').style.display = 'none';
           document.getElementById('mAuth').style.display = 'none';
           hideSplash();
           onLogin();
@@ -3643,6 +3805,16 @@ async function doLogin(){
     }
     window.CU = {id: cred.user.uid, ...snap.data()};
     saveAccountLocally(input, window.CU.nick);
+    // MAINTENANCE MODE
+    const _loginIsAdmin = window.CU.nick === 'ruizgustavo12' || window.CU.email === 'synxyes@gmail.com';
+    if(!_loginIsAdmin){
+      await signOut(auth); window.CU = null;
+      document.getElementById('mAuth').style.display='none';
+      const ms = document.getElementById('maintenanceScreen');
+      if(ms) ms.style.display = 'flex';
+      return;
+    }
+    document.getElementById('maintenanceScreen').style.display = 'none';
     document.getElementById('mAuth').style.display='none';
     onLogin();
     toast('¡Bienvenido '+window.CU.nick+'! 🎣','ok');
@@ -14206,7 +14378,7 @@ window.setUserRole         = setUserRole;
 // CHANGELOG — Solo visible para ruizgustavo12
 // Actualizar VERSION y CHANGES cada vez que se sube un index nuevo
 // ═══════════════════════════════════════════════════════
-const _CL_VERSION = '2026-03-08-v30';
+const _CL_VERSION = '2026-03-08-v32';
 const _CL_CHANGES = [
   { emoji:'🎨', text:'Historias: elegí color de fondo con 10 gradientes — preview en tiempo real mientras escribís' },
   { emoji:'😊', text:'Historias: botón emoji y GIF en el texto de la historia' },
