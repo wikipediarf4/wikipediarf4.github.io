@@ -11011,7 +11011,7 @@ async function sendNotifToUserStory(uid, text, storyPreview, storyImg, storyId){
     const snap = await getDoc(doc(db,'users',uid));
     if(!snap.exists()) return;
     const notifs = snap.data().notifs || [];
-    notifs.unshift({text, time:Date.now(), read:false, storyComment:true, storyPreview: storyPreview||'', storyImg: storyImg||'', storyId: storyId||''});
+    notifs.unshift({text, time:Date.now(), read:false, storyComment:true, storyPreview: storyPreview||'', storyImg: storyImg||'', storyId: storyId||'', fromAv: window.CU?.av||'', fromNick: window.CU?.nick||''});
     await updateDoc(doc(db,'users',uid), {notifs: notifs.slice(0,30)});
   } catch(e){ console.error('notif story error',e); }
 }
@@ -11022,7 +11022,7 @@ async function sendNotifToUser(uid, text){
     const snap = await getDoc(doc(db,'users',uid));
     if(!snap.exists()) return;
     const notifs = snap.data().notifs || [];
-    notifs.unshift({text, time:Date.now(), read:false});
+    notifs.unshift({text, time:Date.now(), read:false, fromAv: window.CU?.av||'', fromNick: window.CU?.nick||''});
     await updateDoc(doc(db,'users',uid), {notifs: notifs.slice(0,30)});
   } catch(e){ console.error('notif error',e); }
 }
@@ -11033,7 +11033,7 @@ async function sendNotifToUserWithPost(uid, text, postId){
     const snap = await getDoc(doc(db,'users',uid));
     if(!snap.exists()) return;
     const notifs = snap.data().notifs || [];
-    notifs.unshift({text, time:Date.now(), read:false, postId: postId||null});
+    notifs.unshift({text, time:Date.now(), read:false, postId: postId||null, fromAv: window.CU?.av||'', fromNick: window.CU?.nick||''});
     await updateDoc(doc(db,'users',uid), {notifs: notifs.slice(0,30)});
   } catch(e){ console.error('notif error',e); }
 }
