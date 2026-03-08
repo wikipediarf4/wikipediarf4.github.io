@@ -5957,15 +5957,22 @@ function postHTML(p){
             // Actualizar el DOM si el elemento todavía existe
             const el2 = document.getElementById(uid2);
             if(el2) el2.outerHTML = _buildLinkCard(window._linkPreviewCache[_postUrl]);
-          } catch(e){ window._linkPreviewCache[_postUrl] = null; }
+          } catch(e){
+            // Falló el fetch — guardar card básica con el dominio
+            let fb=''; try{ fb=new URL(_postUrl).hostname; }catch(e2){}
+            window._linkPreviewCache[_postUrl] = {url:_postUrl, title:fb||_postUrl, desc:'', img:'', site:fb};
+            const el2b = document.getElementById(uid2);
+            if(el2b) el2b.outerHTML = _buildLinkCard(window._linkPreviewCache[_postUrl]);
+          }
         })();
       }
       var cached = window._linkPreviewCache[_postUrl];
+      // Si ya falló y tenemos card básica, mostrarla
       if(cached && cached !== 'loading') return _buildLinkCard(cached);
-      // Mientras carga mostrar skeleton
+      // Skeleton mientras carga
       var disp2=_postUrl; try{disp2=new URL(_postUrl).hostname;}catch(e){}
       return '<div id="'+uid2+'" style="margin:0 0 10px;"><a href="'+esc(_postUrl)+'" target="_blank" rel="noopener" style="display:block;text-decoration:none;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--bg3);padding:12px 14px;">'
-        +'<div style="font-size:.75rem;color:var(--muted);margin-bottom:4px;">🔗 '+esc(disp2)+'</div>'
+        +'<div style="font-size:.75rem;color:var(--accent);margin-bottom:6px;font-weight:700;">🔗 '+esc(disp2)+'</div>'
         +'<div style="height:12px;background:var(--border);border-radius:4px;width:60%;margin-bottom:6px;"></div>'
         +'<div style="height:10px;background:var(--border);border-radius:4px;width:80%;"></div>'
         +'</a></div>';
