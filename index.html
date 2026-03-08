@@ -4078,7 +4078,11 @@ function postHTML(p){
   const topRxn = Object.entries(p.reactionCounts||{}).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([e])=>e).join('');
   const rxnBtns = REACTIONS.map(r=>`<button class="rxn-btn" onclick="doReact('${p.id}','${r.emoji}')" title="${r.label}" style="position:relative;">${r.emoji}<span style="position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;font-size:.58rem;white-space:nowrap;padding:2px 6px;border-radius:4px;pointer-events:none;opacity:0;transition:opacity .15s;" class="rxn-tooltip">${r.label}</span></button>`).join('');
   const fishTag = p.fish ? `<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(0,198,255,.08);border:1px solid rgba(0,198,255,.2);border-radius:100px;padding:4px 12px;font-size:.78rem;margin-bottom:10px;margin-left:14px"><span>🎣</span><strong>${p.fish}</strong>${p.weight?` · ${p.weight}kg`:''} ${p.map?`· ${p.map}`:''} ${p.tech?`· ${p.tech}`:''}</div>` : '';
-  const imgHTML = (p.images&&p.images.length) ? `<div style="display:grid;grid-template-columns:${p.images.length===1?'1fr':p.images.length===2?'1fr 1fr':'1fr 1fr 1fr'};gap:3px;margin-bottom:10px;border-radius:var(--rs);overflow:hidden;">${p.images.slice(0,5).map(img=>`<img src="${img}" style="width:100%;max-height:300px;object-fit:contain;background:var(--bg3);cursor:pointer;" onclick="openImgLightbox('${img}',${JSON.stringify(p.images||[])},'${p.id}')" loading="lazy">`).join('')}</div>` : '';
+  // Store images globally for safe lightbox access
+  if(p.images&&p.images.length){ window._postImgsMap=window._postImgsMap||{}; window._postImgsMap[p.id]=p.images; }
+  const _imgCols = !p.images||p.images.length<=1?'1fr':p.images.length===2?'1fr 1fr':'1fr 1fr';
+  const _imgMaxH = !p.images||p.images.length<=1?'420px':'220px';
+  const imgHTML = (p.images&&p.images.length) ? '<div style="display:grid;grid-template-columns:'+_imgCols+';gap:3px;margin-bottom:10px;border-radius:var(--rs);overflow:hidden;">'+p.images.slice(0,4).map(function(img,ii){ const isLast=ii===3&&p.images.length>4; return '<div style="position:relative;overflow:hidden;cursor:pointer;" onclick="openImgLightboxById(\''+p.id+'\','+ii+')"><img src="'+img+'" style="width:100%;height:'+_imgMaxH+';object-fit:cover;display:block;transition:opacity .18s;" onmouseover="this.style.opacity=\'.82\'" onmouseout="this.style.opacity=\'1\'" loading="lazy">'+(isLast?'<div style="position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.5rem;font-weight:700;">+'+(p.images.length-3)+'</div>':'')+'</div>'; }).join('')+'</div>' : '';
   let videoHTML = '';
   if(p.video){
     const ytId = extractYtId(p.video);
@@ -6028,6 +6032,14 @@ let _galIdx = 0;
 let _galPostId = null;
 let _galUnsub = null;
 
+function openImgLightboxById(postId, startIdx){
+  var imgs = (window._postImgsMap && window._postImgsMap[postId]) || [];
+  if(!imgs.length) return;
+  var src = imgs[startIdx] || imgs[0];
+  openImgLightbox(src, imgs, postId);
+}
+window.openImgLightboxById = openImgLightboxById;
+
 function openImgLightbox(src, allImgs, postId){
   _galImages = Array.isArray(allImgs) && allImgs.length ? allImgs : [src];
   _galIdx = _galImages.indexOf(src);
@@ -6078,9 +6090,12 @@ function openImgLightbox(src, allImgs, postId){
   </style>
   <div id="_igBox" style="background:var(--bg2);border-radius:12px;display:flex;max-width:960px;width:98vw;max-height:94vh;overflow:hidden;position:relative;box-shadow:0 20px 80px rgba(0,0,0,.7);">
     <div id="_igImgCol" style="flex:1;min-width:0;background:#000;display:flex;align-items:center;justify-content:center;position:relative;min-height:360px;">
-      <img id="_igImg" src="${_galImages[_galIdx]}" style="max-width:100%;max-height:90vh;object-fit:contain;display:block;user-select:none;transition:opacity .12s ease;">
-      <button onclick="igNav(-1)" style="display:${_galImages.length>1?'flex':'none'};position:absolute;left:10px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.55);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:1.3rem;cursor:pointer;align-items:center;justify-content:center;z-index:4;transition:background .15s;" onmouseover="this.style.background='rgba(0,0,0,.9)'" onmouseout="this.style.background='rgba(0,0,0,.55)'">‹</button>
-      <button onclick="igNav(1)" style="display:${_galImages.length>1?'flex':'none'};position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.55);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:1.3rem;cursor:pointer;align-items:center;justify-content:center;z-index:4;transition:background .15s;" onmouseover="this.style.background='rgba(0,0,0,.9)'" onmouseout="this.style.background='rgba(0,0,0,.55)'">›</button>
+      <img id="_igImg" src="${_galImages[_galIdx]}" style="max-width:100%;max-height:90vh;object-fit:contain;display:block;user-select:none;transition:opacity .15s ease;">
+      ${_galImages.length>1?`
+      <button onclick="igNav(-1)" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.6);border:none;color:#fff;width:44px;height:44px;border-radius:50%;font-size:1.6rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:4;transition:all .15s;backdrop-filter:blur(4px);" onmouseover="this.style.background='rgba(46,196,182,.8)';this.style.transform='translateY(-50%) scale(1.1)'" onmouseout="this.style.background='rgba(0,0,0,.6)';this.style.transform='translateY(-50%) scale(1)'">‹</button>
+      <button onclick="igNav(1)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.6);border:none;color:#fff;width:44px;height:44px;border-radius:50%;font-size:1.6rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:4;transition:all .15s;backdrop-filter:blur(4px);" onmouseover="this.style.background='rgba(46,196,182,.8)';this.style.transform='translateY(-50%) scale(1.1)'" onmouseout="this.style.background='rgba(0,0,0,.6)';this.style.transform='translateY(-50%) scale(1)'">›</button>
+      <div id="_igCounter" style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,.65);color:#fff;font-size:.78rem;font-weight:700;padding:4px 10px;border-radius:100px;z-index:4;backdrop-filter:blur(4px);">${_galIdx+1} / ${_galImages.length}</div>
+      `:''}
       ${dotsHtml}
     </div>
     <div id="_igSidebar" style="width:320px;flex-shrink:0;display:flex;flex-direction:column;border-left:1px solid var(--border);max-height:94vh;overflow:hidden;">
@@ -6157,6 +6172,8 @@ function igNavTo(i){
   const img = document.getElementById('_igImg');
   if(img){ img.style.opacity='0'; setTimeout(()=>{ img.src=_galImages[i]; img.style.opacity='1'; },110); }
   document.querySelectorAll('._igDot').forEach((d,j)=>{ d.style.background = j===i?'#fff':'rgba(255,255,255,.35)'; });
+  const counter = document.getElementById('_igCounter');
+  if(counter) counter.textContent = (i+1)+' / '+_galImages.length;
 }
 async function igLoadPostData(pid){
   if(_galUnsub){ _galUnsub(); _galUnsub=null; }
@@ -6244,6 +6261,7 @@ function igDownload(){
 window.igNav=igNav; window.igNavTo=igNavTo; window.igReact=igReact;
 window.igSubmitComment=igSubmitComment; window.igShare=igShare; window.igDownload=igDownload;
 window.openImgLightbox=openImgLightbox;
+window.openImgLightboxById=openImgLightboxById;
 
 // ===== REPORT =====
 function reportPost(pid, userNick){
