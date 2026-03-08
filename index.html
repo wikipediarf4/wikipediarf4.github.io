@@ -520,7 +520,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
 .btn-full{width:100%;}
 
 /* ===== PROFILE PAGE ===== */
-.profile-cover{height:300px;background:linear-gradient(135deg,#e7f3ff,#1877f222);background-size:cover;background-position:center;position:relative;overflow:hidden;}
+.profile-cover{height:260px;background:linear-gradient(135deg,#e7f3ff,#1877f222);background-size:cover;background-position:center;position:relative;overflow:hidden;}
 
 /* ── GALERÍA INSTAGRAM ── */
 @keyframes _igFadeIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
@@ -594,12 +594,12 @@ select.fi option{background:var(--bg3);color:var(--text);}
 .profile-cover-edit{position:absolute;bottom:14px;right:14px;background:rgba(0,0,0,.7);border:1px solid var(--border);color:var(--text);
   padding:7px 14px;border-radius:var(--rs);font-size:.8rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;}
 .profile-info-bar{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 24px 0;}
-.profile-av-wrap{position:relative;margin-top:-52px;margin-bottom:10px;width:fit-content;}
-.profile-av-big{width:168px;height:168px;border-radius:50%;border:4px solid var(--bg2);overflow:hidden;
-  display:flex;align-items:center;justify-content:center;font-size:3.5rem;font-weight:800;color:var(--accent);background:var(--bg3);}
+.profile-av-wrap{position:relative;width:fit-content;}
+.profile-av-big{width:148px;height:148px;border-radius:50%;border:4px solid var(--bg2);overflow:hidden;
+  display:flex;align-items:center;justify-content:center;font-size:3rem;font-weight:800;color:var(--accent);background:var(--bg3);}
 .profile-av-big img{width:100%;height:100%;object-fit:cover;}
 .profile-av-edit{position:absolute;bottom:8px;right:8px;background:var(--bg3);border:2px solid var(--bg2);
-  width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.9rem;}
+  width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.9rem;}
 .profile-name-row{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:10px;padding-bottom:14px;}
 .profile-name{font-family:'Orbitron',monospace;font-size:1.6rem;font-weight:900;}
 .profile-bio{font-size:.85rem;color:var(--muted);margin-top:3px;}
@@ -659,9 +659,8 @@ select.fi option{background:var(--bg3);color:var(--text);}
 .sv-prog-fill{height:100%;background:#fff;width:0;transition:width linear;}
 .sv-header{position:absolute;top:52px;left:12px;right:12px;display:flex;align-items:center;gap:8px;z-index:15;}
 .sv-close{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.5);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:1rem;display:flex;align-items:center;justify-content:center;}
-.sv-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.35);color:#fff;width:42px;height:42px;border-radius:50%;font-size:1.5rem;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .18s,transform .18s;backdrop-filter:blur(4px);z-index:20;}
-.sv-nav:hover{background:rgba(255,255,255,.38);transform:translateY(-50%) scale(1.1);}
-.sv-prev{left:calc(50% - 190px - 52px);position:fixed;}.sv-next{right:calc(50% - 190px - 52px);position:fixed;}
+.sv-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.4);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:1.2rem;display:flex;align-items:center;justify-content:center;}
+.sv-prev{left:8px;}.sv-next{right:8px;}
 .sv-gradient{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.4) 0%,transparent 30%,transparent 60%,rgba(0,0,0,.5) 100%);pointer-events:none;}
 .sv-text{position:absolute;bottom:115px;left:16px;right:16px;font-size:1rem;font-weight:600;text-shadow:0 2px 8px rgba(0,0,0,.8);}
 .sv-emoji{position:absolute;bottom:14px;left:0;right:0;display:flex;justify-content:center;gap:10px;}
@@ -959,43 +958,59 @@ select.fi option{background:var(--bg3);color:var(--text);}
 <!-- PAGE: USER PROFILE (perfil de otros usuarios) -->
 <div class="page" id="page-userprofile">
   <!-- Cover -->
-  <div id="upCover" style="height:220px;background:linear-gradient(135deg,#0a1628,#1a2a3a);background-size:cover;background-position:center;position:relative;overflow:hidden;cursor:pointer;">
+  <div id="upCover" style="height:260px;background:linear-gradient(135deg,#0a1628,#1a2a3a);background-size:cover;background-position:center;position:relative;overflow:hidden;cursor:pointer;">
     <div id="upCoverInner" style="width:100%;height:100%;pointer-events:none;"></div>
     <button onclick="event.stopPropagation();window.location.href='https://wikipediarf4.github.io/'" style="position:absolute;top:14px;left:14px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.15);color:#fff;border-radius:100px;padding:6px 14px;font-size:.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:'Exo 2',sans-serif;backdrop-filter:blur(4px);z-index:10;">← Volver</button>
     <canvas id="upVerifParticles" style="display:none;position:absolute;inset:0;pointer-events:none;"></canvas>
     <div id="upVerifSeal" style="display:none;"></div>
   </div>
 
-  <div style="background:var(--bg2);border-bottom:1px solid var(--border);padding:0 20px 0;">
-    <div style="max-width:860px;margin:0 auto;">
-      <!-- Avatar + nombre -->
-      <div style="display:flex;align-items:flex-end;gap:16px;padding-bottom:14px;flex-wrap:wrap;">
-        <div id="upAvWrap" style="margin-top:-44px;position:relative;flex-shrink:0;">
-          <div id="upAv" style="width:100px;height:100px;border-radius:50%;border:4px solid var(--bg2);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:2.2rem;font-weight:800;color:var(--accent);background:var(--bg3);cursor:pointer;">👤</div>
+  <!-- Info bar estilo Facebook -->
+  <div style="background:var(--bg2);border-bottom:1px solid var(--border);">
+    <div style="max-width:980px;margin:0 auto;padding:0 20px;">
+
+      <!-- Fila principal: avatar + info + acciones -->
+      <div style="display:flex;align-items:flex-end;gap:20px;padding-bottom:16px;flex-wrap:wrap;">
+
+        <!-- Avatar grande sobresaliendo del cover -->
+        <div id="upAvWrap" style="margin-top:-56px;position:relative;flex-shrink:0;z-index:2;">
+          <div id="upAv" style="width:148px;height:148px;border-radius:50%;border:4px solid var(--bg2);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:3rem;font-weight:800;color:var(--accent);background:var(--bg3);cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.4);">👤</div>
         </div>
-        <div style="flex:1;min-width:0;padding-top:8px;">
+
+        <!-- Nombre + stats + bio -->
+        <div style="flex:1;min-width:0;padding-top:10px;padding-bottom:4px;">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-            <div id="upName" style="font-family:'Orbitron',monospace;font-size:1.4rem;font-weight:900;"></div>
+            <div id="upName" style="font-size:1.6rem;font-weight:900;font-family:'Orbitron',monospace;line-height:1.1;"></div>
             <span id="upVerifBadge" style="display:none;" title="Verificado">✅</span>
-            <span id="upShopBadge" style="font-size:1.2rem;" title=""></span>
+            <span id="upShopBadge" style="font-size:1.1rem;" title=""></span>
           </div>
-          <span id="upShopTitle" style="font-size:.72rem;font-weight:800;letter-spacing:.08em;color:var(--muted);"></span>
-          <div id="upVerifBanner" style="display:none;" class="verif-banner" style="margin-top:4px;">
+          <span id="upShopTitle" style="font-size:.7rem;font-weight:800;letter-spacing:.08em;color:var(--muted);"></span>
+          <div id="upVerifBanner" style="display:none;" class="verif-banner">
             ✅<span style="font-size:.68rem;font-weight:800;color:gold;letter-spacing:.05em;">CUENTA VERIFICADA</span><span style="font-size:.7rem;">✨</span>
           </div>
-          <div id="upLevel" style="margin-top:5px;"></div>
-          <div id="upBio" style="font-size:.82rem;color:var(--muted);margin-top:3px;"></div>
-          <div id="upMeta" style="font-size:.75rem;color:var(--muted);margin-top:2px;"></div>
+
+          <!-- Stats: seguidores, amigos, en común -->
+          <div style="display:flex;align-items:center;gap:4px;margin-top:5px;flex-wrap:wrap;">
+            <span id="upFriendCount" style="font-size:.9rem;font-weight:700;color:var(--text);">0</span>
+            <span style="font-size:.9rem;color:var(--muted);">amigos</span>
+            <span style="color:var(--muted);margin:0 4px;">•</span>
+            <span id="upPostCount" style="font-size:.9rem;font-weight:700;color:var(--text);">0</span>
+            <span style="font-size:.9rem;color:var(--muted);">publicaciones</span>
+            <span style="color:var(--muted);margin:0 4px;" id="upMutualSep">•</span>
+            <span id="upMutualCount" style="font-size:.9rem;font-weight:700;color:var(--text);">0</span>
+            <span style="font-size:.9rem;color:var(--muted);" id="upMutualLbl">en común</span>
+          </div>
+
+          <div id="upBio" style="font-size:.85rem;color:var(--muted);margin-top:5px;"></div>
+          <div id="upMeta" style="font-size:.78rem;color:var(--muted);margin-top:3px;display:flex;gap:12px;flex-wrap:wrap;"></div>
+          <div id="upLevel" style="margin-top:4px;"></div>
           <div id="upLastSeen" style="margin-top:3px;"></div>
         </div>
-        <div id="upActions" style="display:flex;gap:8px;flex-wrap:wrap;padding-bottom:8px;"></div>
+
+        <!-- Botones de acción a la derecha -->
+        <div id="upActions" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding-bottom:16px;"></div>
       </div>
-      <!-- Stats -->
-      <div style="display:flex;gap:24px;margin-bottom:10px;flex-wrap:wrap;">
-        <div style="text-align:center;"><div id="upPostCount" style="font-family:'Orbitron',monospace;font-size:1rem;font-weight:800;color:var(--accent);">0</div><div style="font-size:.65rem;color:var(--muted);">Posts</div></div>
-        <div style="text-align:center;"><div id="upFriendCount" style="font-family:'Orbitron',monospace;font-size:1rem;font-weight:800;color:var(--accent);">0</div><div style="font-size:.65rem;color:var(--muted);">Amigos</div></div>
-        <div style="text-align:center;"><div id="upMutualCount" style="font-family:'Orbitron',monospace;font-size:1rem;font-weight:800;color:var(--accent);">0</div><div style="font-size:.65rem;color:var(--muted);">En común</div></div>
-      </div>
+
       <!-- Tabs -->
       <div style="display:flex;border-top:1px solid var(--border);gap:2px;" id="upTabs">
         <div class="ptab on" onclick="swUpTab(this,'upTabPosts')">Publicaciones</div>
@@ -1030,23 +1045,41 @@ select.fi option{background:var(--bg3);color:var(--text);}
     <button class="profile-cover-edit" onclick="event.stopPropagation();document.getElementById('coverFileInput').click()">📷 Editar foto de portada<input type="file" id="coverFileInput" accept="image/*" style="display:none" onchange="changeCover(this)"></button>
   </div>
   <div class="profile-info-bar">
-    <div style="max-width:1080px;margin:0 auto;padding:0 16px">
-      <div class="profile-name-row">
-        <div>
-          <div class="profile-av-wrap">
-            <div class="profile-av-big" id="profAvBig" style="cursor:pointer;">👤</div>
-            <div class="profile-av-edit" onclick="document.getElementById('avatarFileInput').click()">📷<input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="changeAvatar(this)"></div>
-          </div>
-          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:2px;">
-            <div class="profile-name" id="profName">Mi Perfil</div>
+    <div style="max-width:1080px;margin:0 auto;padding:0 20px;">
+
+      <!-- Fila principal: avatar + info + botones -->
+      <div style="display:flex;align-items:flex-end;gap:20px;padding-bottom:16px;flex-wrap:wrap;">
+
+        <!-- Avatar grande sobresaliendo -->
+        <div class="profile-av-wrap" style="margin-top:-56px;z-index:2;">
+          <div class="profile-av-big" id="profAvBig" style="width:148px;height:148px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.4);">👤</div>
+          <div class="profile-av-edit" onclick="document.getElementById('avatarFileInput').click()">📷<input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="changeAvatar(this)"></div>
+        </div>
+
+        <!-- Nombre + stats + bio -->
+        <div style="flex:1;min-width:0;padding-top:10px;padding-bottom:4px;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <div class="profile-name" id="profName" style="font-size:1.6rem;">Mi Perfil</div>
             <span id="profVerifiedBadge" style="display:none;" title="Usuario Verificado">✅</span>
           </div>
-          <div class="profile-bio" id="profBioEl"></div>
-          <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap" id="profBadges"></div>
-          <!-- Botón verificación -->
-          <div id="profVerifBtn" style="margin-top:8px;display:none;"></div>
+
+          <!-- Stats en línea -->
+          <div style="display:flex;align-items:center;gap:4px;margin-top:5px;flex-wrap:wrap;">
+            <span id="profFriendCount" style="font-size:.9rem;font-weight:700;color:var(--text);">0</span>
+            <span style="font-size:.9rem;color:var(--muted);">amigos</span>
+            <span style="color:var(--muted);margin:0 4px;">•</span>
+            <span id="profPostCount" style="font-size:.9rem;font-weight:700;color:var(--text);">0</span>
+            <span style="font-size:.9rem;color:var(--muted);">publicaciones</span>
+            <span style="color:var(--muted);margin:0 4px;">•</span>
+            <span id="profLikeCount" style="font-size:.9rem;font-weight:700;color:var(--text);">0</span>
+            <span style="font-size:.9rem;color:var(--muted);">me gusta</span>
+          </div>
+
+          <div class="profile-bio" id="profBioEl" style="margin-top:5px;font-size:.88rem;"></div>
+          <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;" id="profBadges"></div>
+
           <!-- XP + Streak bar -->
-          <div id="profXpBlock" style="margin-top:10px;min-width:220px;display:none;">
+          <div id="profXpBlock" style="margin-top:10px;max-width:280px;display:none;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
               <span id="profLevelBadge" class="level-badge"></span>
               <span id="profStreakBadge" class="streak-badge" style="display:none;"></span>
@@ -1057,18 +1090,18 @@ select.fi option{background:var(--bg3);color:var(--text);}
               <span style="font-size:.65rem;color:var(--muted);" id="profXpNext"></span>
             </div>
           </div>
+          <div id="profVerifBtn" style="margin-top:6px;display:none;"></div>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;padding-bottom:14px">
-          <button class="btn btn-p" onclick="openEditProfile()">✏ Editar perfil</button>
-          <button id="btnAnonMode" onclick="toggleAnonMode()" style="display:none;background:var(--bg3);border:1px solid var(--border);color:var(--muted);border-radius:100px;padding:5px 12px;font-size:.72rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .2s;">👻 Modo anónimo</button>
-          <button class="btn btn-s" onclick="om('mCreatePost')">+ Publicación</button>
+
+        <!-- Botones a la derecha -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding-bottom:16px;">
+          <button class="btn btn-s" onclick="om('mCreatePost')" style="display:flex;align-items:center;gap:6px;">✏ Publicar</button>
+          <button class="btn btn-p" onclick="openEditProfile()" style="display:flex;align-items:center;gap:6px;">⚙ Editar perfil</button>
+          <button id="btnAnonMode" onclick="toggleAnonMode()" style="display:none;background:var(--bg3);border:1px solid var(--border);color:var(--muted);border-radius:100px;padding:8px 14px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .2s;">👻 Anónimo</button>
         </div>
       </div>
-      <div style="display:flex;gap:28px;margin-bottom:8px;flex-wrap:wrap">
-        <div style="text-align:center"><div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:800;color:var(--accent)" id="profPostCount">0</div><div style="font-size:.7rem;color:var(--muted)">Publicaciones</div></div>
-        <div style="text-align:center"><div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:800;color:var(--accent)" id="profFriendCount">0</div><div style="font-size:.7rem;color:var(--muted)">Amigos</div></div>
-        <div style="text-align:center"><div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:800;color:var(--accent)" id="profLikeCount">0</div><div style="font-size:.7rem;color:var(--muted)">Me gusta</div></div>
-      </div>
+
+      <!-- Tabs -->
       <div class="profile-tabs">
         <div class="ptab on" onclick="swPTab(this,'ptPosts')">Publicaciones</div>
         <div class="ptab" onclick="swPTab(this,'ptAbout')">Información</div>
@@ -1184,9 +1217,6 @@ select.fi option{background:var(--bg3);color:var(--text);}
     <!-- Click zones: left half = prev, right half = next — full invisible areas -->
     <div onclick="svNav(-1)" style="position:absolute;top:0;left:0;width:50%;height:100%;z-index:5;cursor:w-resize;"></div>
     <div onclick="svNav(1)" style="position:absolute;top:0;right:0;width:50%;height:100%;z-index:5;cursor:e-resize;"></div>
-    <!-- Visible nav arrows for stories -->
-    <button class="sv-nav sv-prev" onclick="svNav(-1)" title="Historia anterior">‹</button>
-    <button class="sv-nav sv-next" onclick="svNav(1)" title="Historia siguiente">›</button>
     <div class="sv-gradient"></div>
 
     <!-- progress bars — top 8px -->
@@ -4121,43 +4151,41 @@ function postHTML(p){
   // Store images globally for lightbox
   window._postImgsMap = window._postImgsMap || {};
   if(p.images&&p.images.length) window._postImgsMap[p.id] = p.images;
-  // Build image carousel/grid - with arrow navigation for multiple images
+  // Build image grid - Facebook style layout
   var imgHTML = '';
   if(p.images && p.images.length) {
     var imgs = p.images;
     var n = imgs.length;
     var pid = p.id;
-    if(n === 1){
-      // Single image - simple display
-      imgHTML = '<div style="margin-bottom:10px;border-radius:10px;overflow:hidden;position:relative;cursor:pointer;" onclick="(function(){window._postImgsMap=window._postImgsMap||{};window._postImgsMap[\''+pid+'\']=[\''+imgs[0]+'\'];openImgLightboxById(\''+pid+'\',0);})()">'
-        +'<img src="'+imgs[0]+'" style="width:100%;max-height:420px;object-fit:cover;display:block;" loading="lazy">'
+    function _imgCell(img, ii, h, extraStyle) {
+      var isLastOverlay = ii===3 && n>4;
+      var overlayMore = n - 4;
+      return '<div style="position:relative;overflow:hidden;cursor:pointer;height:'+h+';'+(extraStyle||'')+'\'" onclick="(function(){window._postImgsMap=window._postImgsMap||{};window._postImgsMap[\''+pid+'\']=['+imgs.map(function(x){return'\''+x+'\''}).join(',')+'];openImgLightboxById(\''+pid+'\','+ii+');})()">'
+        + '<img src="'+img+'" style="width:100%;height:100%;object-fit:cover;display:block;transition:opacity .18s;" onmouseover="this.style.opacity=\'.82\'" onmouseout="this.style.opacity=\'1\'" loading="lazy">'
+        + (isLastOverlay ? '<div style="position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;color:#fff;font-size:2rem;font-weight:700;">+'+overlayMore+'</div>' : '')
+        + '</div>';
+    }
+    var grid = '';
+    if(n===1){
+      grid = '<div style="display:grid;grid-template-columns:1fr;gap:3px;">'+_imgCell(imgs[0],0,'420px','')+'</div>';
+    } else if(n===2){
+      grid = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;">'+_imgCell(imgs[0],0,'300px','')+_imgCell(imgs[1],1,'300px','')+'</div>';
+    } else if(n===3){
+      grid = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;">'
+        + _imgCell(imgs[0],0,'400px','grid-row:span 2;')
+        + _imgCell(imgs[1],1,'197px','')
+        + _imgCell(imgs[2],2,'197px','')
         +'</div>';
     } else {
-      // Multiple images - CAROUSEL with arrows
-      var cid = 'carousel_'+pid;
-      var imgsJson = '['+imgs.map(function(x){return'\''+x+'\''}).join(',')+']';
-      var dotsHTML = imgs.map(function(_,di){
-        return '<div id="cdot_'+pid+'_'+di+'" style="width:'+(di===0?'18':'7')+'px;height:7px;border-radius:100px;background:'+(di===0?'#fff':'rgba(255,255,255,.5)')+';transition:all .25s;cursor:pointer;" onclick="goCarousel(\''+pid+'\','+di+')"></div>';
-      }).join('');
-      imgHTML = '<div id="'+cid+'" style="position:relative;margin-bottom:10px;border-radius:10px;overflow:hidden;background:#000;" data-idx="0" data-total="'+n+'">'
-        // Images strip
-        +'<div id="cstrip_'+pid+'" style="display:flex;transition:transform .3s ease;will-change:transform;">'
-        +imgs.map(function(img,ii){
-          return '<div style="min-width:100%;position:relative;cursor:pointer;" onclick="(function(){window._postImgsMap=window._postImgsMap||{};window._postImgsMap[\''+pid+'\']='+imgsJson+';openImgLightboxById(\''+pid+'\','+ii+');})()">'
-            +'<img src="'+img+'" style="width:100%;max-height:400px;object-fit:cover;display:block;" loading="lazy">'
-            +'</div>';
-        }).join('')
-        +'</div>'
-        // Left arrow
-        +'<button onclick="event.stopPropagation();prevCarousel(\''+pid+'\')" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.55);border:none;color:#fff;width:34px;height:34px;border-radius:50%;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);transition:background .15s;z-index:5;" onmouseover="this.style.background=\'rgba(0,0,0,.8)\'" onmouseout="this.style.background=\'rgba(0,0,0,.55)\'">‹</button>'
-        // Right arrow
-        +'<button onclick="event.stopPropagation();nextCarousel(\''+pid+'\')" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.55);border:none;color:#fff;width:34px;height:34px;border-radius:50%;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);transition:background .15s;z-index:5;" onmouseover="this.style.background=\'rgba(0,0,0,.8)\'" onmouseout="this.style.background=\'rgba(0,0,0,.55)\'">›</button>'
-        // Counter top right
-        +'<div id="ccnt_'+pid+'" style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,.6);color:#fff;font-size:.75rem;font-weight:700;padding:3px 10px;border-radius:100px;z-index:5;">1 / '+n+'</div>'
-        // Dots bottom center
-        +'<div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:5px;align-items:center;z-index:5;">'+dotsHTML+'</div>'
+      // 4 or more: 2x2 grid, last cell shows +N overlay
+      grid = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;">'
+        + _imgCell(imgs[0],0,'220px','')
+        + _imgCell(imgs[1],1,'220px','')
+        + _imgCell(imgs[2],2,'220px','')
+        + _imgCell(imgs[3],3,'220px','')
         +'</div>';
     }
+    imgHTML = '<div style="margin-bottom:10px;border-radius:10px;overflow:hidden;">'+grid+'</div>';
   }
   let videoHTML = '';
   if(p.video){
@@ -4343,11 +4371,11 @@ function postHTML(p){
       </div>
       <div style="position:relative;">
         <button class="post-menu" onclick="togglePostMenu('${p.id}', event, '${p.userId}')" style="font-size:1.3rem;line-height:1;">⋯</button>
-        <div id="pmenu_${p.id}" data-owner="${p.userId}" style="display:none;position:absolute;right:0;top:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);min-width:130px;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,.5);overflow:hidden;">
-          ${!p.sharedFrom ? `<button onclick="togglePostMenu('${p.id}', event); openEditPost('${p.id}','${esc(p.text||'')}')" data-owner-only="true" style="display:flex;align-items:center;gap:7px;width:100%;background:none;border:none;color:var(--text);padding:8px 12px;cursor:pointer;font-size:.78rem;text-align:left;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">✏️ Editar</button>` : ''}
-          ${window.CU?.verified&&p.userId===window.CU?.id?`<button onclick="togglePostMenu('${p.id}',event);${p.id===window.CU?.pinnedPostId?'unpinPost()':"pinPost('${p.id}')"};" style="display:flex;align-items:center;gap:7px;width:100%;background:none;border:none;color:gold;padding:8px 12px;cursor:pointer;font-size:.78rem;text-align:left;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">${p.id===window.CU?.pinnedPostId?'📌 Desfijar':'📌 Fijar'}</button>`:''}
-          <button onclick="togglePostMenu('${p.id}', event); deleteMyPost('${p.id}')" data-owner-only="true" style="display:flex;align-items:center;gap:7px;width:100%;background:none;border:none;color:var(--red);padding:8px 12px;cursor:pointer;font-size:.78rem;text-align:left;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">🗑 Eliminar</button>
-          <button onclick="togglePostMenu('${p.id}', event); reportPost('${p.id}','${esc(p.userNick)}')" data-other-only="true" style="display:flex;align-items:center;gap:7px;width:100%;background:none;border:none;color:var(--warn);padding:8px 12px;cursor:pointer;font-size:.78rem;text-align:left;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">⚠️ Reportar</button>
+        <div id="pmenu_${p.id}" data-owner="${p.userId}" style="display:none;position:absolute;right:0;top:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);min-width:150px;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,.5);overflow:hidden;">
+          ${!p.sharedFrom ? `<button onclick="togglePostMenu('${p.id}', event); openEditPost('${p.id}','${esc(p.text||'')}')" data-owner-only="true" style="display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;color:var(--text);padding:12px 16px;cursor:pointer;font-size:.88rem;text-align:left;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">✏️ Editar</button>` : ''}
+          ${window.CU?.verified&&p.userId===window.CU?.id?`<button onclick="togglePostMenu('${p.id}',event);${p.id===window.CU?.pinnedPostId?'unpinPost()':"pinPost('${p.id}')"};" style="display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;color:gold;padding:12px 16px;cursor:pointer;font-size:.88rem;text-align:left;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">${p.id===window.CU?.pinnedPostId?'📌 Desfijar':'📌 Fijar en perfil'}</button>`:''}
+          <button onclick="togglePostMenu('${p.id}', event); deleteMyPost('${p.id}')" data-owner-only="true" style="display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;color:var(--red);padding:12px 16px;cursor:pointer;font-size:.88rem;text-align:left;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">🗑 Eliminar</button>
+          <button onclick="togglePostMenu('${p.id}', event); reportPost('${p.id}','${esc(p.userNick)}')" data-other-only="true" style="display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;color:var(--warn);padding:12px 16px;cursor:pointer;font-size:.88rem;text-align:left;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">⚠️ Reportar</button>
         </div>
       </div>
     </div>
@@ -8767,12 +8795,13 @@ async function _loadUserProfilePage(uid, nick){
     // ── ACCIONES ──
     const isFriend = myFriends.includes(uid);
     const friendBtn = isFriend
-      ? `<button disabled style="padding:8px 16px;background:rgba(0,230,118,.1);border:1px solid rgba(0,230,118,.3);color:var(--green);border-radius:var(--rs);font-size:.82rem;font-weight:700;font-family:'Exo 2',sans-serif;">✓ Amigos</button>`
-      : `<button id="btnAddFriend_${uid}" onclick="sendFriendRequestFromProfile('${uid}','${uNick.replace(/'/g,"\'")}','page')" class="btn btn-p" style="font-size:.82rem;">👥 Añadir amigo</button>`;
+      ? `<button disabled style="display:flex;align-items:center;gap:7px;padding:9px 18px;background:rgba(0,230,118,.1);border:1px solid rgba(0,230,118,.3);color:var(--green);border-radius:8px;font-size:.85rem;font-weight:700;font-family:'Exo 2',sans-serif;cursor:default;">✓ Amigos</button>`
+      : `<button id="btnAddFriend_${uid}" onclick="sendFriendRequestFromProfile('${uid}','${uNick.replace(/'/g,"\'")}','page')" style="display:flex;align-items:center;gap:7px;padding:9px 18px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:.85rem;font-weight:700;font-family:'Exo 2',sans-serif;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background='var(--bg3)'">👥 Agregar a amigos</button>`;
     const msgBtn = isFriend
-      ? `<button onclick="openChatWith('${uid}','${uNick.replace(/'/g,"\'")}')" class="btn btn-s" style="font-size:.82rem;">💬 Mensaje</button>`
-      : `<button disabled title="Solo podés mensajear a tus amigos" style="padding:8px 16px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);border-radius:var(--rs);font-size:.82rem;font-weight:700;cursor:not-allowed;font-family:'Exo 2',sans-serif;">🔒 Mensaje</button>`;
-    document.getElementById('upActions').innerHTML = friendBtn + msgBtn;
+      ? `<button onclick="openChatWith('${uid}','${uNick.replace(/'/g,"\'")}')" style="display:flex;align-items:center;gap:7px;padding:9px 18px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:.85rem;font-weight:700;font-family:'Exo 2',sans-serif;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background='var(--bg3)'">💬 Mensaje</button>`
+      : `<button disabled title="Solo podés mensajear a tus amigos" style="display:flex;align-items:center;gap:7px;padding:9px 18px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:.85rem;font-weight:700;cursor:not-allowed;font-family:'Exo 2',sans-serif;opacity:.5;">🔒 Mensaje</button>`;
+    const followBtn = `<button style="display:flex;align-items:center;gap:7px;padding:9px 20px;background:var(--accent);border:none;color:#000;border-radius:8px;font-size:.85rem;font-weight:800;font-family:'Exo 2',sans-serif;cursor:pointer;transition:all .2s;" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">➕ Seguir</button>`;
+    document.getElementById('upActions').innerHTML = msgBtn + followBtn + friendBtn;
 
     // ── TAB POSTS ── Agregar posts al caché local para que doReact/submitComment funcionen
     userPosts.forEach(p=>{
@@ -11840,45 +11869,6 @@ async function deleteChatConfirm(uid, nick){
 Object.entries(_expose).forEach(([k,v])=>{ window[k]=v; });
 // Replay any calls that happened before module loaded
 if(window._q) window._q.forEach(([name,args])=>{ if(window[name]) window[name](...args); });
-
-// ===== CAROUSEL FUNCTIONS =====
-function goCarousel(pid, idx){
-  const carousel = document.getElementById('carousel_'+pid);
-  if(!carousel) return;
-  const strip = document.getElementById('cstrip_'+pid);
-  const total = parseInt(carousel.dataset.total) || 1;
-  idx = Math.max(0, Math.min(idx, total-1));
-  carousel.dataset.idx = idx;
-  if(strip) strip.style.transform = 'translateX(-'+idx*100+'%)';
-  // Update counter
-  const cnt = document.getElementById('ccnt_'+pid);
-  if(cnt) cnt.textContent = (idx+1)+' / '+total;
-  // Update dots
-  for(let i=0; i<total; i++){
-    const dot = document.getElementById('cdot_'+pid+'_'+i);
-    if(dot){
-      dot.style.width = i===idx ? '18px' : '7px';
-      dot.style.background = i===idx ? '#fff' : 'rgba(255,255,255,.5)';
-    }
-  }
-}
-function nextCarousel(pid){
-  const carousel = document.getElementById('carousel_'+pid);
-  if(!carousel) return;
-  const idx = parseInt(carousel.dataset.idx)||0;
-  const total = parseInt(carousel.dataset.total)||1;
-  goCarousel(pid, (idx+1) % total);
-}
-function prevCarousel(pid){
-  const carousel = document.getElementById('carousel_'+pid);
-  if(!carousel) return;
-  const idx = parseInt(carousel.dataset.idx)||0;
-  const total = parseInt(carousel.dataset.total)||1;
-  goCarousel(pid, (idx-1+total) % total);
-}
-window.goCarousel = goCarousel;
-window.nextCarousel = nextCarousel;
-window.prevCarousel = prevCarousel;
 
 // ===== START =====
 init();
