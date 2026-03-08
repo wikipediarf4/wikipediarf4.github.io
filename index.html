@@ -819,7 +819,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
       <div class="sl-item" onclick="gp('publica-trofeo')"><span class="sl-item-icon">🏆</span> Publica tu Trofeo</div>
       <div class="sl-item" onclick="gp('buscar-trofeo')"><span class="sl-item-icon">🔍</span> Buscar Trofeo</div>
       <div class="sl-item" onclick="gp('videos');loadVideos()"><span class="sl-item-icon">📹</span> Videos</div>
-      <div class="sl-item" onclick="gp('musica')" id="slMusicaBtn" style="background:linear-gradient(90deg,rgba(30,215,96,.08),transparent);border-left:3px solid #1ed760;"><span class="sl-item-icon">🎵</span> Música</div>
+      <div class="sl-item" onclick="gp('musica')" id="slMusicaBtn" style="background:linear-gradient(90deg,rgba(255,0,0,.08),transparent);border-left:3px solid #ff0000;"><span class="sl-item-icon">🎵</span> Música</div>
       <div class="sl-item" onclick="gp('carretes')"><span class="sl-item-icon">🎣</span> Buscar Carretes</div>
       <div class="sl-item"><span class="sl-item-icon">🔖</span> Guardados</div>
       <div class="sl-item" onclick="gp('parches')"><span class="sl-item-icon">🔧</span> Parches y Actualizaciones</div>
@@ -2654,8 +2654,8 @@ select.fi option{background:var(--bg3);color:var(--text);}
   <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px;">
     <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#1ed760,#158a3e);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;box-shadow:0 4px 16px rgba(30,215,96,.35);">🎵</div>
     <div>
-      <div style="font-family:'Orbitron',monospace;font-size:1.15rem;font-weight:900;color:#1ed760;">Música · CharlasRF4</div>
-      <div style="font-size:.75rem;color:var(--muted);margin-top:2px;">Buscá canciones, artistas o álbumes en Spotify</div>
+      <div style="font-family:'Orbitron',monospace;font-size:1.15rem;font-weight:900;color:#ff0000;">🎵 Música · YouTube</div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:2px;">Buscá canciones, artistas o videos en YouTube</div>
     </div>
   </div>
 
@@ -2686,7 +2686,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
   <!-- Reproductor embed Spotify (abajo, fijo al buscar) -->
   <div id="musicPlayerWrap" style="display:none;position:sticky;bottom:0;background:var(--bg2);border-top:1px solid var(--border);border-radius:16px 16px 0 0;padding:12px 16px;box-shadow:0 -4px 24px rgba(0,0,0,.4);z-index:100;margin:0 -16px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-      <span style="font-size:.72rem;font-weight:700;color:#1ed760;letter-spacing:.05em;">▶ REPRODUCIENDO EN SPOTIFY</span>
+      <span style="font-size:.72rem;font-weight:700;color:#ff0000;letter-spacing:.05em;">▶ REPRODUCIENDO EN YOUTUBE</span>
       <button onclick="closeMusicPlayer()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:2px 6px;border-radius:6px;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">✕</button>
     </div>
     <iframe id="spotifyEmbed" style="border-radius:12px;width:100%;border:none;" height="80" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" src=""></iframe>
@@ -11537,19 +11537,19 @@ async function confirmEmailChange(){
 function getEmailPrivacy(){ return (window.CU && window.CU.emailPrivacy) || 'only'; }
 
 // ===== MÚSICA / SPOTIFY =====
-let _musicType = 'track';
+// ===== MÚSICA / YOUTUBE =====
 
 // Inicializar grid de géneros
 (function initMusicGenres(){
   const genres = [
-    {label:'Rock',emoji:'🎸',color:'#e91e63',q:'rock'},
-    {label:'Pop',emoji:'🌟',color:'#9c27b0',q:'pop'},
-    {label:'Reggaetón',emoji:'🔥',color:'#ff5722',q:'reggaeton'},
-    {label:'Cumbia',emoji:'💃',color:'#ff9800',q:'cumbia'},
-    {label:'Trap',emoji:'⚡',color:'#607d8b',q:'trap latino'},
-    {label:'Folk / Pesca',emoji:'🎣',color:'#4caf50',q:'folk fishing nature'},
-    {label:'Electrónica',emoji:'🎛️',color:'#00bcd4',q:'electronic'},
-    {label:'Salsa',emoji:'🎺',color:'#ffc107',q:'salsa'},
+    {label:'Rock',emoji:'🎸',color:'#e91e63',q:'rock en español'},
+    {label:'Pop',emoji:'🌟',color:'#9c27b0',q:'pop latino'},
+    {label:'Reggaetón',emoji:'🔥',color:'#ff5722',q:'reggaeton 2024'},
+    {label:'Cumbia',emoji:'💃',color:'#ff9800',q:'cumbia argentina'},
+    {label:'Trap',emoji:'⚡',color:'#607d8b',q:'trap latino 2024'},
+    {label:'Pesca 🎣',emoji:'🎣',color:'#4caf50',q:'musica para pescar relajar'},
+    {label:'Electrónica',emoji:'🎛️',color:'#00bcd4',q:'electronica mix'},
+    {label:'Salsa',emoji:'🎺',color:'#ffc107',q:'salsa clasica'},
   ];
   const grid = document.getElementById('musicGenreGrid');
   if(!grid) return;
@@ -11562,50 +11562,19 @@ let _musicType = 'track';
       <div style="font-size:.78rem;font-weight:700;color:var(--text);margin-top:4px;">${g.label}</div>
     </div>`).join('');
 })();
-const _SPOTIFY_CLIENT_ID = 'd4fbc1ee17fb47b886467872a9ebaf0a';
-const _SPOTIFY_CLIENT_SECRET = '72fe1ff824f94d95a5aef69aec5180a3';
 
 function setMusicType(type, btn){
-  _musicType = type;
+  // En YouTube no hay tipos, pero mantenemos compatibilidad
   document.querySelectorAll('.music-type-btn').forEach(b=>b.classList.remove('active'));
   if(btn) btn.classList.add('active');
 }
 
 function quickGenreSearch(q){
   document.getElementById('musicSearchInput').value = q;
-  searchSpotify();
+  searchSpotify(); // mismo nombre para no cambiar referencias
 }
 
-// Obtiene token de Spotify (Client Credentials via proxy CORS)
-let _spotToken = null, _spotTokenExp = 0;
-async function getSpotToken(){
-  if(_spotToken && Date.now() < _spotTokenExp) return _spotToken;
-  const creds = btoa(_SPOTIFY_CLIENT_ID + ':' + _SPOTIFY_CLIENT_SECRET);
-  // Intentar directo primero, si falla usar proxy CORS
-  const endpoints = [
-    'https://accounts.spotify.com/api/token',
-    'https://corsproxy.io/?https://accounts.spotify.com/api/token',
-    'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://accounts.spotify.com/api/token'),
-  ];
-  for(const url of endpoints){
-    try {
-      const r = await fetch(url,{
-        method:'POST',
-        headers:{'Content-Type':'application/x-www-form-urlencoded','Authorization':'Basic '+creds},
-        body:'grant_type=client_credentials'
-      });
-      if(!r.ok) continue;
-      const d = await r.json();
-      if(d.access_token){
-        _spotToken = d.access_token;
-        _spotTokenExp = Date.now() + (d.expires_in - 60) * 1000;
-        return _spotToken;
-      }
-    } catch(e){ continue; }
-  }
-  return null;
-}
-
+// Búsqueda usando YouTube oEmbed + iframe sin API key
 async function searchSpotify(){
   const q = (document.getElementById('musicSearchInput').value||'').trim();
   if(!q){ toast('Escribí algo para buscar 🎵','err'); return; }
@@ -11614,89 +11583,79 @@ async function searchSpotify(){
   const sugEl = document.getElementById('musicSuggestions');
   if(sugEl) sugEl.style.display = 'none';
   resultsEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted);">
-    <div style="font-size:1.8rem;margin-bottom:8px;">🎵</div><div>Buscando en Spotify...</div></div>`;
+    <div style="font-size:1.8rem;margin-bottom:8px;">🎵</div><div>Buscando en YouTube...</div></div>`;
 
-  const token = await getSpotToken();
-  if(!token){
-    resultsEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted);">
-      <div style="font-size:1.5rem;margin-bottom:8px;">⚠️</div>
-      <div style="margin-bottom:12px;">No se pudo conectar con Spotify.<br><span style="font-size:.75rem;">Verificá que la app de Spotify esté activa en developer.spotify.com</span></div>
-      ${spotifyFallbackHTML(q)}
-    </div>`;
-    return;
+  // Usamos Invidious (instancia pública de YouTube sin API key)
+  const instances = [
+    'https://inv.nadeko.net',
+    'https://invidious.privacydev.net',
+    'https://vid.puffyan.us',
+  ];
+
+  for(const base of instances){
+    try {
+      const res = await fetch(`${base}/api/v1/search?q=${encodeURIComponent(q)}&type=video&fields=videoId,title,author,videoThumbnails&pretty=1`, {
+        signal: AbortSignal.timeout(5000)
+      });
+      if(!res.ok) continue;
+      const data = await res.json();
+      if(Array.isArray(data) && data.length){
+        renderYouTubeResults(data.slice(0,16), base);
+        return;
+      }
+    } catch(e){ continue; }
   }
 
-  try {
-    const res = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(q)}&type=${_musicType}&limit=16&market=AR`,{
-      headers:{'Authorization':'Bearer '+token}
-    });
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const data = await res.json();
-    renderMusicResults(data);
-  } catch(e){
-    resultsEl.innerHTML = spotifyFallbackHTML(q);
-  }
+  // Fallback: mostrar buscador directo embed
+  resultsEl.innerHTML = renderYTFallback(q);
 }
 
-function spotifyFallbackHTML(q){
-  const url = `https://open.spotify.com/search/${encodeURIComponent(q)}`;
-  return `<div style="grid-column:1/-1;text-align:center;padding:30px;">
-    <div style="font-size:2rem;margin-bottom:10px;">🎵</div>
-    <div style="font-size:.9rem;color:var(--muted);margin-bottom:14px;">Buscá directamente en Spotify</div>
-    <a href="${url}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:#1ed760;color:#000;border-radius:100px;font-weight:800;font-size:.9rem;text-decoration:none;font-family:'Exo 2',sans-serif;transition:background .2s;"
-       onmouseover="this.style.background='#1fdf6a'" onmouseout="this.style.background='#1ed760'">
-      Abrir en Spotify 🔗
-    </a>
-  </div>`;
-}
-
-function renderMusicResults(data){
+function renderYouTubeResults(items, base){
   const el = document.getElementById('musicResults');
-  let items = [];
-  if(_musicType==='track' && data.tracks) items = data.tracks.items;
-  else if(_musicType==='artist' && data.artists) items = data.artists.items;
-  else if(_musicType==='album' && data.albums) items = data.albums.items;
-  else if(_musicType==='playlist' && data.playlists) items = data.playlists.items;
-
-  if(!items || !items.length){
-    el.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted);">Sin resultados para tu búsqueda 🎣</div>`;
-    return;
-  }
-
-  el.innerHTML = items.filter(Boolean).map(item=>{
-    const img = (item.images?.[0]?.url) || (item.album?.images?.[0]?.url) || '';
-    const title = esc(item.name||'');
-    let sub = '';
-    if(_musicType==='track') sub = esc((item.artists||[]).map(a=>a.name).join(', '));
-    else if(_musicType==='artist') sub = `${(item.followers?.total||0).toLocaleString()} seguidores`;
-    else if(_musicType==='album') sub = esc((item.artists||[]).map(a=>a.name).join(', '));
-    else if(_musicType==='playlist') sub = esc(item.owner?.display_name||'');
-    const spotId = item.id;
-    const spotType = _musicType==='track'?'track':_musicType==='artist'?'artist':_musicType==='album'?'album':'playlist';
-
-    return `<div class="music-card" onclick="playSpotify('${spotType}','${spotId}','${title.replace(/'/g,"\\'")}')">
-      ${img ? `<img class="music-card-img" src="${img}" loading="lazy" alt="${title}">` : `<div class="music-card-img" style="background:linear-gradient(135deg,#1ed76022,#00000055);display:flex;align-items:center;justify-content:center;font-size:2.5rem;">🎵</div>`}
-      <button class="music-play-btn" onclick="event.stopPropagation();playSpotify('${spotType}','${spotId}','${title.replace(/'/g,"\\'")}')">▶</button>
+  el.innerHTML = items.map(v=>{
+    const thumb = v.videoThumbnails?.[3]?.url || v.videoThumbnails?.[0]?.url || '';
+    const title = esc(v.title||'');
+    const author = esc(v.author||'');
+    const vid = v.videoId;
+    return `<div class="music-card" onclick="playYouTube('${vid}','${title.replace(/'/g,"\\'")}')">
+      ${thumb ? `<img class="music-card-img" src="${thumb}" loading="lazy" alt="${title}" onerror="this.style.display='none'">` : `<div class="music-card-img" style="background:#111;display:flex;align-items:center;justify-content:center;font-size:2.5rem;">🎵</div>`}
+      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:44px;height:44px;background:rgba(255,0,0,.85);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;opacity:0;transition:opacity .2s;pointer-events:none;" class="music-yt-play">▶</div>
       <div class="music-card-body">
         <div class="music-card-title">${title}</div>
-        <div class="music-card-sub">${sub}</div>
+        <div class="music-card-sub">${author}</div>
       </div>
     </div>`;
   }).join('');
+  // Mostrar play icon on hover
+  el.querySelectorAll('.music-card').forEach(c=>{
+    c.addEventListener('mouseenter',()=>c.querySelector('.music-yt-play').style.opacity='1');
+    c.addEventListener('mouseleave',()=>c.querySelector('.music-yt-play').style.opacity='0');
+  });
 }
 
-function playSpotify(type, id, title){
+function renderYTFallback(q){
+  return `<div style="grid-column:1/-1;text-align:center;padding:20px;">
+    <div style="font-size:.85rem;color:var(--muted);margin-bottom:14px;">Buscá en YouTube:</div>
+    <iframe style="width:100%;max-width:640px;height:360px;border-radius:12px;border:none;"
+      src="https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(q)}&autoplay=0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen loading="lazy"></iframe>
+  </div>`;
+}
+
+function playYouTube(videoId, title){
   const wrap = document.getElementById('musicPlayerWrap');
   const iframe = document.getElementById('spotifyEmbed');
   if(!wrap || !iframe) return;
-  // Spotify embed URL
-  const embedUrl = `https://open.spotify.com/embed/${type}/${id}?utm_source=generator&theme=0`;
-  iframe.src = embedUrl;
+  iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+  iframe.style.height = '200px';
   wrap.style.display = 'block';
-  // Scroll suave al reproductor
   setTimeout(()=>wrap.scrollIntoView({behavior:'smooth',block:'end'}), 100);
   toast(`▶ ${title}`,'ok');
 }
+
+// Alias para compatibilidad
+function playSpotify(type, id, title){ playYouTube(id, title); }
 
 function closeMusicPlayer(){
   const wrap = document.getElementById('musicPlayerWrap');
