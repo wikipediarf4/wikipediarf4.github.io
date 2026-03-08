@@ -2274,31 +2274,23 @@ select.fi option{background:var(--bg3);color:var(--text);}
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
     <span style="font-size:1.6rem;">🛒</span>
     <div>
-      <div style="font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:900;color:gold;">Tienda RF4 Latam</div>
+      <div style="font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:900;color:gold;">Tienda WikiPediaRF4</div>
       <div style="font-size:.72rem;color:var(--muted);">Personaliza tu perfil y publicaciones</div>
     </div>
   </div>
   <!-- Banner countdown descuento -->
   <div id="shopDiscountBanner" style="display:none;position:relative;overflow:hidden;border-radius:16px;margin-bottom:20px;">
-    <!-- Fondo animado -->
     <div style="position:absolute;inset:0;background:linear-gradient(135deg,#1a0a00,#2a1500,#1a0800);z-index:0;"></div>
     <div style="position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,180,0,.07),transparent);animation:_shopSweep 2.5s ease-in-out infinite;z-index:1;"></div>
-    <!-- Partículas decorativas -->
     <div style="position:absolute;top:10px;left:8%;font-size:1.1rem;animation:_shopFloat 3s ease-in-out infinite;z-index:1;">✨</div>
     <div style="position:absolute;top:15px;right:10%;font-size:.9rem;animation:_shopFloat 3.5s ease-in-out infinite .8s;z-index:1;">🔥</div>
     <div style="position:absolute;bottom:12px;left:15%;font-size:.8rem;animation:_shopFloat 4s ease-in-out infinite .4s;z-index:1;">⚡</div>
     <div style="position:absolute;bottom:10px;right:18%;font-size:.9rem;animation:_shopFloat 3.2s ease-in-out infinite 1.2s;z-index:1;">💎</div>
-    <!-- Borde brillante -->
-    <div style="position:absolute;inset:0;border-radius:16px;border:2px solid transparent;background:linear-gradient(135deg,rgba(255,215,0,.7),rgba(255,100,0,.4),rgba(255,215,0,.7)) border-box;-webkit-mask:linear-gradient(#fff 0 0) padding-box,linear-gradient(#fff 0 0);-webkit-mask-composite:destination-out;mask-composite:exclude;z-index:2;animation:_shopBorderGlow 2s ease-in-out infinite alternate;"></div>
-    <!-- Contenido -->
     <div style="position:relative;z-index:3;padding:20px 24px;">
-      <!-- Badge superior -->
       <div style="display:flex;justify-content:center;margin-bottom:12px;">
         <span style="background:linear-gradient(135deg,#ffd700,#ff8c00);color:#000;font-size:.65rem;font-weight:900;padding:4px 14px;border-radius:100px;letter-spacing:1.5px;text-transform:uppercase;box-shadow:0 4px 14px rgba(255,180,0,.4);">🎉 OFERTA ESPECIAL · 100% GRATIS</span>
       </div>
-      <!-- Título -->
       <div style="text-align:center;font-family:'Orbitron',monospace;font-size:1rem;font-weight:900;color:#fff;letter-spacing:1px;margin-bottom:16px;text-shadow:0 0 20px rgba(255,180,0,.5);">⏳ TIEMPO RESTANTE DEL DESCUENTO</div>
-      <!-- Bloques de tiempo -->
       <div style="display:flex;justify-content:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
         <div style="text-align:center;background:rgba(0,0,0,.5);border:1px solid rgba(255,215,0,.3);border-radius:12px;padding:10px 16px;min-width:64px;backdrop-filter:blur(4px);">
           <div id="_cdDays" style="font-family:'Orbitron',monospace;font-size:1.8rem;font-weight:900;color:#ffd700;line-height:1;text-shadow:0 0 16px rgba(255,215,0,.6);">--</div>
@@ -2320,20 +2312,17 @@ select.fi option{background:var(--bg3);color:var(--text);}
           <div style="font-size:.6rem;color:rgba(255,60,0,.7);font-weight:700;letter-spacing:1px;margin-top:4px;">SEG</div>
         </div>
       </div>
-      <!-- Barra de progreso -->
       <div style="margin:0 auto;max-width:420px;">
         <div style="background:rgba(255,255,255,.08);border-radius:100px;height:6px;overflow:hidden;margin-bottom:6px;">
-          <div id="_cdProgressBar" style="height:100%;border-radius:100px;background:linear-gradient(90deg,#ffd700,#ff4500);transition:width .5s ease;width:0%;box-shadow:0 0 8px rgba(255,150,0,.6);"></div>
+          <div id="_cdProgressBar" style="height:100%;border-radius:100px;background:linear-gradient(90deg,#ffd700,#ff4500);transition:width .5s ease;width:100%;box-shadow:0 0 8px rgba(255,150,0,.6);"></div>
         </div>
         <div id="shopDiscountEndLabel" style="text-align:center;font-size:.68rem;color:rgba(255,215,0,.6);font-weight:600;"></div>
       </div>
-      <!-- ID oculto para compatibilidad con código viejo -->
       <div id="shopCountdown" style="display:none;"></div>
     </div>
     <style>
-      @keyframes _shopSweep{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+      @keyframes _shopSweep{0%{transform:translateX(-100%)}100%{transform:translateX(200%)}}
       @keyframes _shopFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-      @keyframes _shopBorderGlow{0%{opacity:.6}100%{opacity:1}}
     </style>
   </div>
   <!-- Categorías -->
@@ -6457,49 +6446,44 @@ function startShopCountdown(isoEnd){
     const opts={day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'};
     labelEl.textContent = '📅 Vence: ' + end.toLocaleString('es-AR', opts);
   }
-  // Calcular duración total para la barra de progreso
-  // Asumimos que empezó desde que se configuró (usamos 30 días como referencia)
   const totalDuration = 30 * 24 * 3600000;
   function tick(){
     const now = new Date();
     const diff = end - now;
-    const dEl = document.getElementById('_cdDays');
-    const hEl = document.getElementById('_cdHours');
-    const mEl = document.getElementById('_cdMins');
-    const sEl = document.getElementById('_cdSecs');
-    const bar = document.getElementById('_cdProgressBar');
-    if(diff <= 0){
-      if(dEl) dEl.textContent='00'; if(hEl) hEl.textContent='00';
-      if(mEl) mEl.textContent='00'; if(sEl) sEl.textContent='00';
-      if(bar) bar.style.width='0%';
+    const dEl=document.getElementById('_cdDays');
+    const hEl=document.getElementById('_cdHours');
+    const mEl=document.getElementById('_cdMins');
+    const sEl=document.getElementById('_cdSecs');
+    const bar=document.getElementById('_cdProgressBar');
+    const pad=n=>String(Math.floor(n)).padStart(2,'0');
+    if(diff<=0){
+      if(dEl)dEl.textContent='00'; if(hEl)hEl.textContent='00';
+      if(mEl)mEl.textContent='00'; if(sEl)sEl.textContent='00';
+      if(bar)bar.style.width='0%';
       clearInterval(_shopCountdownTimer);
       banner.style.display='none';
       return;
     }
-    const pad = n=>String(Math.floor(n)).padStart(2,'0');
-    const d = Math.floor(diff/86400000);
-    const h = Math.floor((diff%86400000)/3600000);
-    const m = Math.floor((diff%3600000)/60000);
-    const s = Math.floor((diff%60000)/1000);
-    if(dEl) dEl.textContent = pad(d);
-    if(hEl) hEl.textContent = pad(h);
-    if(mEl) mEl.textContent = pad(m);
-    if(sEl) sEl.textContent = pad(s);
-    // Barra de progreso — porcentaje restante
+    const d=Math.floor(diff/86400000);
+    const h=Math.floor((diff%86400000)/3600000);
+    const m=Math.floor((diff%3600000)/60000);
+    const s=Math.floor((diff%60000)/1000);
+    if(dEl)dEl.textContent=pad(d);
+    if(hEl)hEl.textContent=pad(h);
+    if(mEl)mEl.textContent=pad(m);
+    if(sEl)sEl.textContent=pad(s);
     if(bar){
-      const pct = Math.min(100, Math.max(0, (diff / totalDuration) * 100));
-      bar.style.width = pct + '%';
-      // Color según urgencia
-      if(pct < 15) bar.style.background = 'linear-gradient(90deg,#ff0000,#ff4500)';
-      else if(pct < 40) bar.style.background = 'linear-gradient(90deg,#ff8c00,#ff4500)';
-      else bar.style.background = 'linear-gradient(90deg,#ffd700,#ff4500)';
+      const pct=Math.min(100,Math.max(0,(diff/totalDuration)*100));
+      bar.style.width=pct+'%';
+      if(pct<15)bar.style.background='linear-gradient(90deg,#ff0000,#ff4500)';
+      else if(pct<40)bar.style.background='linear-gradient(90deg,#ff8c00,#ff4500)';
+      else bar.style.background='linear-gradient(90deg,#ffd700,#ff4500)';
     }
-    // Animación pulso en segundos
-    if(sEl){ sEl.style.transform='scale(1.15)'; setTimeout(()=>{ if(sEl) sEl.style.transform='scale(1)'; sEl.style.transition='transform .2s'; },150); }
+    if(sEl){sEl.style.transition='transform .15s';sEl.style.transform='scale(1.2)';setTimeout(()=>{if(sEl)sEl.style.transform='scale(1)';},150);}
   }
   banner.style.display='block';
   tick();
-  _shopCountdownTimer = setInterval(tick, 1000);
+  _shopCountdownTimer=setInterval(tick,1000);
 }
 window.startShopCountdown = startShopCountdown;
 
