@@ -658,6 +658,24 @@ select.fi option{background:var(--bg3);color:var(--text);}
 @keyframes ringNeon   { from{box-shadow:0 0 0 3px #b400ff,0 0 14px rgba(180,0,255,.5);} to{box-shadow:0 0 0 4px #e040ff,0 0 28px rgba(224,64,255,.8);} }
 @keyframes ringGalaxy { 0%{box-shadow:0 0 0 3px #7b2fff,0 0 20px rgba(123,47,255,.5);}50%{box-shadow:0 0 0 4px #2f7fff,0 0 28px rgba(47,127,255,.6);}100%{box-shadow:0 0 0 3px #7b2fff,0 0 20px rgba(123,47,255,.5);} }
 @keyframes ringRainbow{ 0%{box-shadow:0 0 0 3px red,0 0 14px rgba(255,0,0,.5);}17%{box-shadow:0 0 0 3px orange;}34%{box-shadow:0 0 0 3px yellow;}50%{box-shadow:0 0 0 3px green,0 0 14px rgba(0,200,0,.5);}67%{box-shadow:0 0 0 3px blue;}84%{box-shadow:0 0 0 3px violet;}100%{box-shadow:0 0 0 3px red,0 0 14px rgba(255,0,0,.5);} }
+/* ── AVATAR FX (foto de perfil exclusivos verificados) ── */
+.avfx-niebla  .profile-av-big img,.avfx-niebla  .post-av img,.avfx-niebla  #upAv img  { filter:saturate(1.1) brightness(1.05); }
+.avfx-niebla  .profile-av-big::after,.avfx-niebla .post-av::after,.avfx-niebla #upAv::after { content:''; position:absolute; inset:0; border-radius:50%; background:radial-gradient(circle,transparent 40%,rgba(180,220,255,.55) 100%); animation:avfxNiebla 3s ease-in-out infinite alternate; pointer-events:none; }
+.avfx-remolino .profile-av-big img,.avfx-remolino .post-av img,.avfx-remolino #upAv img { animation:avfxRemolino 6s linear infinite; transform-origin:center; }
+.avfx-prisma  .profile-av-big img,.avfx-prisma  .post-av img,.avfx-prisma  #upAv img  { animation:avfxPrisma 4s linear infinite; }
+.avfx-sombra  .profile-av-big img,.avfx-sombra  .post-av img,.avfx-sombra  #upAv img  { filter:drop-shadow(0 0 8px #b400ff) drop-shadow(0 0 16px rgba(180,0,255,.5)); animation:avfxSombra 2s ease-in-out infinite alternate; }
+.avfx-oro     .profile-av-big img,.avfx-oro     .post-av img,.avfx-oro     #upAv img  { filter:sepia(.3) saturate(1.5) brightness(1.1) drop-shadow(0 0 10px gold); animation:avfxOro 2s ease-in-out infinite alternate; }
+.avfx-glitch  .profile-av-big img,.avfx-glitch  .post-av img,.avfx-glitch  #upAv img  { animation:avfxGlitch 1.8s steps(1) infinite; }
+.avfx-cristal .profile-av-big img,.avfx-cristal .post-av img,.avfx-cristal #upAv img  { filter:brightness(1.15) contrast(1.1) drop-shadow(0 0 6px rgba(0,220,255,.7)) drop-shadow(0 0 14px rgba(0,180,255,.4)); animation:avfxCristal 3s ease-in-out infinite alternate; }
+/* necesitamos position:relative en los wrappers para el pseudo-elemento */
+.avfx-niebla.profile-av-wrap,.avfx-niebla.post-av,.avfx-niebla #upAv { position:relative; overflow:visible !important; }
+@keyframes avfxNiebla   { from{opacity:.5;} to{opacity:1;} }
+@keyframes avfxRemolino { from{transform:rotate(0deg) scale(1);} to{transform:rotate(360deg) scale(1);} }
+@keyframes avfxPrisma   { 0%{filter:hue-rotate(0deg) saturate(1.5);} 50%{filter:hue-rotate(180deg) saturate(2);} 100%{filter:hue-rotate(360deg) saturate(1.5);} }
+@keyframes avfxSombra   { from{filter:drop-shadow(0 0 6px #b400ff);} to{filter:drop-shadow(0 0 18px #e040ff) drop-shadow(0 0 6px rgba(180,0,255,.8));} }
+@keyframes avfxOro      { from{filter:sepia(.2) drop-shadow(0 0 6px gold);} to{filter:sepia(.4) saturate(1.8) drop-shadow(0 0 18px gold) brightness(1.15);} }
+@keyframes avfxGlitch   { 0%,90%,100%{filter:none;transform:translate(0);} 92%{filter:hue-rotate(90deg);transform:translate(-2px,1px);} 94%{filter:saturate(3) hue-rotate(200deg);transform:translate(2px,-1px);} 96%{filter:none;transform:translate(0);} }
+@keyframes avfxCristal  { from{filter:brightness(1.1) drop-shadow(0 0 4px rgba(0,220,255,.5));} to{filter:brightness(1.2) drop-shadow(0 0 16px rgba(0,200,255,.9)) drop-shadow(0 0 4px rgba(100,240,255,.6));} }
 /* partículas tienda */
 @keyframes shopParticleFall { 0%{transform:translateY(0) rotate(0deg);opacity:.9;} 100%{transform:translateY(110vh) rotate(720deg);opacity:0;} }
 .profile-layout{display:grid;grid-template-columns:360px 1fr;gap:16px;padding:16px;max-width:1080px;margin:0 auto;}
@@ -1228,6 +1246,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
             <button class="shop-cat-btn" onclick="filterShopCat(this,'postcolor')" style="background:linear-gradient(135deg,rgba(0,150,255,.15),rgba(150,0,255,.1));border-color:rgba(100,100,255,.3);">🎨 Colores de Post</button>
           </div>
     <button class="shop-cat-btn" onclick="filterShopCat(this,'banner')" style="background:linear-gradient(135deg,rgba(255,80,0,.15),rgba(255,200,0,.1));border-color:rgba(255,120,0,.3);">🖼 Banners</button>
+    <button class="shop-cat-btn" onclick="filterShopCat(this,'avfx')" style="background:linear-gradient(135deg,rgba(0,220,255,.15),rgba(150,0,255,.1));border-color:rgba(0,180,255,.4);">✨ Foto FX <span style="font-size:.55rem;background:linear-gradient(135deg,#00c6ff,#7b2fff);color:#fff;padding:1px 5px;border-radius:100px;margin-left:3px;font-weight:900;">✅ VIP</span></button>
 
           <!-- Grid de ítems -->
           <div id="shopItemsGridProfile" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;"></div>
@@ -2858,6 +2877,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
     <button class="shop-cat-btn" onclick="filterShopCat(this,'postcolor')" style="background:linear-gradient(135deg,rgba(0,150,255,.15),rgba(150,0,255,.1));border-color:rgba(100,100,255,.3);">🎨 Colores de Post</button>
   </div>
     <button class="shop-cat-btn" onclick="filterShopCat(this,'banner')" style="background:linear-gradient(135deg,rgba(255,80,0,.15),rgba(255,200,0,.1));border-color:rgba(255,120,0,.3);">🖼 Banners</button>
+    <button class="shop-cat-btn" onclick="filterShopCat(this,'avfx')" style="background:linear-gradient(135deg,rgba(0,220,255,.15),rgba(150,0,255,.1));border-color:rgba(0,180,255,.4);">✨ Foto FX <span style="font-size:.55rem;background:linear-gradient(135deg,#00c6ff,#7b2fff);color:#fff;padding:1px 5px;border-radius:100px;margin-left:3px;font-weight:900;">✅ VIP</span></button>
   <!-- Grid de ítems -->
   <div id="shopItemsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;"></div>
 </div>
@@ -7616,6 +7636,14 @@ const SHOP_ITEMS = [
   { id:'post_rosa',     cat:'postcolor', name:'Rosa Oscuro',       preview:'🌸', emoji:'🌸', price:550,  desc:'Fondo rosa profundo',                     theme:'post-theme-rosa' },
   { id:'post_carbon',   cat:'postcolor', name:'Carbono',           preview:'⚫', emoji:'⚫', price:400,  desc:'Gris oscuro premium minimalista',         theme:'post-theme-carbon' },
   { id:'post_sunset',   cat:'postcolor', name:'Atardecer',         preview:'🌅', emoji:'🌅', price:700,  desc:'Fondo sunset naranja cálido',             theme:'post-theme-sunset' },
+  // ── EFECTOS FOTO DE PERFIL (solo verificados) ──
+  { id:'avfx_niebla',   cat:'avfx', name:'Niebla Mágica',      preview:'🌫️', emoji:'🌫️', price:1800, desc:'Niebla etérea que envuelve tu foto de perfil',        effect:'avfx-niebla',   soloVerificado:true, exclusive:true },
+  { id:'avfx_remolino', cat:'avfx', name:'Remolino Infinito',   preview:'🌀', emoji:'🌀', price:2000, desc:'Tu foto gira suavemente en un remolino hipnótico',     effect:'avfx-remolino', soloVerificado:true, exclusive:true },
+  { id:'avfx_prisma',   cat:'avfx', name:'Prisma Arcoíris',     preview:'🌈', emoji:'🌈', price:1600, desc:'Todos los colores del arcoíris pasan por tu foto',     effect:'avfx-prisma',   soloVerificado:true, exclusive:true },
+  { id:'avfx_sombra',   cat:'avfx', name:'Aura Oscura',         preview:'💜', emoji:'💜', price:1500, desc:'Aura violeta pulsante de poder oscuro',                effect:'avfx-sombra',   soloVerificado:true, exclusive:true },
+  { id:'avfx_oro',      cat:'avfx', name:'Toque Dorado',        preview:'✨', emoji:'✨', price:2200, desc:'Tu foto brilla con destellos de oro puro',             effect:'avfx-oro',      soloVerificado:true, exclusive:true },
+  { id:'avfx_glitch',   cat:'avfx', name:'Glitch Cibernético',  preview:'⚡', emoji:'⚡', price:1700, desc:'Efecto glitch digital que distorsiona tu foto',        effect:'avfx-glitch',   soloVerificado:true, exclusive:true },
+  { id:'avfx_cristal',  cat:'avfx', name:'Cristal de Agua',     preview:'💎', emoji:'💎', price:1900, desc:'Brillo de cristal de agua sobre tu foto de perfil',   effect:'avfx-cristal',  soloVerificado:true, exclusive:true },
   // ── BANNERS ANIMADOS DE PORTADA ──
   { id:'banner_fuego',  cat:'banner', name:'Fuego Vivo',         preview:'🔥', emoji:'🔥', price:1200, desc:'Llamas y brasas animadas en tu portada',    exclusive:false, bannerFn:'bannerFuego'  },
   { id:'banner_flores', cat:'banner', name:'Pétalo Oscuro',      preview:'🌸', emoji:'🌸', price:1000, desc:'Pétalos violetas flotando en la oscuridad', exclusive:false, bannerFn:'bannerFlores' },
@@ -7924,9 +7952,13 @@ function applyShopEffects(){
   const avWrap = document.querySelector('.profile-av-wrap');
   if(avWrap){
     avWrap.classList.remove('ring-gold','ring-fire','ring-ice','ring-fish','ring-legend',
-      'ring-neon','ring-galaxy','ring-red','ring-rainbow','ring-platinum');
+      'ring-neon','ring-galaxy','ring-red','ring-rainbow','ring-platinum',
+      'avfx-niebla','avfx-remolino','avfx-prisma','avfx-sombra','avfx-oro','avfx-glitch','avfx-cristal');
     const marco = _equippedItems.marco;
     if(marco){ const it=SHOP_ITEMS.find(i=>i.id===marco); if(it?.effect) avWrap.classList.add(it.effect); }
+    // ── AVFX en foto de perfil ──
+    const avfx = _equippedItems.avfx;
+    if(avfx){ const it=SHOP_ITEMS.find(i=>i.id===avfx); if(it?.effect) avWrap.classList.add(it.effect); }
   }
 
   // ── TÍTULO bajo el nombre ──
@@ -11321,10 +11353,15 @@ async function _loadUserProfilePage(uid, nick){
     const upAvWrapEl = document.getElementById('upAvWrap');
     if(upAvWrapEl){
       upAvWrapEl.classList.remove('ring-gold','ring-fire','ring-ice','ring-fish','ring-legend',
-        'ring-neon','ring-galaxy','ring-red','ring-rainbow','ring-platinum');
+        'ring-neon','ring-galaxy','ring-red','ring-rainbow','ring-platinum',
+        'avfx-niebla','avfx-remolino','avfx-prisma','avfx-sombra','avfx-oro','avfx-glitch','avfx-cristal');
       if(viewedEquipped.marco){
         const mItem = SHOP_ITEMS.find(i=>i.id===viewedEquipped.marco);
         if(mItem?.effect) upAvWrapEl.classList.add(mItem.effect);
+      }
+      if(viewedEquipped.avfx){
+        const aItem = SHOP_ITEMS.find(i=>i.id===viewedEquipped.avfx);
+        if(aItem?.effect) upAvWrapEl.classList.add(aItem.effect);
       }
     }
 
