@@ -9186,28 +9186,137 @@ function igRenderComments(comments){
     el.innerHTML='<div style="text-align:center;padding:28px;color:#8b949e;font-size:.82rem;">Sin comentarios. ¡Sé el primero!</div>';
     return;
   }
-  el.innerHTML = comments.map(c=>{
-    const av = `<img src="${c.av||getDefaultAv(c.gender||'')}" style="width:100%;height:100%;object-fit:cover;">`;
-    const isAuthor = _galPostId && _posts && _posts.find(p=>p.id===_galPostId)?.userId === c.userId;
-    return `<div style="display:flex;gap:8px;align-items:flex-start;">
-      <div style="width:36px;height:36px;border-radius:50%;overflow:hidden;background:#21262d;flex-shrink:0;">${av}</div>
+  const cu = window.CU;
+  const post = _galPostId ? (_posts||[]).find(p=>p.id===_galPostId) : null;
+  const RXN = ['👍','❤️','😂','😮','😢','🔥'];
+
+  function buildIgCmt(c, ci){
+    const av = `<img src="${c.av||getDefaultAv(c.gender||'')}" style="width:100%;height:100%;object-fit:cover;" onerror="if(!this.dataset.e){this.dataset.e=1;this.src='hombre.png';}">`;
+    const isAuthor = post && post.userId === c.userId;
+    const isMine   = cu && c.userId === cu.id;
+    const isOwner  = cu && post && post.userId === cu.id;
+    const canEdit  = isMine;
+    const canDel   = isMine || isOwner;
+    const myRxn    = cu ? ((c.userReactions||{})[cu.id]||'') : '';
+    const rMap     = c.reactions||{};
+    const rTotal   = Object.values(rMap).reduce((a,b)=>a+b,0);
+    const rTop     = Object.entries(rMap).filter(e=>e[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,2).map(e=>e[0]).join('');
+    const nick     = c.nick||'?';
+    const safeN    = nick.replace(/'/g,"\\'");
+    const uid      = c.userId||'';
+    const rxnBtns  = RXN.map(em=>
+      `<button onclick="igReactCmt(${ci},'${em}')"
+        style="background:none;border:none;font-size:1.2rem;cursor:pointer;padding:3px;border-radius:50%;transition:transform .12s;"
+        onmouseover="this.style.transform='scale(1.4) translateY(-4px)'"
+        onmouseout="this.style.transform='scale(1)'">${em}</button>`
+    ).join('');
+    const menuId = '_igCmtMenu_'+ci;
+
+    return `<div id="_igCmt_${ci}" style="display:flex;gap:8px;align-items:flex-start;">
+      <div style="width:36px;height:36px;border-radius:50%;overflow:hidden;background:#21262d;flex-shrink:0;cursor:pointer;" onclick="openUserProfile('${uid}','${safeN}')">${av}</div>
       <div style="flex:1;min-width:0;">
-        <div style="background:#0d1117;border-radius:18px;padding:8px 12px;display:inline-block;max-width:100%;">
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
-            <span style="font-weight:700;font-size:.82rem;color:#e6edf3;cursor:pointer;" onclick="openUserProfile('${c.userId||''}','${esc(c.nick||'')}')">${esc(c.nick||'')}</span>
-            ${isAuthor?'<span style="font-size:.65rem;color:#1877f2;font-weight:700;background:#e7f3ff;border-radius:4px;padding:1px 5px;">Autor</span>':''}
+        <div style="position:relative;display:inline-block;max-width:calc(100% - 32px);">
+          <div style="background:#0d1117;border-radius:18px;padding:8px 12px;display:inline-block;max-width:100%;">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+              <span style="font-weight:700;font-size:.82rem;color:#e6edf3;cursor:pointer;" onclick="openUserProfile('${uid}','${safeN}')">${esc(nick)}</span>
+              ${isAuthor?'<span style="font-size:.65rem;color:var(--accent);font-weight:700;background:rgba(0,198,255,.12);border-radius:4px;padding:1px 5px;">Autor</span>':''}
+            </div>
+            <span style="font-size:.88rem;color:#e6edf3;line-height:1.4;">${esc(c.text||'')}${c.edited?' <span style="font-size:.63rem;color:#8b949e;">(editado)</span>':''}</span>
           </div>
-          <span style="font-size:.88rem;color:#e6edf3;line-height:1.4;">${esc(c.text||'')}</span>
+          ${(canEdit||canDel)?`
+          <div style="position:absolute;top:-4px;right:-28px;">
+            <button onclick="document.getElementById('${menuId}').style.display=document.getElementById('${menuId}').style.display==='block'?'none':'block'"
+              style="background:rgba(255,255,255,.08);border:none;color:#8b949e;width:24px;height:24px;border-radius:50%;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">⋯</button>
+            <div id="${menuId}" style="display:none;position:absolute;right:0;top:28px;background:#161b22;border:1px solid #30363d;border-radius:8px;min-width:130px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.3);overflow:hidden;">
+              ${canEdit?`<button onclick="document.getElementById('${menuId}').style.display='none';igEditCmt(${ci})"
+                style="display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;color:#e6edf3;padding:9px 12px;cursor:pointer;font-size:.82rem;font-family:'Exo 2',sans-serif;"
+                onmouseover="this.style.background='#21262d'" onmouseout="this.style.background='none'">✏️ Editar</button>`:''}
+              ${canDel?`<button onclick="document.getElementById('${menuId}').style.display='none';igDelCmt(${ci})"
+                style="display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;color:#f55;padding:9px 12px;cursor:pointer;font-size:.82rem;font-family:'Exo 2',sans-serif;"
+                onmouseover="this.style.background='#21262d'" onmouseout="this.style.background='none'">🗑 Eliminar</button>`:''}
+            </div>
+          </div>`:''}
         </div>
-        <div class="_ig_cmt_meta" style="display:flex;align-items:center;gap:10px;padding:2px 4px 0;">
+        ${rTotal>0?`<div style="display:inline-flex;align-items:center;gap:2px;background:#0d1117;border:1px solid #30363d;border-radius:100px;padding:2px 6px;font-size:.72rem;margin-top:2px;">${rTop} <span style="color:#8b949e;">${rTotal}</span></div>`:''}
+        <div class="_ig_cmt_meta" style="display:flex;align-items:center;gap:8px;padding:2px 4px 0;flex-wrap:wrap;">
           <span style="font-size:.72rem;color:#8b949e;">${c.time?fmtT(c.time):''}</span>
-          <button>Me gusta</button>
-          <button>Responder</button>
+          <div style="position:relative;">
+            <button onclick="igQuickRxnCmt(${ci})"
+              style="font-size:.75rem;font-weight:700;color:${myRxn?'var(--accent)':'#8b949e'};background:none;border:none;cursor:pointer;padding:0;"
+              onmouseenter="document.getElementById('_igCmtRxnPop_${ci}').style.display='flex'"
+              onmouseleave="setTimeout(()=>{const p=document.getElementById('_igCmtRxnPop_${ci}');if(p&&!p.matches(':hover'))p.style.display='none'},300)">
+              ${myRxn?myRxn+' Me gusta':'Me gusta'}
+            </button>
+            <div id="_igCmtRxnPop_${ci}" style="display:none;position:absolute;bottom:calc(100% + 4px);left:0;background:#161b22;border:1px solid #30363d;border-radius:100px;padding:5px 7px;align-items:center;gap:2px;box-shadow:0 4px 16px rgba(0,0,0,.3);white-space:nowrap;z-index:9999;"
+              onmouseenter="this.style.display='flex'" onmouseleave="this.style.display='none'">
+              ${rxnBtns}
+            </div>
+          </div>
+          <button onclick="igReplyCmt('${safeN}')" style="font-size:.75rem;font-weight:700;color:#8b949e;background:none;border:none;cursor:pointer;padding:0;" onmouseover="this.style.color='#e6edf3'" onmouseout="this.style.color='#8b949e'">Responder</button>
         </div>
       </div>
     </div>`;
-  }).join('');
+  }
+
+  el.innerHTML = comments.map((c,ci)=>buildIgCmt(c,ci)).join('');
   el.scrollTop = el.scrollHeight;
+}
+
+async function igReactCmt(ci, em){
+  if(!window.CU){ toast('Iniciá sesión','err'); return; }
+  if(!_galPostId) return;
+  let p = (_posts||[]).find(p=>p.id===_galPostId);
+  if(!p){ try{ const s=await getDoc(doc(db,'posts',_galPostId)); if(s.exists()){p={id:s.id,...s.data()};_posts.push(p);} }catch(e){ return; } }
+  const newCmts = [...(p.comments||[])];
+  const c = {...(newCmts[ci]||{})};
+  const uRxns = {...(c.userReactions||{})};
+  const rCounts = {...(c.reactions||{})};
+  const prev = uRxns[window.CU.id];
+  if(prev){ rCounts[prev]=Math.max(0,(rCounts[prev]||1)-1); }
+  if(prev===em){ delete uRxns[window.CU.id]; } else { uRxns[window.CU.id]=em; rCounts[em]=(rCounts[em]||0)+1; }
+  c.userReactions=uRxns; c.reactions=rCounts;
+  newCmts[ci]=c; p.comments=newCmts;
+  await updateDoc(doc(db,'posts',_galPostId),{comments:newCmts});
+  // igLoadPostData onSnapshot will re-render automatically
+}
+
+function igQuickRxnCmt(ci){
+  if(!window.CU){ toast('Iniciá sesión','err'); return; }
+  const p = (_posts||[]).find(p=>p.id===_galPostId); if(!p) return;
+  const c = (p.comments||[])[ci]; if(!c) return;
+  const prev = window.CU ? ((c.userReactions||{})[window.CU.id]||'') : '';
+  igReactCmt(ci, prev||'👍');
+}
+
+async function igEditCmt(ci){
+  if(!window.CU) return;
+  const p = (_posts||[]).find(p=>p.id===_galPostId); if(!p) return;
+  const c = (p.comments||[])[ci]; if(!c) return;
+  if(c.userId !== window.CU.id){ toast('Solo podés editar tus comentarios','err'); return; }
+  const newText = prompt('Editar comentario:', c.text||'');
+  if(newText === null) return;
+  if(!newText.trim()){ toast('El comentario no puede estar vacío','err'); return; }
+  const newCmts = [...(p.comments||[])];
+  newCmts[ci] = {...c, text: newText.trim(), edited: true};
+  p.comments = newCmts;
+  await updateDoc(doc(db,'posts',_galPostId),{comments:newCmts});
+}
+
+async function igDelCmt(ci){
+  if(!window.CU) return;
+  const p = (_posts||[]).find(p=>p.id===_galPostId); if(!p) return;
+  const c = (p.comments||[])[ci]; if(!c) return;
+  const isOwner = p.userId === window.CU.id;
+  if(c.userId !== window.CU.id && !isOwner){ toast('Sin permiso','err'); return; }
+  if(!confirm('¿Eliminar este comentario?')) return;
+  const newCmts = (p.comments||[]).filter((_,i)=>i!==ci);
+  p.comments = newCmts;
+  await updateDoc(doc(db,'posts',_galPostId),{comments:newCmts});
+}
+
+function igReplyCmt(nick){
+  const inp = document.getElementById('_igCmtInp');
+  if(inp){ inp.value = '@'+nick+' '; inp.focus(); }
 }
 async function igReact(emoji){
   if(!_galPostId){ toast('Sin post asociado','inf'); return; }
@@ -9245,7 +9354,8 @@ function igDownload(){
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 window.igNav=igNav; window.igNavTo=igNavTo; window.igReact=igReact;
-
+window.igReactCmt=igReactCmt; window.igQuickRxnCmt=igQuickRxnCmt;
+window.igEditCmt=igEditCmt; window.igDelCmt=igDelCmt; window.igReplyCmt=igReplyCmt;
 window.igSubmitComment=igSubmitComment; window.igShare=igShare; window.igDownload=igDownload;
 window.openImgLightbox=openImgLightbox;
 window.openImgLightboxById=openImgLightboxById;
