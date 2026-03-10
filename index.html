@@ -6335,7 +6335,7 @@ function postHTML(p){
     ${isVerif?`<div class="verif-post-tag">✅ VERIFICADO</div>`:''}
     <div class="post-header" style="position:relative;">
       <div class="${isVerif?'post-av-wrap':''} ${_postMarcoClass}" style="display:inline-block;border-radius:50%;">
-        <div class="post-av" style="cursor:pointer;" onclick="openUserProfile('${p.userId}','${esc(p.userNick)}')">${`<img src="${p.userAv||getDefaultAv(p.userGender||'')}">` }</div>
+        <div class="post-av" style="cursor:pointer;" onclick="openUserProfile('${p.userId}','${esc(p.userNick)}')"><img src="${p.userAv||getDefaultAv(p.userGender||'')}" onerror="if(!this.dataset.e){this.dataset.e=1;this.src='hombre.png';}" style="width:100%;height:100%;object-fit:cover;"></div>
       </div>
       <div class="post-meta" style="cursor:pointer" onclick="openUserProfile('${p.userId}','${esc(p.userNick)}')">
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
@@ -8893,6 +8893,21 @@ function userAv(av, gender){
 window.getDefaultAv = getDefaultAv;
 window.userAv = userAv;
 
+// ── Handler global: si una imagen de avatar falla, mostrar avatar por defecto ──
+document.addEventListener('error', function(e){
+  const img = e.target;
+  if(img.tagName !== 'IMG') return;
+  // Si ya es el fallback, no volver a intentar (evitar loop)
+  if(img.dataset.fbErr) return;
+  img.dataset.fbErr = '1';
+  // Detectar si es una imagen de avatar (dentro de sl-av, post-av, profile-av-big, upAv, comment-item, navAv, etc.)
+  const isAv = img.closest('.sl-av,.post-av,.profile-av-big,#upAv,#profAvBig,.comment-item,#navAv,[class*="-av"]');
+  if(isAv){
+    img.src = 'hombre.png';
+    img.style.opacity = '0.5';
+  }
+}, true);
+
 // ===== USER INFO CACHE (para comentarios sin nick/av) =====
 window._userInfoCache = {};
 window._userInfoPending = {};
@@ -9536,7 +9551,7 @@ async function submitSoporte(){
   try {
     // Guardar en colección 'soporte' en Firestore
     await addDoc(collection(db,'soporte'),{
-      uid: window.CU.uid,
+      uid: window.CU.id,
       nick: window.CU.nick||'',
       tipo: tipoLabel,
       desc,
@@ -9553,7 +9568,7 @@ async function submitSoporte(){
         await addDoc(collection(db,'notifs'), {
           to: adminId,
           type: 'soporte',
-          from: window.CU.uid,
+          from: window.CU.id,
           fromNick: window.CU.nick||'',
           text: '🆘 Nuevo reporte de soporte de @'+(window.CU.nick||'usuario')+': '+tipoLabel,
           sub: desc.length>120 ? desc.slice(0,120)+'...' : desc,
@@ -9564,11 +9579,11 @@ async function submitSoporte(){
       // También buscar por rol admin
       const adminsSnap = await getDocs(query(collection(db,'users'), where('role','==','admin')));
       adminsSnap.docs.forEach(async adminDoc => {
-        if(adminDoc.id !== window.CU.uid){
+        if(adminDoc.id !== window.CU.id){
           await addDoc(collection(db,'notifs'),{
             to: adminDoc.id,
             type: 'soporte',
-            from: window.CU.uid,
+            from: window.CU.id,
             fromNick: window.CU.nick||'',
             text: '🆘 Soporte: @'+(window.CU.nick||'usuario')+' · '+tipoLabel,
             sub: desc.length>120 ? desc.slice(0,120)+'...' : desc,
