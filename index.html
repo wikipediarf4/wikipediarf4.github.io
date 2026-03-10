@@ -3653,10 +3653,6 @@ const auth = getAuth(app);
 (async()=>{ try{ await setPersistence(auth, browserLocalPersistence); }catch(e){} })();
 const db = getFirestore(app);
 
-// Cloudinary config
-const CLOUDINARY_CLOUD = 'da0n5tg3g';
-const CLOUDINARY_PRESET = 'charlasrf4';
-
 // ===== STATE =====
 window.CU = null;
 let _posts = [];
