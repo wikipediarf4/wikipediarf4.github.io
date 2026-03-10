@@ -8995,7 +8995,7 @@ async function _enrichComments(pid, comments, rerenderFn){
 
 
 function openImgLightbox(src, allImgs, postId){
-  _galImages = Array.isArray(allImgs) && allImgs.length ? allImgs : [src];
+  _galImages = Array.isArray(allImgs) && allImgs.length ? allImgs : (src ? [src] : []);
   _galIdx = _galImages.indexOf(src);
   if(_galIdx < 0) _galIdx = 0;
   _galPostId = postId || null;
@@ -9004,29 +9004,22 @@ function openImgLightbox(src, allImgs, postId){
   if(old){ old.remove(); if(_galUnsub){_galUnsub();_galUnsub=null;} }
 
   const post = _galPostId ? (_posts||[]).find(p=>p.id===_galPostId) : null;
+  const cu = window.CU;
+  const avHtml = cu ? `<img src="${cu.av||getDefaultAv(cu.gender||'')}" style="width:100%;height:100%;object-fit:cover;" onerror="if(!this.dataset.e){this.dataset.e=1;this.src='hombre.png';}">` : '';
+  const postAvHtml = post ? `<img src="${post.userAv||getDefaultAv('')}" style="width:100%;height:100%;object-fit:cover;" onerror="if(!this.dataset.e){this.dataset.e=1;this.src='hombre.png';}">` : '';
+  const RXNS = [{e:'👍',l:'Me gusta'},{e:'❤️',l:'Me encanta'},{e:'😂',l:'Me divierte'},{e:'😮',l:'Me asombra'},{e:'😢',l:'Me entristece'},{e:'😡',l:'Me enoja'},{e:'🎣',l:'Pescador'}];
+
   const modal = document.createElement('div');
   modal.id = '_igModal';
-  // Full black background like Facebook
   modal.style.cssText = 'position:fixed;inset:0;z-index:99000;background:#000;display:flex;flex-direction:column;animation:_igFadeIn .15s ease;';
-
-  const avHtml = window.CU ? `<img src="${window.CU.av||getDefaultAv(window.CU.gender||'')}" style="width:100%;height:100%;object-fit:cover;">` : '';
-  const postAvHtml = post ? `<img src="${post.userAv||getDefaultAv('')}" style="width:100%;height:100%;object-fit:cover;">` : '';
-
-  // Facebook reaction buttons - simple row
-  const FB_RXNS = [{e:'👍',l:'Me gusta'},{e:'❤️',l:'Me encanta'},{e:'😂',l:'Me divierte'},{e:'😮',l:'Me asombra'},{e:'😢',l:'Me entristece'},{e:'😡',l:'Me enoja'},{e:'🎣',l:'Pescador'}];
-  const rxnBtns = FB_RXNS.map(r=>`<button class="_igRxnBtn" data-e="${r.e}" onclick="igReact('${r.e}')" title="${r.l}"
-    style="background:none;border:none;border-radius:6px;padding:6px 8px;cursor:pointer;font-size:1.1rem;transition:background .15s;display:flex;align-items:center;gap:4px;">
-    ${r.e}<span id="_igRxnCnt_${r.e.codePointAt(0)}" style="font-size:.72rem;color:#e4e6eb;font-weight:700;"></span>
-  </button>`).join('');
 
   modal.innerHTML = `
   <style>
     @keyframes _igFadeIn{from{opacity:0}to{opacity:1}}
-    ._igRxnBtn:hover{background:rgba(255,255,255,.15)!important;}
     #_igComments::-webkit-scrollbar{width:5px;}
     #_igComments::-webkit-scrollbar-thumb{background:#444;border-radius:4px;}
-    ._ig_cmt_meta button{background:none;border:none;font-size:.72rem;font-weight:700;color:#b0b3b8;cursor:pointer;padding:0;}
-    ._ig_cmt_meta button:hover{text-decoration:underline;color:#e4e6eb;}
+    .ig-act-btn{flex:1;background:none;border:none;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 4px;border-radius:8px;cursor:pointer;font-size:.88rem;font-weight:700;color:#8b949e;transition:background .15s;}
+    .ig-act-btn:hover{background:#1c2128;}
     @media(max-width:768px){
       #_igMainRow{flex-direction:column!important;}
       #_igSidebar{width:100%!important;max-height:45vh!important;border-left:none!important;border-top:1px solid #3e4042!important;}
@@ -9034,8 +9027,8 @@ function openImgLightbox(src, allImgs, postId){
     }
   </style>
 
-  <!-- TOP BAR: X left, author center, icons right -->
-  <div id="_igTopBar" style="display:flex;align-items:center;padding:8px 12px;flex-shrink:0;z-index:10;background:#242526;border-bottom:1px solid #3e4042;">
+  <!-- TOP BAR -->
+  <div style="display:flex;align-items:center;padding:8px 12px;flex-shrink:0;background:#242526;border-bottom:1px solid #3e4042;">
     <button onclick="document.getElementById('_igModal').remove();if(window._galUnsub){window._galUnsub();window._galUnsub=null;}"
       style="background:rgba(255,255,255,.12);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-right:12px;flex-shrink:0;">✕</button>
     ${post ? `
@@ -9043,64 +9036,61 @@ function openImgLightbox(src, allImgs, postId){
       <div style="width:40px;height:40px;border-radius:50%;overflow:hidden;background:#3e4042;flex-shrink:0;">${postAvHtml}</div>
       <div>
         <div style="font-weight:700;font-size:.92rem;color:#e4e6eb;">${esc(post.userNick||'')}</div>
-        <div style="font-size:.72rem;color:#b0b3b8;">${post.time?fmtT(post.time):''} · <span style="font-size:.75rem;">🌐</span></div>
+        <div style="font-size:.72rem;color:#b0b3b8;">${post.time?fmtT(post.time):''}</div>
       </div>
     </div>` : `<div style="flex:1;color:#e4e6eb;font-weight:700;">Foto</div>`}
     <div style="display:flex;gap:6px;margin-left:auto;">
-      ${_galPostId?`<button onclick="igDownload()" style="background:rgba(255,255,255,.12);border:none;color:#e4e6eb;width:36px;height:36px;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="Descargar">⬇️</button>`:''}
+      ${_galPostId?`<button onclick="igDownload()" title="Descargar" style="background:rgba(255,255,255,.12);border:none;color:#e4e6eb;width:36px;height:36px;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">⬇️</button>`:''}
     </div>
   </div>
 
-  <!-- MAIN ROW: image left, sidebar right -->
+  <!-- MAIN -->
   <div id="_igMainRow" style="display:flex;flex:1;min-height:0;">
 
-    <!-- IMAGE COLUMN -->
+    <!-- IMAGE -->
     <div id="_igImgCol" style="flex:1;min-width:0;background:#000;display:flex;align-items:center;justify-content:center;position:relative;">
-      <img id="_igImg" src="${_galImages[_galIdx]}" style="max-width:100%;max-height:100%;object-fit:contain;display:block;user-select:none;transition:opacity .12s ease;">
+      <img id="_igImg" src="${_galImages[_galIdx]||''}" style="max-width:100%;max-height:100%;object-fit:contain;display:block;user-select:none;transition:opacity .12s;">
       ${_galImages.length>1?`
-        <button onclick="igNav(-1)" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:none;color:#fff;width:40px;height:40px;border-radius:50%;font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.28)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">‹</button>
-        <button onclick="igNav(1)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:none;color:#fff;width:40px;height:40px;border-radius:50%;font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.28)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">›</button>
-        <div style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,.6);color:#fff;font-size:.78rem;font-weight:700;padding:3px 10px;border-radius:100px;">${_galIdx+1} / ${_galImages.length}</div>
-        <div id="_igDots" style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:5px;">
-          ${_galImages.map((_,i)=>`<div class="_igDot" onclick="igNavTo(${i})" style="width:7px;height:7px;border-radius:50%;background:${i===_galIdx?'#fff':'rgba(255,255,255,.35)'};cursor:pointer;transition:background .2s;"></div>`).join('')}
+        <button onclick="igNav(-1)" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:none;color:#fff;width:44px;height:44px;border-radius:50%;font-size:1.5rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">‹</button>
+        <button onclick="igNav(1)"  style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:none;color:#fff;width:44px;height:44px;border-radius:50%;font-size:1.5rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">›</button>
+        <div id="_igCounter" style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,.6);color:#fff;font-size:.78rem;font-weight:700;padding:3px 10px;border-radius:100px;">${_galIdx+1} / ${_galImages.length}</div>
+        <div style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:5px;" id="_igDots">
+          ${_galImages.map((_,i)=>`<div onclick="igNavTo(${i})" style="width:7px;height:7px;border-radius:50%;cursor:pointer;background:${i===_galIdx?'#fff':'rgba(255,255,255,.35)'};transition:background .2s;"></div>`).join('')}
         </div>
       `:''}
     </div>
 
-    <!-- SIDEBAR: white, Facebook style -->
-    <div id="_igSidebar" style="width:340px;flex-shrink:0;display:flex;flex-direction:column;background:#161b22;border-left:1px solid #ddd;max-height:100%;overflow:hidden;">
+    <!-- SIDEBAR -->
+    <div id="_igSidebar" style="width:340px;flex-shrink:0;display:flex;flex-direction:column;background:#161b22;border-left:1px solid #3e4042;max-height:100%;overflow:hidden;">
 
-      <!-- Reactions summary + action buttons -->
+      <!-- Reactions bar -->
       <div style="padding:10px 14px 0;flex-shrink:0;">
         <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid #30363d;">
           <div id="_igRxnSummary" style="display:flex;align-items:center;gap:4px;font-size:.82rem;color:#8b949e;"></div>
           <div id="_igCmtCount" style="font-size:.82rem;color:#8b949e;cursor:pointer;" onclick="document.getElementById('_igComments').scrollTop=99999"></div>
         </div>
-        <!-- Me gusta / Comentar / Compartir -->
-        <div style="display:flex;border-bottom:1px solid #30363d;padding:2px 0;">
-          <div style="position:relative;flex:1;" id="_igRxnWrap">
-            <button onclick="igReact('👍')" onmouseenter="document.getElementById('_igRxnPop').style.display='flex'" onmouseleave="setTimeout(()=>{if(!document.getElementById('_igRxnPop').matches(':hover'))document.getElementById('_igRxnPop').style.display='none'},300)"
-              style="width:100%;background:none;border:none;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 4px;border-radius:8px;cursor:pointer;font-size:.88rem;font-weight:700;color:#8b949e;transition:background .15s;"
-              onmouseover="this.style.background='#1c2128'" onmouseout="this.style.background='none'">
-              <span id="_igMyRxnIcon">👍</span> Me gusta
+        <!-- Action buttons -->
+        <div style="display:flex;border-bottom:1px solid #30363d;padding:2px 0;gap:2px;">
+          <!-- Me gusta con popup -->
+          <div style="position:relative;flex:1;">
+            <button class="ig-act-btn" id="_igMyRxnBtn" onclick="igReact('👍')"
+              onmouseenter="document.getElementById('_igRxnPop').style.display='flex'"
+              onmouseleave="setTimeout(()=>{const p=document.getElementById('_igRxnPop');if(p&&!p.matches(':hover'))p.style.display='none'},300)">
+              <span id="_igMyRxnIcon">👍</span> <span id="_igMyRxnLabel">Me gusta</span>
             </button>
-            <div id="_igRxnPop" style="display:none;position:absolute;bottom:calc(100% + 4px);left:0;background:#161b22;border:1px solid #30363d;border-radius:100px;padding:6px 8px;align-items:center;gap:2px;box-shadow:0 4px 16px rgba(0,0,0,.2);white-space:nowrap;z-index:999;"
+            <div id="_igRxnPop" style="display:none;position:absolute;bottom:calc(100% + 4px);left:0;background:#161b22;border:1px solid #30363d;border-radius:100px;padding:6px 8px;flex-direction:row;align-items:center;gap:2px;box-shadow:0 4px 20px rgba(0,0,0,.5);white-space:nowrap;z-index:999;"
               onmouseenter="this.style.display='flex'" onmouseleave="this.style.display='none'">
-              ${FB_RXNS.map(r=>`<button onclick="igReact('${r.e}');document.getElementById('_igRxnPop').style.display='none'" title="${r.l}"
+              ${RXNS.map(r=>`<button onclick="igReact('${r.e}');document.getElementById('_igRxnPop').style.display='none'" title="${r.l}"
                 style="background:none;border:none;font-size:1.5rem;cursor:pointer;padding:3px;border-radius:50%;transition:transform .12s;"
                 onmouseover="this.style.transform='scale(1.4) translateY(-4px)'" onmouseout="this.style.transform='scale(1)'">${r.e}</button>`).join('')}
             </div>
           </div>
-          <button onclick="document.getElementById('_igCmtInp').focus()"
-            style="flex:1;background:none;border:none;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 4px;border-radius:8px;cursor:pointer;font-size:.88rem;font-weight:700;color:#8b949e;transition:background .15s;"
-            onmouseover="this.style.background='#1c2128'" onmouseout="this.style.background='none'">💬 Comentar</button>
-          ${_galPostId?`<button onclick="igShare()"
-            style="flex:1;background:none;border:none;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 4px;border-radius:8px;cursor:pointer;font-size:.88rem;font-weight:700;color:#8b949e;transition:background .15s;"
-            onmouseover="this.style.background='#1c2128'" onmouseout="this.style.background='none'">↗ Compartir</button>`:''}
+          <button class="ig-act-btn" onclick="document.getElementById('_igCmtInp').focus()">💬 Comentar</button>
+          ${_galPostId?`<button class="ig-act-btn" onclick="igShare()">↗ Compartir</button>`:''}
         </div>
       </div>
 
-      <!-- Comments list -->
+      <!-- Comments -->
       <div id="_igComments" style="flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;">
         <div style="text-align:center;padding:20px;color:#8b949e;font-size:.82rem;">Cargando...</div>
       </div>
@@ -9109,35 +9099,40 @@ function openImgLightbox(src, allImgs, postId){
       <div style="padding:8px 12px 10px;display:flex;gap:8px;align-items:center;flex-shrink:0;border-top:1px solid #30363d;">
         <div style="width:36px;height:36px;border-radius:50%;overflow:hidden;background:#21262d;flex-shrink:0;">${avHtml}</div>
         <div style="flex:1;display:flex;align-items:center;background:#0d1117;border-radius:20px;">
-          <input id="_igCmtInp" placeholder="Escribe un comentario..." style="flex:1;background:transparent;border:none;padding:9px 12px;color:#e6edf3;font-size:.88rem;font-family:'Exo 2',sans-serif;outline:none;" onkeypress="if(event.key==='Enter'){event.preventDefault();igSubmitComment();}">
-          <button onclick="igSubmitComment()" style="background:none;border:none;color:#1877f2;font-size:1rem;cursor:pointer;padding:4px 10px;opacity:.5;transition:opacity .15s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.5'">➤</button>
+          <input id="_igCmtInp" placeholder="Escribe un comentario..."
+            style="flex:1;background:transparent;border:none;padding:9px 12px;color:#e6edf3;font-size:.88rem;font-family:'Exo 2',sans-serif;outline:none;"
+            onkeypress="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();igSubmitComment();}">
+          <button onclick="igSubmitComment()" style="background:none;border:none;color:#1877f2;font-size:1rem;cursor:pointer;padding:4px 10px;opacity:.6;transition:opacity .15s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.6'">➤</button>
         </div>
       </div>
     </div>
   </div>`;
 
-  modal.addEventListener('click', e => {
-    if(e.target === modal){ modal.remove(); if(_galUnsub){_galUnsub();_galUnsub=null;} }
-  });
-  const _kh = e => {
+  // Close on backdrop click
+  modal.addEventListener('click', e=>{ if(e.target===modal){ modal.remove(); if(_galUnsub){_galUnsub();_galUnsub=null;} } });
+  // Keyboard nav
+  const _kh = e=>{
     if(e.key==='Escape'){ modal.remove(); if(_galUnsub){_galUnsub();_galUnsub=null;} }
     if(e.key==='ArrowRight') igNav(1);
-    if(e.key==='ArrowLeft') igNav(-1);
+    if(e.key==='ArrowLeft')  igNav(-1);
   };
   document.addEventListener('keydown', _kh);
-  modal.addEventListener('remove', ()=>document.removeEventListener('keydown', _kh));
-  let _tsX = null;
-  modal.addEventListener('touchstart', e=>{ _tsX=e.touches[0].clientX; },{passive:true});
-  modal.addEventListener('touchend', e=>{
+  modal._kh = _kh;
+  // Touch swipe
+  let _tsX=null;
+  modal.addEventListener('touchstart',e=>{_tsX=e.touches[0].clientX;},{passive:true});
+  modal.addEventListener('touchend',e=>{
     if(_tsX===null) return;
-    const dx = e.changedTouches[0].clientX - _tsX;
+    const dx=e.changedTouches[0].clientX-_tsX;
     if(Math.abs(dx)>40) igNav(dx<0?1:-1);
     _tsX=null;
   });
 
   document.body.appendChild(modal);
-  if(_galPostId) igLoadPostData(_galPostId);
-  else {
+
+  if(_galPostId){
+    igLoadPostData(_galPostId, _galIdx);
+  } else {
     document.getElementById('_igComments').innerHTML='<div style="text-align:center;padding:28px;color:#8b949e;font-size:.82rem;">Sin comentarios</div>';
   }
 }
@@ -9150,53 +9145,68 @@ function igNavTo(i){
   _galIdx = i;
   const img = document.getElementById('_igImg');
   if(img){ img.style.opacity='0'; setTimeout(()=>{ img.src=_galImages[i]; img.style.opacity='1'; },110); }
-  document.querySelectorAll('._igDot').forEach((d,j)=>{ d.style.background = j===i?'#fff':'rgba(255,255,255,.35)'; });
+  document.querySelectorAll('#_igDots div').forEach((d,j)=>{ d.style.background=j===i?'#fff':'rgba(255,255,255,.35)'; });
   const counter = document.getElementById('_igCounter');
-  if(counter) counter.textContent = (i+1)+' / '+_galImages.length;
+  if(counter) counter.textContent=(i+1)+' / '+_galImages.length;
+  // Reload reactions/comments for this specific image index
+  if(_galPostId) igLoadPostData(_galPostId, i);
 }
-async function igLoadPostData(pid){
+
+// Load post data - reactions and comments scoped to image index
+async function igLoadPostData(pid, imgIdx){
   if(_galUnsub){ _galUnsub(); _galUnsub=null; }
   const pRef = doc(db,'posts',pid);
   _galUnsub = onSnapshot(pRef, snap=>{
     if(!snap.exists()) return;
     const p = {id:snap.id,...snap.data()};
-    igRenderComments(p.comments||[]);
-    igRenderReactions(p.reactions||{}, p.reactionCounts||{});
+    // Update local cache
+    const cached = (_posts||[]).find(x=>x.id===pid);
+    if(cached){ Object.assign(cached, p); } else { (_posts||[]).push(p); }
+    // Reactions: scoped per image if multiple images, else use post-level
+    const hasMultiple = _galImages.length > 1;
+    const rxnKey = hasMultiple ? `imgReactions_${imgIdx}` : null;
+    const rxns   = hasMultiple ? (p[`imgReactions_${imgIdx}`]||{}) : (p.reactions||{});
+    const counts = hasMultiple ? (p[`imgReactionCounts_${imgIdx}`]||{}) : (p.reactionCounts||{});
+    igRenderReactions(rxns, counts);
+    igRenderComments(p.comments||[], imgIdx);
   });
 }
+
 function igRenderReactions(reactions, counts){
-  const myRxn = window.CU ? (reactions[window.CU.id]||'') : '';
+  const cu = window.CU;
+  const myRxn = cu ? (reactions[cu.id]||'') : '';
   const total = Object.values(reactions).filter(Boolean).length;
-  // Update my reaction icon on the button
   const myIcon = document.getElementById('_igMyRxnIcon');
-  if(myIcon) myIcon.textContent = myRxn || '👍';
-  // Top reactions summary
+  const myLabel = document.getElementById('_igMyRxnLabel');
+  const myBtn = document.getElementById('_igMyRxnBtn');
+  if(myIcon) myIcon.textContent = myRxn||'👍';
+  if(myLabel) myLabel.textContent = myRxn ? 'Me gusta' : 'Me gusta';
+  if(myBtn) myBtn.style.color = myRxn ? 'var(--accent)' : '#8b949e';
   const topRxns = Object.entries(counts||{}).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([e])=>e).join('');
   const summary = document.getElementById('_igRxnSummary');
-  if(summary) summary.innerHTML = total>0
-    ? `<span style="font-size:1rem;">${topRxns}</span> <span>${total}</span>`
-    : '';
+  if(summary) summary.innerHTML = total>0 ? `<span style="font-size:1rem;">${topRxns}</span> <span>${total}</span>` : '';
 }
-function igRenderComments(comments){
+
+function igRenderComments(comments, imgIdx){
   const el = document.getElementById('_igComments');
   if(!el) return;
   const cmtCount = document.getElementById('_igCmtCount');
   if(cmtCount) cmtCount.textContent = comments.length>0 ? comments.length+' comentario'+(comments.length!==1?'s':'') : '';
   if(!comments.length){
-    el.innerHTML='<div style="text-align:center;padding:28px;color:#8b949e;font-size:.82rem;">Sin comentarios. ¡Sé el primero!</div>';
+    el.innerHTML='<div style="text-align:center;padding:28px;color:#8b949e;font-size:.82rem;">Sin comentarios. ¡Sé el primero! 🎣</div>';
     return;
   }
   const cu = window.CU;
   const post = _galPostId ? (_posts||[]).find(p=>p.id===_galPostId) : null;
   const RXN = ['👍','❤️','😂','😮','😢','🔥'];
 
-  function buildIgCmt(c, ci){
-    const av = `<img src="${c.av||getDefaultAv(c.gender||'')}" style="width:100%;height:100%;object-fit:cover;" onerror="if(!this.dataset.e){this.dataset.e=1;this.src='hombre.png';}">`;
-    const isAuthor = post && post.userId === c.userId;
-    const isMine   = cu && c.userId === cu.id;
-    const isOwner  = cu && post && post.userId === cu.id;
+  function buildRow(c, ci){
+    const avSrc = c.av||getDefaultAv(c.gender||'');
+    const isAuthor = post && post.userId===c.userId;
+    const isMine   = cu && c.userId===cu.id;
+    const isOwner  = cu && post && post.userId===cu.id;
     const canEdit  = isMine;
-    const canDel   = isMine || isOwner;
+    const canDel   = isMine||isOwner;
     const myRxn    = cu ? ((c.userReactions||{})[cu.id]||'') : '';
     const rMap     = c.reactions||{};
     const rTotal   = Object.values(rMap).reduce((a,b)=>a+b,0);
@@ -9204,101 +9214,127 @@ function igRenderComments(comments){
     const nick     = c.nick||'?';
     const safeN    = nick.replace(/'/g,"\\'");
     const uid      = c.userId||'';
+    const menuId   = '_igCmtMenu_'+ci;
+    const popId    = '_igCmtRxnPop_'+ci;
     const rxnBtns  = RXN.map(em=>
-      `<button onclick="igReactCmt(${ci},'${em}')"
+      `<button onclick="igReactCmt(${ci},'${em}')" title="${em}"
         style="background:none;border:none;font-size:1.2rem;cursor:pointer;padding:3px;border-radius:50%;transition:transform .12s;"
         onmouseover="this.style.transform='scale(1.4) translateY(-4px)'"
         onmouseout="this.style.transform='scale(1)'">${em}</button>`
     ).join('');
-    const menuId = '_igCmtMenu_'+ci;
 
     return `<div id="_igCmt_${ci}" style="display:flex;gap:8px;align-items:flex-start;">
-      <div style="width:36px;height:36px;border-radius:50%;overflow:hidden;background:#21262d;flex-shrink:0;cursor:pointer;" onclick="openUserProfile('${uid}','${safeN}')">${av}</div>
+      <div style="width:36px;height:36px;border-radius:50%;overflow:hidden;background:#21262d;flex-shrink:0;cursor:pointer;" onclick="openUserProfile('${uid}','${safeN}')">
+        <img src="${avSrc}" style="width:100%;height:100%;object-fit:cover;" onerror="if(!this.dataset.e){this.dataset.e=1;this.src='hombre.png';}">
+      </div>
       <div style="flex:1;min-width:0;">
-        <div style="position:relative;display:inline-block;max-width:calc(100% - 32px);">
-          <div style="background:#0d1117;border-radius:18px;padding:8px 12px;display:inline-block;max-width:100%;">
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+        <div style="position:relative;display:inline-block;max-width:calc(100% - 34px);">
+          <div style="background:#0d1117;border-radius:18px;padding:8px 12px;">
+            <div style="display:flex;align-items:center;gap:5px;margin-bottom:2px;flex-wrap:wrap;">
               <span style="font-weight:700;font-size:.82rem;color:#e6edf3;cursor:pointer;" onclick="openUserProfile('${uid}','${safeN}')">${esc(nick)}</span>
-              ${isAuthor?'<span style="font-size:.65rem;color:var(--accent);font-weight:700;background:rgba(0,198,255,.12);border-radius:4px;padding:1px 5px;">Autor</span>':''}
+              ${isAuthor?'<span style="font-size:.62rem;color:var(--accent);font-weight:700;background:rgba(0,198,255,.12);border-radius:4px;padding:1px 5px;">Autor</span>':''}
             </div>
-            <span style="font-size:.88rem;color:#e6edf3;line-height:1.4;">${esc(c.text||'')}${c.edited?' <span style="font-size:.63rem;color:#8b949e;">(editado)</span>':''}</span>
+            <span style="font-size:.88rem;color:#e6edf3;line-height:1.45;word-break:break-word;">${esc(c.text||'')}${c.edited?' <span style="font-size:.62rem;color:#8b949e;">(editado)</span>':''}</span>
           </div>
-          ${(canEdit||canDel)?`
-          <div style="position:absolute;top:-4px;right:-28px;">
-            <button onclick="document.getElementById('${menuId}').style.display=document.getElementById('${menuId}').style.display==='block'?'none':'block'"
+          ${(canEdit||canDel)?`<div style="position:absolute;top:-2px;right:-30px;">
+            <button onclick="const m=document.getElementById('${menuId}');m.style.display=m.style.display==='block'?'none':'block'"
               style="background:rgba(255,255,255,.08);border:none;color:#8b949e;width:24px;height:24px;border-radius:50%;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">⋯</button>
-            <div id="${menuId}" style="display:none;position:absolute;right:0;top:28px;background:#161b22;border:1px solid #30363d;border-radius:8px;min-width:130px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.3);overflow:hidden;">
+            <div id="${menuId}" style="display:none;position:absolute;right:0;top:28px;background:#161b22;border:1px solid #30363d;border-radius:8px;min-width:130px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.4);overflow:hidden;">
               ${canEdit?`<button onclick="document.getElementById('${menuId}').style.display='none';igEditCmt(${ci})"
-                style="display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;color:#e6edf3;padding:9px 12px;cursor:pointer;font-size:.82rem;font-family:'Exo 2',sans-serif;"
+                style="display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;color:#e6edf3;padding:9px 13px;cursor:pointer;font-size:.82rem;font-family:'Exo 2',sans-serif;"
                 onmouseover="this.style.background='#21262d'" onmouseout="this.style.background='none'">✏️ Editar</button>`:''}
               ${canDel?`<button onclick="document.getElementById('${menuId}').style.display='none';igDelCmt(${ci})"
-                style="display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;color:#f55;padding:9px 12px;cursor:pointer;font-size:.82rem;font-family:'Exo 2',sans-serif;"
+                style="display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;color:#f55;padding:9px 13px;cursor:pointer;font-size:.82rem;font-family:'Exo 2',sans-serif;"
                 onmouseover="this.style.background='#21262d'" onmouseout="this.style.background='none'">🗑 Eliminar</button>`:''}
             </div>
           </div>`:''}
         </div>
-        ${rTotal>0?`<div style="display:inline-flex;align-items:center;gap:2px;background:#0d1117;border:1px solid #30363d;border-radius:100px;padding:2px 6px;font-size:.72rem;margin-top:2px;">${rTop} <span style="color:#8b949e;">${rTotal}</span></div>`:''}
-        <div class="_ig_cmt_meta" style="display:flex;align-items:center;gap:8px;padding:2px 4px 0;flex-wrap:wrap;">
-          <span style="font-size:.72rem;color:#8b949e;">${c.time?fmtT(c.time):''}</span>
+        ${rTotal>0?`<div style="display:inline-flex;align-items:center;gap:2px;background:#0d1117;border:1px solid #30363d;border-radius:100px;padding:2px 6px;font-size:.7rem;margin-top:2px;">${rTop} <span style="color:#8b949e;">${rTotal}</span></div>`:''}
+        <div style="display:flex;align-items:center;gap:8px;padding:3px 4px 0;flex-wrap:wrap;">
+          <span style="font-size:.7rem;color:#8b949e;">${c.time?fmtT(c.time):''}</span>
           <div style="position:relative;">
             <button onclick="igQuickRxnCmt(${ci})"
-              style="font-size:.75rem;font-weight:700;color:${myRxn?'var(--accent)':'#8b949e'};background:none;border:none;cursor:pointer;padding:0;"
-              onmouseenter="document.getElementById('_igCmtRxnPop_${ci}').style.display='flex'"
-              onmouseleave="setTimeout(()=>{const p=document.getElementById('_igCmtRxnPop_${ci}');if(p&&!p.matches(':hover'))p.style.display='none'},300)">
-              ${myRxn?myRxn+' Me gusta':'Me gusta'}
+              style="font-size:.75rem;font-weight:700;color:${myRxn?'var(--accent)':'#8b949e'};background:none;border:none;cursor:pointer;padding:0;transition:color .15s;"
+              onmouseenter="document.getElementById('${popId}').style.display='flex'"
+              onmouseleave="setTimeout(()=>{const p=document.getElementById('${popId}');if(p&&!p.matches(':hover'))p.style.display='none'},280)">
+              ${myRxn?myRxn+' ':''}Me gusta
             </button>
-            <div id="_igCmtRxnPop_${ci}" style="display:none;position:absolute;bottom:calc(100% + 4px);left:0;background:#161b22;border:1px solid #30363d;border-radius:100px;padding:5px 7px;align-items:center;gap:2px;box-shadow:0 4px 16px rgba(0,0,0,.3);white-space:nowrap;z-index:9999;"
+            <div id="${popId}" style="display:none;position:absolute;bottom:calc(100%+4px);left:0;background:#161b22;border:1px solid #30363d;border-radius:100px;padding:5px 7px;flex-direction:row;align-items:center;gap:2px;box-shadow:0 4px 16px rgba(0,0,0,.4);white-space:nowrap;z-index:9999;"
               onmouseenter="this.style.display='flex'" onmouseleave="this.style.display='none'">
               ${rxnBtns}
             </div>
           </div>
-          <button onclick="igReplyCmt('${safeN}')" style="font-size:.75rem;font-weight:700;color:#8b949e;background:none;border:none;cursor:pointer;padding:0;" onmouseover="this.style.color='#e6edf3'" onmouseout="this.style.color='#8b949e'">Responder</button>
+          <button onclick="igReplyCmt('${safeN}')"
+            style="font-size:.75rem;font-weight:700;color:#8b949e;background:none;border:none;cursor:pointer;padding:0;transition:color .15s;"
+            onmouseover="this.style.color='#e6edf3'" onmouseout="this.style.color='#8b949e'">Responder</button>
         </div>
       </div>
     </div>`;
   }
 
-  el.innerHTML = comments.map((c,ci)=>buildIgCmt(c,ci)).join('');
+  el.innerHTML = comments.map((c,ci)=>buildRow(c,ci)).join('');
   el.scrollTop = el.scrollHeight;
+}
+
+async function igReact(emoji){
+  if(!_galPostId){ toast('Sin post asociado','inf'); return; }
+  if(!window.CU){ toast('Iniciá sesión para reaccionar','err'); return; }
+  const hasMultiple = _galImages.length > 1;
+  if(!hasMultiple){
+    // Post-level reaction (single image)
+    await doReact(_galPostId, emoji);
+    return;
+  }
+  // Per-image reaction
+  const idx = _galIdx;
+  const rxnField = `imgReactions_${idx}`;
+  const cntField = `imgReactionCounts_${idx}`;
+  let p = (_posts||[]).find(p=>p.id===_galPostId);
+  if(!p){ try{ const s=await getDoc(doc(db,'posts',_galPostId)); if(s.exists()){p={id:s.id,...s.data()};(_posts||[]).push(p);} }catch(e){return;} }
+  const rxns = {...(p[rxnField]||{})};
+  const cnts = {...(p[cntField]||{})};
+  const prev = rxns[window.CU.id]||'';
+  if(prev){ cnts[prev]=Math.max(0,(cnts[prev]||1)-1); }
+  if(prev===emoji){ delete rxns[window.CU.id]; }
+  else { rxns[window.CU.id]=emoji; cnts[emoji]=(cnts[emoji]||0)+1; }
+  p[rxnField]=rxns; p[cntField]=cnts;
+  await updateDoc(doc(db,'posts',_galPostId),{[rxnField]:rxns,[cntField]:cnts});
 }
 
 async function igReactCmt(ci, em){
   if(!window.CU){ toast('Iniciá sesión','err'); return; }
   if(!_galPostId) return;
   let p = (_posts||[]).find(p=>p.id===_galPostId);
-  if(!p){ try{ const s=await getDoc(doc(db,'posts',_galPostId)); if(s.exists()){p={id:s.id,...s.data()};_posts.push(p);} }catch(e){ return; } }
+  if(!p){ try{ const s=await getDoc(doc(db,'posts',_galPostId)); if(s.exists()){p={id:s.id,...s.data()};(_posts||[]).push(p);} }catch(e){return;} }
   const newCmts = [...(p.comments||[])];
   const c = {...(newCmts[ci]||{})};
   const uRxns = {...(c.userReactions||{})};
   const rCounts = {...(c.reactions||{})};
-  const prev = uRxns[window.CU.id];
+  const prev = uRxns[window.CU.id]||'';
   if(prev){ rCounts[prev]=Math.max(0,(rCounts[prev]||1)-1); }
   if(prev===em){ delete uRxns[window.CU.id]; } else { uRxns[window.CU.id]=em; rCounts[em]=(rCounts[em]||0)+1; }
   c.userReactions=uRxns; c.reactions=rCounts;
   newCmts[ci]=c; p.comments=newCmts;
   await updateDoc(doc(db,'posts',_galPostId),{comments:newCmts});
-  // igLoadPostData onSnapshot will re-render automatically
 }
 
 function igQuickRxnCmt(ci){
   if(!window.CU){ toast('Iniciá sesión','err'); return; }
   const p = (_posts||[]).find(p=>p.id===_galPostId); if(!p) return;
   const c = (p.comments||[])[ci]; if(!c) return;
-  const prev = window.CU ? ((c.userReactions||{})[window.CU.id]||'') : '';
+  const prev = ((c.userReactions||{})[window.CU.id]||'');
   igReactCmt(ci, prev||'👍');
 }
 
 async function igEditCmt(ci){
   if(!window.CU) return;
   const p = (_posts||[]).find(p=>p.id===_galPostId); if(!p) return;
-  const c = (p.comments||[])[ci]; if(!c) return;
-  if(c.userId !== window.CU.id){ toast('Solo podés editar tus comentarios','err'); return; }
+  const c = (p.comments||[])[ci]; if(!c||c.userId!==window.CU.id){ toast('Solo podés editar tus comentarios','err'); return; }
   const newText = prompt('Editar comentario:', c.text||'');
-  if(newText === null) return;
-  if(!newText.trim()){ toast('El comentario no puede estar vacío','err'); return; }
-  const newCmts = [...(p.comments||[])];
-  newCmts[ci] = {...c, text: newText.trim(), edited: true};
-  p.comments = newCmts;
+  if(newText===null||!newText.trim()) return;
+  const newCmts=[...(p.comments||[])];
+  newCmts[ci]={...c,text:newText.trim(),edited:true};
+  p.comments=newCmts;
   await updateDoc(doc(db,'posts',_galPostId),{comments:newCmts});
 }
 
@@ -9306,50 +9342,41 @@ async function igDelCmt(ci){
   if(!window.CU) return;
   const p = (_posts||[]).find(p=>p.id===_galPostId); if(!p) return;
   const c = (p.comments||[])[ci]; if(!c) return;
-  const isOwner = p.userId === window.CU.id;
-  if(c.userId !== window.CU.id && !isOwner){ toast('Sin permiso','err'); return; }
+  if(c.userId!==window.CU.id && p.userId!==window.CU.id){ toast('Sin permiso','err'); return; }
   if(!confirm('¿Eliminar este comentario?')) return;
-  const newCmts = (p.comments||[]).filter((_,i)=>i!==ci);
-  p.comments = newCmts;
+  const newCmts=(p.comments||[]).filter((_,i)=>i!==ci);
+  p.comments=newCmts;
   await updateDoc(doc(db,'posts',_galPostId),{comments:newCmts});
 }
 
 function igReplyCmt(nick){
-  const inp = document.getElementById('_igCmtInp');
-  if(inp){ inp.value = '@'+nick+' '; inp.focus(); }
+  const inp=document.getElementById('_igCmtInp');
+  if(inp){ inp.value='@'+nick+' '; inp.focus(); }
 }
-async function igReact(emoji){
-  if(!_galPostId){ toast('Sin post asociado','inf'); return; }
-  if(!window.CU){ toast('Iniciá sesión para reaccionar','err'); return; }
-  await doReact(_galPostId, emoji);
-}
+
 async function igSubmitComment(){
   if(!_galPostId) return;
   if(!window.CU){ toast('Iniciá sesión para comentar','err'); return; }
-  const inp = document.getElementById('_igCmtInp');
-  const txt = inp ? inp.value.trim() : '';
+  const inp=document.getElementById('_igCmtInp');
+  const txt=inp?inp.value.trim():'';
   if(!txt) return;
-  let p = (_posts||[]).find(p=>p.id===_galPostId);
-  if(!p){
-    try{
-      const snap = await getDoc(doc(db,'posts',_galPostId));
-      if(snap.exists()) p={id:snap.id,...snap.data()};
-    }catch(e){}
-  }
-  if(p){
-    const nc = [...(p.comments||[]), {userId:window.CU.id,nick:window.CU.nick,av:window.CU.av||'',text:txt,time:Date.now()}];
-    await updateDoc(doc(db,'posts',_galPostId), {comments:nc});
-    if(p.userId&&p.userId!==window.CU.id) sendNotifToUserWithPost(p.userId,`💬 ${window.CU.nick} comentó tu foto: "${txt.slice(0,40)}"`,_galPostId);
-  }
+  let p=(_posts||[]).find(p=>p.id===_galPostId);
+  if(!p){ try{ const s=await getDoc(doc(db,'posts',_galPostId)); if(s.exists()){p={id:s.id,...s.data()};(_posts||[]).push(p);} }catch(e){} }
+  if(!p){ toast('No se pudo cargar el post','err'); return; }
+  const nc=[...(p.comments||[]),{userId:window.CU.id,nick:window.CU.nick,av:window.CU.av||'',gender:window.CU.gender||'',text:txt,time:Date.now()}];
+  p.comments=nc;
+  await updateDoc(doc(db,'posts',_galPostId),{comments:nc});
+  if(p.userId&&p.userId!==window.CU.id) sendNotifToUserWithPost(p.userId,`💬 ${window.CU.nick} comentó tu foto: "${txt.slice(0,40)}"`,_galPostId);
   if(inp) inp.value='';
 }
+
 async function igShare(){
   if(!_galPostId){ toast('Sin post para compartir','inf'); return; }
   await sharePost(_galPostId);
 }
 function igDownload(){
-  const src = _galImages[_galIdx];
-  const a = document.createElement('a');
+  const src=_galImages[_galIdx];
+  const a=document.createElement('a');
   a.href=src; a.download='foto_rf4latam.jpg'; a.target='_blank';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
