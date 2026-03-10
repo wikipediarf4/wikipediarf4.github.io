@@ -3728,8 +3728,16 @@ async function listenVerifiedUsers(){
 }
 
 let _postsUnsub = null;
+let _postsRetryTimer = null;
 function listenPosts() {
   if(_postsUnsub){ _postsUnsub(); _postsUnsub = null; }
+  if(_postsRetryTimer){ clearTimeout(_postsRetryTimer); _postsRetryTimer = null; }
+
+  const feedEl = document.getElementById('feedPosts');
+  if(feedEl && feedEl.innerHTML.includes('Cargando feed')){
+    feedEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:.85rem;">⏳ Conectando...</div>';
+  }
+
   _postsUnsub = onSnapshot(
     query(collection(db, 'posts'), orderBy('time', 'desc'), limit(50)),
     snap => {
@@ -3740,7 +3748,21 @@ function listenPosts() {
       else if(pageId === 'page-casitrofeo'){ renderMapPosts(); }
       else { renderFeed(); }
     },
-    err => { console.warn('listenPosts error:', err); }
+    err => {
+      console.warn('listenPosts error:', err);
+      // Fallback: intentar getDocs sin orderBy (evita error de índice faltante)
+      getDocs(collection(db, 'posts')).then(snap => {
+        _posts = snap.docs.map(d => ({ id: d.id, ...d.data(), time: d.data().time?.toMillis?.() || Date.now() }))
+          .sort((a,b) => b.time - a.time).slice(0, 50);
+        renderFeed();
+      }).catch(e2 => {
+        console.error('listenPosts fallback error:', e2);
+        const el2 = document.getElementById('feedPosts');
+        if(el2) el2.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:.85rem;">⚠️ Error al cargar el feed.<br><button onclick="listenPosts()" style="margin-top:12px;background:var(--accent);color:#000;border:none;border-radius:8px;padding:8px 20px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">🔄 Reintentar</button></div>';
+      });
+      // Reintentar el listener en 15 segundos
+      _postsRetryTimer = setTimeout(()=>{ listenPosts(); }, 15000);
+    }
   );
 }
 
@@ -5952,10 +5974,11 @@ function renderFeed(){
   // Verificar si ya hay posts reales en el DOM (no el placeholder de carga)
   const hasRealPosts = _posts.some(p=>document.getElementById('post_'+p.id));
   if(!hasRealPosts){
-    // Render completo — primera vez o después de limpiar
-    // Comments always start closed (like Facebook)
+    if(!_posts.length){
+      el.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--muted);font-size:.88rem;">🎣 No hay publicaciones aún.<br><span style="font-size:.78rem;opacity:.7;">¡Sé el primero en compartir tu pesca!</span></div>';
+      return;
+    }
     el.innerHTML = _posts.map(p=>postHTML(p)).join('');
-    // Make sure all comments sections start closed
     el.querySelectorAll('.comments-section').forEach(function(c){ c.classList.remove('open'); });
     return;
   }
