@@ -2524,6 +2524,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
     <button class="adm-tab" onclick="swAdminTab(this,'admt-pezdelsemana')" style="background:rgba(0,230,118,.08);border-color:rgba(0,230,118,.3);color:var(--green);">🐟 Pez Semanal</button>
     <button class="adm-tab" onclick="swAdminTab(this,'admt-xplevels');renderXPLevelsAdmin();" style="background:rgba(255,215,0,.08);border-color:rgba(255,215,0,.3);color:var(--gold);">⚡ Niveles XP</button>
     <button class="adm-tab" onclick="swAdminTab(this,'admt-insignias');loadInsigniasPanel();" style="background:rgba(46,196,182,.08);border-color:rgba(46,196,182,.3);color:var(--accent);">🎣 Insignias & Roles</button>
+    <button class="adm-tab" onclick="swAdminTab(this,'admt-soporte');loadSoporteTickets();" style="background:rgba(255,107,53,.1);border-color:rgba(255,107,53,.35);color:#ff6b35;" id="admTabSoporte">🆘 Soporte <span id="admSoporteBadge" style="display:none;background:#ff6b35;color:#fff;border-radius:100px;padding:1px 6px;font-size:.65rem;font-weight:800;margin-left:3px;">0</span></button>
   </div>
 
   <!-- TAB: Reportes -->
@@ -2839,6 +2840,26 @@ select.fi option{background:var(--bg3);color:var(--text);}
 
     <div id="insigniasPanelList" style="display:grid;gap:8px;">
       <div style="text-align:center;padding:30px;color:var(--muted);">Cargando usuarios...</div>
+    </div>
+  </div>
+
+  <!-- TAB: Soporte Técnico -->
+  <div id="admt-soporte" style="display:none;">
+    <!-- Header + filtros -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:200px;">
+        <input id="soporteSearch" class="fi" placeholder="🔍 Buscar por usuario o descripción..." oninput="filterSoporteTickets()" style="width:100%;box-sizing:border-box;">
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button onclick="filterSoporteBy('todos')"    id="sfbtn-todos"    class="cfbtn active">Todos</button>
+        <button onclick="filterSoporteBy('pendiente')" id="sfbtn-pendiente" class="cfbtn" style="color:#ff6b35;">🔴 Pendientes</button>
+        <button onclick="filterSoporteBy('leido')"    id="sfbtn-leido"    class="cfbtn" style="color:var(--green);">✅ Revisados</button>
+      </div>
+      <button onclick="loadSoporteTickets()" style="background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:var(--rs);font-size:.76rem;cursor:pointer;font-family:'Exo 2',sans-serif;">🔄</button>
+    </div>
+    <!-- Lista de tickets -->
+    <div id="soporteTicketsList">
+      <div style="text-align:center;padding:40px;color:var(--muted);">Cargando tickets...</div>
     </div>
   </div>
 
@@ -4311,7 +4332,7 @@ window.gp = (id, pushState = true) => {
   window.scrollTo(0,0);
   navigateTo(id, pushState);
   if(id==='profile') renderProfile();
-  if(id==='admin') { loadAdminData(); loadPezSemana(); }
+  if(id==='admin') { loadAdminData(); loadPezSemana(); loadSoporteBadge(); }
   if(id==='spots'){ loadSpots(); loadFriendSpots(); }
   if(id==='casitrofeo') renderMapPosts();
   if(id==='trofeos-feed') { listenTrofeosFeed(); document.getElementById('trofeoFeedBadge').style.display='inline-flex'; }
@@ -9265,7 +9286,7 @@ async function submitReport(){
 function swAdminTab(el, tabId){
   document.querySelectorAll('.adm-tab').forEach(t=>t.classList.remove('adm-on'));
   el.classList.add('adm-on');
-  ['admt-reports','admt-posts','admt-users','admt-verif','admt-site','admt-parches','admt-torneos','admt-grupos','admt-ads','admt-live','admt-pezdelsemana','admt-xplevels']
+  ['admt-reports','admt-posts','admt-users','admt-verif','admt-site','admt-parches','admt-torneos','admt-grupos','admt-ads','admt-live','admt-pezdelsemana','admt-xplevels','admt-insignias','admt-soporte']
     .forEach(id=>{ const e=document.getElementById(id); if(e) e.style.display='none'; });
   const tab = document.getElementById(tabId);
   if(tab) tab.style.display='block';
@@ -9277,6 +9298,7 @@ function swAdminTab(el, tabId){
   if(tabId==='admt-site') loadSiteConfig();
   if(tabId==='admt-ads') loadAdminAds();
   if(tabId==='admt-live') loadAdminLive();
+  if(tabId==='admt-soporte') loadSoporteTickets();
 }
 
 async function loadAdminData(){
@@ -9524,6 +9546,15 @@ async function submitPatch(){
   loadAdminPatches();
 }
 
+async function loadSoporteBadge(){
+  try {
+    const snap = await getDocs(query(collection(db,'soporte'), where('leido','==',false)));
+    const count = snap.size;
+    const badge = document.getElementById('admSoporteBadge');
+    if(badge){ badge.style.display = count>0?'inline':'none'; badge.textContent=count; }
+  } catch(e){}
+}
+
 async function loadAdminPatches(){
   try {
     const snap = await getDocs(query(collection(db,'patches'),orderBy('time','desc')));
@@ -9531,6 +9562,153 @@ async function loadAdminPatches(){
     const el = document.getElementById('adminPatchesList');
     if(el) el.innerHTML = items.length ? items.map(p=>patchCardHTML(p,true)).join('') : '<div style="text-align:center;padding:20px;color:var(--muted);">Sin parches aún</div>';
   } catch(e){ console.error(e); }
+}
+
+// ═══════════════════════════════════════════════
+// PANEL DE SOPORTE TÉCNICO — Admin
+// ═══════════════════════════════════════════════
+let _soporteTickets = [];
+let _soporteFilter = 'todos';
+
+async function loadSoporteTickets(){
+  const el = document.getElementById('soporteTicketsList');
+  if(!el) return;
+  el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">⏳ Cargando tickets...</div>';
+  try {
+    const snap = await getDocs(query(collection(db,'soporte'), orderBy('time','desc')));
+    _soporteTickets = snap.docs.map(d=>({id:d.id,...d.data(), _ts: d.data().time?.toMillis?.()|| Date.now()}));
+    // Actualizar badge con pendientes
+    const pendientes = _soporteTickets.filter(t=>!t.leido).length;
+    const badge = document.getElementById('admSoporteBadge');
+    if(badge){
+      badge.style.display = pendientes > 0 ? 'inline' : 'none';
+      badge.textContent = pendientes;
+    }
+    renderSoporteTickets();
+  } catch(e){
+    console.error('loadSoporteTickets:', e);
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--red);">Error al cargar tickets: '+e.message+'</div>';
+  }
+}
+
+function filterSoporteBy(f){
+  _soporteFilter = f;
+  document.querySelectorAll('[id^="sfbtn-"]').forEach(b=>b.classList.remove('active'));
+  const btn = document.getElementById('sfbtn-'+f);
+  if(btn) btn.classList.add('active');
+  renderSoporteTickets();
+}
+
+function filterSoporteTickets(){
+  renderSoporteTickets();
+}
+
+function renderSoporteTickets(){
+  const el = document.getElementById('soporteTicketsList');
+  if(!el) return;
+  const q = (document.getElementById('soporteSearch')?.value||'').toLowerCase().trim();
+  let list = _soporteTickets;
+  if(_soporteFilter === 'pendiente') list = list.filter(t=>!t.leido);
+  if(_soporteFilter === 'leido')     list = list.filter(t=>!!t.leido);
+  if(q) list = list.filter(t=>
+    (t.nick||'').toLowerCase().includes(q) ||
+    (t.desc||'').toLowerCase().includes(q) ||
+    (t.tipo||'').toLowerCase().includes(q)
+  );
+  if(!list.length){
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">'+
+      '<div style="font-size:2rem;margin-bottom:8px;">📭</div>'+
+      '<div style="font-size:.85rem;">Sin tickets que mostrar</div></div>';
+    return;
+  }
+  el.innerHTML = list.map(t=>soporteTicketHTML(t)).join('');
+}
+
+function soporteTicketHTML(t){
+  const fecha = t._ts ? new Date(t._ts).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+  const estadoBg  = t.leido ? 'rgba(46,196,182,.1)'  : 'rgba(255,107,53,.1)';
+  const estadoBrd = t.leido ? 'rgba(46,196,182,.35)' : 'rgba(255,107,53,.35)';
+  const estadoClr = t.leido ? 'var(--accent)'        : '#ff6b35';
+  const estadoTxt = t.leido ? '✅ Revisado'           : '🔴 Pendiente';
+  const avLetter  = (t.nick||'?')[0].toUpperCase();
+  const avSrc     = t.av ? `<img src="${t.av}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.parentElement.textContent='${avLetter}'">` : avLetter;
+
+  return `<div id="st_${t.id}" style="background:var(--bg2);border:1px solid ${t.leido?'var(--border)':'rgba(255,107,53,.3)'};border-radius:var(--r);padding:16px 18px;margin-bottom:10px;transition:border .2s;">
+    <!-- Cabecera -->
+    <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;">
+      <div style="width:42px;height:42px;border-radius:50%;background:var(--bg3);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:800;color:var(--accent);flex-shrink:0;overflow:hidden;">${avSrc}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:2px;">
+          <span style="font-weight:800;font-size:.9rem;cursor:pointer;color:var(--text);" onclick="openUserProfile('${t.uid||''}','${(t.nick||'').replace(/'/g,"\\'")}')">@${esc(t.nick||'?')}</span>
+          <span style="font-size:.68rem;padding:2px 8px;border-radius:100px;background:${estadoBg};border:1px solid ${estadoBrd};color:${estadoClr};font-weight:700;">${estadoTxt}</span>
+        </div>
+        <div style="font-size:.72rem;color:var(--muted);">${fecha} · ${esc(t.dispositivo||'Dispositivo no especificado')}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0;">
+        ${!t.leido ? `<button onclick="marcarSoporteLeido('${t.id}')" title="Marcar como revisado"
+          style="background:rgba(46,196,182,.1);border:1px solid rgba(46,196,182,.3);color:var(--accent);padding:5px 10px;border-radius:var(--rs);font-size:.75rem;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700;transition:opacity .15s;"
+          onmouseover="this.style.opacity='.75'" onmouseout="this.style.opacity='1'">✅ Marcar revisado</button>` : ''}
+        <button onclick="responderSoporte('${t.id}','${(t.uid||'').replace(/'/g,"\\'")}','${(t.nick||'').replace(/'/g,"\\'")}','${(t.tipo||'').replace(/'/g,"\\'").replace(/"/g,'\\"')}')" title="Responder por chat"
+          style="background:rgba(0,198,255,.1);border:1px solid rgba(0,198,255,.3);color:var(--accent);padding:5px 10px;border-radius:var(--rs);font-size:.75rem;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700;transition:opacity .15s;"
+          onmouseover="this.style.opacity='.75'" onmouseout="this.style.opacity='1'">💬 Responder</button>
+        <button onclick="eliminarSoporteTicket('${t.id}')" title="Eliminar ticket"
+          style="background:rgba(255,68,68,.08);border:1px solid rgba(255,68,68,.2);color:var(--red);padding:5px 8px;border-radius:var(--rs);font-size:.75rem;cursor:pointer;font-family:'Exo 2',sans-serif;transition:opacity .15s;"
+          onmouseover="this.style.opacity='.75'" onmouseout="this.style.opacity='1'">🗑</button>
+      </div>
+    </div>
+    <!-- Tipo -->
+    <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,107,53,.08);border:1px solid rgba(255,107,53,.2);border-radius:100px;padding:3px 12px;font-size:.75rem;font-weight:700;color:#ff6b35;margin-bottom:10px;">
+      🆘 ${esc(t.tipo||'Sin tipo')}
+    </div>
+    <!-- Descripción -->
+    <div style="background:var(--bg3);border-radius:var(--rs);padding:12px 14px;font-size:.85rem;line-height:1.6;color:var(--text);white-space:pre-wrap;word-break:break-word;">${esc(t.desc||'Sin descripción')}</div>
+  </div>`;
+}
+
+async function marcarSoporteLeido(ticketId){
+  try {
+    await updateDoc(doc(db,'soporte',ticketId), {leido: true});
+    const t = _soporteTickets.find(x=>x.id===ticketId);
+    if(t) t.leido = true;
+    // Actualizar badge
+    const pendientes = _soporteTickets.filter(x=>!x.leido).length;
+    const badge = document.getElementById('admSoporteBadge');
+    if(badge){ badge.style.display = pendientes>0?'inline':'none'; badge.textContent=pendientes; }
+    // Re-render solo el ticket
+    const el = document.getElementById('st_'+ticketId);
+    if(el && t) el.outerHTML = soporteTicketHTML(t);
+    else renderSoporteTickets();
+    toast('Ticket marcado como revisado ✅','ok');
+  } catch(e){ toast('Error: '+e.message,'err'); }
+}
+
+async function eliminarSoporteTicket(ticketId){
+  if(!confirm('¿Eliminar este ticket de soporte?')) return;
+  try {
+    await deleteDoc(doc(db,'soporte',ticketId));
+    _soporteTickets = _soporteTickets.filter(x=>x.id!==ticketId);
+    renderSoporteTickets();
+    toast('Ticket eliminado','ok');
+  } catch(e){ toast('Error: '+e.message,'err'); }
+}
+
+function responderSoporte(ticketId, uid, nick, tipo){
+  // Abre el chat con el usuario y envía un mensaje inicial de contexto
+  if(!uid){ toast('No se puede responder: usuario desconocido','err'); return; }
+  // Navegar al chat y precargar el mensaje
+  openMessenger();
+  setTimeout(()=>{
+    openChat(uid, nick);
+    setTimeout(()=>{
+      const inp = document.getElementById('chatInput');
+      if(inp){
+        inp.value = `Hola @${nick}, te contactamos por tu ticket de soporte: "${tipo}". `;
+        inp.focus();
+      }
+    }, 400);
+  }, 300);
+  // Marcar como leído al responder
+  marcarSoporteLeido(ticketId);
 }
 
 
@@ -15760,6 +15938,12 @@ window.filterInsigniasBy   = filterInsigniasBy;
 window.filterInsigniasPanel= filterInsigniasPanel;
 window.toggleInsignia      = toggleInsignia;
 window.setUserRole         = setUserRole;
+window.loadSoporteTickets  = loadSoporteTickets;
+window.filterSoporteBy     = filterSoporteBy;
+window.filterSoporteTickets= filterSoporteTickets;
+window.marcarSoporteLeido  = marcarSoporteLeido;
+window.eliminarSoporteTicket = eliminarSoporteTicket;
+window.responderSoporte    = responderSoporte;
 </script>
 <!-- ===== FOOTER ===== -->
 <div id="siteFooter" style="display:none;text-align:center;padding:32px 16px 28px;background:#1a1d21;border-top:1px solid #2a2d32;margin-top:32px;line-height:2;">
