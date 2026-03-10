@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RF4 Latam</title>
+<link rel="icon" href="icon-512.png" type="image/png">
+<link rel="shortcut icon" href="icon-512.png" type="image/png">
 
   <meta name="theme-color" content="#1877f2">
   <meta name="mobile-web-app-capable" content="yes">
@@ -11131,6 +11133,87 @@ async function renderFriendSpotsInHome(){
 }
 
 // ===== SIDEBAR: Friends + Suggested users =====
+// ===== AMIGOS PAGE =====
+async function renderAmigosPage(){
+  renderMisAmigos();
+  renderSuggestedUsers();
+}
+
+function renderMisAmigos(){
+  const el = document.getElementById('misAmigosList');
+  const countEl = document.getElementById('misAmigosCount');
+  if(!el) return;
+  const friends = window.CU?.friendsList || [];
+  if(countEl) countEl.textContent = friends.length ? friends.length + ' amigos' : '';
+  if(!friends.length){
+    el.innerHTML = '<div style="font-size:.8rem;color:var(--muted);padding:8px;">Aún no tenés amigos. ¡Buscá pescadores!</div>';
+    return;
+  }
+  el.innerHTML = friends.map(f=>`
+    <div onclick="openUserProfile('${f.id}','${(f.nick||'').replace(/'/g,"\'")}');" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px 10px;text-align:center;cursor:pointer;transition:border-color .2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="width:52px;height:52px;border-radius:50%;overflow:hidden;margin:0 auto 7px;border:2px solid ${f.verified?'gold':'var(--border)'};">
+        <img src="${f.av||getDefaultAv(f.gender||'')}" style="width:100%;height:100%;object-fit:cover;" loading="lazy">
+      </div>
+      <div style="font-size:.78rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(f.nick||'?')}${f.verified?' ✅':''}</div>
+    </div>`).join('');
+}
+
+async function renderSuggestedUsers(){
+  const el = document.getElementById('amigosSuggList');
+  const sidebarEl = document.getElementById('suggestedUsersList');
+  if(!el && !sidebarEl) return;
+  try {
+    const snap = await getDocs(query(collection(db,'users'), orderBy('createdAt','desc'), limit(30)));
+    const myId = window.CU?.id;
+    const myFriends = window.CU?.friends || [];
+    const users = snap.docs
+      .map(d=>({id:d.id,...d.data()}))
+      .filter(u => u.id !== myId && !myFriends.includes(u.id))
+      .sort(()=>Math.random()-0.5)
+      .slice(0,8);
+    const cardHTML = (u, small) => `
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:${small?'10px 8px':'14px 10px'};text-align:center;cursor:pointer;transition:border-color .2s;" onclick="openUserProfile('${u.id}','${(u.nick||'').replace(/'/g,"\'")}');" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="width:${small?'40px':'52px'};height:${small?'40px':'52px'};border-radius:50%;overflow:hidden;margin:0 auto ${small?'5px':'7px'};border:2px solid ${u.verified?'gold':'var(--border)'};">
+          <img src="${u.av||getDefaultAv(u.gender||'')}" style="width:100%;height:100%;object-fit:cover;" loading="lazy">
+        </div>
+        <div style="font-size:${small?'.7rem':'.78rem'};font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(u.nick||'?')}${u.verified?' ✅':''}</div>
+        <button onclick="sendFriendRequest('${u.id}','${(u.nick||'').replace(/'/g,"\'")}','page');event.stopPropagation();" style="margin-top:6px;width:100%;padding:4px;background:var(--accent);border:none;border-radius:var(--rs);color:#000;font-size:.65rem;font-weight:700;cursor:pointer;">+ Agregar</button>
+      </div>`;
+    if(el) el.innerHTML = users.length
+      ? users.map(u=>cardHTML(u, false)).join('')
+      : '<div style="font-size:.8rem;color:var(--muted);padding:8px;">Sin sugerencias por ahora</div>';
+    if(sidebarEl) sidebarEl.innerHTML = users.slice(0,4).map(u=>cardHTML(u, true)).join('');
+  } catch(e){
+    if(el) el.innerHTML = '<div style="font-size:.8rem;color:var(--muted);padding:8px;"></div>';
+  }
+}
+
+async function renderNewFishers(){
+  const el = document.getElementById('newFishersList');
+  if(!el) return;
+  try {
+    const snap = await getDocs(query(collection(db,'users'), orderBy('createdAt','desc'), limit(15)));
+    const myId = window.CU?.id;
+    const myFriends = window.CU?.friends || [];
+    const users = snap.docs
+      .map(d=>({id:d.id,...d.data()}))
+      .filter(u => u.id !== myId)
+      .slice(0, 5);
+    if(!users.length){ el.innerHTML = '<div style="font-size:.72rem;color:var(--muted);padding:4px;">Sin nuevos pescadores</div>'; return; }
+    el.innerHTML = users.map(u=>`
+      <div onclick="openUserProfile('${u.id}','${(u.nick||'').replace(/'/g,"\'")}');" style="display:flex;align-items:center;gap:8px;padding:5px 4px;cursor:pointer;border-radius:var(--rs);transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='transparent'">
+        <div style="width:30px;height:30px;border-radius:50%;overflow:hidden;flex-shrink:0;border:1.5px solid var(--border);">
+          <img src="${u.av||getDefaultAv(u.gender||'')}" style="width:100%;height:100%;object-fit:cover;" loading="lazy">
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:.75rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(u.nick||'?')}${u.verified?' ✅':''}</div>
+        </div>
+        ${!myFriends.includes(u.id) && u.id!==myId ? `<button onclick="sendFriendRequest('${u.id}','${(u.nick||'').replace(/'/g,"\'")}','sidebar');event.stopPropagation();" style="font-size:.6rem;padding:2px 7px;background:var(--accent);border:none;border-radius:100px;color:#000;font-weight:700;cursor:pointer;flex-shrink:0;">+</button>` : ''}
+      </div>`).join('');
+  } catch(e){ el.innerHTML = '<div style="font-size:.72rem;color:var(--muted);padding:4px;"></div>'; }
+}
+
+
 async function renderSidebarFriends(){
   const el = document.getElementById('friendsListSidebar');
   if(!el) return;
@@ -15205,7 +15288,7 @@ const _expose = {
   joinGroup, leaveGroup, openGroupPost, showGroupWelcome, previewGroupPostImg, removeGroupPostImg, submitGroupPost,
   acceptFriendRequest, rejectFriendRequest, dismissFriendRequest, sendFriendRequestFromProfile, loadRealFriends, updateNotifBadge, updateMsgBadge,
   previewSpotImg, removeSpotImg, submitSpot, loadSpots, loadFriendSpots, renderFriendSpotsInHome, openEditSpot, saveEditSpot, deleteSpot, scrollToPost, loadVideos, filterVideos,
-  renderSidebarFriends, renderSuggestedUsers, renderAmigosPage, renderMisAmigos, renderSuggestedPosts, playNotifSound, showNotifToast, sendNotifToUserWithPost, openMessenger,
+  renderSidebarFriends, renderSuggestedUsers, renderAmigosPage, renderMisAmigos, renderNewFishers, renderSuggestedPosts, playNotifSound, showNotifToast, sendNotifToUserWithPost, openMessenger,
   previewPezSemanaImg, submitPezSemana, deletePezSemana, loadPezSemana, buildPezSemanaCard, openPezSemanalModal, openReactionsModal, buildRxnLabel,
   addXP, renderXPUI, checkDailyStreak, getLevel, getXpProgress,
   loadXPLevels, saveXPLevels, addXPLevelRow, renderXPLevelsAdmin,
