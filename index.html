@@ -3993,13 +3993,18 @@ async function doLogin(){
     onLogin();
     toast('¡Bienvenido '+window.CU.nick+'! 🎣','ok');
   } catch(e) {
-    let msg = 'Contraseña incorrecta o usuario no encontrado';
+    let msg = 'Error: ' + (e.code || e.message || 'desconocido');
     if(e.code === 'auth/invalid-email') msg = 'Email inválido';
-    else if(e.code === 'auth/user-not-found') msg = 'Usuario no encontrado';
-    else if(e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') msg = 'Contraseña incorrecta';
+    else if(e.code === 'auth/user-not-found') msg = 'Usuario no encontrado. Verificá el email.';
+    else if(e.code === 'auth/wrong-password') msg = 'Contraseña incorrecta';
+    else if(e.code === 'auth/invalid-credential') msg = 'Email o contraseña incorrectos';
     else if(e.code === 'auth/too-many-requests') msg = 'Demasiados intentos. Esperá unos minutos.';
     else if(e.code === 'auth/network-request-failed') msg = 'Error de red. Verificá tu conexión.';
+    else if(e.code === 'auth/operation-not-allowed') msg = '⚠️ Login con email no está habilitado en Firebase. Activalo en Firebase Console → Authentication → Sign-in methods.';
+    else if(e.code === 'auth/configuration-not-found') msg = '⚠️ Firebase no está configurado para email/contraseña. Activalo en Firebase Console.';
     errEl.textContent = msg;
+    errEl.style.display='block';
+    console.error('Login error:', e.code, e.message);
     if(btn){ btn.disabled=false; btn.textContent='Iniciar sesión'; }
   }
 }
