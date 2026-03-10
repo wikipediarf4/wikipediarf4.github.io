@@ -3686,6 +3686,8 @@ function init(){
         const snap = await getDoc(doc(db, 'users', user.uid));
         if (snap.exists()) {
           window.CU = {id: user.uid, ...snap.data()};
+          // Pre-populate user info cache with own data
+          if(window._userInfoCache) window._userInfoCache[user.uid] = {nick: window.CU.nick||'', av: window.CU.av||'', gender: window.CU.gender||''};
           document.getElementById('maintenanceScreen').style.display = 'none';
           document.getElementById('mAuth').style.display = 'none';
           hideSplash();
@@ -6092,6 +6094,33 @@ function postHTML(p){
   const CMT_RXNS=['👍','❤️','😂','😮','😢','🔥'];
   // Separate top-level comments from replies
   const allCmts = p.comments||[];
+
+  // Enrich comments that are missing nick/av (comments saved before fix)
+  if(typeof _enrichComments === 'function'){
+    _enrichComments(p.id, allCmts, () => {
+      // Re-render just the comments section if it's open
+      const cmtsEl = document.getElementById('cmts_'+p.id);
+      if(cmtsEl && cmtsEl.classList.contains('open')){
+        const listEl = cmtsEl.querySelector('.cmt-list');
+        if(listEl){
+          // Rebuild only the list HTML
+          const rebuilt = allCmts.map(function(c2,ci2){
+            if(c2.replyTo) return '';
+            const av2 = c2.av ? '<img src="'+c2.av+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">'
+                               : '<img src="'+getDefaultAv(c2.gender||'')+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+            return '<div class="comment-item"><div class="sl-av" style="width:32px;height:32px;font-size:.75rem;flex-shrink:0;">'+av2+'</div>'
+              +'<div style="flex:1;min-width:0;"><div class="comment-bubble">'
+              +'<span class="comment-author">'+(c2.nick||'?')+'</span>'
+              +(c2.gif?'<img src="'+c2.gif+'" style="max-width:180px;border-radius:8px;margin-top:4px;display:block;" loading="lazy">'
+                      :'<span class="comment-text"> '+renderCommentText(c2.text||'')+'</span>')
+              +'</div></div></div>';
+          }).join('');
+          listEl.innerHTML = rebuilt;
+        }
+      }
+    });
+  }
+
   // Build HTML: for each top-level comment, then its replies indented below
   const cmtsHTML = allCmts.map(function(c,ci){
     if(c.replyTo) return ''; // replies rendered inline below their parent
@@ -8622,6 +8651,53 @@ function userAv(av, gender){
 }
 window.getDefaultAv = getDefaultAv;
 window.userAv = userAv;
+
+// ===== USER INFO CACHE (para comentarios sin nick/av) =====
+window._userInfoCache = {};
+window._userInfoPending = {};
+
+async function _fetchUserInfo(uid){
+  if(!uid) return null;
+  if(window._userInfoCache[uid]) return window._userInfoCache[uid];
+  if(window._userInfoPending[uid]) return window._userInfoPending[uid];
+  window._userInfoPending[uid] = getDoc(doc(db,'users',uid)).then(snap=>{
+    if(snap.exists()){
+      const d = snap.data();
+      window._userInfoCache[uid] = {nick: d.nick||'?', av: d.av||'', gender: d.gender||''};
+    } else {
+      window._userInfoCache[uid] = {nick:'?', av:'', gender:''};
+    }
+    delete window._userInfoPending[uid];
+    return window._userInfoCache[uid];
+  }).catch(()=>{ delete window._userInfoPending[uid]; return null; });
+  return window._userInfoPending[uid];
+}
+
+// Enriquece comentarios sin nick/av desde Firebase y re-renderiza si hace falta
+async function _enrichComments(pid, comments, rerenderFn){
+  const missing = comments.filter(c => c.userId && (!c.nick || c.nick === '?' || !c.av));
+  if(!missing.length) return;
+  // Pre-populate from friends list
+  const friends = window.CU?.friendsList || [];
+  friends.forEach(f=>{ if(f.id && !window._userInfoCache[f.id]) window._userInfoCache[f.id]={nick:f.nick||'',av:f.av||'',gender:f.gender||''}; });
+  // Also add own user
+  if(window.CU) window._userInfoCache[window.CU.id]={nick:window.CU.nick||'',av:window.CU.av||'',gender:window.CU.gender||''};
+
+  const uids = [...new Set(missing.map(c=>c.userId).filter(Boolean))];
+  await Promise.all(uids.map(uid => _fetchUserInfo(uid)));
+  let changed = false;
+  comments.forEach(c=>{
+    if(c.userId){
+      const info = window._userInfoCache[c.userId];
+      if(info){
+        if(!c.nick || c.nick==='?'){ c.nick = info.nick; changed=true; }
+        if(!c.av){ c.av = info.av; changed=true; }
+        if(!c.gender){ c.gender = info.gender; }
+      }
+    }
+  });
+  if(changed && rerenderFn) rerenderFn();
+}
 
 
 function openImgLightbox(src, allImgs, postId){
