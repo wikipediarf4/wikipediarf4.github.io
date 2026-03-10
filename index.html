@@ -3613,51 +3613,8 @@ function listenPosts() {
   if(_postsUnsub){ _postsUnsub(); _postsUnsub = null; }
   _postsUnsub = onSnapshot(
     query(collection(db, 'posts'), orderBy('time', 'desc'), limit(50)),
-    async snap => {
+    snap => {
       _posts = snap.docs.map(d => ({ id: d.id, ...d.data(), time: d.data().time?.toMillis?.() || Date.now() }));
-
-      // --- ENRICH COMMENTS: fill missing nick/av from Firebase ---
-      // Pre-load own data and friends
-      if(window.CU){
-        window._userInfoCache = window._userInfoCache || {};
-        window._userInfoCache[window.CU.id] = {nick: window.CU.nick||'', av: window.CU.av||'', gender: window.CU.gender||''};
-        (window.CU.friendsList||[]).forEach(f=>{ if(f.id) window._userInfoCache[f.id]={nick:f.nick||'',av:f.av||'',gender:f.gender||''}; });
-      }
-      // Collect all unique userIds from comments that are missing nick or av
-      const missingUids = new Set();
-      _posts.forEach(p => (p.comments||[]).forEach(c => {
-        if(c.userId && (!c.nick || !c.av)) missingUids.add(c.userId);
-      }));
-      // Fetch missing users in parallel
-      if(missingUids.size > 0){
-        window._userInfoCache = window._userInfoCache || {};
-        const toFetch = [...missingUids].filter(uid => !window._userInfoCache[uid]);
-        if(toFetch.length > 0){
-          try {
-            await Promise.all(toFetch.map(async uid => {
-              try {
-                const s = await getDoc(doc(db,'users',uid));
-                window._userInfoCache[uid] = s.exists()
-                  ? {nick: s.data().nick||'', av: s.data().av||'', gender: s.data().gender||''}
-                  : {nick:'', av:'', gender:''};
-              } catch(e){ window._userInfoCache[uid]={nick:'',av:'',gender:''}; }
-            }));
-          } catch(e){}
-        }
-        // Apply cached data to comments
-        _posts.forEach(p => (p.comments||[]).forEach(c => {
-          if(c.userId){
-            const info = window._userInfoCache[c.userId];
-            if(info){
-              if(!c.nick) c.nick = info.nick;
-              if(!c.av)   c.av   = info.av;
-              if(!c.gender) c.gender = info.gender;
-            }
-          }
-        }));
-      }
-      // --- END ENRICH ---
-
       const activePage = document.querySelector('.page.active');
       const pageId = activePage ? activePage.id : '';
       if(pageId === 'page-profile'){ renderProfileFeed(); }
@@ -4236,6 +4193,8 @@ window.addEventListener('DOMContentLoaded', () => {
   if (pageId && pageId !== 'home') {
     window._initialRoute = pageId;
   }
+  // Always start with comments closed on page load (like Facebook)
+  document.querySelectorAll('.comments-section').forEach(function(c){ c.classList.remove('open'); });
 });
 window.navigateTo = navigateTo;
 // ===== END URL ROUTER =====
@@ -5874,7 +5833,10 @@ function renderFeed(){
   const hasRealPosts = _posts.some(p=>document.getElementById('post_'+p.id));
   if(!hasRealPosts){
     // Render completo — primera vez o después de limpiar
+    // Comments always start closed (like Facebook)
     el.innerHTML = _posts.map(p=>postHTML(p)).join('');
+    // Make sure all comments sections start closed
+    el.querySelectorAll('.comments-section').forEach(function(c){ c.classList.remove('open'); });
     return;
   }
 
@@ -5912,6 +5874,7 @@ function renderFeed(){
       if(oldCmts && newCmts && oldCmts.innerHTML !== newCmts.innerHTML){
         const wasOpen = oldCmts.classList.contains('open');
         const newCmtsClone = newCmts.cloneNode(true);
+        // Only re-open if it was manually opened by user (not auto-opened)
         if(wasOpen) newCmtsClone.classList.add('open');
         oldCmts.replaceWith(newCmtsClone);
       }
@@ -5988,6 +5951,7 @@ function _renderProfileFeedHTML(el, mine){
       if(oldCmts && newCmts && oldCmts.innerHTML !== newCmts.innerHTML){
         const wasOpen = oldCmts.classList.contains('open');
         const newCmtsClone = newCmts.cloneNode(true);
+        // Only re-open if it was manually opened by user (not auto-opened)
         if(wasOpen) newCmtsClone.classList.add('open');
         oldCmts.replaceWith(newCmtsClone);
       }
