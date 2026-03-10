@@ -755,6 +755,170 @@ select.fi option{background:var(--bg3);color:var(--text);}
 #rivSearchInput{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(46,196,182,.2);border-radius:8px;color:#d4e8f0;font-family:'Crimson Pro',serif;font-size:14px;padding:9px 12px 9px 34px;outline:none;transition:border-color .2s;}
 #rivSearchInput::placeholder{color:#7aa8c0;opacity:.6;}
 #rivSearchInput:focus{border-color:rgba(46,196,182,.5);}
+
+/* ===== WIKI TROFEOS STYLES ===== */
+.wk-nav{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:22px;padding:14px 20px;background:linear-gradient(90deg,rgba(0,212,255,.04),transparent);border-bottom:1px solid var(--border);}
+.wk-nb{background:none;border:none;color:var(--muted,#7aa8c0);font-family:'Exo 2',sans-serif;font-size:.8rem;font-weight:600;padding:7px 14px;border-radius:8px;cursor:pointer;transition:all .2s;letter-spacing:.4px;text-transform:uppercase;}
+.wk-nb:hover,.wk-nb.on{color:#00d4ff;background:rgba(0,212,255,.08);}
+.wk-nb.cta{background:linear-gradient(135deg,#00d4ff,#0088cc);color:#000;font-weight:700;}
+.section{padding:52px 20px;max-width:1180px;margin:0 auto;}
+.stitle{font-family:'Orbitron',monospace;font-size:1.5rem;font-weight:800;color:#00d4ff;margin-bottom:6px;}
+.ssub{color:var(--muted,#567890);font-size:.88rem;margin-bottom:28px;}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;}
+.tcard{background:var(--bg2,#0c1318);border:1px solid var(--border,#182433);border-radius:12px;overflow:hidden;transition:all .3s;cursor:pointer;}
+.tcard:hover{border-color:rgba(0,212,255,.35);transform:translateY(-4px);box-shadow:0 8px 32px rgba(0,212,255,.1);}
+.tcard-img{width:100%;height:200px;background:var(--bg3,#101820);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:3.5rem;}
+.tcard-img img{width:100%;height:100%;object-fit:cover;}
+.twbadge{position:absolute;top:10px;right:10px;background:linear-gradient(135deg,#ffd700,#b8860b);color:#000;font-family:'Orbitron',monospace;font-size:.8rem;font-weight:800;padding:3px 11px;border-radius:100px;box-shadow:0 2px 8px rgba(0,0,0,.5);}
+.tcbody{padding:14px;}
+.tcfish{font-family:'Orbitron',monospace;font-size:1rem;font-weight:700;margin-bottom:8px;}
+.tctags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:11px;}
+.tag{background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.14);color:#00d4ff;font-size:.68rem;font-weight:600;padding:2px 9px;border-radius:100px;text-transform:uppercase;letter-spacing:.4px;}
+.tag.g{background:rgba(0,255,136,.07);border-color:rgba(0,255,136,.14);color:#00ff88;}
+.tag.y{background:rgba(255,215,0,.07);border-color:rgba(255,215,0,.18);color:#ffd700;}
+.tcauthor{display:flex;align-items:center;gap:8px;padding-top:11px;border-top:1px solid var(--border,#182433);}
+.tcfoot{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-top:1px solid var(--border,#182433);background:rgba(0,0,0,.15);}
+.rxn-wrap{position:relative;display:inline-flex;}
+.rxn-popup{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--bg3,#101820);border:1px solid var(--border,#182433);border-radius:100px;padding:5px 8px;gap:2px;align-items:center;z-index:600;box-shadow:0 6px 22px rgba(0,0,0,.8);white-space:nowrap;}
+.rxn-popup.show{display:flex;animation:rxnPop .16s ease;}
+@keyframes rxnPop{from{opacity:0;transform:translateX(-50%) scale(.6) translateY(6px)}to{opacity:1;transform:translateX(-50%) scale(1) translateY(0)}}
+.rxn-emoji-btn{background:none;border:none;cursor:pointer;font-size:1.15rem;padding:2px 4px;border-radius:50%;transition:transform .13s;line-height:1;position:relative;display:inline-flex;align-items:center;justify-content:center;}
+.rxn-emoji-btn:hover{transform:scale(1.55) translateY(-4px);}
+.rxn-trigger{background:none;border:none;cursor:pointer;color:var(--muted,#567890);font-size:.78rem;display:flex;align-items:center;gap:3px;padding:3px 7px;border-radius:8px;transition:all .2s;font-weight:600;white-space:nowrap;}
+.rxn-trigger:hover{background:rgba(255,255,255,.04);}
+.rxns{display:flex;gap:6px;}
+.rxb{background:none;border:none;cursor:pointer;color:var(--muted,#567890);font-size:.82rem;display:flex;align-items:center;gap:3px;padding:3px 7px;border-radius:8px;transition:all .2s;}
+.rxb:hover{background:rgba(255,255,255,.04);}
+.rxb.lk{color:#ff4488;}
+.rb{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:100px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;}
+.rb-novato{background:rgba(120,120,120,.14);border:1px solid rgba(120,120,120,.22);color:#888;}
+.rb-aprendiz{background:rgba(80,180,255,.12);border:1px solid rgba(80,180,255,.28);color:#50b4ff;}
+.rb-pescador{background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.25);color:#00ff88;}
+.rb-veterano{background:rgba(0,200,220,.1);border:1px solid rgba(0,200,220,.28);color:#00c8dc;}
+.rb-experto{background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.28);color:#ffd700;}
+.rb-maestro{background:rgba(255,140,0,.12);border:1px solid rgba(255,140,0,.32);color:#ff8c00;}
+.rb-leyenda{background:linear-gradient(90deg,rgba(255,50,100,.13),rgba(180,0,255,.13));border:1px solid rgba(200,50,255,.35);color:#e060ff;}
+.rb-admin{background:rgba(255,68,102,.12);border:1px solid rgba(255,68,102,.28);color:#ff4466;}
+.agrid{display:grid;grid-template-columns:220px 1fr;gap:18px;}
+@media(max-width:768px){.agrid{grid-template-columns:1fr;}}
+.asb{background:var(--bg2,#0c1318);border:1px solid var(--border,#182433);border-radius:12px;padding:14px;height:fit-content;}
+.asbt{font-family:'Orbitron',monospace;font-size:.72rem;color:var(--muted,#567890);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border,#182433);}
+.ami{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:8px;cursor:pointer;transition:all .2s;font-size:.85rem;font-weight:500;color:var(--muted,#567890);position:relative;}
+.ami:hover{background:var(--bg4,#151f2a);color:var(--text);}.ami.on{background:rgba(0,212,255,.09);color:#00d4ff;}
+.abd{position:absolute;right:8px;background:#ff4466;color:#fff;padding:1px 6px;border-radius:100px;font-size:.65rem;font-weight:700;}
+.act{background:var(--bg2,#0c1318);border:1px solid var(--border,#182433);border-radius:12px;padding:22px;}
+.as{display:none;}.as.on{display:block;}
+.asgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;margin-bottom:22px;}
+.asc{background:var(--bg,#060a0e);border:1px solid var(--border,#182433);border-radius:8px;padding:14px;text-align:center;}
+.asn{font-family:'Orbitron',monospace;font-size:1.5rem;font-weight:800;color:#00d4ff;}
+.asl{font-size:.7rem;color:var(--muted,#567890);text-transform:uppercase;margin-top:3px;}
+.atable{width:100%;border-collapse:collapse;}
+.atable th{text-align:left;padding:9px 11px;font-size:.72rem;color:var(--muted,#567890);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border,#182433);}
+.atable td{padding:11px;border-bottom:1px solid rgba(24,36,51,.5);font-size:.85rem;}
+.atable tr:hover td{background:var(--bg4,#151f2a);}
+.ri{display:flex;align-items:center;gap:14px;background:var(--bg2,#0c1318);border:1px solid var(--border,#182433);border-radius:8px;padding:13px 15px;margin-bottom:7px;transition:all .2s;}
+.ri:hover{border-color:rgba(0,212,255,.25);}
+.rnum{font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;width:34px;text-align:center;}
+.rn1{color:#ffd700;}.rn2{color:#c0c8d4;}.rn3{color:#cd7f32;}
+.dfish{font-family:'Orbitron',monospace;font-size:1.35rem;font-weight:800;margin-bottom:6px;}
+.dw{font-family:'Orbitron',monospace;font-size:1.7rem;font-weight:900;color:#ffd700;margin-bottom:14px;text-shadow:0 0 18px rgba(255,215,0,.28);}
+.dmg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.dml{font-size:.7rem;color:var(--muted,#567890);text-transform:uppercase;letter-spacing:.4px;}
+.dmv{font-size:.88rem;font-weight:600;margin-top:2px;}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
+@media(max-width:580px){.dgrid{grid-template-columns:1fr;}}
+.dthumbs{display:flex;gap:5px;margin-top:6px;}
+.dth{width:56px;height:56px;border-radius:8px;cursor:pointer;overflow:hidden;border:2px solid transparent;transition:border-color .2s;}
+.dth.on{border-color:#00d4ff;}
+.dth img{width:100%;height:100%;object-fit:cover;}
+.dth-clickable{cursor:zoom-in!important;}
+.cmt-item{display:flex;gap:9px;margin-bottom:10px;}
+.cmt-b{background:var(--bg,#060a0e);border:1px solid var(--border,#182433);border-radius:8px;padding:9px 13px;flex:1;}
+.cmt-u{font-size:.78rem;font-weight:700;color:#00d4ff;margin-bottom:3px;}
+.cmt-t{font-size:.83rem;line-height:1.5;}
+.vsw{display:flex;gap:5px;margin-bottom:18px;}
+.vb{background:var(--bg2,#0c1318);border:1px solid var(--border,#182433);color:var(--muted,#567890);padding:6px 14px;border-radius:8px;cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.78rem;font-weight:600;text-transform:uppercase;transition:all .2s;}
+.vb.on{background:rgba(0,212,255,.09);border-color:#00d4ff;color:#00d4ff;}
+.pov{position:absolute;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px);}
+.pb{background:#ffaa00;color:#000;font-size:.72rem;font-weight:800;padding:5px 13px;border-radius:100px;text-transform:uppercase;letter-spacing:.8px;}
+.status-badge{position:absolute;top:8px;left:8px;padding:3px 9px;border-radius:100px;font-size:.68rem;font-weight:700;letter-spacing:.5px;}
+.status-pending{background:rgba(255,170,0,.9);color:#000;}
+.status-rejected{background:rgba(255,40,80,.9);color:#fff;}
+.status-approved{background:rgba(0,212,100,.9);color:#000;}
+.records-table{width:100%;border-collapse:collapse;}
+.records-table th{text-align:left;padding:9px 13px;font-size:.7rem;color:var(--muted,#567890);text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border,#182433);}
+.records-table td{padding:10px 13px;border-bottom:1px solid rgba(24,36,51,.5);font-size:.85rem;vertical-align:middle;}
+.records-table tbody tr{cursor:pointer;transition:background .15s;}
+.records-table tbody tr:hover td{background:var(--bg4,#151f2a);}
+.rec-fish{font-weight:700;font-family:'Orbitron',monospace;font-size:.8rem;}
+.rec-weight{color:#ffd700;font-family:'Orbitron',monospace;font-weight:800;}
+.map-search-wrap{background:var(--bg2,#0c1318);border:1px solid var(--border,#182433);border-radius:8px;padding:14px 16px;margin-bottom:22px;position:relative;overflow:hidden;}
+.map-search-wrap::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#00d4ff,#00ff88,#00d4ff);background-size:200% 100%;animation:shimmer 2.5s linear infinite;}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.map-search-title{font-family:'Orbitron',monospace;font-size:.88rem;font-weight:800;color:#00d4ff;margin-bottom:2px;}
+.map-search-sub{color:var(--muted,#567890);font-size:.75rem;margin-bottom:10px;}
+.map-select-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.map-select{flex:1;min-width:180px;background:var(--bg,#060a0e);border:1.5px solid var(--border,#182433);color:var(--text);font-family:'Exo 2',sans-serif;font-size:.82rem;padding:7px 10px;border-radius:8px;outline:none;cursor:pointer;transition:border-color .2s;}
+.map-select:focus{border-color:#00d4ff;}
+.map-results{margin-top:22px;}
+.map-results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.map-results-title{font-family:'Orbitron',monospace;font-size:.9rem;font-weight:700;color:#ffd700;}
+.map-results-count{font-size:.78rem;color:var(--muted,#567890);background:var(--bg,#060a0e);border:1px solid var(--border,#182433);padding:3px 10px;border-radius:100px;}
+.map-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
+.rk-podium{display:flex;justify-content:center;align-items:flex-end;gap:10px;margin-bottom:30px;flex-wrap:wrap;padding:8px 4px 0;}
+.rk-podium-slot{display:flex;flex-direction:column;align-items:center;cursor:pointer;border-radius:16px;padding:18px 14px 0;transition:transform .22s,box-shadow .22s;position:relative;overflow:hidden;}
+.rk-podium-slot:hover{transform:translateY(-6px);box-shadow:0 12px 32px rgba(0,0,0,.4);}
+.rk-podium-slot.p1{background:linear-gradient(160deg,rgba(255,215,0,.13),rgba(255,215,0,.04));border:1.5px solid rgba(255,215,0,.35);min-width:148px;}
+.rk-podium-slot.p2{background:linear-gradient(160deg,rgba(192,200,212,.1),rgba(192,200,212,.03));border:1.5px solid rgba(192,200,212,.3);min-width:128px;}
+.rk-podium-slot.p3{background:linear-gradient(160deg,rgba(205,127,50,.1),rgba(205,127,50,.03));border:1.5px solid rgba(205,127,50,.28);min-width:118px;}
+.rk-podium-medal{margin-bottom:6px;line-height:1;}
+.rk-podium-label{font-family:'Orbitron',monospace;font-size:.48rem;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:10px;}
+.rk-podium-nick{font-family:'Orbitron',monospace;font-weight:800;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:8px;}
+.rk-podium-val{font-family:'Orbitron',monospace;font-weight:900;border-radius:100px;padding:4px 15px;color:#000;margin:7px 0 1px;}
+.rk-podium-unit{font-size:.58rem;color:var(--muted,#567890);margin-bottom:4px;}
+.rk-podium-step{width:100%;border-radius:0 0 12px 12px;margin-top:12px;flex-shrink:0;}
+.rk-list{display:flex;flex-direction:column;gap:5px;}
+.rk-item{display:flex;align-items:center;gap:11px;background:var(--bg2,#0c1318);border:1px solid var(--border,#182433);border-radius:8px;padding:11px 14px;transition:all .18s;cursor:pointer;}
+.rk-item:hover{border-color:rgba(0,212,255,.28);background:var(--bg4,#151f2a);transform:translateX(3px);}
+.rk-pos{font-family:'Orbitron',monospace;font-size:.88rem;font-weight:900;width:32px;text-align:center;flex-shrink:0;color:var(--muted,#567890);}
+.rk-info{flex:1;min-width:0;}
+.rk-nick{font-weight:700;font-size:.88rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rk-meta{font-size:.7rem;color:var(--muted,#567890);display:flex;gap:8px;margin-top:2px;flex-wrap:wrap;}
+.rk-score{font-family:'Orbitron',monospace;font-weight:900;font-size:.92rem;text-align:right;flex-shrink:0;color:#00d4ff;}
+.rk-score-unit{font-size:.56rem;font-weight:400;color:var(--muted,#567890);display:block;margin-top:1px;}
+.wk-fi{width:100%;background:var(--bg,#060a0e);border:1px solid var(--border,#182433);color:var(--text);font-family:'Exo 2',sans-serif;font-size:.88rem;padding:9px 13px;border-radius:8px;outline:none;transition:all .2s;}
+.wk-fi:focus{border-color:#00d4ff;box-shadow:0 0 0 2px rgba(0,212,255,.09);}
+.wk-fi::placeholder{color:var(--muted,#567890);}
+.wk-fg{margin-bottom:16px;}
+.wk-fl{display:block;font-size:.75rem;font-weight:600;color:var(--muted,#567890);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;}
+.wk-frow{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:500px){.wk-frow{grid-template-columns:1fr;}}
+.wk-dz{border:2px dashed var(--border,#182433);border-radius:12px;padding:28px;text-align:center;transition:all .3s;cursor:pointer;background:rgba(0,212,255,.015);position:relative;}
+.wk-dz.over{border-color:#00d4ff;background:rgba(0,212,255,.07);}
+.wk-dz input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.wk-pv{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;}
+.wk-pvitem{position:relative;width:76px;height:76px;border-radius:8px;overflow:hidden;border:1px solid var(--border,#182433);}
+.wk-pvitem img{width:100%;height:100%;object-fit:cover;}
+.wk-pvrem{position:absolute;top:2px;right:2px;background:rgba(255,0,0,.85);color:#fff;border:none;width:17px;height:17px;border-radius:50%;font-size:.6rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.wk-empty{text-align:center;padding:50px 20px;color:var(--muted,#567890);}
+.wk-ei{font-size:2.8rem;margin-bottom:10px;}
+.wk-et{font-size:.95rem;font-weight:600;margin-bottom:5px;}
+.wk-es{font-size:.82rem;}
+.wk-ld{display:flex;align-items:center;justify-content:center;padding:60px;}
+.wk-sp{width:36px;height:36px;border:3px solid var(--border,#182433);border-top-color:#00d4ff;border-radius:50%;animation:spin .7s linear infinite;}
+#wkImgLightbox{display:none;position:fixed;inset:0;z-index:9100;background:rgba(0,0,0,.95);align-items:center;justify-content:center;cursor:zoom-out;}
+#wkImgLightbox.open{display:flex;}
+#wkImgLightbox img{max-width:92vw;max-height:88vh;object-fit:contain;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.9);cursor:default;}
+.wk-lb-close{position:fixed;top:16px;right:20px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;z-index:9101;}
+.wk-lb-close:hover{background:rgba(255,68,102,.7);}
+.wk-mo{display:none;position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.88);backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:16px;}
+.wk-mo.open{display:flex;}
+.wk-modal{background:var(--bg3,#101820);border:1px solid var(--border,#182433);border-radius:12px;width:100%;max-width:680px;max-height:90vh;overflow-y:auto;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.85);position:relative;animation:mIn .25s ease;}
+.wk-mcx{position:absolute;top:14px;right:14px;background:var(--bg4,#151f2a);border:1px solid var(--border,#182433);color:var(--muted,#567890);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.wk-mcx:hover{color:#ff4466;border-color:#ff4466;}
+@keyframes borderBlink{0%{box-shadow:0 0 0 2px #ff4dff,0 0 14px rgba(255,77,255,.6);border:2px solid #ff4dff;}16%{box-shadow:0 0 0 2px #ff9900,0 0 14px rgba(255,153,0,.6);border:2px solid #ff9900;}33%{box-shadow:0 0 0 2px #00ff88,0 0 14px rgba(0,255,136,.6);border:2px solid #00ff88;}50%{box-shadow:0 0 0 2px #00d4ff,0 0 14px rgba(0,212,255,.6);border:2px solid #00d4ff;}66%{box-shadow:0 0 0 2px #ffd700,0 0 14px rgba(255,215,0,.6);border:2px solid #ffd700;}83%{box-shadow:0 0 0 2px #ff4466,0 0 14px rgba(255,68,102,.6);border:2px solid #ff4466;}100%{box-shadow:0 0 0 2px #ff4dff,0 0 14px rgba(255,77,255,.6);border:2px solid #ff4dff;}}
+@keyframes barSlide{0%{background-position:200% 0}100%{background-position:-200% 0}}
+/* ===== END WIKI TROFEOS STYLES ===== */
 </style>
 </head>
 <body>
@@ -866,7 +1030,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
       <div class="sl-item" onclick="gp('publica-trofeo')"><span class="sl-item-icon">🏆</span> Publica tu Trofeo</div>
       <div class="sl-item" onclick="gp('buscar-trofeo')"><span class="sl-item-icon">🔍</span> Buscar Trofeo</div>
       <div class="sl-item" onclick="gp('skill')"><span class="sl-item-icon">📈</span> Subir Skill</div>
-      <div class="sl-item" onclick="gp('musica')" id="slMusicaBtn" style="background:linear-gradient(90deg,rgba(255,0,0,.08),transparent);border-left:3px solid #ff0000;"><span class="sl-item-icon">🎵</span> Música</div>
+      <div class="sl-item" onclick="gp('wiki-trofeos')" id="slWikiTrofeosBtn" style="background:linear-gradient(90deg,rgba(255,215,0,.08),transparent);border-left:3px solid #ffd700;"><span class="sl-item-icon">🏆</span> Wiki Trofeos</div>
       <div class="sl-item" onclick="gp('mapa-trofeos');closeSidebar();" id="slMapaTrofeosBtn" style="display:none;background:linear-gradient(90deg,rgba(0,180,120,.08),transparent);border-left:3px solid #00b478;"><span class="sl-item-icon">🗺️</span> Mapa de Trofeos <span style="font-size:.6rem;background:#00b478;color:#000;padding:1px 6px;border-radius:20px;font-weight:800;margin-left:4px;">ADMIN</span></div>
       <div class="sl-item" onclick="gp('carretes')"><span class="sl-item-icon">🎣</span> Buscar Carretes</div>
       <div class="sl-item"><span class="sl-item-icon">🔖</span> Guardados</div>
@@ -1628,7 +1792,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
         Red Social creada por <strong style="color:rgba(232,160,32,.7);">ruizgustavo12</strong>
       </div>
       <div style="font-family:'Exo 2',sans-serif;font-size:.68rem;color:rgba(255,255,255,.22);">
-        <a href="https://rf4wikipedia.netlify.app/" target="_blank" rel="noopener"
+        <a href="#" onclick="gp('wiki-trofeos')" target="_blank" rel="noopener"
            style="color:rgba(232,160,32,.5);text-decoration:none;border-bottom:1px solid rgba(232,160,32,.2);padding-bottom:1px;"
            onmouseover="this.style.color='#e8a020'" onmouseout="this.style.color='rgba(232,160,32,.5)'">WikiPedia 2026</a>
         &nbsp;·&nbsp; Todos los derechos reservados
@@ -3080,7 +3244,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:10px;">
     <div>
       <div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:var(--gold);">🥇 Feed de Trofeos</div>
-      <div style="font-size:.75rem;color:var(--muted);margin-top:3px;">Trofeos aprobados en <a href="https://rf4wikipedia.netlify.app" target="_blank" style="color:var(--accent);">WikipediaRF4</a> · actualización en tiempo real</div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:3px;">Trofeos aprobados en <a href="#" onclick="gp('wiki-trofeos')" target="_blank" style="color:var(--accent);">WikipediaRF4</a> · actualización en tiempo real</div>
     </div>
     <div id="trofeoFeedBadge" style="display:none;background:rgba(255,215,0,.12);border:1px solid rgba(255,215,0,.35);color:var(--gold);padding:4px 12px;border-radius:100px;font-size:.72rem;font-weight:700;">
       🔴 En vivo
@@ -3127,7 +3291,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
       <div style="font-size:.82rem;color:var(--muted);line-height:1.5;">Fabricá recetas con el nombre <strong style="color:var(--gold);">#Eliminar</strong> para poder encontrarlas y borrarlas fácilmente después.<br>
       <strong>Base recomendada:</strong> Productos Caseros · <strong>Feed</strong><br>
       <strong>Atrayente base:</strong> Aceite de cáñamo Helen Van Zandt</div>
-      <a href="https://rf4wikipedia.netlify.app/" target="_blank" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:6px 14px;background:rgba(46,196,182,.1);border:1px solid rgba(46,196,182,.4);border-radius:100px;color:var(--accent);font-size:.75rem;font-weight:700;text-decoration:none;transition:all .2s;" onmouseover="this.style.background='rgba(46,196,182,.2)'" onmouseout="this.style.background='rgba(46,196,182,.1)'">📖 WikipediaRF4 ↗</a>
+      <a href="#" onclick="gp('wiki-trofeos')" target="_blank" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:6px 14px;background:rgba(46,196,182,.1);border:1px solid rgba(46,196,182,.4);border-radius:100px;color:var(--accent);font-size:.75rem;font-weight:700;text-decoration:none;transition:all .2s;" onmouseover="this.style.background='rgba(46,196,182,.2)'" onmouseout="this.style.background='rgba(46,196,182,.1)'">📖 WikipediaRF4 ↗</a>
     </div>
 
     <!-- Imagen del juego -->
@@ -3172,7 +3336,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
     <!-- Herramientas -->
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px;">
       <div style="font-family:'Orbitron',monospace;font-size:1rem;font-weight:800;color:var(--accent);margin-bottom:12px;">🛠️ Herramientas necesarias</div>
-      <a href="https://rf4wikipedia.netlify.app/" target="_blank" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:12px;padding:6px 14px;background:rgba(46,196,182,.1);border:1px solid rgba(46,196,182,.4);border-radius:100px;color:var(--accent);font-size:.75rem;font-weight:700;text-decoration:none;transition:all .2s;" onmouseover="this.style.background='rgba(46,196,182,.2)'" onmouseout="this.style.background='rgba(46,196,182,.1)'">📖 WikipediaRF4 ↗</a>
+      <a href="#" onclick="gp('wiki-trofeos')" target="_blank" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:12px;padding:6px 14px;background:rgba(46,196,182,.1);border:1px solid rgba(46,196,182,.4);border-radius:100px;color:var(--accent);font-size:.75rem;font-weight:700;text-decoration:none;transition:all .2s;" onmouseover="this.style.background='rgba(46,196,182,.2)'" onmouseout="this.style.background='rgba(46,196,182,.1)'">📖 WikipediaRF4 ↗</a>
       <div style="display:flex;flex-direction:column;gap:8px;font-size:.82rem;">
         <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg3);border-radius:var(--rs);border:1px solid var(--border);">
           <span style="color:var(--text);">🪱 Pala Fiskarna</span>
@@ -3241,7 +3405,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
     <!-- Herramientas -->
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px;">
       <div style="font-family:'Orbitron',monospace;font-size:1rem;font-weight:800;color:var(--accent);margin-bottom:12px;">🛠️ Ejemplo: Cuchara de lucioperca (Zander spoon)</div>
-      <a href="https://rf4wikipedia.netlify.app/" target="_blank" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:12px;padding:6px 14px;background:rgba(46,196,182,.1);border:1px solid rgba(46,196,182,.4);border-radius:100px;color:var(--accent);font-size:.75rem;font-weight:700;text-decoration:none;transition:all .2s;" onmouseover="this.style.background='rgba(46,196,182,.2)'" onmouseout="this.style.background='rgba(46,196,182,.1)'">📖 WikipediaRF4 ↗</a>
+      <a href="#" onclick="gp('wiki-trofeos')" target="_blank" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:12px;padding:6px 14px;background:rgba(46,196,182,.1);border:1px solid rgba(46,196,182,.4);border-radius:100px;color:var(--accent);font-size:.75rem;font-weight:700;text-decoration:none;transition:all .2s;" onmouseover="this.style.background='rgba(46,196,182,.2)'" onmouseout="this.style.background='rgba(46,196,182,.1)'">📖 WikipediaRF4 ↗</a>
       <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:.8rem;">
         <span style="padding:5px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:100px;color:var(--text);">🔧 Molde Fiskarna Zander spoon</span>
         <span style="padding:5px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:100px;color:var(--text);">🪝 Anzuelo triple (opcional)</span>
@@ -3370,67 +3534,256 @@ select.fi option{background:var(--bg3);color:var(--text);}
 </div>
 <!-- ===== FIN SOPORTE ===== -->
 
-<div class="page" id="page-musica" style="max-width:900px;margin:0 auto;padding:20px 16px 80px;">
+<!-- ======================================================
+     WIKI TROFEOS — Integración completa rf4wikipedia
+     Firebase: charlasrf4 · Colección: trofeos
+     ====================================================== -->
+<div class="page" id="page-wiki-trofeos" style="min-height:100vh;padding-bottom:80px;">
 
-  <!-- Header -->
-  <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px;">
-    <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#1ed760,#17a84a);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;box-shadow:0 4px 16px rgba(30,215,96,.35);">🎵</div>
-    <div>
-      <div style="font-family:'Orbitron',monospace;font-size:1.15rem;font-weight:900;color:#1ed760;">🎵 Música · Jamendo</div>
-      <div style="font-size:.75rem;color:var(--muted);margin-top:2px;">Buscá canciones y escuchalas gratis vía Jamendo</div>
+  <!-- Banner online fishing -->
+  <div id="wkOnlineBanner" style="width:100%;background:linear-gradient(90deg,rgba(0,15,28,.97),rgba(0,30,50,.95),rgba(0,15,28,.97));border-bottom:1px solid rgba(0,212,255,.18);padding:10px 20px;display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap;position:sticky;top:62px;z-index:900;backdrop-filter:blur(12px);">
+    <div style="display:flex;align-items:center;gap:6px">
+      <div style="width:7px;height:7px;border-radius:50%;background:#00ff88;box-shadow:0 0 8px #00ff88;animation:pulse 2s infinite;flex-shrink:0"></div>
+      <span style="font-family:'Orbitron',monospace;font-size:.58rem;font-weight:700;color:#00ff88;letter-spacing:2px;text-transform:uppercase">En Vivo</span>
     </div>
-  </div>
-
-  <!-- Buscador -->
-  <div style="display:flex;gap:8px;margin-bottom:20px;">
-    <div style="flex:1;position:relative;">
-      <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:1rem;pointer-events:none;">🔍</span>
-      <input id="musicSearchInput" type="text" placeholder="Buscar canción, artista o álbum..."
-        style="width:100%;padding:11px 12px 11px 38px;background:var(--bg3);border:1.5px solid var(--border);border-radius:12px;color:var(--text);font-size:.9rem;font-family:'Exo 2',sans-serif;outline:none;box-sizing:border-box;transition:border-color .2s;"
-        onfocus="this.style.borderColor='#1ed760'" onblur="this.style.borderColor='var(--border)'"
-        onkeydown="if(event.key==='Enter') searchDeezer()"
-        oninput="debounceMusicSearch()"
-        placeholder="Buscar canción, artista o álbum en YouTube...">
-    </div>
-    <button onclick="searchDeezer()" style="padding:11px 20px;background:#1ed760;border:none;border-radius:12px;color:#000;font-size:.88rem;font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .2s;white-space:nowrap;"
-      onmouseover="this.style.background='#17a84a';this.style.color='#fff'" onmouseout="this.style.background='#1ed760';this.style.color='#000'">Buscar</button>
-  </div>
-
-  <!-- Nota Jamendo -->
-  <div style="background:rgba(255,193,7,.08);border:1px solid rgba(255,193,7,.35);border-radius:10px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:flex-start;gap:10px;">
-    <span style="font-size:1.1rem;flex-shrink:0;margin-top:1px;">⚠️</span>
-    <div style="font-size:.78rem;color:#ffd54f;line-height:1.5;">
-      <strong>Nota:</strong> Jamendo tiene mucha música indie/alternativa pero no tiene artistas mainstream como Bad Bunny o Taylor Swift. Si buscás un artista y no aparece, probá buscar por género como <em>"rock"</em>, <em>"electronic"</em>, <em>"chill"</em>, <em>"latin"</em>.
-    </div>
-  </div>
-
-  <!-- Resultados de búsqueda -->
-  <div id="musicResults" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-bottom:20px;"></div>
-
-  <!-- Reproductor Jamendo embed -->
-  <div id="musicPlayerWrap" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:2px solid var(--accent);box-shadow:0 -4px 24px rgba(0,0,0,.6);z-index:9999;">
-    <!-- Barra de progreso -->
-    <div style="width:100%;height:3px;background:var(--bg4);cursor:pointer;" onclick="(function(e){if(_currentAudio&&_currentAudio.duration){_currentAudio.currentTime=_currentAudio.duration*(e.offsetX/e.currentTarget.offsetWidth);}}) (event)">
-      <div id="musicProgBar" style="height:100%;background:var(--accent);width:0%;transition:width .5s linear;"></div>
-    </div>
-    <div style="display:flex;align-items:center;gap:12px;max-width:800px;margin:0 auto;padding:10px 16px;">
-      <div style="width:44px;height:44px;border-radius:8px;overflow:hidden;background:var(--bg3);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.4rem;">🎵</div>
-      <div style="flex:1;min-width:0;">
-        <div id="deezerTitleBig" style="font-size:.88rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
-        <div id="deezerArtistBig" style="font-size:.75rem;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+    <div style="width:1px;height:22px;background:rgba(0,212,255,.2)"></div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-family:'Orbitron',monospace;font-size:.78rem;font-weight:800;color:#ffd700;letter-spacing:2px;text-transform:uppercase;text-shadow:0 0 10px rgba(255,215,0,.5)">🔍 Buscando Trofeos</span>
+      <div style="display:flex;align-items:baseline;gap:7px">
+        <div style="position:relative;padding:3px 10px;border-radius:8px;animation:borderBlink 1.4s linear infinite;">
+          <span id="wkOnlineCount" style="font-family:'Orbitron',monospace;font-size:1.65rem;font-weight:900;color:#ff4dff;text-shadow:0 0 18px rgba(255,77,255,.8);line-height:1;transition:all .35s ease">—</span>
+        </div>
+        <div style="display:flex;flex-direction:column;line-height:1.2">
+          <span style="font-family:'Orbitron',monospace;font-size:.56rem;font-weight:800;color:#ff9900;letter-spacing:1.5px">PESCADORES</span>
+          <span style="font-family:'Orbitron',monospace;font-size:.56rem;font-weight:800;color:#ff9900;letter-spacing:1.5px">ONLINE</span>
+        </div>
       </div>
-      <button onclick="(function(){if(_currentAudio){if(_currentAudio.paused){_currentAudio.play();document.getElementById('musicPauseBtn').textContent='⏸';}else{_currentAudio.pause();document.getElementById('musicPauseBtn').textContent='▶';}}})() " id="musicPauseBtn" style="background:var(--accent);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;">⏸</button>
-      <button onclick="closeMusicPlayer()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.2rem;padding:4px 8px;border-radius:6px;flex-shrink:0;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--muted)'">✕</button>
     </div>
-    <iframe id="ytMusicPlayer" style="display:none;" src=""></iframe>
+    <div style="width:1px;height:22px;background:rgba(0,212,255,.2)"></div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:1.1rem;">🏆</span>
+      <div style="display:flex;align-items:baseline;gap:7px">
+        <span id="wkTotalTrophy" style="font-family:'Orbitron',monospace;font-size:1.65rem;font-weight:900;color:#ffd700;text-shadow:0 0 18px rgba(255,215,0,.8);line-height:1;transition:all .35s ease">—</span>
+        <div style="display:flex;flex-direction:column;line-height:1.2">
+          <span style="font-family:'Orbitron',monospace;font-size:.56rem;font-weight:800;color:#ffd700;letter-spacing:1.5px">TROFEOS</span>
+          <span style="font-family:'Orbitron',monospace;font-size:.56rem;font-weight:800;color:#ffd700;letter-spacing:1.5px">PUBLICADOS</span>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- Sugerencias iniciales -->
-  <div id="musicSuggestions">
-    <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:12px;">🎧 Géneros populares</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;" id="musicGenreGrid"></div>
+  <!-- Sub-navegación Wiki -->
+  <div class="wk-nav">
+    <button class="wk-nb on" id="wkNbInicio" onclick="wkGp('wk-inicio',this)">🏠 Inicio</button>
+    <button class="wk-nb" id="wkNbTrophies" onclick="wkGp('wk-trophies',this)">🏆 Trofeos</button>
+    <button class="wk-nb" id="wkNbRanking" onclick="wkGp('wk-ranking',this)">🥇 Ranking</button>
+    <button class="wk-nb" id="wkNbRecords" onclick="wkGp('wk-records',this)">📊 Records</button>
+    <button class="wk-nb" id="wkNbSheet" onclick="wkGp('wk-sheet',this)">📋 Tabla</button>
+    <button class="wk-nb cta" id="wkNbPublish" style="display:none" onclick="wkOpenPublish()">+ Publicar Trofeo</button>
+    <button class="wk-nb" id="wkNbAdmin" style="display:none" onclick="wkGp('wk-admin',this)">⚙ Admin</button>
+  </div>
+
+  <!-- SUB-PÁGINA: INICIO -->
+  <div id="wk-inicio" style="display:block;">
+    <div class="section">
+      <!-- Banner buscador por mapa -->
+      <div class="map-search-wrap">
+        <div class="map-search-title">🗺️ Explorar por Mapa</div>
+        <div class="map-search-sub">Seleccioná un mapa y ve todos los trofeos capturados allí</div>
+        <div class="map-select-row">
+          <select class="map-select" id="wkHomeMapSelect" onchange="wkOnHomeMapChange()">
+            <option value="">— Seleccioná un mapa —</option>
+            <option>Belaya River</option><option>Volkhov River</option><option>Akhtuba River</option>
+            <option>Winding Rivulet</option><option>Old Burg Lake</option><option>Sura River</option>
+            <option>Ladoga Lake</option><option>Amber Lake</option><option>Bear Lake</option>
+            <option>Mosquito Lake</option><option>Seversky Donets</option><option>Yama River</option>
+            <option>Archipiélago Ladoga</option><option>Mar de Noruega</option><option>Lago Elk</option>
+            <option>Kuori</option><option>Cooper Lake</option>
+          </select>
+          <button class="btn btn-s btn-sm" onclick="document.getElementById('wkHomeMapSelect').value='';wkOnHomeMapChange()">✕ Limpiar</button>
+        </div>
+        <div class="map-results" id="wkHomeMapResults" style="display:none">
+          <div class="map-results-header">
+            <div class="map-results-title" id="wkHomeMapTitle"></div>
+            <div class="map-results-count" id="wkHomeMapCount"></div>
+          </div>
+          <div class="map-grid" id="wkHomeMapGrid"></div>
+          <div class="wk-empty" id="wkHomeMapEmpty" style="display:none;padding:24px 0"><div class="wk-ei">🗺️</div><div class="wk-et">Sin trofeos en este mapa</div><div class="wk-es">¡Sé el primero en publicar desde aquí!</div></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:10px">
+        <div><div class="stitle">🏆 Trofeos Recientes</div><div class="ssub">Los últimos aprobados por la comunidad</div></div>
+        <button class="btn btn-s btn-sm" onclick="wkGp('wk-trophies',document.getElementById('wkNbTrophies'))">Ver todos →</button>
+      </div>
+      <div class="tgrid" id="wkHomeGrid"></div>
+      <div class="wk-empty" id="wkHomeEmpty" style="display:none"><div class="wk-ei">🐟</div><div class="wk-et">Aún no hay trofeos</div><div class="wk-es">¡Sé el primero en publicar!</div></div>
+    </div>
+  </div>
+
+  <!-- SUB-PÁGINA: GALERÍA TROFEOS -->
+  <div id="wk-trophies" style="display:none;">
+    <div class="section">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:8px">
+        <div><div class="stitle">🏆 Todos los Trofeos</div><div class="ssub">Explorá las capturas de la comunidad</div></div>
+        <button class="btn btn-p btn-sm" id="wkPubBtn" style="display:none" onclick="wkOpenPublish()">+ Publicar Trofeo</button>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;align-items:center">
+        <select class="wk-fi" style="width:auto" id="wkFMap" onchange="wkRenderTrophies()">
+          <option value="">Todos los mapas</option>
+          <option>Belaya River</option><option>Volkhov River</option><option>Akhtuba River</option>
+          <option>Winding Rivulet</option><option>Old Burg Lake</option><option>Sura River</option>
+          <option>Ladoga Lake</option><option>Amber Lake</option><option>Bear Lake</option>
+          <option>Mosquito Lake</option><option>Seversky Donets</option><option>Yama River</option>
+          <option>Archipiélago Ladoga</option><option>Mar de Noruega</option><option>Lago Elk</option>
+          <option>Kuori</option><option>Cooper Lake</option>
+        </select>
+        <select class="wk-fi" style="width:auto" id="wkFTech" onchange="wkRenderTrophies()">
+          <option value="">Todas las técnicas</option>
+          <option>Spinning</option><option>Fondo</option><option>Flote</option>
+          <option>Hielo</option><option>Jigging</option><option>Feeder</option><option>Match</option>
+          <option>Curricán</option><option>Pirking Fuerte</option><option>Movimiento en el Fondo</option>
+          <option>Fly</option><option>Collar</option><option>Pasternoster</option>
+        </select>
+        <input class="wk-fi" style="width:190px" placeholder="Buscar pez..." id="wkFSearch" oninput="wkRenderTrophies()">
+      </div>
+      <div class="tgrid" id="wkTGrid"></div>
+      <div class="wk-empty" id="wkTEmpty" style="display:none"><div class="wk-ei">🎣</div><div class="wk-et">Sin resultados</div><div class="wk-es">Cambiá los filtros o publicá primero</div></div>
+    </div>
+  </div>
+
+  <!-- SUB-PÁGINA: RANKING -->
+  <div id="wk-ranking" style="display:none;">
+    <div class="section">
+      <div style="margin-bottom:6px"><div class="stitle">🥇 Ranking Global</div><div class="ssub">Los mejores pescadores · Score = Posts×3 + Likes×2 + Comentarios×1</div></div>
+      <div class="vsw" style="flex-wrap:wrap">
+        <button class="vb on" onclick="wkSwR(this,'score')">⭐ Score Total</button>
+        <button class="vb" onclick="wkSwR(this,'posts')">🏆 Posts</button>
+        <button class="vb" onclick="wkSwR(this,'likes')">❤️ Likes</button>
+        <button class="vb" onclick="wkSwR(this,'comments')">💬 Comentarios</button>
+      </div>
+      <div class="rk-podium" id="wkRankPodium"></div>
+      <div class="rk-list" id="wkRankList"></div>
+      <div class="wk-ld" id="wkRankLoad"><div class="wk-sp"></div></div>
+    </div>
+  </div>
+
+  <!-- SUB-PÁGINA: RECORDS -->
+  <div id="wk-records" style="display:none;">
+    <div class="section">
+      <div class="stitle">🏆 Records de la Comunidad</div>
+      <div class="ssub" style="margin-bottom:20px">Récords por especie · El pez más pesado de cada categoría</div>
+      <div id="wkRecordsContent"><div class="wk-ld"><div class="wk-sp"></div></div></div>
+    </div>
+  </div>
+
+  <!-- SUB-PÁGINA: TABLA GOOGLE SHEETS -->
+  <div id="wk-sheet" style="display:none;">
+    <div class="section">
+      <div style="background:var(--bg2,#0c1318);border:1px solid var(--border,#182433);border-radius:12px;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:18px">
+        <div>
+          <div class="stitle">📊 Tabla de Trofeos</div>
+          <div class="ssub" style="margin-bottom:0">Registro completo de la comunidad en tiempo real</div>
+        </div>
+        <a href="https://script.google.com/macros/s/AKfycby0JItWnIJTGRhfqYYzs5zKEQirWPaW2M8AwP0et6Cj3qlAtlUkDbc7dAqA_YyuQXKe/exec" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#00d4ff,#0088cc);color:#000;font-weight:700;padding:8px 18px;border-radius:8px;font-size:.82rem;text-decoration:none;letter-spacing:.5px">🔗 Abrir en nueva pestaña</a>
+      </div>
+      <div style="background:var(--bg2,#0c1318);border:1px solid var(--border,#182433);border-radius:12px;overflow:hidden">
+        <iframe src="https://script.google.com/macros/s/AKfycby0JItWnIJTGRhfqYYzs5zKEQirWPaW2M8AwP0et6Cj3qlAtlUkDbc7dAqA_YyuQXKe/exec" style="width:100%;min-height:650px;border:none;display:block" title="Tabla de Trofeos" loading="lazy"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUB-PÁGINA: ADMIN WIKI -->
+  <div id="wk-admin" style="display:none;">
+    <div class="section">
+      <div class="stitle">⚙ Panel de Administración · Wiki Trofeos</div>
+      <div class="ssub">Control total — Solo ruizgustavo12</div>
+      <div class="agrid">
+        <div class="asb">
+          <div class="asbt">Menú Admin</div>
+          <div class="ami on" onclick="wkSwA(this,'wk-adash')">📊 Dashboard</div>
+          <div class="ami" onclick="wkSwA(this,'wk-apend')">⏳ Pendientes <span class="abd" id="wkPBdg">0</span></div>
+          <div class="ami" onclick="wkSwA(this,'wk-ausers')">👥 Usuarios</div>
+          <div class="ami" onclick="wkSwA(this,'wk-areports')">🚨 Reportes <span class="abd" id="wkRBdg">0</span></div>
+          <div class="ami" onclick="wkSwA(this,'wk-aallp')">📋 Publicaciones</div>
+        </div>
+        <div class="act">
+          <div class="as on" id="wk-adash"><div id="wkADash"><div class="wk-ld"><div class="wk-sp"></div></div></div></div>
+          <div class="as" id="wk-apend"><h3 style="font-family:'Orbitron',monospace;font-size:.95rem;color:#00d4ff;margin-bottom:14px">Trofeos Pendientes</h3><div id="wkAPend"></div></div>
+          <div class="as" id="wk-ausers"><h3 style="font-family:'Orbitron',monospace;font-size:.95rem;color:#00d4ff;margin-bottom:14px">Gestión de Usuarios</h3><div id="wkAUsers"></div></div>
+          <div class="as" id="wk-areports"><h3 style="font-family:'Orbitron',monospace;font-size:.95rem;color:#00d4ff;margin-bottom:14px">Reportes</h3><div id="wkAReps"></div></div>
+          <div class="as" id="wk-aallp"><h3 style="font-family:'Orbitron',monospace;font-size:.95rem;color:#00d4ff;margin-bottom:14px">Todas las Publicaciones</h3><div id="wkAAllP"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL: PUBLICAR TROFEO (Wiki) -->
+<div class="wk-mo" id="wkMPublish">
+  <div class="wk-modal">
+    <button class="wk-mcx" onclick="wkCm('wkMPublish');wkResetForm()">✕</button>
+    <div style="font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:800;color:#00d4ff;margin-bottom:22px" id="wkPubTit">🏆 Publicar Trofeo</div>
+    <div class="wk-frow">
+      <div class="wk-fg"><label class="wk-fl">Nombre del pez *</label><input class="wk-fi" id="wkPF" placeholder="Ej: Bream, Catfish..."></div>
+      <div class="wk-fg"><label class="wk-fl">Peso (kg) *</label><input class="wk-fi" type="number" step="0.001" id="wkPW" placeholder="0.000"></div>
+    </div>
+    <div class="wk-frow">
+      <div class="wk-fg"><label class="wk-fl">Mapa *</label>
+        <select class="wk-fi" id="wkPM">
+          <option value="">Seleccionar...</option>
+          <option>Belaya River</option><option>Volkhov River</option><option>Akhtuba River</option>
+          <option>Winding Rivulet</option><option>Old Burg Lake</option><option>Sura River</option>
+          <option>Ladoga Lake</option><option>Amber Lake</option><option>Bear Lake</option>
+          <option>Mosquito Lake</option><option>Seversky Donets</option><option>Yama River</option>
+          <option>Archipiélago Ladoga</option><option>Mar de Noruega</option><option>Lago Elk</option>
+          <option>Kuori</option><option>Cooper Lake</option>
+        </select>
+      </div>
+      <div class="wk-fg"><label class="wk-fl">Spot</label><input class="wk-fi" id="wkPS" placeholder="Ej: Spot A, Puente Norte..."></div>
+    </div>
+    <div class="wk-frow">
+      <div class="wk-fg"><label class="wk-fl">Técnica *</label>
+        <select class="wk-fi" id="wkPT">
+          <option value="">Técnica...</option>
+          <option>Spinning</option><option>Fondo</option><option>Flote</option>
+          <option>Hielo</option><option>Jigging</option><option>Feeder</option><option>Match</option>
+          <option>Curricán</option><option>Pirking Fuerte</option><option>Movimiento en el Fondo</option>
+          <option>Fly</option><option>Collar</option><option>Pasternoster</option>
+        </select>
+      </div>
+      <div class="wk-fg"><label class="wk-fl">Fecha</label><input class="wk-fi" type="date" id="wkPDt"></div>
+    </div>
+    <div class="wk-fg"><label class="wk-fl">Descripción / Setup</label><textarea class="wk-fi" id="wkPDesc" placeholder="Señuelo, profundidad, condiciones del agua..." style="min-height:65px"></textarea></div>
+    <div class="wk-fg">
+      <label class="wk-fl">📸 Fotos (máx. 4)</label>
+      <div class="wk-dz" id="wkDropzone">
+        <div>📁 Arrastrá o hacé clic para subir fotos</div>
+        <div style="font-size:.75rem;color:var(--muted,#567890);margin-top:4px">JPG, PNG · Max 5MB c/u</div>
+        <input type="file" id="wkFileInput" multiple accept="image/*" onchange="wkHFiles(this.files)">
+      </div>
+      <div class="wk-pv" id="wkPvGrid"></div>
+    </div>
+    <button class="btn btn-p" style="width:100%;margin-top:6px" onclick="wkSubmitTrophy()" id="wkSubmitBtn">🏆 Publicar Trofeo</button>
+    <div id="wkPubErr" style="color:#ff4466;font-size:.82rem;margin-top:8px;text-align:center"></div>
   </div>
 </div>
+
+<!-- MODAL: DETALLE TROFEO (Wiki) -->
+<div class="wk-mo" id="wkMDetail">
+  <div class="wk-modal" style="max-width:800px">
+    <button class="wk-mcx" onclick="wkCm('wkMDetail')">✕</button>
+    <div id="wkDetailContent"></div>
+  </div>
+</div>
+
+<!-- LIGHTBOX WIKI -->
+<div id="wkImgLightbox" onclick="this.classList.remove('open')">
+  <button class="wk-lb-close" onclick="event.stopPropagation();document.getElementById('wkImgLightbox').classList.remove('open')">✕</button>
+  <img id="wkLbImg" src="" alt="">
+</div>
+
+<!-- ===== FIN WIKI TROFEOS ===== -->
 
 <!-- MAPA INTERACTIVO DE TROFEOS (solo admin) -->
 <div class="page" id="page-mapa-trofeos" style="max-width:100%;margin:0;padding:0 0 80px;">
@@ -4167,6 +4520,13 @@ function onLogin(){
   loadPezSemana();
   loadXPLevels();
   loadShopEquipped();
+  // Update wiki trofeos auth-dependent UI
+  const wkPub = document.getElementById('wkNbPublish');
+  if(wkPub) wkPub.style.display = '';
+  if(window.CU && (window.CU.nick===WK_ADMIN||window.CU.role==='admin')) {
+    const wkAdm = document.getElementById('wkNbAdmin');
+    if(wkAdm) wkAdm.style.display = '';
+  }
   // Update "Crear historia" card with user photo
   const storyPhoto = document.getElementById('storyAddPhoto');
   const storyPhotoInner = document.getElementById('storyAddPhotoInner');
@@ -4355,7 +4715,7 @@ const PAGE_TO_URL = {
   'pez-semanal':   '/pez-semanal',
   'admin':         '/admin',
   'grupos':        '/grupos',
-  'musica':        '/musica',
+  'wiki-trofeos':  '/wiki-trofeos',
   'mapa-trofeos':  '/mapa-trofeos',
 };
 
@@ -4467,13 +4827,9 @@ window.gp = (id, pushState = true) => {
   if(id==='torneos') loadTorneos();
   if(id==='carretes') renderCarretesTable();
   if(id==='userprofile') {} // cargado desde _loadUserProfilePage
-  if(id==='musica') {
-    // Resetear búsqueda al entrar a la página
-    const sugEl = document.getElementById('musicSuggestions');
-    const resEl = document.getElementById('musicResults');
-    if(sugEl) sugEl.style.display='';
-    if(resEl) resEl.innerHTML='';
-    document.getElementById('musicSearchInput')?.focus();
+  if(id==='wiki-trofeos') {
+    // Cargar wiki de trofeos al entrar
+    if(typeof wkInit === 'function') wkInit();
   }
   // Actualizar actividad en presencia Firebase
   if(typeof updatePresenceActivity === 'function') updatePresenceActivity(id);
@@ -12816,7 +13172,7 @@ const _PAGE_ACTIVITY = {
   'profile':       {icon:'👤', text:'viendo su perfil'},
   'userprofile':   {icon:'👤', text:'viendo un perfil'},
   'amigos':        {icon:'👥', text:'buscando amigos'},
-  'musica':        {icon:'🎵', text:'escuchando música'},
+  'wiki-trofeos':  {icon:'🏆', text:'en la wiki de trofeos'},
   'videos':        {icon:'📹', text:'viendo videos'},
   'spots':         {icon:'📍', text:'explorando spots'},
   'trofeos-feed':  {icon:'🥇', text:'viendo trofeos'},
@@ -15105,7 +15461,7 @@ function renderTrofeosFeed(){
     el.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--muted);">
       <div style="font-size:3rem;margin-bottom:12px;">🏆</div>
       <div style="font-size:.95rem;font-weight:700;margin-bottom:6px;">No hay trofeos aprobados aún</div>
-      <div style="font-size:.8rem;">Los trofeos aprobados en <a href="https://rf4wikipedia.netlify.app" target="_blank" style="color:var(--accent);">WikipediaRF4</a> aparecerán aquí automáticamente.</div>
+      <div style="font-size:.8rem;">Los trofeos aprobados en <a href="#" onclick="gp('wiki-trofeos')" target="_blank" style="color:var(--accent);">WikipediaRF4</a> aparecerán aquí automáticamente.</div>
     </div>`;
     return;
   }
@@ -15146,7 +15502,7 @@ function trofeoFeedCardHTML(t){
         </div>
         <div class="post-time">🌐 ${fmtT(approvedAt)} · WikipediaRF4</div>
       </div>
-      <a href="https://rf4wikipedia.netlify.app" target="_blank" style="background:none;border:1px solid rgba(255,215,0,.3);color:var(--gold);padding:4px 10px;border-radius:var(--rs);font-size:.7rem;font-weight:700;cursor:pointer;text-decoration:none;font-family:'Exo 2',sans-serif;">↗ Wiki</a>
+      <a href="#" onclick="gp('wiki-trofeos')" target="_blank" style="background:none;border:1px solid rgba(255,215,0,.3);color:var(--gold);padding:4px 10px;border-radius:var(--rs);font-size:.7rem;font-weight:700;cursor:pointer;text-decoration:none;font-family:'Exo 2',sans-serif;">↗ Wiki</a>
     </div>
     <!-- Fish info highlight -->
     <div style="margin:0 14px 12px;background:linear-gradient(135deg,rgba(255,215,0,.1),rgba(255,165,0,.05));border:1px solid rgba(255,215,0,.25);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
@@ -15171,7 +15527,7 @@ function trofeoFeedCardHTML(t){
     <!-- Footer -->
     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-top:1px solid rgba(255,215,0,.12);">
       <div style="font-size:.72rem;color:var(--muted);">Verificado en WikipediaRF4</div>
-      <a href="https://rf4wikipedia.netlify.app" target="_blank" style="font-size:.72rem;color:var(--accent);text-decoration:none;font-weight:600;">Ver registro completo ↗</a>
+      <a href="#" onclick="gp('wiki-trofeos')" target="_blank" style="font-size:.72rem;color:var(--accent);text-decoration:none;font-weight:600;">Ver registro completo ↗</a>
     </div>
   </div>`;
 }
@@ -16235,6 +16591,566 @@ window.filterSoporteTickets= filterSoporteTickets;
 window.marcarSoporteLeido  = marcarSoporteLeido;
 window.eliminarSoporteTicket = eliminarSoporteTicket;
 window.responderSoporte    = responderSoporte;
+
+// ============================================================
+// WIKI TROFEOS — JavaScript Integration
+// Firebase: charlasrf4 (trophiesDb) · Colección: trofeos
+// Todas las funciones prefijadas con wk_ para evitar conflictos
+// ============================================================
+
+const WK_ADMIN = 'ruizgustavo12';
+let _wkImgs = [], _wkEditId = null, _wkRkMode = 'score', _wkLoaded = false;
+let _wkAllTrophies = []; // cache local
+
+// Sub-page navigation
+window.wkGp = (subId, btn) => {
+  document.querySelectorAll('#page-wiki-trofeos > [id^="wk-"]').forEach(p => p.style.display='none');
+  const el = document.getElementById(subId);
+  if(el) el.style.display = 'block';
+  document.querySelectorAll('.wk-nb').forEach(b=>b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  // Load data for each sub-page
+  if(subId==='wk-trophies') wkRenderTrophies();
+  if(subId==='wk-ranking') wkRenderRanking();
+  if(subId==='wk-records') wkRenderRecords();
+  if(subId==='wk-admin') wkRenderAdmin();
+  if(subId==='wk-inicio') wkLoadHome();
+};
+
+// Init - called once when entering page-wiki-trofeos
+window.wkInit = () => {
+  if(_wkLoaded) return; _wkLoaded = true;
+  wkLoadHome();
+  wkUpdateBannerCounts();
+  // Show/hide auth-dependent buttons
+  const cu = window.CU;
+  if(cu) {
+    const pubBtn = document.getElementById('wkNbPublish');
+    if(pubBtn) pubBtn.style.display = '';
+    const admBtn = document.getElementById('wkNbAdmin');
+    if(admBtn && (cu.nick===WK_ADMIN||cu.role==='admin')) admBtn.style.display = '';
+  }
+};
+
+// Update banner counters
+async function wkUpdateBannerCounts() {
+  try {
+    const snap = await getDocs(query(collection(trophiesDb,'trofeos'), where('status','==','approved')));
+    const total = snap.size;
+    const el = document.getElementById('wkTotalTrophy');
+    if(el) el.textContent = total;
+    // Online count from presence
+    const presSnap = await getDocs(collection(trophiesDb,'presence'));
+    const online = presSnap.docs.filter(d => {
+      const t = d.data().lastSeen?.toMillis?.() || 0;
+      return Date.now() - t < 5*60*1000;
+    }).length;
+    const onEl = document.getElementById('wkOnlineCount');
+    if(onEl) onEl.textContent = online||'—';
+  } catch(e){}
+}
+
+// Card HTML builder
+function wkCard(t, showSt=false) {
+  const liked = window.CU && t.reactions && t.reactions[window.CU.id]?.emoji==='❤️';
+  return `<div class="tcard" onclick="wkOpenDet('${t.id}')">
+    <div class="tcard-img">
+      ${t.images&&t.images[0]?`<img src="${t.images[0]}" alt="${wkEsc(t.fish)}" loading="lazy">`:`<span>🐟</span>`}
+      <div class="twbadge">${parseFloat(t.weight||0).toFixed(3)} kg</div>
+      ${showSt&&t.status?`<div class="status-badge status-${t.status}">${t.status==='pending'?'⏳ Pendiente':t.status==='approved'?'✅ Aprobado':'❌ Rechazado'}</div>`:''}
+    </div>
+    <div class="tcbody">
+      <div class="tcfish">${wkEsc(t.fish)}</div>
+      <div class="tctags">
+        <span class="tag">${wkEsc(t.map)}</span>
+        <span class="tag g">${wkEsc(t.technique)}</span>
+        ${t.spot?`<span class="tag y">📍 ${wkEsc(t.spot)}</span>`:''}
+      </div>
+      <div class="tcauthor">
+        <div class="av" style="width:26px;height:26px;font-size:10px">${t.userPhoto?`<img src="${t.userPhoto}" alt="">`:(t.userNick||'?')[0].toUpperCase()}</div>
+        <span style="font-size:.78rem;font-weight:600">${wkEsc(t.userNick||'Anónimo')}</span>
+      </div>
+    </div>
+    <div class="tcfoot">
+      <div class="rxns">
+        <button class="rxb ${liked?'lk':''}" onclick="event.stopPropagation();wkTogLike('${t.id}')">❤ ${t.likes||0}</button>
+        <button class="rxb" onclick="event.stopPropagation();wkOpenDet('${t.id}')">💬 ${t.commentCount||0}</button>
+      </div>
+      <div class="vct">👁 ${t.views||0}</div>
+    </div>
+  </div>`;
+}
+
+function wkEsc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// Load home - recent trophies
+async function wkLoadHome() {
+  const grid = document.getElementById('wkHomeGrid');
+  const empty = document.getElementById('wkHomeEmpty');
+  if(!grid) return;
+  grid.innerHTML = '<div class="wk-ld"><div class="wk-sp"></div></div>';
+  try {
+    const snap = await getDocs(query(collection(trophiesDb,'trofeos'), where('status','==','approved'), orderBy('createdAt','desc'), limit(12)));
+    _wkAllTrophies = snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(_wkAllTrophies.length===0){ grid.innerHTML=''; empty.style.display='block'; return; }
+    empty.style.display='none';
+    grid.innerHTML = _wkAllTrophies.map(t=>wkCard(t)).join('');
+    // Update stats
+    const hst = document.getElementById('wkTotalTrophy');
+    if(hst) hst.textContent = _wkAllTrophies.length+'+';
+  } catch(e) {
+    // fallback: try without orderBy
+    try {
+      const snap2 = await getDocs(query(collection(trophiesDb,'trofeos'), where('status','==','approved'), limit(12)));
+      _wkAllTrophies = snap2.docs.map(d=>({id:d.id,...d.data()}));
+      if(!_wkAllTrophies.length){ grid.innerHTML=''; empty.style.display='block'; return; }
+      empty.style.display='none';
+      grid.innerHTML = _wkAllTrophies.map(t=>wkCard(t)).join('');
+    } catch(e2){ grid.innerHTML='<div class="wk-empty"><div class="wk-ei">⚠️</div><div class="wk-et">Error al cargar</div></div>'; }
+  }
+}
+
+// Home map filter
+window.wkOnHomeMapChange = async () => {
+  const map = document.getElementById('wkHomeMapSelect').value;
+  const res = document.getElementById('wkHomeMapResults');
+  const grid = document.getElementById('wkHomeMapGrid');
+  const title = document.getElementById('wkHomeMapTitle');
+  const count = document.getElementById('wkHomeMapCount');
+  const empty = document.getElementById('wkHomeMapEmpty');
+  if(!map){ if(res) res.style.display='none'; return; }
+  res.style.display='block';
+  title.textContent = '🗺️ '+map;
+  grid.innerHTML = '<div class="wk-ld"><div class="wk-sp"></div></div>';
+  empty.style.display='none';
+  try {
+    const snap = await getDocs(query(collection(trophiesDb,'trofeos'), where('map','==',map), where('status','==','approved')));
+    const items = snap.docs.map(d=>({id:d.id,...d.data()}));
+    count.textContent = items.length + ' trofeos';
+    if(!items.length){ grid.innerHTML=''; empty.style.display='block'; return; }
+    grid.innerHTML = items.map(t=>wkCard(t)).join('');
+  } catch(e){ grid.innerHTML=''; empty.style.display='block'; }
+};
+
+// Gallery: render all trophies with filters
+window.wkRenderTrophies = async () => {
+  const grid = document.getElementById('wkTGrid');
+  const empty = document.getElementById('wkTEmpty');
+  if(!grid) return;
+  grid.innerHTML = '<div class="wk-ld"><div class="wk-sp"></div></div>';
+  try {
+    const snap = await getDocs(query(collection(trophiesDb,'trofeos'), where('status','==','approved'), orderBy('createdAt','desc')));
+    let items = snap.docs.map(d=>({id:d.id,...d.data()}));
+    // Apply filters
+    const fMap = document.getElementById('wkFMap')?.value||'';
+    const fTech = document.getElementById('wkFTech')?.value||'';
+    const fSearch = (document.getElementById('wkFSearch')?.value||'').toLowerCase().trim();
+    if(fMap) items = items.filter(t=>t.map===fMap);
+    if(fTech) items = items.filter(t=>t.technique===fTech);
+    if(fSearch) items = items.filter(t=>(t.fish||'').toLowerCase().includes(fSearch)||(t.description||'').toLowerCase().includes(fSearch));
+    if(!items.length){ grid.innerHTML=''; empty.style.display='block'; return; }
+    empty.style.display='none';
+    grid.innerHTML = items.map(t=>wkCard(t)).join('');
+    // Show publish button if logged in
+    const btn = document.getElementById('wkPubBtn');
+    if(btn && window.CU) btn.style.display='';
+  } catch(e){
+    // fallback without orderBy
+    try {
+      const snap2 = await getDocs(query(collection(trophiesDb,'trofeos'), where('status','==','approved')));
+      let items2 = snap2.docs.map(d=>({id:d.id,...d.data()}));
+      const fMap = document.getElementById('wkFMap')?.value||'';
+      const fTech = document.getElementById('wkFTech')?.value||'';
+      const fSearch = (document.getElementById('wkFSearch')?.value||'').toLowerCase().trim();
+      if(fMap) items2 = items2.filter(t=>t.map===fMap);
+      if(fTech) items2 = items2.filter(t=>t.technique===fTech);
+      if(fSearch) items2 = items2.filter(t=>(t.fish||'').toLowerCase().includes(fSearch));
+      if(!items2.length){ grid.innerHTML=''; empty.style.display='block'; return; }
+      empty.style.display='none';
+      grid.innerHTML = items2.map(t=>wkCard(t)).join('');
+    } catch(e2){ grid.innerHTML='<div class="wk-empty"><div class="wk-ei">⚠️</div><div class="wk-et">Error al cargar trofeos</div></div>'; }
+  }
+};
+
+// Ranking
+window.wkSwR = (el, m) => {
+  _wkRkMode = m;
+  document.querySelectorAll('#wk-ranking .vb').forEach(v=>v.classList.remove('on'));
+  el.classList.add('on');
+  wkRenderRanking();
+};
+
+window.wkRenderRanking = async () => {
+  const podium = document.getElementById('wkRankPodium');
+  const list = document.getElementById('wkRankList');
+  const loader = document.getElementById('wkRankLoad');
+  if(!podium) return;
+  if(loader) loader.style.display='flex';
+  podium.innerHTML=''; list.innerHTML='';
+  try {
+    const tS = await getDocs(query(collection(trophiesDb,'trofeos'), where('status','==','approved')));
+    const trs = tS.docs.map(d=>({id:d.id,...d.data()}));
+    // Build user stats from trophies
+    const byUser = {};
+    trs.forEach(t=>{
+      if(!t.userId) return;
+      if(!byUser[t.userId]) byUser[t.userId]={userId:t.userId,nick:t.userNick||'?',photo:t.userPhoto||'',role:t.userRole||'novato',tc:0,tl:0,cm:0};
+      byUser[t.userId].tc++;
+      byUser[t.userId].tl += (t.likes||0);
+      byUser[t.userId].cm += (t.commentCount||0);
+    });
+    const users = Object.values(byUser).map(u=>({...u, score:(u.tc*3)+(u.tl*2)+(u.cm*1)}));
+    const sortFn = {posts:(a,b)=>b.tc-a.tc, likes:(a,b)=>b.tl-a.tl, comments:(a,b)=>b.cm-a.cm, score:(a,b)=>b.score-a.score};
+    const sorted = [...users].sort(sortFn[_wkRkMode]||sortFn.score);
+    if(loader) loader.style.display='none';
+    if(!sorted.length){ podium.innerHTML='<div class="wk-empty"><div class="wk-ei">🎣</div><div class="wk-et">Sin datos de ranking aún</div></div>'; return; }
+    const medals=['🥇','🥈','🥉'], colors=['#ffd700','#c0c8d4','#cd7f32'];
+    const top3 = sorted.slice(0,3);
+    const order=[1,0,2]; // 2nd, 1st, 3rd for podium layout
+    podium.innerHTML = order.filter(i=>top3[i]).map(i=>{
+      const u=top3[i], pos=i+1;
+      const val = _wkRkMode==='posts'?u.tc+' posts':_wkRkMode==='likes'?u.tl+' likes':_wkRkMode==='comments'?u.cm+' cmts':u.score+' pts';
+      return `<div class="rk-podium-slot p${pos}" style="order:${pos===1?2:pos===2?1:3}">
+        <div class="rk-podium-medal" style="font-size:${pos===1?'2.2':'1.8'}rem">${medals[i]}</div>
+        <div class="av" style="width:${pos===1?56:46}px;height:${pos===1?56:46}px;font-size:${pos===1?1.4:.9}rem">${u.photo?`<img src="${u.photo}" alt="">`:(u.nick||'?')[0].toUpperCase()}</div>
+        <div class="rk-podium-nick" style="font-size:${pos===1?'.82':'.72'}rem;max-width:${pos===1?130:100}px">${wkEsc(u.nick)}</div>
+        <div class="rk-podium-val" style="background:${colors[i]}">${val}</div>
+        <div class="rk-podium-step" style="height:${pos===1?60:pos===2?40:24}px;background:linear-gradient(180deg,${colors[i]}22,${colors[i]}08)"></div>
+      </div>`;
+    }).join('');
+    list.innerHTML = sorted.slice(3).map((u,i)=>{
+      const pos=i+4;
+      const val = _wkRkMode==='posts'?u.tc:_wkRkMode==='likes'?u.tl:_wkRkMode==='comments'?u.cm:u.score;
+      const unit = _wkRkMode==='posts'?'posts':_wkRkMode==='likes'?'likes':_wkRkMode==='comments'?'cmts':'pts';
+      return `<div class="rk-item">
+        <div class="rk-pos">${pos}</div>
+        <div class="av" style="width:36px;height:36px;font-size:.9rem">${u.photo?`<img src="${u.photo}" alt="">`:(u.nick||'?')[0].toUpperCase()}</div>
+        <div class="rk-info">
+          <div class="rk-nick">${wkEsc(u.nick)}</div>
+          <div class="rk-meta"><span>🏆 ${u.tc} trofeos</span><span>❤️ ${u.tl} likes</span></div>
+        </div>
+        <div class="rk-score">${val}<span class="rk-score-unit">${unit}</span></div>
+      </div>`;
+    }).join('');
+  } catch(e){
+    if(loader) loader.style.display='none';
+    podium.innerHTML='<div class="wk-empty"><div class="wk-ei">⚠️</div><div class="wk-et">Error al cargar ranking</div></div>';
+  }
+};
+
+// Records
+window.wkRenderRecords = async () => {
+  const el = document.getElementById('wkRecordsContent');
+  if(!el) return;
+  el.innerHTML = '<div class="wk-ld"><div class="wk-sp"></div></div>';
+  try {
+    const snap = await getDocs(query(collection(trophiesDb,'trofeos'), where('status','==','approved')));
+    const trs = snap.docs.map(d=>({id:d.id,...d.data()}));
+    // Group by fish species, find heaviest
+    const byFish = {};
+    trs.forEach(t=>{
+      const fish = (t.fish||'').trim();
+      if(!fish) return;
+      if(!byFish[fish]||parseFloat(t.weight||0)>parseFloat(byFish[fish].weight||0)) byFish[fish]=t;
+    });
+    const records = Object.entries(byFish).sort((a,b)=>parseFloat(b[1].weight||0)-parseFloat(a[1].weight||0));
+    if(!records.length){ el.innerHTML='<div class="wk-empty"><div class="wk-ei">🐟</div><div class="wk-et">Sin records aún</div></div>'; return; }
+    // Build user stats for trophy count
+    const byUser = {};
+    trs.forEach(t=>{ if(t.userId) byUser[t.userId]=(byUser[t.userId]||0)+1; });
+    // Top fishermen by count
+    const topFishermen = Object.entries(byUser).sort((a,b)=>b[1]-a[1]).slice(0,10);
+    // Find user data
+    const userNicks = {};
+    trs.forEach(t=>{ if(t.userId&&t.userNick) userNicks[t.userId]=t.userNick; });
+    el.innerHTML = `
+      <div style="margin-bottom:28px">
+        <div style="font-family:'Orbitron',monospace;font-size:.9rem;font-weight:800;color:#ffd700;margin-bottom:12px">🏆 Récord por Especie</div>
+        <div style="overflow-x:auto">
+          <table class="records-table">
+            <thead><tr>
+              <th>#</th><th>Especie</th><th>Peso</th><th>Pescador</th><th>Mapa</th><th>Técnica</th>
+            </tr></thead>
+            <tbody>
+              ${records.map(([fish,t],i)=>`<tr onclick="wkOpenDet('${t.id}')">
+                <td><span style="font-family:'Orbitron',monospace;font-weight:800;color:${i===0?'#ffd700':i===1?'#c0c8d4':i===2?'#cd7f32':'var(--muted,#567890)'}">${i+1}</span></td>
+                <td class="rec-fish">${wkEsc(fish)}</td>
+                <td class="rec-weight">${parseFloat(t.weight||0).toFixed(3)} kg</td>
+                <td>${wkEsc(t.userNick||'?')}</td>
+                <td style="font-size:.8rem;color:var(--muted,#567890)">${wkEsc(t.map||'?')}</td>
+                <td style="font-size:.8rem;color:var(--muted,#567890)">${wkEsc(t.technique||'?')}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:'Orbitron',monospace;font-size:.9rem;font-weight:800;color:#00d4ff;margin-bottom:12px">🎣 Top Pescadores (por cantidad)</div>
+        <div class="rk-list">
+          ${topFishermen.map(([uid,count],i)=>`<div class="rk-item">
+            <div class="rk-pos" style="color:${i===0?'#ffd700':i===1?'#c0c8d4':i===2?'#cd7f32':'var(--muted)'}">${i+1}</div>
+            <div class="rk-info"><div class="rk-nick">${wkEsc(userNicks[uid]||'?')}</div></div>
+            <div class="rk-score">${count}<span class="rk-score-unit">trofeos</span></div>
+          </div>`).join('')}
+        </div>
+      </div>`;
+  } catch(e){ el.innerHTML='<div class="wk-empty"><div class="wk-ei">⚠️</div><div class="wk-et">Error al cargar records</div></div>'; }
+};
+
+// Open trophy detail
+window.wkOpenDet = async (id) => {
+  const modal = document.getElementById('wkMDetail');
+  const content = document.getElementById('wkDetailContent');
+  if(!modal||!content) return;
+  content.innerHTML = '<div class="wk-ld"><div class="wk-sp"></div></div>';
+  modal.classList.add('open');
+  try {
+    const snap = await getDoc(doc(trophiesDb,'trofeos',id));
+    if(!snap.exists()){ content.innerHTML='<div class="wk-empty"><div class="wk-ei">❌</div><div class="wk-et">No encontrado</div></div>'; return; }
+    const t = {id:snap.id,...snap.data()};
+    // Increment views
+    try{ updateDoc(doc(trophiesDb,'trofeos',id),{views:increment(1)}); }catch(e){}
+    const imgs = Array.isArray(t.images)&&t.images.length?t.images:[];
+    content.innerHTML = `
+      <div style="font-family:'Orbitron',monospace;font-size:1.4rem;font-weight:900;color:#ffd700;margin-bottom:4px">${wkEsc(t.fish||'Trofeo')}</div>
+      <div style="font-family:'Orbitron',monospace;font-size:2rem;font-weight:900;color:#ffd700;margin-bottom:14px;text-shadow:0 0 18px rgba(255,215,0,.3)">${parseFloat(t.weight||0).toFixed(3)} kg</div>
+      ${imgs.length?`
+        <div style="width:100%;aspect-ratio:4/3;overflow:hidden;border-radius:12px;background:#060a0e;margin-bottom:8px;cursor:zoom-in" onclick="wkOpenLb('${imgs[0]}')">
+          <img id="wkDetMainImg" src="${imgs[0]}" style="width:100%;height:100%;object-fit:cover" alt="${wkEsc(t.fish)}">
+        </div>
+        ${imgs.length>1?`<div style="display:flex;gap:5px;margin-bottom:12px">${imgs.map((img,i)=>`<div class="dth ${i===0?'on':''}" onclick="this.parentElement.querySelectorAll('.dth').forEach(x=>x.classList.remove('on'));this.classList.add('on');document.getElementById('wkDetMainImg').src='${img}'"><img src="${img}" alt=""></div>`).join('')}</div>`:''}
+      `:'<div style="width:100%;height:180px;background:#101820;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:4rem;margin-bottom:14px">🐟</div>'}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+        <div><div style="font-size:.7rem;color:var(--muted,#567890);text-transform:uppercase;letter-spacing:.4px">Mapa</div><div style="font-weight:600;margin-top:2px">${wkEsc(t.map||'?')}</div></div>
+        <div><div style="font-size:.7rem;color:var(--muted,#567890);text-transform:uppercase;letter-spacing:.4px">Técnica</div><div style="font-weight:600;margin-top:2px">${wkEsc(t.technique||'?')}</div></div>
+        ${t.spot?`<div><div style="font-size:.7rem;color:var(--muted,#567890);text-transform:uppercase;letter-spacing:.4px">Spot</div><div style="font-weight:600;margin-top:2px">${wkEsc(t.spot)}</div></div>`:''}
+        ${t.date?`<div><div style="font-size:.7rem;color:var(--muted,#567890);text-transform:uppercase;letter-spacing:.4px">Fecha</div><div style="font-weight:600;margin-top:2px">${t.date}</div></div>`:''}
+      </div>
+      ${t.description?`<div style="background:rgba(0,212,255,.04);border:1px solid rgba(0,212,255,.12);border-radius:8px;padding:12px;font-size:.85rem;line-height:1.6;margin-bottom:14px">${wkEsc(t.description)}</div>`:''}
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 0;border-top:1px solid var(--border,#182433);border-bottom:1px solid var(--border,#182433);margin-bottom:16px">
+        <div class="av" style="width:42px;height:42px;font-size:1.1rem">${t.userPhoto?`<img src="${t.userPhoto}" alt="">`:(t.userNick||'?')[0].toUpperCase()}</div>
+        <div style="flex:1"><div style="font-weight:700">${wkEsc(t.userNick||'Anónimo')}</div><div style="font-size:.72rem;color:var(--muted,#567890)">${t.date||''}</div></div>
+        <button class="rxb" onclick="wkTogLike('${t.id}')">❤ ${t.likes||0}</button>
+        <span style="font-size:.8rem;color:var(--muted,#567890)">👁 ${t.views||0}</span>
+      </div>
+      <div>
+        <div style="font-family:'Orbitron',monospace;font-size:.78rem;font-weight:700;color:#00d4ff;margin-bottom:10px">💬 Comentarios</div>
+        <div id="wkDetCmts"><div class="wk-ld"><div class="wk-sp"></div></div></div>
+        ${window.CU?`<div style="display:flex;gap:8px;margin-top:10px">
+          <input class="wk-fi" style="flex:1" id="wkCmtInput_${id}" placeholder="Escribí un comentario..." onkeydown="if(event.key==='Enter')wkPostCmt('${id}')">
+          <button class="btn btn-p btn-sm" onclick="wkPostCmt('${id}')">Enviar</button>
+        </div>`:'<div style="font-size:.8rem;color:var(--muted,#567890);margin-top:10px;text-align:center">Iniciá sesión para comentar</div>'}
+      </div>`;
+    // Load comments
+    wkLoadComments(id);
+  } catch(e){ content.innerHTML='<div class="wk-empty"><div class="wk-ei">⚠️</div><div class="wk-et">Error al cargar</div></div>'; }
+};
+
+async function wkLoadComments(tId) {
+  const el = document.getElementById('wkDetCmts');
+  if(!el) return;
+  try {
+    const snap = await getDocs(query(collection(trophiesDb,'trofeos',tId,'comments'), orderBy('createdAt','asc'), limit(50)));
+    const cmts = snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(!cmts.length){ el.innerHTML='<div style="font-size:.8rem;color:var(--muted,#567890);padding:10px 0">Sin comentarios aún · ¡Sé el primero!</div>'; return; }
+    el.innerHTML = cmts.map(c=>`<div class="cmt-item">
+      <div class="av" style="width:28px;height:28px;font-size:.75rem;flex-shrink:0">${c.userPhoto?`<img src="${c.userPhoto}" alt="">`:(c.userNick||'?')[0].toUpperCase()}</div>
+      <div class="cmt-b"><div class="cmt-u">${wkEsc(c.userNick||'?')}</div><div class="cmt-t">${wkEsc(c.text||'')}</div></div>
+    </div>`).join('');
+  } catch(e){ el.innerHTML='<div style="font-size:.8rem;color:var(--muted,#567890)">Error al cargar comentarios</div>'; }
+}
+
+window.wkPostCmt = async (tId) => {
+  if(!window.CU){ toast('Iniciá sesión para comentar','err'); return; }
+  const inp = document.getElementById('wkCmtInput_'+tId);
+  const text = (inp?.value||'').trim();
+  if(!text) return;
+  inp.value = '';
+  try {
+    await addDoc(collection(trophiesDb,'trofeos',tId,'comments'),{
+      userId:window.CU.id, userNick:window.CU.nick||'?', userPhoto:window.CU.av||'',
+      text, createdAt:serverTimestamp()
+    });
+    await updateDoc(doc(trophiesDb,'trofeos',tId),{commentCount:increment(1)});
+    wkLoadComments(tId);
+    toast('Comentario publicado ✅','ok');
+  } catch(e){ toast('Error al comentar','err'); }
+};
+
+window.wkTogLike = async (tId) => {
+  if(!window.CU){ toast('Iniciá sesión para reaccionar','err'); return; }
+  try {
+    const ref = doc(trophiesDb,'trofeos',tId);
+    const snap = await getDoc(ref);
+    const t = snap.data();
+    const reactions = t.reactions||{};
+    const already = reactions[window.CU.id];
+    if(already){ await updateDoc(ref,{[`reactions.${window.CU.id}`]:deleteField(),likes:increment(-1)}); }
+    else { await updateDoc(ref,{[`reactions.${window.CU.id}`]:{emoji:'❤️',nick:window.CU.nick},likes:increment(1)}); }
+  } catch(e){}
+};
+
+// Publish modal
+window.wkOpenPublish = () => {
+  if(!window.CU){ toast('Iniciá sesión para publicar','err'); return; }
+  wkResetForm();
+  document.getElementById('wkMPublish').classList.add('open');
+};
+window.wkCm = id => { document.getElementById(id)?.classList.remove('open'); };
+window.wkResetForm = () => {
+  ['wkPF','wkPW','wkPS','wkPDesc'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  ['wkPM','wkPT'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  const dt = document.getElementById('wkPDt');
+  if(dt) dt.value = new Date().toISOString().split('T')[0];
+  _wkImgs=[]; _wkEditId=null; wkPvRender();
+  const err=document.getElementById('wkPubErr'); if(err) err.textContent='';
+};
+
+// File handling for publish form
+window.wkHFiles = (files) => {
+  Array.from(files).forEach(f=>{
+    if(_wkImgs.length>=4) return;
+    const reader=new FileReader();
+    reader.onload=e=>{ _wkImgs.push({file:f,preview:e.target.result}); wkPvRender(); };
+    reader.readAsDataURL(f);
+  });
+};
+function wkPvRender(){
+  const grid=document.getElementById('wkPvGrid');
+  if(!grid) return;
+  grid.innerHTML=_wkImgs.map((img,i)=>`<div class="wk-pvitem"><img src="${img.preview}" alt=""><button class="wk-pvrem" onclick="_wkImgs.splice(${i},1);wkPvRender()">✕</button></div>`).join('');
+}
+
+// Upload to Cloudinary
+async function wkUploadCloudinary(file) {
+  const fd=new FormData();
+  fd.append('file',file);
+  fd.append('upload_preset','rf4trophies');
+  fd.append('folder','rf4');
+  const res=await fetch(`https://api.cloudinary.com/v1_1/da0n5tg3g/image/upload`,{method:'POST',body:fd});
+  const data=await res.json();
+  return data.secure_url;
+}
+
+// Submit trophy
+window.wkSubmitTrophy = async () => {
+  const fish=(document.getElementById('wkPF')?.value||'').trim();
+  const weight=(document.getElementById('wkPW')?.value||'').trim();
+  const map=document.getElementById('wkPM')?.value||'';
+  const technique=document.getElementById('wkPT')?.value||'';
+  const spot=(document.getElementById('wkPS')?.value||'').trim();
+  const desc=(document.getElementById('wkPDesc')?.value||'').trim();
+  const date=document.getElementById('wkPDt')?.value||new Date().toISOString().split('T')[0];
+  const err=document.getElementById('wkPubErr');
+  if(!fish||!weight||!map||!technique){ if(err) err.textContent='Completá los campos obligatorios *'; return; }
+  if(isNaN(parseFloat(weight))||parseFloat(weight)<=0){ if(err) err.textContent='Peso inválido'; return; }
+  const btn=document.getElementById('wkSubmitBtn');
+  if(btn){ btn.disabled=true; btn.textContent='Subiendo...'; }
+  if(err) err.textContent='';
+  try {
+    let imageUrls=[];
+    for(const img of _wkImgs){
+      try{ const url=await wkUploadCloudinary(img.file); if(url) imageUrls.push(url); }catch(e){}
+    }
+    const data={
+      fish, weight:parseFloat(weight), map, technique, spot, description:desc, date,
+      images:imageUrls, status:'pending',
+      userId:window.CU.id, userNick:window.CU.nick||'?', userPhoto:window.CU.av||'',
+      userRole:window.CU.role||'novato', likes:0, views:0, commentCount:0,
+      createdAt:serverTimestamp()
+    };
+    await addDoc(collection(trophiesDb,'trofeos'), data);
+    wkCm('wkMPublish'); wkResetForm();
+    toast('🏆 Trofeo enviado · pendiente de aprobación','ok');
+    _wkLoaded=false; wkLoadHome();
+  } catch(e){ if(err) err.textContent='Error al publicar: '+e.message; }
+  finally{ if(btn){ btn.disabled=false; btn.textContent='🏆 Publicar Trofeo'; } }
+};
+
+// Admin panel
+window.wkRenderAdmin = async () => {
+  if(!window.CU||(window.CU.nick!==WK_ADMIN&&window.CU.role!=='admin')){ toast('Acceso denegado','err'); return; }
+  const tS=await getDocs(collection(trophiesDb,'trofeos'));
+  const all=tS.docs.map(d=>({id:d.id,...d.data()}));
+  const pend=all.filter(t=>t.status==='pending');
+  const appr=all.filter(t=>t.status==='approved');
+  const rej=all.filter(t=>t.status==='rejected');
+  const bdg=document.getElementById('wkPBdg'); if(bdg) bdg.textContent=pend.length;
+  const aDash=document.getElementById('wkADash');
+  if(aDash) aDash.innerHTML=`<h3 style="font-family:'Orbitron',monospace;font-size:.95rem;color:#00d4ff;margin-bottom:14px">Dashboard</h3>
+    <div class="asgrid">
+      <div class="asc"><div class="asn">${appr.length}</div><div class="asl">Aprobados</div></div>
+      <div class="asc"><div class="asn">${pend.length}</div><div class="asl">Pendientes</div></div>
+      <div class="asc"><div class="asn">${rej.length}</div><div class="asl">Rechazados</div></div>
+      <div class="asc"><div class="asn">${all.length}</div><div class="asl">Total</div></div>
+    </div>`;
+  const aPend=document.getElementById('wkAPend');
+  if(aPend) aPend.innerHTML=pend.length===0?'<div class="wk-empty"><div class="wk-ei">✅</div><div class="wk-et">Sin pendientes</div></div>':pend.map(t=>`
+    <div style="background:var(--bg,#060a0e);border:1px solid var(--border,#182433);border-radius:8px;padding:13px;margin-bottom:9px">
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        ${t.images&&t.images[0]?`<img src="${t.images[0]}" style="width:64px;height:64px;object-fit:cover;border-radius:6px;flex-shrink:0">`:`<div style="width:64px;height:64px;background:#151f2a;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0">🐟</div>`}
+        <div style="flex:1">
+          <div style="font-weight:700">${wkEsc(t.fish)} — ${parseFloat(t.weight||0).toFixed(3)} kg</div>
+          <div style="font-size:.8rem;color:var(--muted,#567890)">${wkEsc(t.map)} · ${wkEsc(t.technique)} · por <strong>${wkEsc(t.userNick||'?')}</strong></div>
+          ${t.description?`<div style="font-size:.78rem;color:var(--muted,#567890);margin-top:3px">${wkEsc(t.description.substring(0,100))}...</div>`:''}
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn btn-p btn-sm" onclick="wkApproveTrophy('${t.id}')">✅ Aprobar</button>
+        <button class="btn btn-sm" style="background:#ff4466;color:#fff" onclick="wkRejectTrophy('${t.id}')">❌ Rechazar</button>
+        <button class="btn btn-sm" style="background:#333;color:#aaa" onclick="wkDeleteTrophy('${t.id}')">🗑 Borrar</button>
+      </div>
+    </div>`).join('');
+  const aAllP=document.getElementById('wkAAllP');
+  if(aAllP) aAllP.innerHTML=`<div style="overflow-x:auto"><table class="atable">
+    <thead><tr><th>Pez</th><th>Peso</th><th>Pescador</th><th>Mapa</th><th>Estado</th><th>Acciones</th></tr></thead>
+    <tbody>${all.slice(0,50).map(t=>`<tr>
+      <td>${wkEsc(t.fish)}</td><td>${parseFloat(t.weight||0).toFixed(3)} kg</td>
+      <td>${wkEsc(t.userNick||'?')}</td><td style="font-size:.8rem">${wkEsc(t.map||'?')}</td>
+      <td><span class="status-badge status-${t.status}" style="position:static;display:inline">${t.status}</span></td>
+      <td style="display:flex;gap:5px">
+        ${t.status!=='approved'?`<button class="btn btn-p btn-xs" onclick="wkApproveTrophy('${t.id}')">✅</button>`:''}
+        ${t.status!=='rejected'?`<button class="btn btn-xs" style="background:#ff4466;color:#fff" onclick="wkRejectTrophy('${t.id}')">❌</button>`:''}
+        <button class="btn btn-xs" style="background:#333;color:#aaa" onclick="wkDeleteTrophy('${t.id}')">🗑</button>
+      </td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+};
+
+window.wkSwA = (el,sec) => {
+  document.querySelectorAll('#wk-admin .ami').forEach(i=>i.classList.remove('on'));
+  document.querySelectorAll('#wk-admin .as').forEach(s=>s.classList.remove('on'));
+  el.classList.add('on');
+  const secEl=document.getElementById(sec);
+  if(secEl) secEl.classList.add('on');
+};
+
+window.wkApproveTrophy = async (id) => {
+  try{ await updateDoc(doc(trophiesDb,'trofeos',id),{status:'approved'}); toast('Trofeo aprobado ✅','ok'); _wkLoaded=false; wkRenderAdmin(); }catch(e){ toast('Error','err'); }
+};
+window.wkRejectTrophy = async (id) => {
+  try{ await updateDoc(doc(trophiesDb,'trofeos',id),{status:'rejected'}); toast('Trofeo rechazado','ok'); _wkLoaded=false; wkRenderAdmin(); }catch(e){ toast('Error','err'); }
+};
+window.wkDeleteTrophy = async (id) => {
+  if(!confirm('¿Borrar este trofeo permanentemente?')) return;
+  try{ await deleteDoc(doc(trophiesDb,'trofeos',id)); toast('Trofeo borrado','ok'); _wkLoaded=false; wkRenderAdmin(); }catch(e){ toast('Error','err'); }
+};
+
+// Lightbox
+window.wkOpenLb = (src) => {
+  const lb=document.getElementById('wkImgLightbox');
+  const img=document.getElementById('wkLbImg');
+  if(lb&&img){ img.src=src; lb.classList.add('open'); }
+};
+
+// Expose to window  
+window.wkLoadHome=wkLoadHome;
+window.wkUpdateBannerCounts=wkUpdateBannerCounts;
+
+// ============================================================
+// FIN WIKI TROFEOS JS
+// ============================================================
+
 </script>
 <!-- ===== FOOTER ===== -->
 <div id="siteFooter" style="display:none;text-align:center;padding:32px 16px 28px;background:#1a1d21;border-top:1px solid #2a2d32;margin-top:32px;line-height:2;">
