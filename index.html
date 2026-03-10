@@ -3775,41 +3775,156 @@ async function listenVerifiedUsers(){
 
 let _postsUnsub = null;
 let _postsRetryTimer = null;
+// ===== PAGINACIÓN FEED =====
+let _feedPage = 1;           // página actual
+const _FEED_PAGE_SIZE = 20;  // posts por tanda
+let _feedLoading = false;    // evita cargas dobles
+let _feedAllLoaded = false;  // ya no hay más posts
+let _lastPostDoc = null;     // cursor Firebase para paginación
+let _feedScrollObserver = null; // IntersectionObserver
 function listenPosts() {
   if(_postsUnsub){ _postsUnsub(); _postsUnsub = null; }
   if(_postsRetryTimer){ clearTimeout(_postsRetryTimer); _postsRetryTimer = null; }
+
+  // Reset paginación
+  _feedPage = 1;
+  _feedAllLoaded = false;
+  _feedLoading = false;
+  _lastPostDoc = null;
 
   const feedEl = document.getElementById('feedPosts');
   if(feedEl && feedEl.innerHTML.includes('Cargando feed')){
     feedEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:.85rem;">⏳ Conectando...</div>';
   }
 
+  // Listener en tiempo real solo para los primeros 20 posts (nuevos y actualizaciones)
   _postsUnsub = onSnapshot(
-    query(collection(db, 'posts'), orderBy('time', 'desc'), limit(50)),
+    query(collection(db, 'posts'), orderBy('time', 'desc'), limit(20)),
     snap => {
-      _posts = snap.docs.map(d => ({ id: d.id, ...d.data(), time: d.data().time?.toMillis?.() || Date.now() }));
+      // Guardar cursor para paginación
+      if(snap.docs.length > 0) _lastPostDoc = snap.docs[snap.docs.length - 1];
+      if(snap.docs.length < 20) _feedAllLoaded = true;
+
+      const freshPosts = snap.docs.map(d => ({ id: d.id, ...d.data(), time: d.data().time?.toMillis?.() || Date.now() }));
+
+      // Mantener posts extra (ya cargados por paginación) al final
+      const extraPosts = _posts.filter(p => !freshPosts.find(fp => fp.id === p.id));
+      _posts = [...freshPosts, ...extraPosts];
+
       const activePage = document.querySelector('.page.active');
       const pageId = activePage ? activePage.id : '';
       if(pageId === 'page-profile'){ renderProfileFeed(); }
       else if(pageId === 'page-casitrofeo'){ renderMapPosts(); }
-      else { renderFeed(); }
+      else { renderFeed(); _initFeedScrollObserver(); }
     },
     err => {
       console.warn('listenPosts error:', err);
-      // Fallback: intentar getDocs sin orderBy (evita error de índice faltante)
       getDocs(collection(db, 'posts')).then(snap => {
         _posts = snap.docs.map(d => ({ id: d.id, ...d.data(), time: d.data().time?.toMillis?.() || Date.now() }))
-          .sort((a,b) => b.time - a.time).slice(0, 50);
+          .sort((a,b) => b.time - a.time).slice(0, 20);
         renderFeed();
+        _initFeedScrollObserver();
       }).catch(e2 => {
         console.error('listenPosts fallback error:', e2);
         const el2 = document.getElementById('feedPosts');
         if(el2) el2.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:.85rem;">⚠️ Error al cargar el feed.<br><button onclick="listenPosts()" style="margin-top:12px;background:var(--accent);color:#000;border:none;border-radius:8px;padding:8px 20px;font-size:.82rem;font-weight:700;cursor:pointer;">🔄 Reintentar</button></div>';
       });
-      // Reintentar el listener en 15 segundos
       _postsRetryTimer = setTimeout(()=>{ listenPosts(); }, 15000);
     }
   );
+}
+
+// ===== PAGINACIÓN INFINITA =====
+async function _loadMorePosts() {
+  if(_feedLoading || _feedAllLoaded || !_lastPostDoc) return;
+  _feedLoading = true;
+
+  // Mostrar spinner al final del feed
+  const feedEl = document.getElementById('feedPosts');
+  let spinner = document.getElementById('_feedLoadMore');
+  if(!spinner && feedEl){
+    spinner = document.createElement('div');
+    spinner.id = '_feedLoadMore';
+    spinner.style.cssText = 'text-align:center;padding:24px;color:var(--muted);font-size:.82rem;';
+    spinner.innerHTML = '<div style="width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:splashSpin .8s linear infinite;margin:0 auto 8px;"></div>Cargando más...';
+    feedEl.appendChild(spinner);
+  }
+
+  try {
+    const { startAfter } = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js');
+    const snap = await getDocs(
+      query(collection(db, 'posts'), orderBy('time', 'desc'), startAfter(_lastPostDoc), limit(20))
+    );
+
+    if(snap.docs.length === 0){
+      _feedAllLoaded = true;
+      if(spinner) spinner.innerHTML = '<div style="color:var(--muted);font-size:.78rem;padding:8px;">🎣 Ya viste todos los posts</div>';
+      setTimeout(()=>{ if(spinner) spinner.remove(); }, 2500);
+      _feedLoading = false;
+      return;
+    }
+
+    // Actualizar cursor
+    _lastPostDoc = snap.docs[snap.docs.length - 1];
+    if(snap.docs.length < 20) _feedAllLoaded = true;
+
+    // Agregar nuevos posts al array
+    const newPosts = snap.docs.map(d => ({ id: d.id, ...d.data(), time: d.data().time?.toMillis?.() || Date.now() }));
+    newPosts.forEach(p => { if(!_posts.find(x => x.id === p.id)) _posts.push(p); });
+
+    // Renderizar solo los nuevos posts al DOM sin tocar los existentes
+    if(spinner) spinner.remove();
+    if(feedEl){
+      newPosts.forEach(p => {
+        if(!document.getElementById('post_'+p.id)){
+          const tmp = document.createElement('div');
+          tmp.innerHTML = postHTML(p);
+          const el = tmp.firstElementChild;
+          if(el){
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(16px)';
+            el.style.transition = 'opacity .3s ease, transform .3s ease';
+            feedEl.appendChild(el);
+            requestAnimationFrame(()=>{ el.style.opacity='1'; el.style.transform='translateY(0)'; });
+          }
+        }
+      });
+    }
+
+    _feedLoading = false;
+    _initFeedScrollObserver(); // re-observar el nuevo último post
+
+  } catch(e) {
+    console.warn('loadMorePosts error:', e);
+    if(spinner) spinner.remove();
+    _feedLoading = false;
+  }
+}
+
+// IntersectionObserver — detecta cuando el usuario llega al final del feed
+function _initFeedScrollObserver() {
+  if(_feedAllLoaded) return;
+
+  // Desconectar observer anterior
+  if(_feedScrollObserver){ _feedScrollObserver.disconnect(); _feedScrollObserver = null; }
+
+  const feedEl = document.getElementById('feedPosts');
+  if(!feedEl) return;
+
+  // Crear sentinel al final del feed
+  let sentinel = document.getElementById('_feedSentinel');
+  if(!sentinel){
+    sentinel = document.createElement('div');
+    sentinel.id = '_feedSentinel';
+    sentinel.style.height = '10px';
+    feedEl.appendChild(sentinel);
+  }
+
+  _feedScrollObserver = new IntersectionObserver(entries => {
+    if(entries[0].isIntersecting) _loadMorePosts();
+  }, { rootMargin: '200px' }); // empieza a cargar 200px antes de llegar al final
+
+  _feedScrollObserver.observe(sentinel);
 }
 
 
@@ -6095,11 +6210,15 @@ function renderFeed(){
     }
   });
 
-  // Eliminar posts que ya no existen
+  // Eliminar posts que ya no existen en los primeros 20 (tiempo real)
+  // OJO: solo eliminar si está en el rango del listener, no los paginados extras
   Array.from(el.children).forEach(child=>{
     const pid = child.id?.replace('post_','');
     if(pid && !_posts.find(p=>p.id===pid)) child.remove();
   });
+
+  // Asegurar sentinel y observer al final
+  _initFeedScrollObserver();
 }
 
 function renderProfileFeed(){
