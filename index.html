@@ -865,7 +865,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
       <div class="sl-item" onclick="gp('trofeos-feed');setNav(document.querySelector('.tb-nav-btn'))"><span class="sl-item-icon">🥇</span> Feed de Trofeos</div>
       <div class="sl-item" onclick="gp('publica-trofeo')"><span class="sl-item-icon">🏆</span> Publica tu Trofeo</div>
       <div class="sl-item" onclick="gp('buscar-trofeo')"><span class="sl-item-icon">🔍</span> Buscar Trofeo</div>
-      <div class="sl-item" onclick="gp('videos')"><span class="sl-item-icon">📈</span> Subir Skill</div>
+      <div class="sl-item" onclick="gp('skill')"><span class="sl-item-icon">📈</span> Subir Skill</div>
       <div class="sl-item" onclick="gp('musica')" id="slMusicaBtn" style="background:linear-gradient(90deg,rgba(255,0,0,.08),transparent);border-left:3px solid #ff0000;"><span class="sl-item-icon">🎵</span> Música</div>
       <div class="sl-item" onclick="gp('carretes')"><span class="sl-item-icon">🎣</span> Buscar Carretes</div>
       <div class="sl-item"><span class="sl-item-icon">🔖</span> Guardados</div>
@@ -3118,7 +3118,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
 
 <!-- PAGE: MÚSICA -->
 <!-- ===== SUBIR SKILL PAGE ===== -->
-<div class="page" id="page-videos" style="max-width:760px;margin:0 auto;padding:24px 16px 80px;">
+<div class="page" id="page-skill" style="max-width:760px;margin:0 auto;padding:24px 16px 80px;">
 
   <!-- Header -->
   <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;">
@@ -4093,6 +4093,7 @@ const ROUTES = {
   '/trofeos': 'trofeos-feed',
   '/galeria': 'galeria',
   '/videos': 'videos',
+  '/skill': 'skill',
   '/spots': 'spots',
   '/torneos': 'torneos',
   '/perfil': 'profile',
@@ -4114,6 +4115,7 @@ const PAGE_TO_URL = {
   'trofeos-feed':  '/trofeos',
   'galeria':       '/galeria',
   'videos':        '/videos',
+  'skill':         '/skill',
   'spots':         '/spots',
   'torneos':       '/torneos',
   'profile':       '/perfil',
@@ -14474,37 +14476,51 @@ function quickGenreSearch(q){
 }
 
 let _musicDebounce = null;
-const _INVIDIOUS = [
-  'https://inv.nadeko.net',
-  'https://invidious.nerdvpn.de',
-  'https://yt.cdaut.de',
-  'https://invidious.privacyredirect.com',
-  'https://inv.tux.pizza',
-  'https://invidious.io.lol',
-  'https://invidious.fdn.fr',
-  'https://yewtu.be',
-];
-
-// Fetch YouTube via Invidious con test de instancia activa
+// YouTube search via multiple reliable proxies
 async function _fetchYouTube(q){
-  for(const inv of _INVIDIOUS){
+  // Method 1: Piped API (most reliable YouTube alternative frontend)
+  const pipedInstances = [
+    'https://pipedapi.kavin.rocks',
+    'https://piped-api.garudalinux.org',
+    'https://api.piped.projectsegfau.lt',
+    'https://pipedapi.colinslegacy.com',
+  ];
+  for(const api of pipedInstances){
     try {
-      const url = inv+'/api/v1/search?q='+encodeURIComponent(q)+'&type=video&fields=videoId,title,author,lengthSeconds,videoThumbnails&page=1';
-      const r = await fetch('https://api.allorigins.win/get?url='+encodeURIComponent(url), {signal:AbortSignal.timeout(6000)});
+      const r = await fetch(api+'/search?q='+encodeURIComponent(q)+'&filter=music_songs', {signal:AbortSignal.timeout(5000)});
+      if(!r.ok) continue;
+      const data = await r.json();
+      const items = data.items || [];
+      if(items.length){
+        // Convert Piped format to our format
+        return items.filter(v=>v.type==='stream'||v.url).slice(0,20).map(v=>({
+          videoId: (v.url||'').replace('/watch?v=',''),
+          title: v.title||'',
+          author: v.uploaderName||v.uploader||'',
+          lengthSeconds: v.duration||0,
+          videoThumbnails: v.thumbnail ? [{quality:'medium', url: v.thumbnail}] : []
+        })).filter(v=>v.videoId);
+      }
+    } catch(e){ continue; }
+  }
+
+  // Method 2: Invidious instances via allorigins proxy
+  const invInstances = [
+    'https://invidious.nerdvpn.de',
+    'https://yewtu.be',
+    'https://inv.tux.pizza',
+  ];
+  for(const inv of invInstances){
+    try {
+      const url = inv+'/api/v1/search?q='+encodeURIComponent(q)+'&type=video&fields=videoId,title,author,lengthSeconds,videoThumbnails';
+      const r = await fetch('https://api.allorigins.win/get?url='+encodeURIComponent(url), {signal:AbortSignal.timeout(7000)});
       if(!r.ok) continue;
       const raw = await r.json();
-      const videos = raw.contents ? JSON.parse(raw.contents) : raw;
-      if(Array.isArray(videos) && videos.length) return videos;
-    } catch(e){ continue; }
-    // también intentar directo sin proxy
-    try {
-      const url = inv+'/api/v1/search?q='+encodeURIComponent(q)+'&type=video&fields=videoId,title,author,lengthSeconds,videoThumbnails&page=1';
-      const r = await fetch(url, {signal:AbortSignal.timeout(4000)});
-      if(!r.ok) continue;
-      const videos = await r.json();
+      const videos = raw.contents ? JSON.parse(raw.contents) : null;
       if(Array.isArray(videos) && videos.length) return videos;
     } catch(e){ continue; }
   }
+
   return null;
 }
 
