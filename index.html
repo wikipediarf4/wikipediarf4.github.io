@@ -1031,7 +1031,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
       <div class="sl-item" onclick="gp('buscar-trofeo')"><span class="sl-item-icon">🔍</span> Buscar Trofeo</div>
       <div class="sl-item" onclick="gp('skill')"><span class="sl-item-icon">📈</span> Subir Skill</div>
       <div class="sl-item" onclick="gp('wiki-trofeos')" id="slWikiTrofeosBtn" style="background:linear-gradient(90deg,rgba(255,215,0,.08),transparent);border-left:3px solid #ffd700;"><span class="sl-item-icon">🏆</span> Wiki Trofeos</div>
-      <div class="sl-item" onclick="gp('mapa-trofeos');closeSidebar();" id="slMapaTrofeosBtn" style="display:none;background:linear-gradient(90deg,rgba(0,180,120,.08),transparent);border-left:3px solid #00b478;"><span class="sl-item-icon">🗺️</span> Mapa de Trofeos <span style="font-size:.6rem;background:#00b478;color:#000;padding:1px 6px;border-radius:20px;font-weight:800;margin-left:4px;">ADMIN</span></div>
+      <div class="sl-item" onclick="gp('mapa-trofeos');closeSidebar();" id="slMapaTrofeosBtn" style="display:none;background:linear-gradient(90deg,rgba(0,180,120,.08),transparent);border-left:3px solid #00b478;"><span class="sl-item-icon">🗺️</span> Mapa de Trofeos <span style="font-size:.6rem;background:#00b478;color:#000;padding:1px 6px;border-radius:20px;font-weight:800;margin-left:4px;">NUEVO</span></div>
       <div class="sl-item" onclick="gp('carretes')"><span class="sl-item-icon">🎣</span> Buscar Carretes</div>
       <div class="sl-item"><span class="sl-item-icon">🔖</span> Guardados</div>
       <div class="sl-item" onclick="gp('parches')"><span class="sl-item-icon">🔧</span> Parches y Actualizaciones</div>
@@ -3793,9 +3793,10 @@ select.fi option{background:var(--bg3);color:var(--text);}
       <div style="width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#00b478,#007a52);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;box-shadow:0 4px 16px rgba(0,180,120,.35);">🗺️</div>
       <div>
         <div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:#00b478;">Mapa de Trofeos RF4</div>
-        <div style="font-size:.72rem;color:var(--muted);margin-top:2px;">Visualizá trofeos publicados por zona · Solo Admin</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:2px;">Visualizá dónde pescaron los miembros de la comunidad 🎣</div>
       </div>
-      <div style="margin-left:auto;">
+      <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+        <button onclick="wkOpenPublish()" style="background:linear-gradient(135deg,#00b478,#007a52);border:none;color:#fff;font-family:'Exo 2',sans-serif;font-size:.78rem;font-weight:800;padding:8px 16px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(0,180,120,.4);transition:all .2s;" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 20px rgba(0,180,120,.55)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(0,180,120,.4)'">🏆 Publicar Trofeo</button>
         <span style="font-size:.65rem;background:rgba(0,180,120,.15);color:#00b478;border:1px solid rgba(0,180,120,.3);padding:4px 10px;border-radius:20px;font-weight:700;" id="mapaCountBadge">cargando...</span>
       </div>
     </div>
@@ -3818,6 +3819,17 @@ select.fi option{background:var(--bg3);color:var(--text);}
         <option value="Winding Rivulet">🌊 Winding Rivulet</option>
         <option value="otro">Otro</option>
       </select>
+    </div>
+  </div>
+
+  <!-- Botón publicar prominente -->
+  <div style="max-width:900px;margin:0 auto;padding:0 16px 14px;">
+    <div style="background:linear-gradient(135deg,rgba(0,180,120,.12),rgba(0,122,82,.08));border:1px solid rgba(0,180,120,.3);border-radius:12px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+      <div>
+        <div style="font-weight:800;font-size:.9rem;color:#00b478;">🎣 ¿Atrapaste un trofeo?</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:2px;">Publicalo y aparecerá en el mapa para que todos lo vean</div>
+      </div>
+      <button onclick="wkOpenPublish()" style="background:linear-gradient(135deg,#00b478,#007a52);border:none;color:#fff;font-family:'Exo 2',sans-serif;font-size:.82rem;font-weight:800;padding:10px 22px;border-radius:10px;cursor:pointer;white-space:nowrap;box-shadow:0 4px 14px rgba(0,180,120,.4);transition:all .2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform=''">🏆 Publicar mi Trofeo</button>
     </div>
   </div>
 
@@ -4639,7 +4651,7 @@ function updateNavUI(){
   if(userMenuAdmin) userMenuAdmin.style.display = isAdmin ? 'flex' : 'none';
   if(shopNavBtn) shopNavBtn.style.display = 'inline-flex'; // visible para todos
   const slMapaTrofeosBtn = document.getElementById('slMapaTrofeosBtn');
-  if(slMapaTrofeosBtn) slMapaTrofeosBtn.style.display = isAdmin ? 'flex' : 'none';
+  if(slMapaTrofeosBtn) slMapaTrofeosBtn.style.display = 'flex'; // visible para todos
 }
 
 function renderShopPage(){
@@ -17369,21 +17381,18 @@ async function initMapaTrofeos(){
     maxZoom:18
   }).addTo(_mapaLeaflet);
 
-  // Cargar trofeos de Firebase
+  // Cargar trofeos de Firebase (base de datos de trofeos, solo aprobados)
   let trofeos = [];
   try {
-    const snap = await getDocs(collection(db, 'trofeos'));
+    const snap = await getDocs(query(collection(trophiesDb, 'trofeos'), where('status','==','approved')));
     snap.forEach(d => trofeos.push({id: d.id, ...d.data()}));
-  } catch(e){ console.error('Mapa: error cargando trofeos', e); }
-
-  // También intentar desde la colección principal de posts con tag trofeo
-  try {
-    const snap2 = await getDocs(query(collection(db, 'posts'), where('type','==','trofeo')));
-    snap2.forEach(d => {
-      const data = d.data();
-      if(!trofeos.find(t => t.id === d.id)) trofeos.push({id: d.id, ...data});
-    });
-  } catch(e){}
+  } catch(e){ 
+    // fallback sin filtro
+    try {
+      const snap = await getDocs(collection(trophiesDb, 'trofeos'));
+      snap.forEach(d => { const data = d.data(); if(data.status === 'approved' || !data.status) trofeos.push({id: d.id, ...data}); });
+    } catch(e2){ console.error('Mapa: error cargando trofeos', e2); }
+  }
 
   _mapaTrofeos = trofeos;
   _mapaLoaded = true;
