@@ -3988,15 +3988,7 @@ async function doLogin(){
     }
     window.CU = {id: cred.user.uid, ...snap.data()};
     saveAccountLocally(input, window.CU.nick);
-    // MAINTENANCE MODE
-    const _loginIsAdmin = window.CU.nick === 'ruizgustavo12' || window.CU.email === 'synxyes@gmail.com';
-    if(!_loginIsAdmin){
-      await signOut(auth); window.CU = null;
-      document.getElementById('mAuth').style.display='none';
-      const ms = document.getElementById('maintenanceScreen');
-      if(ms) ms.style.display = 'flex';
-      return;
-    }
+    // MAINTENANCE MODE - desactivado, todos pueden ingresar
     document.getElementById('maintenanceScreen').style.display = 'none';
     document.getElementById('mAuth').style.display='none';
     onLogin();
@@ -14754,16 +14746,16 @@ function renderJamendoResults(tracks){
 }
 
 function playJamendo(trackId, title, artist, audioUrl){
-  // Reset previous card button
+  // Reset anterior
   if(_currentTrackId){
     const prevBtn = document.getElementById('jplay_'+_currentTrackId);
-    if(prevBtn) prevBtn.textContent = '\u25b6';
+    if(prevBtn) prevBtn.textContent = '▶';
   }
   if(_currentAudio){ _currentAudio.pause(); _currentAudio.src=''; _currentAudio=null; }
 
   _currentTrackId = trackId;
   const btn = document.getElementById('jplay_'+trackId);
-  if(btn) btn.textContent = '\u23f8';
+  if(btn) btn.textContent = '⏸';
 
   const titleEl = document.getElementById('deezerTitleBig');
   const artistEl = document.getElementById('deezerArtistBig');
@@ -14772,47 +14764,41 @@ function playJamendo(trackId, title, artist, audioUrl){
   if(artistEl) artistEl.textContent = artist||'';
   if(wrap) wrap.style.display='block';
 
-  // Intentar reproducción directa con múltiples fuentes
-  const tryPlay = (urls, index=0) => {
-    if(index >= urls.length){
-      // Fallback: abrir en Jamendo
-      toast('Abriendo en Jamendo...','inf');
-      window.open('https://www.jamendo.com/track/'+trackId,'_blank');
-      if(btn) btn.textContent='\u25b6';
-      return;
-    }
-    const src = urls[index];
-    if(!src){ tryPlay(urls, index+1); return; }
+  // Método principal: widget iframe de Jamendo (no tiene CORS)
+  const existing = document.getElementById('jamendoWidgetFrame');
+  if(existing) existing.remove();
+  const frame = document.createElement('iframe');
+  frame.id = 'jamendoWidgetFrame';
+  frame.allow = 'autoplay';
+  frame.style.cssText = 'position:fixed;bottom:-9999px;left:0;width:1px;height:1px;border:none;opacity:0;pointer-events:none;';
+  frame.src = 'https://widgets.jamendo.com/v3/track/'+trackId+'/?autoplay=1&theme=dark&width=200';
+  document.body.appendChild(frame);
+
+  // Método secundario: Audio() directo como respaldo
+  const tryAudio = (urls, idx) => {
+    if(idx >= urls.length){ toast('▶ '+title+' (via Jamendo)', 'ok'); return; }
+    const src = urls[idx]; if(!src){ tryAudio(urls, idx+1); return; }
     const audio = new Audio();
     audio.crossOrigin = 'anonymous';
-    audio.preload = 'none';
     audio.src = src;
     audio.volume = 0.8;
-    const progWrap = document.getElementById('musicProgBar');
     audio.play().then(()=>{
       _currentAudio = audio;
-      toast('\u25b6 '+title,'ok');
-      if(titleEl) titleEl.textContent = title||'';
-      if(artistEl) artistEl.textContent = artist||'';
-      audio.onended = ()=>{ if(btn) btn.textContent='\u25b6'; _currentTrackId=null; };
-      if(progWrap){ audio.ontimeupdate=()=>{ if(audio.duration) progWrap.style.width=(audio.currentTime/audio.duration*100)+'%'; }; }
+      // Si el audio directo funciona, sacar el widget
+      const fw = document.getElementById('jamendoWidgetFrame');
+      if(fw) fw.remove();
+      toast('▶ '+title,'ok');
+      audio.onended = ()=>{ if(btn) btn.textContent='▶'; _currentTrackId=null; };
+      const progWrap = document.getElementById('musicProgBar');
+      if(progWrap) audio.ontimeupdate=()=>{ if(audio.duration) progWrap.style.width=(audio.currentTime/audio.duration*100)+'%'; };
       const pauseBtn = document.getElementById('musicPauseBtn');
-      if(pauseBtn){
-        pauseBtn.onclick = ()=>{
-          if(audio.paused){ audio.play(); pauseBtn.textContent='\u23f8'; }
-          else { audio.pause(); pauseBtn.textContent='\u25b6'; }
-        };
-      }
-    }).catch(()=>{ tryPlay(urls, index+1); });
+      if(pauseBtn) pauseBtn.onclick=()=>{
+        if(audio.paused){audio.play();pauseBtn.textContent='⏸';}
+        else{audio.pause();pauseBtn.textContent='▶';}
+      };
+    }).catch(()=>tryAudio(urls, idx+1));
   };
-
-  // Fuentes en orden: audiodownload (sin CORS), audio, stream Jamendo CDN
-  const sources = [
-    audioUrl,
-    audioUrl ? audioUrl.replace('https://mp3d.jamendo.com','https://storage.googleapis.com/jamendo') : null,
-    `https://mp3d.jamendo.com/?trackid=${trackId}&format=mp32`
-  ];
-  tryPlay(sources);
+  tryAudio([audioUrl, 'https://mp3d.jamendo.com/?trackid='+trackId+'&format=mp32'], 0);
 }
 
 function searchSpotify(){ searchDeezer(); }
