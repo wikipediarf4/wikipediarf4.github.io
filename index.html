@@ -16390,7 +16390,17 @@ let _mapaLoaded = false;
 let _mapaCurrentFilter = 'todos';
 
 async function initMapaTrofeos(){
-  if(!window.CU || (window.CU.nick !== 'ruizgustavo12' && window.CU.email !== 'synxyes@gmail.com')) return;
+  const badge = document.getElementById('mapaCountBadge');
+  // Verificar admin
+  if(!window.CU){
+    if(badge) badge.textContent = 'Iniciá sesión';
+    return;
+  }
+  if(window.CU.nick !== 'ruizgustavo12' && window.CU.email !== 'synxyes@gmail.com'){
+    if(badge) badge.textContent = 'Sin acceso';
+    return;
+  }
+  if(badge) badge.textContent = 'Cargando mapa...';
   
   // Coordenadas de ríos del juego RF4 (aproximadas en el mundo real para visualización)
   const RIO_COORDS = {
@@ -16409,21 +16419,31 @@ async function initMapaTrofeos(){
 
   // Cargar Leaflet si no está
   if(!window.L){
-    await new Promise((res,rej)=>{
-      const lCss = document.createElement('link');
-      lCss.rel='stylesheet';
-      lCss.href='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
-      document.head.appendChild(lCss);
-      const lJs = document.createElement('script');
-      lJs.src='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
-      lJs.onload=res; lJs.onerror=rej;
-      document.head.appendChild(lJs);
-    });
+    try {
+      await new Promise((res,rej)=>{
+        const lCss = document.createElement('link');
+        lCss.rel='stylesheet';
+        lCss.href='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+        document.head.appendChild(lCss);
+        const lJs = document.createElement('script');
+        lJs.src='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+        lJs.onload=res; lJs.onerror=rej;
+        document.head.appendChild(lJs);
+      });
+    } catch(e){
+      console.error('Mapa: error cargando Leaflet', e);
+      if(badge) badge.textContent = 'Error al cargar mapa';
+      return;
+    }
   }
 
   const mapEl = document.getElementById('mapaTrofeosLeaflet');
-  if(!mapEl || _mapaLeaflet) { 
-    if(_mapaLeaflet) { _mapaLeaflet.invalidateSize(); }
+  if(!mapEl){ 
+    if(badge) badge.textContent = 'Error: contenedor no encontrado';
+    return;
+  }
+  if(_mapaLeaflet) { 
+    _mapaLeaflet.invalidateSize(); 
     return; 
   }
 
@@ -16606,10 +16626,19 @@ const _origGp = window.gp;
 window.gp = function(page, ...args){
   const r = _origGp ? _origGp(page, ...args) : undefined;
   if(page === 'mapa-trofeos'){
-    setTimeout(()=>{
-      if(!_mapaLoaded) initMapaTrofeos();
-      else if(_mapaLeaflet) _mapaLeaflet.invalidateSize();
-    }, 200);
+    const tryInit = (intentos) => {
+      setTimeout(()=>{
+        if(_mapaLeaflet){ _mapaLeaflet.invalidateSize(); return; }
+        if(!_mapaLoaded){
+          if(!window.CU && intentos > 0){
+            tryInit(intentos - 1);
+          } else {
+            initMapaTrofeos();
+          }
+        }
+      }, 400);
+    };
+    tryInit(5);
   }
   return r;
 };
