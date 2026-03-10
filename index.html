@@ -17145,19 +17145,8 @@ function wkPvRender(){
 
 // Upload to Cloudinary
 async function wkUploadCloudinary(file) {
-  // Comprimir si pesa más de 800KB
-  let blob = file;
-  if (file.size > 800000 && file.type.startsWith('image/')) {
-    try { blob = await _compressImage(file, 1200, 0.82); } catch(e) {}
-  }
-  const fd = new FormData();
-  fd.append('file', blob);
-  fd.append('upload_preset', CLOUDINARY_PRESET); // usa el mismo preset que el resto de la app
-  fd.append('folder', 'rf4/trofeos');
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, {method:'POST', body:fd});
-  const data = await res.json();
-  if (!data.secure_url) throw new Error(data.error?.message || 'Error subiendo imagen');
-  return data.secure_url;
+  // Usa la misma función uploadImage que el resto de la app (preset wikipediarf4)
+  return await uploadImage(file, 'trofeos');
 }
 
 // Submit trophy
