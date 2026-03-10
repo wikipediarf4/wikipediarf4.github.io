@@ -7241,7 +7241,7 @@ function _reRenderInlineCmts(pid, p, cmts){
         +'<div style="flex:1;min-width:0;">'
           +'<div class="comment-bubble" style="margin-bottom:3px;">'
             +'<div style="display:flex;align-items:center;justify-content:space-between;gap:4px;margin-bottom:2px;">'
-              +'<div class="comment-author" style="cursor:pointer;font-size:.74rem;" onclick="openUserProfile(\''+r2.userId+'\',\''+esc(r2.nick||'\')">'+(r2.nick||'?')+'</div>'
+              +'<div class="comment-author" style="cursor:pointer;font-size:.74rem;" onclick="openUserProfile(\''+r2.userId+'\',\''+esc(r2.nick||'')+'\')">'+( r2.nick||'?')+'</div>'
               +'<div class="cmt-menu-wrap"><button class="cmt-dots-btn">⋯</button><div class="cmt-menu-dropdown">'+r2Menu+'</div></div>'
             +'</div>'
             +'<div class="comment-text" style="font-size:.81rem;">'+renderCommentText(r2.text||'')+(r2.edited?' <span style="font-size:.6rem;color:var(--muted);">(editado)</span>':'')+'</div>'
