@@ -9562,14 +9562,17 @@ async function submitSoporte(){
   if(!desc){ toast('Describí el error antes de enviar','err'); return; }
 
   const tipoLabel = tipo==='otro' ? ('Otro: '+(otroTxt||'sin especificar')) : document.getElementById('soporteTipo').selectedOptions[0]?.text || tipo;
+  const notifText = `🆘 Soporte de @${window.CU.nick||'usuario'}: ${tipoLabel} — "${desc.slice(0,80)}${desc.length>80?'...':''}"`;
 
-  toast('Enviando reporte...','inf');
+  const btn = document.querySelector('#soporteForm button[onclick]');
+  if(btn){ btn.disabled=true; btn.textContent='Enviando...'; }
 
   try {
-    // Guardar en colección 'soporte' en Firestore
+    // 1. Guardar ticket en colección 'soporte'
     await addDoc(collection(db,'soporte'),{
       uid: window.CU.id,
       nick: window.CU.nick||'',
+      av: window.CU.av||'',
       tipo: tipoLabel,
       desc,
       dispositivo,
@@ -9577,47 +9580,51 @@ async function submitSoporte(){
       leido: false
     });
 
-    // Enviar notificación al admin (ruizgustavo12)
-    try {
-      const adminSnap = await getDocs(query(collection(db,'users'), where('nick','==','ruizgustavo12')));
-      if(!adminSnap.empty){
-        const adminId = adminSnap.docs[0].id;
-        await addDoc(collection(db,'notifs'), {
-          to: adminId,
-          type: 'soporte',
-          from: window.CU.id,
-          fromNick: window.CU.nick||'',
-          text: '🆘 Nuevo reporte de soporte de @'+(window.CU.nick||'usuario')+': '+tipoLabel,
-          sub: desc.length>120 ? desc.slice(0,120)+'...' : desc,
-          time: serverTimestamp(),
-          read: false
-        });
-      }
-      // También buscar por rol admin
-      const adminsSnap = await getDocs(query(collection(db,'users'), where('role','==','admin')));
-      adminsSnap.docs.forEach(async adminDoc => {
-        if(adminDoc.id !== window.CU.id){
-          await addDoc(collection(db,'notifs'),{
-            to: adminDoc.id,
-            type: 'soporte',
-            from: window.CU.id,
-            fromNick: window.CU.nick||'',
-            text: '🆘 Soporte: @'+(window.CU.nick||'usuario')+' · '+tipoLabel,
-            sub: desc.length>120 ? desc.slice(0,120)+'...' : desc,
-            time: serverTimestamp(),
-            read: false
-          });
-        }
-      });
-    } catch(ne){ console.warn('No se pudo notificar admin:', ne); }
+    // 2. Notificar al admin usando el sistema de notifs de la app (users/{uid}.notifs)
+    // Buscar por nick y por email para asegurarse
+    const [byNick, byEmail] = await Promise.all([
+      getDocs(query(collection(db,'users'), where('nick','==','ruizgustavo12'))),
+      getDocs(query(collection(db,'users'), where('email','==','synxyes@gmail.com')))
+    ]);
 
-    // Mostrar mensaje de éxito
+    const adminIds = new Set();
+    byNick.docs.forEach(d=>adminIds.add(d.id));
+    byEmail.docs.forEach(d=>adminIds.add(d.id));
+    // También buscar por role=='admin' por si hay otros admins
+    try {
+      const byRole = await getDocs(query(collection(db,'users'), where('role','==','admin')));
+      byRole.docs.forEach(d=>adminIds.add(d.id));
+    } catch(e){}
+
+    // Enviar a cada admin encontrado (excepto a uno mismo)
+    const notifPromises = [];
+    adminIds.forEach(adminId => {
+      if(adminId !== window.CU.id){
+        notifPromises.push(
+          updateDoc(doc(db,'users',adminId), {
+            notifs: arrayUnion({
+              text: notifText,
+              time: Date.now(),
+              read: false,
+              type: 'soporte',
+              fromAv: window.CU.av||'',
+              fromNick: window.CU.nick||'',
+              fromId: window.CU.id
+            })
+          }).catch(e=>console.warn('No se pudo notificar admin',adminId,e))
+        );
+      }
+    });
+    await Promise.all(notifPromises);
+
+    // 3. Mostrar éxito
     document.getElementById('soporteForm').style.display='none';
     document.getElementById('soporteEnviado').style.display='block';
 
   } catch(e){
     console.error('Error soporte:', e);
     toast('Error al enviar el reporte. Intentá de nuevo.','err');
+    if(btn){ btn.disabled=false; btn.textContent='📨 Enviar Reporte'; }
   }
 }
 
