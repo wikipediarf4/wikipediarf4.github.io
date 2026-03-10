@@ -3330,18 +3330,21 @@ select.fi option{background:var(--bg3);color:var(--text);}
   <div id="musicResults" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-bottom:20px;"></div>
 
   <!-- Reproductor YouTube embed -->
-  <div id="musicPlayerWrap" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:2px solid #ff0000;padding:12px 16px;box-shadow:0 -4px 24px rgba(0,0,0,.6);z-index:9999;">
-    <div style="display:flex;align-items:center;gap:12px;max-width:800px;margin:0 auto;">
-      <div style="flex-shrink:0;width:160px;height:90px;border-radius:8px;overflow:hidden;background:#000;">
-        <iframe id="ytMusicPlayer" width="160" height="90" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="display:block;" src=""></iframe>
-      </div>
+  <div id="musicPlayerWrap" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:2px solid var(--accent);box-shadow:0 -4px 24px rgba(0,0,0,.6);z-index:9999;">
+    <!-- Barra de progreso -->
+    <div style="width:100%;height:3px;background:var(--bg4);cursor:pointer;" onclick="(function(e){if(_currentAudio&&_currentAudio.duration){_currentAudio.currentTime=_currentAudio.duration*(e.offsetX/e.currentTarget.offsetWidth);}}) (event)">
+      <div id="musicProgBar" style="height:100%;background:var(--accent);width:0%;transition:width .5s linear;"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;max-width:800px;margin:0 auto;padding:10px 16px;">
+      <div style="width:44px;height:44px;border-radius:8px;overflow:hidden;background:var(--bg3);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.4rem;">🎵</div>
       <div style="flex:1;min-width:0;">
         <div id="deezerTitleBig" style="font-size:.88rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
-        <div id="deezerArtistBig" style="font-size:.75rem;color:var(--muted);margin-top:2px;"></div>
-        <div style="font-size:.68rem;color:#ff4444;margin-top:4px;">▶ YouTube — canción completa</div>
+        <div id="deezerArtistBig" style="font-size:.75rem;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
       </div>
-      <button onclick="closeMusicPlayer()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.2rem;padding:4px 8px;border-radius:6px;flex-shrink:0;" onmouseover="this.style.color='#ff4444'" onmouseout="this.style.color='var(--muted)'">✕</button>
+      <button onclick="(function(){if(_currentAudio){if(_currentAudio.paused){_currentAudio.play();document.getElementById('musicPauseBtn').textContent='⏸';}else{_currentAudio.pause();document.getElementById('musicPauseBtn').textContent='▶';}}})() " id="musicPauseBtn" style="background:var(--accent);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;">⏸</button>
+      <button onclick="closeMusicPlayer()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.2rem;padding:4px 8px;border-radius:6px;flex-shrink:0;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--muted)'">✕</button>
     </div>
+    <iframe id="ytMusicPlayer" style="display:none;" src=""></iframe>
   </div>
 
   <!-- Sugerencias iniciales -->
@@ -14475,68 +14478,24 @@ function quickGenreSearch(q){
   searchDeezer();
 }
 
+// ===== MÚSICA CON JAMENDO API =====
+const JAMENDO_CLIENT_ID = '197c0e16';
 let _musicDebounce = null;
-// YouTube search via multiple reliable proxies
-async function _fetchYouTube(q){
-  // Method 1: Piped API (most reliable YouTube alternative frontend)
-  const pipedInstances = [
-    'https://pipedapi.kavin.rocks',
-    'https://piped-api.garudalinux.org',
-    'https://api.piped.projectsegfau.lt',
-    'https://pipedapi.colinslegacy.com',
-  ];
-  for(const api of pipedInstances){
-    try {
-      const r = await fetch(api+'/search?q='+encodeURIComponent(q)+'&filter=music_songs', {signal:AbortSignal.timeout(5000)});
-      if(!r.ok) continue;
-      const data = await r.json();
-      const items = data.items || [];
-      if(items.length){
-        // Convert Piped format to our format
-        return items.filter(v=>v.type==='stream'||v.url).slice(0,20).map(v=>({
-          videoId: (v.url||'').replace('/watch?v=',''),
-          title: v.title||'',
-          author: v.uploaderName||v.uploader||'',
-          lengthSeconds: v.duration||0,
-          videoThumbnails: v.thumbnail ? [{quality:'medium', url: v.thumbnail}] : []
-        })).filter(v=>v.videoId);
-      }
-    } catch(e){ continue; }
-  }
-
-  // Method 2: Invidious instances via allorigins proxy
-  const invInstances = [
-    'https://invidious.nerdvpn.de',
-    'https://yewtu.be',
-    'https://inv.tux.pizza',
-  ];
-  for(const inv of invInstances){
-    try {
-      const url = inv+'/api/v1/search?q='+encodeURIComponent(q)+'&type=video&fields=videoId,title,author,lengthSeconds,videoThumbnails';
-      const r = await fetch('https://api.allorigins.win/get?url='+encodeURIComponent(url), {signal:AbortSignal.timeout(7000)});
-      if(!r.ok) continue;
-      const raw = await r.json();
-      const videos = raw.contents ? JSON.parse(raw.contents) : null;
-      if(Array.isArray(videos) && videos.length) return videos;
-    } catch(e){ continue; }
-  }
-
-  return null;
-}
+let _currentAudio = null;
+let _currentTrackId = null;
 
 function debounceMusicSearch(){
   clearTimeout(_musicDebounce);
   const q = (document.getElementById('musicSearchInput').value||'').trim();
-  if(!q){ 
+  if(!q){
     document.getElementById('musicResults').innerHTML = '';
     document.getElementById('musicSuggestions').style.display = 'block';
     return;
   }
   if(q.length < 2) return;
-  // Mostrar spinner inmediato
   document.getElementById('musicResults').innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--muted);font-size:.85rem;">🔍 Buscando...</div>`;
   document.getElementById('musicSuggestions').style.display = 'none';
-  _musicDebounce = setTimeout(()=>searchDeezer(), 500);
+  _musicDebounce = setTimeout(()=>searchDeezer(), 400);
 }
 
 async function searchDeezer(){
@@ -14545,80 +14504,131 @@ async function searchDeezer(){
   const resultsEl = document.getElementById('musicResults');
   const sugEl = document.getElementById('musicSuggestions');
   if(sugEl) sugEl.style.display = 'none';
-  resultsEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted);"><div style="font-size:1.8rem;margin-bottom:8px;animation:spin 1s linear infinite;display:inline-block;">⏳</div><div style="margin-top:8px;">Buscando en YouTube...</div></div>`;
-  
-  // Intentar múltiples instancias de Invidious con fallback de proxy
-  const videos = await _fetchYouTube(q);
-  if(videos){ renderYouTubeResults(videos); return; }
-  
-  // Si todo falla — mostrar botón para abrir YouTube Music directamente
-  resultsEl.innerHTML = `
-    <div style="grid-column:1/-1;text-align:center;padding:30px;">
-      <div style="font-size:1.5rem;margin-bottom:10px;">🎵</div>
-      <div style="font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:8px;">No se pudo cargar resultados</div>
-      <div style="font-size:.8rem;color:var(--muted);margin-bottom:16px;">Abrí YouTube Music para escucharla completa</div>
-      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
-        <button onclick="window.open('https://music.youtube.com/search?q='+encodeURIComponent('${q.replace(/'/g,"\'")}'),'_blank')" style="background:#ff0000;border:none;border-radius:8px;color:#fff;padding:10px 20px;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">🎵 YouTube Music</button>
-        <button onclick="window.open('https://www.youtube.com/results?search_query='+encodeURIComponent('${q.replace(/'/g,"\'")}'),'_blank')" style="background:#333;border:none;border-radius:8px;color:#fff;padding:10px 20px;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">▶ YouTube</button>
-      </div>
+  resultsEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted);"><div style="font-size:1.8rem;margin-bottom:8px;animation:spin 1s linear infinite;display:inline-block;">🎵</div><div style="margin-top:8px;">Buscando música...</div></div>`;
+
+  try {
+    const url = `https://api.jamendo.com/v3.0/tracks/?client_id=${JAMENDO_CLIENT_ID}&format=json&limit=30&namesearch=${encodeURIComponent(q)}&include=musicinfo&audioformat=mp32`;
+    const r = await fetch(url, {signal: AbortSignal.timeout(8000)});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const data = await r.json();
+    const tracks = data.results || [];
+    if(tracks.length === 0){
+      // Try broader search by tags
+      const url2 = `https://api.jamendo.com/v3.0/tracks/?client_id=${JAMENDO_CLIENT_ID}&format=json&limit=30&search=${encodeURIComponent(q)}&include=musicinfo&audioformat=mp32`;
+      const r2 = await fetch(url2, {signal: AbortSignal.timeout(8000)});
+      const data2 = await r2.json();
+      const tracks2 = data2.results || [];
+      if(tracks2.length) { renderJamendoResults(tracks2); return; }
+      resultsEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted);">
+        <div style="font-size:2rem;">🎵</div>
+        <div style="margin-top:10px;font-weight:700;">No se encontraron canciones para "<em>${q}</em>"</div>
+        <div style="font-size:.8rem;margin-top:6px;">Probá con otro término — Jamendo tiene música indie y libre de derechos</div>
+      </div>`;
+      return;
+    }
+    renderJamendoResults(tracks);
+  } catch(e){
+    console.error('Jamendo error:', e);
+    resultsEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted);">
+      <div style="font-size:2rem;">⚠️</div>
+      <div style="margin-top:10px;font-weight:700;">Error al conectar con Jamendo</div>
+      <div style="font-size:.8rem;margin-top:6px;">Verificá tu conexión e intentá de nuevo</div>
+      <button onclick="searchDeezer()" style="margin-top:12px;background:var(--accent);border:none;border-radius:8px;color:#fff;padding:8px 20px;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">🔄 Reintentar</button>
     </div>`;
+  }
 }
 
-function searchSpotify(){ searchDeezer(); }
-
-function renderYouTubeResults(videos){
+function renderJamendoResults(tracks){
   const el = document.getElementById('musicResults');
-  el.innerHTML = (videos||[]).slice(0,20).map(v => {
-    const thumb = (v.videoThumbnails||[]).find(t=>t.quality==='medium'||t.quality==='default');
-    const thumbUrl = thumb ? thumb.url : '';
-    const dur = v.lengthSeconds ? Math.floor(v.lengthSeconds/60)+':'+String(v.lengthSeconds%60).padStart(2,'0') : '';
-    const safeTitle = (v.title||'').replace(/'/g,"\'").replace(/"/g,'&quot;');
-    const safeAuthor = (v.author||'').replace(/'/g,"\'").replace(/"/g,'&quot;');
-    return `<div class="music-card" onclick="playYouTube('${v.videoId}','${safeTitle}','${safeAuthor}')" style="cursor:pointer;"
-      onmouseenter="previewYT('${v.videoId}',this)" onmouseleave="unpreviewYT(this)">
-      <div style="position:relative;">
-        <img class="music-card-img" src="${thumbUrl}" loading="lazy" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:8px 8px 0 0;display:block;background:#111;">
-        <div class="yt-hover-preview" style="display:none;position:absolute;inset:0;border-radius:8px 8px 0 0;overflow:hidden;background:#000;"></div>
-        <div style="position:absolute;bottom:6px;right:6px;background:rgba(255,0,0,.9);border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:.9rem;">▶</div>
+  el.innerHTML = tracks.map(t => {
+    const dur = t.duration ? Math.floor(t.duration/60)+':'+String(t.duration%60).padStart(2,'0') : '';
+    const safeId = t.id||'';
+    const safeTitle = (t.name||'').replace(/'/g,"\'").replace(/"/g,'&quot;');
+    const safeArtist = (t.artist_name||'').replace(/'/g,"\'").replace(/"/g,'&quot;');
+    const safeAudio = (t.audio||'').replace(/'/g,"\'");
+    const thumb = t.album_image || t.image || 'https://api.jamendo.com/v3.0/tracks/file/?client_id=197c0e16&id='+t.id+'&imagesize=200';
+    return `<div class="music-card" style="cursor:pointer;position:relative;" id="jcard_${safeId}">
+      <div style="position:relative;" onclick="playJamendo('${safeId}','${safeTitle}','${safeArtist}','${safeAudio}')">
+        <img src="${thumb}" loading="lazy" onerror="this.src='https://usercontent.jamendo.com?type=album&id=${t.album_id}&width=200'" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px 8px 0 0;display:block;background:#1a1a2e;">
+        <div id="jplay_${safeId}" style="position:absolute;bottom:6px;right:6px;background:rgba(46,196,182,.9);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:transform .15s;">▶</div>
         ${dur?`<div style="position:absolute;bottom:6px;left:6px;background:rgba(0,0,0,.75);color:#fff;font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:4px;">${dur}</div>`:''}
       </div>
       <div class="music-card-body">
-        <div class="music-card-title">${(v.title||'').replace(/</g,'&lt;')}</div>
-        <div class="music-card-sub">${(v.author||'').replace(/</g,'&lt;')}</div>
-        <div style="font-size:.65rem;color:#ff4444;margin-top:3px;">▶ Hover para preview · Click para reproducir</div>
+        <div class="music-card-title">${(t.name||'').replace(/</g,'&lt;')}</div>
+        <div class="music-card-sub">${(t.artist_name||'').replace(/</g,'&lt;')}</div>
+        <div style="font-size:.62rem;color:var(--accent);margin-top:3px;">🎵 Jamendo · Libre de derechos</div>
       </div>
     </div>`;
   }).join('');
 }
 
-let _ytPreviewTimer = null;
-function previewYT(videoId, card){
-  _ytPreviewTimer = setTimeout(()=>{
-    const previewDiv = card.querySelector('.yt-hover-preview');
-    if(!previewDiv) return;
-    previewDiv.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&rel=0&controls=0&modestbranding=1" frameborder="0" allow="autoplay" style="width:100%;height:100%;display:block;"></iframe>`;
-    previewDiv.style.display = 'block';
-  }, 800);
-}
-function unpreviewYT(card){
-  clearTimeout(_ytPreviewTimer);
-  const previewDiv = card.querySelector('.yt-hover-preview');
-  if(previewDiv){ previewDiv.innerHTML = ''; previewDiv.style.display = 'none'; }
-}
-
-function renderDeezerResults(tracks){ renderYouTubeResults([]); } // legacy alias
-
-function playYouTube(videoId, title, artist){
+function playJamendo(trackId, title, artist, audioUrl){
+  // Stop previous
+  if(_currentAudio){
+    _currentAudio.pause();
+    _currentAudio.src = '';
+    // Reset previous card button
+    if(_currentTrackId){
+      const prevBtn = document.getElementById('jplay_'+_currentTrackId);
+      if(prevBtn) prevBtn.textContent = '▶';
+    }
+  }
+  // Update player bar
   const wrap = document.getElementById('musicPlayerWrap');
-  const iframe = document.getElementById('ytMusicPlayer');
   const titleEl = document.getElementById('deezerTitleBig');
   const artistEl = document.getElementById('deezerArtistBig');
-  if(!wrap||!iframe) return;
-  iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
-  if(titleEl) titleEl.textContent = title||'';
-  if(artistEl) artistEl.textContent = artist||'';
-  wrap.style.display = 'block';
-  toast('▶ '+title,'ok');
+  const iframe = document.getElementById('ytMusicPlayer');
+  if(iframe) iframe.style.display = 'none';
+
+  // Create audio element
+  const audio = new Audio(audioUrl);
+  audio.volume = 0.8;
+  _currentAudio = audio;
+  _currentTrackId = trackId;
+
+  // Update play button on card
+  const btn = document.getElementById('jplay_'+trackId);
+  if(btn) btn.textContent = '⏸';
+
+  audio.play().then(()=>{
+    if(titleEl) titleEl.textContent = title||'';
+    if(artistEl) artistEl.textContent = artist||'';
+    if(wrap) wrap.style.display = 'block';
+    toast('▶ '+title, 'ok');
+  }).catch(e=>{
+    console.error('Audio play error:', e);
+    toast('Error al reproducir — intentá de nuevo','err');
+    if(btn) btn.textContent = '▶';
+  });
+
+  audio.onended = ()=>{
+    if(btn) btn.textContent = '▶';
+    _currentTrackId = null;
+  };
+  audio.onerror = ()=>{
+    toast('No se pudo cargar el audio','err');
+    if(btn) btn.textContent = '▶';
+    _currentTrackId = null;
+  };
+
+  // Add progress bar to player
+  const progWrap = document.getElementById('musicProgBar');
+  if(progWrap){
+    audio.ontimeupdate = ()=>{
+      if(audio.duration){
+        progWrap.style.width = (audio.currentTime/audio.duration*100)+'%';
+      }
+    };
+  }
+}
+
+function searchSpotify(){ searchDeezer(); }
+function renderYouTubeResults(videos){ } // legacy stub
+function renderDeezerResults(tracks){ } // legacy stub
+
+function playYouTube(videoId, title, artist){
+  // Keep for backward compat - open in YouTube
+  window.open('https://www.youtube.com/watch?v='+videoId, '_blank');
 }
 
 function playDeezer(track){ } // Deezer solo para historias
@@ -14632,6 +14642,13 @@ function closeMusicPlayer(){
   if(wrap) wrap.style.display = 'none';
   if(iframe) iframe.src = '';
   if(audio){ audio.pause(); audio.src=''; }
+  // Stop Jamendo audio
+  if(_currentAudio){ _currentAudio.pause(); _currentAudio.src=''; _currentAudio=null; }
+  if(_currentTrackId){
+    const btn = document.getElementById('jplay_'+_currentTrackId);
+    if(btn) btn.textContent = '▶';
+    _currentTrackId = null;
+  }
 }
 
 
