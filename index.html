@@ -6213,7 +6213,7 @@ function postHTML(p){
       <div style="position:relative;">
         <button class="post-menu" onclick="togglePostMenu('${p.id}', event, '${p.userId}')" style="font-size:1.3rem;line-height:1;">⋯</button>
         <div id="pmenu_${p.id}" data-owner="${p.userId}" style="display:none;position:absolute;right:0;top:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);min-width:150px;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,.5);overflow:hidden;">
-          ${!p.sharedFrom ? `<button onclick="togglePostMenu('${p.id}', event); openEditPost('${p.id}','${esc(p.text||'')}')" data-owner-only="true" style="display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;color:var(--text);padding:12px 16px;cursor:pointer;font-size:.88rem;text-align:left;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">✏️ Editar</button>` : ''}
+          ${!p.sharedFrom ? `<button onclick="togglePostMenu('${p.id}', event); _openEditPostSafe('${p.id}')" data-owner-only="true" data-edit-pid="${p.id}" style="display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;color:var(--text);padding:12px 16px;cursor:pointer;font-size:.88rem;text-align:left;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">✏️ Editar</button>` : ''}
           ${window.CU?.verified&&p.userId===window.CU?.id?`<button onclick="togglePostMenu('${p.id}',event);${p.id===window.CU?.pinnedPostId?'unpinPost()':"pinPost('${p.id}')"};" style="display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;color:gold;padding:12px 16px;cursor:pointer;font-size:.88rem;text-align:left;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">${p.id===window.CU?.pinnedPostId?'📌 Desfijar':'📌 Fijar en perfil'}</button>`:''}
           <button onclick="togglePostMenu('${p.id}', event); deleteMyPost('${p.id}')" data-owner-only="true" style="display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;color:var(--red);padding:12px 16px;cursor:pointer;font-size:.88rem;text-align:left;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">🗑 Eliminar</button>
           <button onclick="togglePostMenu('${p.id}', event); reportPost('${p.id}','${esc(p.userNick)}')" data-other-only="true" style="display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;color:var(--warn);padding:12px 16px;cursor:pointer;font-size:.88rem;text-align:left;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">⚠️ Reportar</button>
@@ -11823,6 +11823,14 @@ function togglePostMenu(pid, e, ownerId){
   }
 }
 
+function _openEditPostSafe(pid){
+  // Fetch text directly from cached posts to avoid quote-escaping issues in onclick
+  const post = (window._posts||[]).find(p=>p.id===pid)
+             || (window._trofeosPosts||[]).find(p=>p.id===pid);
+  const text = post ? (post.text||'') : '';
+  openEditPost(pid, text);
+}
+
 function openEditPost(pid, text){
   document.getElementById('editPostId').value = pid;
   document.getElementById('editPostText').value = text;
@@ -11832,10 +11840,27 @@ function openEditPost(pid, text){
 async function saveEditPost(){
   const pid = document.getElementById('editPostId').value;
   const text = document.getElementById('editPostText').value.trim();
+  if(!pid){ toast('Error: no se encontró la publicación','err'); return; }
   if(!text){ toast('El texto no puede estar vacío','err'); return; }
-  await updateDoc(doc(db,'posts',pid), {text, edited:true});
-  cm('mEditPost');
-  toast('Publicación editada ✅','ok');
+  try {
+    await updateDoc(doc(db,'posts',pid), {text, edited:true});
+    // Actualizar cache local
+    if(window._posts){
+      const p = window._posts.find(p=>p.id===pid);
+      if(p){ p.text = text; p.edited = true; }
+    }
+    // Actualizar el texto en el DOM sin recargar
+    const postEl = document.getElementById('post_'+pid);
+    if(postEl){
+      const textEl = postEl.querySelector('.post-text');
+      if(textEl) textEl.innerHTML = renderCommentText(text);
+    }
+    cm('mEditPost');
+    toast('Publicación editada ✅','ok');
+  } catch(e){
+    console.error('saveEditPost error:', e);
+    toast('Error al editar: ' + (e.message||e), 'err');
+  }
 }
 
 async function deleteMyPost(pid){
