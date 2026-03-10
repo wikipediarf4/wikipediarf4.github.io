@@ -3988,15 +3988,6 @@ async function doLogin(){
     }
     window.CU = {id: cred.user.uid, ...snap.data()};
     saveAccountLocally(input, window.CU.nick);
-    // MAINTENANCE MODE
-    const _loginIsAdmin = window.CU.nick === 'ruizgustavo12' || window.CU.email === 'synxyes@gmail.com';
-    if(!_loginIsAdmin){
-      await signOut(auth); window.CU = null;
-      document.getElementById('mAuth').style.display='none';
-      const ms = document.getElementById('maintenanceScreen');
-      if(ms) ms.style.display = 'flex';
-      return;
-    }
     document.getElementById('maintenanceScreen').style.display = 'none';
     document.getElementById('mAuth').style.display='none';
     onLogin();
@@ -5994,23 +5985,18 @@ function renderFeed(){
 function renderProfileFeed(){
   const el = document.getElementById('profileFeed');
   if(!el||!window.CU) return;
-  el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">Cargando publicaciones...</div>';
-  // Siempre buscar desde Firestore para no perder posts
-  getDocs(query(collection(db,'posts'), where('userId','==',window.CU.id), orderBy('time','desc'))).then(snap=>{
-    const fetched = snap.docs.map(d=>({id:d.id,...d.data()}));
-    fetched.forEach(p=>{ if(!_posts.find(x=>x.id===p.id)) _posts.push(p); });
-    // Combinar con posts locales del mismo usuario
-    const localMine = _posts.filter(p=>p.userId===window.CU.id);
-    const merged = [...fetched];
-    localMine.forEach(p=>{ if(!merged.find(x=>x.id===p.id)) merged.push(p); });
-    merged.sort((a,b)=>((b.time?.toMillis?.())||b.time||0)-((a.time?.toMillis?.())||a.time||0));
-    _renderProfileFeedHTML(el, merged);
-  }).catch(e=>{
-    console.error('Profile feed error:',e);
-    // Fallback a cache local
-    const mine = _posts.filter(p=>p.userId===window.CU.id);
-    _renderProfileFeedHTML(el, mine);
-  });
+  const mine = _posts.filter(p=>p.userId===window.CU.id);
+  if(!mine.length){
+    // Fallback: load from Firestore
+    getDocs(query(collection(db,'posts'), where('userId','==',window.CU.id), orderBy('time','desc'))).then(snap=>{
+      const fetched = snap.docs.map(d=>({id:d.id,...d.data()}));
+      // Merge into _posts so reactions/comments work
+      fetched.forEach(p=>{ if(!_posts.find(x=>x.id===p.id)) _posts.push(p); });
+      _renderProfileFeedHTML(el, fetched);
+    }).catch(()=>{ el.innerHTML=`<div style="text-align:center;padding:40px;color:var(--muted)">Sin publicaciones aún. ¡Comparte tu primera pesca!</div>`; });
+    return;
+  }
+  _renderProfileFeedHTML(el, mine);
 }
 
 function _renderProfileFeedHTML(el, mine){
@@ -9410,7 +9396,7 @@ async function submitSoporte(){
   try {
     // Guardar en colección 'soporte' en Firestore
     await addDoc(collection(db,'soporte'),{
-      uid: window.CU.id,
+      uid: window.CU.uid,
       nick: window.CU.nick||'',
       tipo: tipoLabel,
       desc,
@@ -9427,7 +9413,7 @@ async function submitSoporte(){
         await addDoc(collection(db,'notifs'), {
           to: adminId,
           type: 'soporte',
-          from: window.CU.id,
+          from: window.CU.uid,
           fromNick: window.CU.nick||'',
           text: '🆘 Nuevo reporte de soporte de @'+(window.CU.nick||'usuario')+': '+tipoLabel,
           sub: desc.length>120 ? desc.slice(0,120)+'...' : desc,
@@ -9438,11 +9424,11 @@ async function submitSoporte(){
       // También buscar por rol admin
       const adminsSnap = await getDocs(query(collection(db,'users'), where('role','==','admin')));
       adminsSnap.docs.forEach(async adminDoc => {
-        if(adminDoc.id !== window.CU.id){
+        if(adminDoc.id !== window.CU.uid){
           await addDoc(collection(db,'notifs'),{
             to: adminDoc.id,
             type: 'soporte',
-            from: window.CU.id,
+            from: window.CU.uid,
             fromNick: window.CU.nick||'',
             text: '🆘 Soporte: @'+(window.CU.nick||'usuario')+' · '+tipoLabel,
             sub: desc.length>120 ? desc.slice(0,120)+'...' : desc,
@@ -13372,6 +13358,7 @@ async function stopAndSendVoice(){
   _mediaRecorder=null; _audioChunks=[]; _voiceStream=null; _voiceAudioCtx=null;
 
   const blob = new Blob(chunks, { type: mimeType });
+  console.log('[Voice] blob size:', blob.size, 'type:', mimeType, 'duration:', duration);
 
   if(blob.size < 300){ toast('Grabación muy corta','err'); resetVoiceUI(); return; }
 
@@ -13394,6 +13381,7 @@ async function stopAndSendVoice(){
       body: formData
     });
     const data = await res.json();
+    console.log('[Voice] Cloudinary:', data);
 
     if(!data.secure_url) throw new Error(data.error?.message || 'Upload falló');
 
@@ -14757,16 +14745,17 @@ function renderJamendoResults(tracks){
 }
 
 function playJamendo(trackId, title, artist, audioUrl){
-  // Reset anterior
+  // Reset previous card button
   if(_currentTrackId){
     const prevBtn = document.getElementById('jplay_'+_currentTrackId);
     if(prevBtn) prevBtn.textContent = '\u25b6';
   }
   if(_currentAudio){ _currentAudio.pause(); _currentAudio.src=''; _currentAudio=null; }
-  _currentTrackId = trackId;
 
+  _currentTrackId = trackId;
   const btn = document.getElementById('jplay_'+trackId);
   if(btn) btn.textContent = '\u23f8';
+
   const titleEl = document.getElementById('deezerTitleBig');
   const artistEl = document.getElementById('deezerArtistBig');
   const wrap = document.getElementById('musicPlayerWrap');
@@ -14774,53 +14763,61 @@ function playJamendo(trackId, title, artist, audioUrl){
   if(artistEl) artistEl.textContent = artist||'';
   if(wrap) wrap.style.display='block';
 
-  // Jamendo permite reproducción directa sin crossOrigin (no envía preflight)
-  const audio = new Audio();
-  // NO poner crossOrigin para evitar bloqueo CORS en Jamendo CDN
-  audio.src = audioUrl || ('https://mp3d.jamendo.com/?trackid='+trackId+'&format=mp32&from=app-0.0.0.0');
-  audio.volume = 0.8;
-  _currentAudio = audio;
-
-  const progWrap = document.getElementById('musicProgBar');
-  const pauseBtn = document.getElementById('musicPauseBtn');
-
-  audio.play().then(()=>{
-    toast('\u25b6 '+title,'ok');
-    if(pauseBtn) pauseBtn.textContent='\u23f8';
-  }).catch(err=>{
-    console.warn('Audio directo falló, abriendo en Jamendo:', err);
-    if(btn) btn.textContent='\u25b6';
-    _currentAudio=null; _currentTrackId=null;
-    // Abrir en Jamendo como último recurso
-    window.open('https://www.jamendo.com/track/'+trackId, '_blank');
-    toast('Abriendo en Jamendo...','inf');
-    return;
-  });
-
-  audio.onended = ()=>{ if(btn) btn.textContent='\u25b6'; _currentTrackId=null; };
-  audio.onerror = ()=>{
-    if(btn) btn.textContent='\u25b6';
-    _currentAudio=null; _currentTrackId=null;
-    window.open('https://www.jamendo.com/track/'+trackId, '_blank');
-    toast('Abriendo en Jamendo...','inf');
+  // Intentar reproducción directa con múltiples fuentes
+  const tryPlay = (urls, index=0) => {
+    if(index >= urls.length){
+      // Fallback: abrir en Jamendo
+      toast('Abriendo en Jamendo...','inf');
+      window.open('https://www.jamendo.com/track/'+trackId,'_blank');
+      if(btn) btn.textContent='\u25b6';
+      return;
+    }
+    const src = urls[index];
+    if(!src){ tryPlay(urls, index+1); return; }
+    const audio = new Audio();
+    audio.crossOrigin = 'anonymous';
+    audio.preload = 'none';
+    audio.src = src;
+    audio.volume = 0.8;
+    const progWrap = document.getElementById('musicProgBar');
+    audio.play().then(()=>{
+      _currentAudio = audio;
+      toast('\u25b6 '+title,'ok');
+      if(titleEl) titleEl.textContent = title||'';
+      if(artistEl) artistEl.textContent = artist||'';
+      audio.onended = ()=>{ if(btn) btn.textContent='\u25b6'; _currentTrackId=null; };
+      if(progWrap){ audio.ontimeupdate=()=>{ if(audio.duration) progWrap.style.width=(audio.currentTime/audio.duration*100)+'%'; }; }
+      const pauseBtn = document.getElementById('musicPauseBtn');
+      if(pauseBtn){
+        pauseBtn.onclick = ()=>{
+          if(audio.paused){ audio.play(); pauseBtn.textContent='\u23f8'; }
+          else { audio.pause(); pauseBtn.textContent='\u25b6'; }
+        };
+      }
+    }).catch(()=>{ tryPlay(urls, index+1); });
   };
-  if(progWrap){
-    audio.ontimeupdate=()=>{ if(audio.duration) progWrap.style.width=(audio.currentTime/audio.duration*100)+'%'; };
-  }
-  if(pauseBtn){
-    pauseBtn.onclick=()=>{
-      if(audio.paused){ audio.play(); pauseBtn.textContent='\u23f8'; }
-      else{ audio.pause(); pauseBtn.textContent='\u25b6'; }
-    };
-  }
+
+  // Fuentes en orden: audiodownload (sin CORS), audio, stream Jamendo CDN
+  const sources = [
+    audioUrl,
+    audioUrl ? audioUrl.replace('https://mp3d.jamendo.com','https://storage.googleapis.com/jamendo') : null,
+    `https://mp3d.jamendo.com/?trackid=${trackId}&format=mp32`
+  ];
+  tryPlay(sources);
 }
+
+function searchSpotify(){ searchDeezer(); }
+function renderYouTubeResults(videos){ } // legacy stub
+function renderDeezerResults(tracks){ } // legacy stub
 
 function playYouTube(videoId, title, artist){
   // Keep for backward compat - open in YouTube
   window.open('https://www.youtube.com/watch?v='+videoId, '_blank');
 }
 
+function playDeezer(track){ } // Deezer solo para historias
 
+function playSpotify(){}
 
 function closeMusicPlayer(){
   const wrap = document.getElementById('musicPlayerWrap');
@@ -14845,7 +14842,7 @@ const _expose = {
   submitPost,submitStory,submitComment,toggleLinkInput,clearPostLink,debounceLinkPreview,fetchLinkPreview,_autoLinkDetect,handleMentionInput,insertMention,searchMentionedUser,handlePostMentionInput,insertPostMention,focusPostTextAndAt,
   doReact,quickReact,
   togglePassVis, maskEmail, startEmailChange, cancelEmailChange, sendVerifEmailForChange, confirmEmailChange,
-  setMusicType, quickGenreSearch, searchDeezer, closeMusicPlayer,
+  setMusicType, quickGenreSearch, searchSpotify, searchDeezer, playDeezer, playSpotify, closeMusicPlayer,
   submitSoporte, soporteCheckOtro, soporteNuevoReporte, initSoportePage,
   saveProfile,openEditProfile,calcAgeFromBirthdate,
   changeCover,changeAvatar,
