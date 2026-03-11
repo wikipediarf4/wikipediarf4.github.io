@@ -4531,6 +4531,7 @@ function fmtT(ts){
 }
 
 function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtKg(w){ const n=parseFloat(w)||0; return n>=1 ? n.toFixed(3)+' kg' : Math.round(n*1000)+' g'; }
 
 function renderCommentText(text){
   if(!text) return '';
@@ -6786,7 +6787,7 @@ function postHTML(p){
   const totalRxn = Object.values(p.reactionCounts||{}).reduce((a,b)=>a+b,0);
   const topRxn = Object.entries(p.reactionCounts||{}).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([e])=>e).join('');
   const rxnBtns = REACTIONS.map(r=>`<button class="rxn-btn" onclick="doReact('${p.id}','${r.emoji}')" title="${r.label}" style="position:relative;">${r.emoji}<span style="position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;font-size:.58rem;white-space:nowrap;padding:2px 6px;border-radius:4px;pointer-events:none;opacity:0;transition:opacity .15s;" class="rxn-tooltip">${r.label}</span></button>`).join('');
-  const fishTag = p.fish ? `<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(0,198,255,.08);border:1px solid rgba(0,198,255,.2);border-radius:100px;padding:4px 12px;font-size:.78rem;margin-bottom:10px;margin-left:14px"><span>🎣</span><strong>${p.fish}</strong>${p.weight?` · ${p.weight}kg`:''} ${p.map?`· ${p.map}`:''} ${p.tech?`· ${p.tech}`:''}</div>` : '';
+  const fishTag = p.fish ? `<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(0,198,255,.08);border:1px solid rgba(0,198,255,.2);border-radius:100px;padding:4px 12px;font-size:.78rem;margin-bottom:10px;margin-left:14px"><span>🎣</span><strong>${p.fish}</strong>${p.weight?` · ${fmtKg(p.weight)}`:''} ${p.map?`· ${p.map}`:''} ${p.tech?`· ${p.tech}`:''}</div>` : '';
   // Store images globally for lightbox
   window._postImgsMap = window._postImgsMap || {};
   if(p.images&&p.images.length) window._postImgsMap[p.id] = p.images;
@@ -10289,7 +10290,7 @@ async function loadAdminData(){
           <div style="font-size:.78rem;font-weight:700;margin-bottom:3px;">${esc(rPost.userNick||'')} <span style="color:var(--muted);font-weight:400;">${fmtT(rPost.time?.toMillis?.()|| Date.now())}</span></div>
           ${rPost.text?`<div style="font-size:.78rem;color:var(--muted);margin-bottom:4px;">${esc(rPost.text.slice(0,120))}</div>`:''}
           ${rPost.images&&rPost.images[0]?`<img src="${rPost.images[0]}" style="max-width:100%;max-height:120px;border-radius:6px;object-fit:cover;" loading="lazy">`:''}
-          ${rPost.fish?`<div style="font-size:.72rem;color:var(--accent);margin-top:3px;">🎣 ${rPost.fish}${rPost.weight?' · '+rPost.weight+'kg':''}</div>`:''}
+          ${rPost.fish?`<div style="font-size:.72rem;color:var(--accent);margin-top:3px;">🎣 ${rPost.fish}${rPost.weight?' · '+fmtKg(rPost.weight):''}</div>`:''}
         </div>
       </div>` : `<div style="font-size:.75rem;color:var(--muted);margin-top:6px;padding:8px;background:var(--bg3);border-radius:var(--rs);">Post no encontrado (puede haber sido eliminado)</div>`;
     return `<div style="padding:14px;border-bottom:1px solid var(--border);">
@@ -11552,7 +11553,7 @@ function spotCardHTML(s){
     ${imgs.length===1?`<img src="${imgs[0]}" style="width:100%;max-height:420px;object-fit:cover;display:block;cursor:pointer;" onclick="openImgLightbox('${imgs[0]}')">`:
       imgs.length>1?`<div class="post-img-grid ${gridClass}" style="gap:2px;">${imgs.slice(0,4).map(img=>`<img src="${img}" style="width:100%;height:200px;object-fit:cover;cursor:pointer;" onclick="openImgLightbox('${img}')">`).join('')}</div>`:''}
     ${s.fish||s.setup?`<div style="padding:10px 14px;display:flex;flex-wrap:wrap;gap:8px;border-top:1px solid var(--border);">
-      ${s.fish?`<span style="background:rgba(0,198,255,.1);color:var(--accent);padding:3px 10px;border-radius:100px;font-size:.75rem;">🐟 ${esc(s.fish)}${s.weight?' · '+s.weight+'kg':''}</span>`:''}
+      ${s.fish?`<span style="background:rgba(0,198,255,.1);color:var(--accent);padding:3px 10px;border-radius:100px;font-size:.75rem;">🐟 ${esc(s.fish)}${s.weight?' · '+fmtKg(s.weight):''}</span>`:''}
       ${s.setup?`<span style="background:rgba(255,215,0,.08);color:var(--gold);padding:3px 10px;border-radius:100px;font-size:.75rem;">🎣 ${esc(s.setup)}</span>`:''}
     </div>`:''}
     ${adminBtns}
@@ -16685,7 +16686,7 @@ function wkCard(t, showSt=false) {
   return `<div class="tcard" onclick="wkOpenDet('${t.id}')">
     <div class="tcard-img">
       ${t.images&&t.images[0]?`<img src="${t.images[0]}" alt="${wkEsc(t.fish)}" loading="lazy">`:`<span>🐟</span>`}
-      <div class="twbadge">${parseFloat(t.weight||0).toFixed(3)} kg</div>
+      <div class="twbadge">${fmtKg(t.weight||0)}</div>
       ${showSt&&t.status?`<div class="status-badge status-${t.status}">${t.status==='pending'?'⏳ Pendiente':t.status==='approved'?'✅ Aprobado':'❌ Rechazado'}</div>`:''}
     </div>
     <div class="tcbody">
@@ -16904,7 +16905,7 @@ window.wkRenderRecords = async () => {
               ${records.map(([fish,t],i)=>`<tr onclick="wkOpenDet('${t.id}')">
                 <td><span style="font-family:'Orbitron',monospace;font-weight:800;color:${i===0?'#ffd700':i===1?'#c0c8d4':i===2?'#cd7f32':'var(--muted,#567890)'}">${i+1}</span></td>
                 <td class="rec-fish">${wkEsc(fish)}</td>
-                <td class="rec-weight">${parseFloat(t.weight||0).toFixed(3)} kg</td>
+                <td class="rec-weight">${fmtKg(t.weight||0)}</td>
                 <td>${wkEsc(t.userNick||'?')}</td>
                 <td style="font-size:.8rem;color:var(--muted,#567890)">${wkEsc(t.map||'?')}</td>
                 <td style="font-size:.8rem;color:var(--muted,#567890)">${wkEsc(t.technique||'?')}</td>
@@ -17024,7 +17025,7 @@ window.wkOpenDet = async (id) => {
     const imgs = Array.isArray(t.images)&&t.images.length?t.images:[];
     content.innerHTML = `
       <div style="font-family:'Orbitron',monospace;font-size:1.4rem;font-weight:900;color:#ffd700;margin-bottom:4px">${wkEsc(t.fish||'Trofeo')}</div>
-      <div style="font-family:'Orbitron',monospace;font-size:2rem;font-weight:900;color:#ffd700;margin-bottom:14px;text-shadow:0 0 18px rgba(255,215,0,.3)">${parseFloat(t.weight||0).toFixed(3)} kg</div>
+      <div style="font-family:'Orbitron',monospace;font-size:2rem;font-weight:900;color:#ffd700;margin-bottom:14px;text-shadow:0 0 18px rgba(255,215,0,.3)">${fmtKg(t.weight||0)}</div>
       ${imgs.length?`
         <div style="width:100%;aspect-ratio:4/3;overflow:hidden;border-radius:12px;background:#060a0e;margin-bottom:8px;cursor:zoom-in" onclick="wkOpenLb('${imgs[0]}')">
           <img id="wkDetMainImg" src="${imgs[0]}" style="width:100%;height:100%;object-fit:cover" alt="${wkEsc(t.fish)}">
@@ -17224,7 +17225,7 @@ window.wkRenderAdmin = async () => {
       <div style="display:flex;gap:10px;align-items:flex-start">
         ${t.images&&t.images[0]?`<img src="${t.images[0]}" style="width:64px;height:64px;object-fit:cover;border-radius:6px;flex-shrink:0">`:`<div style="width:64px;height:64px;background:#151f2a;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0">🐟</div>`}
         <div style="flex:1">
-          <div style="font-weight:700">${wkEsc(t.fish)} — ${parseFloat(t.weight||0).toFixed(3)} kg</div>
+          <div style="font-weight:700">${wkEsc(t.fish)} — ${fmtKg(t.weight||0)}</div>
           <div style="font-size:.8rem;color:var(--muted,#567890)">${wkEsc(t.map)} · ${wkEsc(t.technique)} · por <strong>${wkEsc(t.userNick||'?')}</strong></div>
           ${t.description?`<div style="font-size:.78rem;color:var(--muted,#567890);margin-top:3px">${wkEsc(t.description.substring(0,100))}...</div>`:''}
         </div>
@@ -17239,7 +17240,7 @@ window.wkRenderAdmin = async () => {
   if(aAllP) aAllP.innerHTML=`<div style="overflow-x:auto"><table class="atable">
     <thead><tr><th>Pez</th><th>Peso</th><th>Pescador</th><th>Mapa</th><th>Estado</th><th>Acciones</th></tr></thead>
     <tbody>${all.slice(0,50).map(t=>`<tr>
-      <td>${wkEsc(t.fish)}</td><td>${parseFloat(t.weight||0).toFixed(3)} kg</td>
+      <td>${wkEsc(t.fish)}</td><td>${fmtKg(t.weight||0)}</td>
       <td>${wkEsc(t.userNick||'?')}</td><td style="font-size:.8rem">${wkEsc(t.map||'?')}</td>
       <td><span class="status-badge status-${t.status}" style="position:static;display:inline">${t.status}</span></td>
       <td style="display:flex;gap:5px">
@@ -17747,7 +17748,7 @@ function _renderMemoriesCard(w){
           <div style="flex:1;min-width:0;">
             <div class="memory-badge" style="background:linear-gradient(135deg,#7a5200,#d4a017);">🏆 Trofeo</div>
             <div style="font-size:.82rem;font-weight:700;color:var(--text);line-height:1.4;">${m.label}</div>
-            <div style="font-size:.72rem;color:var(--gold);margin-top:3px;">${esc(t.fish||'')} ${t.weight?'· '+t.weight+'kg':''}</div>
+            <div style="font-size:.72rem;color:var(--gold);margin-top:3px;">${esc(t.fish||'')} ${t.weight?'· '+fmtKg(t.weight):''}</div>
             <div style="font-size:.68rem;color:var(--muted);margin-top:2px;">${m.date.toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'})}</div>
           </div>
         </div>
