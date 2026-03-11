@@ -4430,7 +4430,10 @@ function listenPosts() {
 
   _postsUnsub = onSnapshot(
     query(collection(db, 'posts'), orderBy('time', 'desc'), limit(50)),
+    { includeMetadataChanges: false },
     snap => {
+      // Solo procesar cambios reales, ignorar metadata (pending writes, cache)
+      if(snap.metadata.fromCache) return;
       _posts = snap.docs.map(d => ({ id: d.id, ...d.data(), time: d.data().time?.toMillis?.() || Date.now() }));
       const activePage = document.querySelector('.page.active');
       const pageId = activePage ? activePage.id : '';
@@ -4470,7 +4473,9 @@ function listenStories() {
   const since = new Date(Date.now() - 172800000); // últimas 48h max
   _storiesUnsub = onSnapshot(
     query(collection(db, 'stories'), orderBy('time', 'desc'), limit(50)),
+    { includeMetadataChanges: false },
     snap => {
+      if(snap.metadata.fromCache) return;
       const now = Date.now();
       const expiredIds = [];
       _stories = snap.docs.filter(d => {
@@ -9831,13 +9836,14 @@ function updateMsgBadge(){
 }
 
 let _notifUnsub = null;
+let _notifFirstLoad = true; // Ignorar el primer snapshot (carga inicial)
 function listenNotifs(){
   if(!window.CU) return;
   if(_notifUnsub){ _notifUnsub(); _notifUnsub=null; }
+  _notifFirstLoad = true;
   _notifUnsub = onSnapshot(doc(db,'users',window.CU.id), snap=>{
     if(!snap.exists()) return;
     const d = snap.data();
-    // Sincronizar window.CU con datos frescos (archivedChats, deletedChats, friendsList)
     if(window.CU){
       window.CU.archivedChats = d.archivedChats || [];
       window.CU.deletedChats  = d.deletedChats  || [];
@@ -9845,8 +9851,15 @@ function listenNotifs(){
     }
     const newNotifs = d.notifs || [];
 
-    // Detección 100% confiable por clave única — funciona aunque el snapshot
-    // se dispare por otro campo del documento (presencia, chats, etc.)
+    if(_notifFirstLoad){
+      // Primera carga: solo cargar las notifs, NO tocar ni sonido ni toast
+      _notifFirstLoad = false;
+      _notifs = newNotifs;
+      renderNotifs(); updateNotifBadge(); updateMsgBadge();
+      return;
+    }
+
+    // Detección 100% confiable por clave única
     const knownKeys = new Set(
       _notifs.map(n => `${n.time||0}_${n.fromNick||''}_${(n.text||'').slice(0,30)}`)
     );
@@ -9872,7 +9885,6 @@ function listenNotifs(){
       }
     }
     renderNotifs(); updateNotifBadge(); updateMsgBadge();
-    // Re-render lista del messenger si está visible (sin destruir listener)
     if(_messengerOpen){
       const _ln_list = document.getElementById('messengerList');
       if(_ln_list && _ln_list.style.display !== 'none'){
