@@ -1725,12 +1725,69 @@ select.fi option{background:var(--bg3);color:var(--text);}
   </div>
 
   <!-- Contenido tabs -->
-  <div style="max-width:860px;margin:0 auto;padding:16px;">
-    <div id="upTabPosts"><div style="color:var(--muted);text-align:center;padding:30px;">Cargando...</div></div>
+  <div style="max-width:980px;margin:0 auto;padding:16px 20px;">
+
+    <!-- TAB: PUBLICACIONES (layout 2 col estilo Facebook) -->
+    <div id="upTabPosts">
+      <div style="display:grid;grid-template-columns:360px 1fr;gap:16px;" id="upPostsGrid">
+
+        <!-- Columna izquierda: Datos personales + Fotos + Amigos -->
+        <div id="upLeftCol">
+          <!-- Card: Info personal -->
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;">
+            <div style="font-size:1rem;font-weight:800;color:var(--text);margin-bottom:12px;">Datos personales</div>
+            <div id="upInfoItems" style="display:flex;flex-direction:column;gap:9px;font-size:.85rem;color:var(--muted);">
+              <div style="color:var(--muted);font-size:.8rem;">Sin información pública</div>
+            </div>
+            <div id="upInfoExtra" style="margin-top:12px;display:none;">
+              <div style="height:1px;background:var(--border);margin:10px 0;"></div>
+              <div style="font-size:.9rem;font-weight:800;color:var(--text);margin-bottom:8px;">Formación académica</div>
+              <div id="upInfoEdu" style="font-size:.85rem;color:var(--muted);"></div>
+            </div>
+          </div>
+
+          <!-- Card: Fotos miniatura -->
+          <div id="upLeftFotosCard" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px;display:none;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+              <span style="font-size:.9rem;font-weight:800;color:var(--text);">Fotos</span>
+              <span style="font-size:.78rem;color:var(--accent);cursor:pointer;" onclick="swUpTab(document.querySelector('#upTabs .ptab:nth-child(3)'),\'upTabFotos\')">Ver todas</span>
+            </div>
+            <div id="upLeftFotosGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;border-radius:8px;overflow:hidden;"></div>
+          </div>
+
+          <!-- Card: Amigos miniatura -->
+          <div id="upLeftAmigosCard" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px;display:none;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+              <span style="font-size:.9rem;font-weight:800;color:var(--text);">Amigos</span>
+              <span style="font-size:.78rem;color:var(--accent);cursor:pointer;" onclick="swUpTab(document.querySelector('#upTabs [onclick*=upTabAmigos]'),\'upTabAmigos\')">Ver todos</span>
+            </div>
+            <div id="upLeftAmigosGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;"></div>
+          </div>
+        </div>
+
+        <!-- Columna derecha: posts -->
+        <div id="upRightCol">
+          <div id="upPostsList"><div style="color:var(--muted);text-align:center;padding:30px;">Cargando...</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: INFORMACIÓN -->
     <div id="upTabInfo" style="display:none;"></div>
+
+    <!-- TAB: FOTOS -->
     <div id="upTabFotos" style="display:none;"></div>
+
+    <!-- TAB: AMIGOS -->
     <div id="upTabAmigos" style="display:none;"></div>
   </div>
+
+  <style>
+    @media(max-width:860px){
+      #upPostsGrid{ grid-template-columns:1fr !important; }
+      #upLeftCol{ display:none; }
+    }
+  </style>
 </div>
 
 <!-- PAGE: PROFILE -->
@@ -12855,13 +12912,92 @@ async function _loadUserProfilePage(uid, nick){
     userPosts.forEach(p=>{
       if(!(_posts||[]).find(x=>x.id===p.id)) _posts.unshift(p);
     });
-    document.getElementById('upTabPosts').innerHTML = userPosts.length
-      ? userPosts.map(p=>postHTML(p)).join('')
-      : '<div style="text-align:center;padding:40px;color:var(--muted);">Sin publicaciones aún</div>';
+    // Render posts en la columna derecha
+    const upPostsList = document.getElementById('upPostsList');
+    if(upPostsList){
+      upPostsList.innerHTML = userPosts.length
+        ? userPosts.map(p=>postHTML(p)).join('')
+        : '<div style="text-align:center;padding:40px;color:var(--muted);">Sin publicaciones aún</div>';
+    }
+    // También mantener el container original vacío (para swUpTab)
+    document.getElementById('upTabPosts').dataset.loaded = '1';
 
-    // ── TAB INFO ──
+    // ── COLUMNA IZQUIERDA: Info personal (estilo Facebook) ──
+    const upInfoItems = document.getElementById('upInfoItems');
+    if(upInfoItems){
+      const infoLines = [];
+      if(u.city||u.country) infoLines.push(`<div style="display:flex;align-items:flex-start;gap:10px;"><span style="font-size:1.1rem;flex-shrink:0;margin-top:1px;">📍</span><span>Vive en <strong style="color:var(--text);">${esc((u.city?u.city+', ':'')+u.country||'')}</strong></span></div>`);
+      if(u.origin) infoLines.push(`<div style="display:flex;align-items:flex-start;gap:10px;"><span style="font-size:1.1rem;flex-shrink:0;margin-top:1px;">🏠</span><span>De <strong style="color:var(--text);">${esc(u.origin)}</strong></span></div>`);
+      if(u.joined) infoLines.push(`<div style="display:flex;align-items:flex-start;gap:10px;"><span style="font-size:1.1rem;flex-shrink:0;margin-top:1px;">📅</span><span>Se unió en <strong style="color:var(--text);">${esc(u.joined)}</strong></span></div>`);
+      if(u.favFish) infoLines.push(`<div style="display:flex;align-items:flex-start;gap:10px;"><span style="font-size:1.1rem;flex-shrink:0;margin-top:1px;">🎣</span><span>Pez favorito: <strong style="color:var(--text);">${esc(u.favFish)}</strong></span></div>`);
+      if(u.favMap) infoLines.push(`<div style="display:flex;align-items:flex-start;gap:10px;"><span style="font-size:1.1rem;flex-shrink:0;margin-top:1px;">🗺️</span><span>Mapa favorito: <strong style="color:var(--text);">${esc(u.favMap)}</strong></span></div>`);
+      if(mutualFriends.length) infoLines.push(`<div style="display:flex;align-items:flex-start;gap:10px;"><span style="font-size:1.1rem;flex-shrink:0;margin-top:1px;">🤝</span><span style="color:var(--accent);">${mutualFriends.length} amigo${mutualFriends.length>1?'s':''} en común</span></div>`);
+      upInfoItems.innerHTML = infoLines.length ? infoLines.join('') : '<div style="color:var(--muted);font-size:.8rem;">Sin información pública</div>';
+    }
+
+    // ── COLUMNA IZQUIERDA: Fotos miniatura ──
+    const upLeftFotosCard = document.getElementById('upLeftFotosCard');
+    const upLeftFotosGrid = document.getElementById('upLeftFotosGrid');
+    const _imgPostMap = {};
+    userPosts.forEach(p=>{ (p.images||[]).forEach(img=>{ _imgPostMap[img]=p.id; }); });
+    const allImgs = userPosts.flatMap(p=>p.images||[]).filter(Boolean);
+    const _allImgsJson = JSON.stringify(allImgs);
+    if(upLeftFotosGrid && allImgs.length){
+      upLeftFotosGrid.innerHTML = allImgs.slice(0,9).map(img=>{
+        const pid = _imgPostMap[img]||'';
+        return `<div style="aspect-ratio:1;overflow:hidden;cursor:pointer;background:var(--bg3);" onclick="openImgLightbox('${img}',${_allImgsJson},'${pid}')"><img src="${img}" style="width:100%;height:100%;object-fit:cover;" loading="lazy"></div>`;
+      }).join('');
+      if(upLeftFotosCard) upLeftFotosCard.style.display='block';
+    }
+
+    // ── COLUMNA IZQUIERDA: Amigos miniatura ──
+    document.getElementById('upTabFotos').innerHTML = allImgs.length
+      ? `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;">${allImgs.map(img=>{
+          const pid = _imgPostMap[img]||'';
+          return `<div style="aspect-ratio:1;overflow:hidden;cursor:pointer;border-radius:2px;transition:opacity .15s;" onclick="openImgLightbox('${img}',${_allImgsJson},'${pid}')" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'"><img src="${img}" style="width:100%;height:100%;object-fit:cover;" loading="lazy"></div>`;
+        }).join('')}</div>`
+      : '<div style="color:var(--muted);text-align:center;padding:30px;">Sin fotos aún</div>';
+
+    // ── TAB AMIGOS + Columna izquierda mini amigos ──
+    if((u.friends||[]).length){
+      const fSnaps = await Promise.all((u.friends||[]).slice(0,18).map(fid=>getDoc(doc(db,'users',fid))));
+      const myF = window.CU?.friends || [];
+      const friendCards = fSnaps.filter(s=>s.exists()).map(s=>{
+        const f=s.data(); const fid=s.id;
+        const isMe = window.CU?.id===fid;
+        const alrFriend = myF.includes(fid);
+        const addBtn = (!isMe && !alrFriend) ? `<button onclick="sendFriendRequest('${fid}','${(f.nick||'').replace(/'/g,"\'")}','page');event.stopPropagation();" style="margin-top:5px;width:100%;padding:4px;background:var(--accent);border:none;border-radius:var(--rs);color:#000;font-size:.65rem;font-weight:700;cursor:pointer;">+ Agregar</button>` : alrFriend&&!isMe?`<div style="margin-top:5px;font-size:.65rem;color:var(--green);text-align:center;font-weight:700;">✓ Amigos</div>`:'';
+        return { fid, f, addBtn };
+      });
+
+      document.getElementById('upTabAmigos').innerHTML = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">${friendCards.map(({fid,f,addBtn})=>`
+        <div onclick="openUserProfile('${fid}','${(f.nick||'').replace(/'/g,"\'")}');" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer;transition:border-color .2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="width:44px;height:44px;border-radius:50%;background:var(--bg4);margin:0 auto 6px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;${f.verified?'border:2px solid gold;':'border:1px solid var(--border);'}"><img src="${f.av||getDefaultAv(f.gender||'')}" style="width:100%;height:100%;object-fit:cover;"></div>
+          <div style="font-size:.72rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(f.nick||'?')}${f.verified?' ✅':''}</div>
+          ${addBtn}
+        </div>`).join('')}</div>`;
+
+      // Left column mini grid (6 amigos)
+      const upLeftAmigosCard = document.getElementById('upLeftAmigosCard');
+      const upLeftAmigosGrid = document.getElementById('upLeftAmigosGrid');
+      if(upLeftAmigosGrid){
+        upLeftAmigosGrid.innerHTML = friendCards.slice(0,6).map(({fid,f})=>`
+          <div style="text-align:center;cursor:pointer;" onclick="openUserProfile('${fid}','${(f.nick||'').replace(/'/g,"\\'")}')">
+            <div style="width:100%;aspect-ratio:1;border-radius:8px;overflow:hidden;background:var(--bg3);margin-bottom:3px;">
+              <img src="${f.av||getDefaultAv(f.gender||'')}" style="width:100%;height:100%;object-fit:cover;">
+            </div>
+            <div style="font-size:.68rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(f.nick||'?')}</div>
+          </div>`).join('');
+        if(upLeftAmigosCard) upLeftAmigosCard.style.display='block';
+      }
+    } else {
+      document.getElementById('upTabAmigos').innerHTML = '<div style="color:var(--muted);text-align:center;padding:30px;">Sin amigos aún</div>';
+    }
+
+    // ── TAB INFO (pestaña completa) ──
     const infoRows = [
       u.country ? `<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);"><span style="color:var(--muted);min-width:100px;font-size:.8rem;">País</span><span style="font-size:.82rem;">${esc(u.country)}</span></div>` : '',
+      u.city    ? `<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);"><span style="color:var(--muted);min-width:100px;font-size:.8rem;">Ciudad</span><span style="font-size:.82rem;">${esc(u.city)}</span></div>` : '',
       u.favFish ? `<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);"><span style="color:var(--muted);min-width:100px;font-size:.8rem;">Pez favorito</span><span style="font-size:.82rem;">🎣 ${esc(u.favFish)}</span></div>` : '',
       u.favMap  ? `<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);"><span style="color:var(--muted);min-width:100px;font-size:.8rem;">Mapa favorito</span><span style="font-size:.82rem;">📍 ${esc(u.favMap)}</span></div>` : '',
       u.favTech ? `<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);"><span style="color:var(--muted);min-width:100px;font-size:.8rem;">Técnica</span><span style="font-size:.82rem;">${esc(u.favTech)}</span></div>` : '',
@@ -12878,40 +13014,6 @@ async function _loadUserProfilePage(uid, nick){
     ].filter(Boolean).join('');
     document.getElementById('upTabInfo').innerHTML = infoRows || '<div style="color:var(--muted);padding:20px;text-align:center;font-size:.85rem;">Sin información disponible</div>';
 
-    // ── TAB FOTOS ──
-    // Armar mapa img->postId para que el lightbox pueda cargar comentarios/reacciones
-    const _imgPostMap = {};
-    userPosts.forEach(p=>{ (p.images||[]).forEach(img=>{ _imgPostMap[img]=p.id; }); });
-    const allImgs = userPosts.flatMap(p=>p.images||[]).filter(Boolean);
-    const _allImgsJson = JSON.stringify(allImgs);
-    document.getElementById('upTabFotos').innerHTML = allImgs.length
-      ? `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;">${allImgs.map(img=>{
-          const pid = _imgPostMap[img]||'';
-          return `<div style="aspect-ratio:1;overflow:hidden;cursor:pointer;border-radius:2px;transition:opacity .15s;" onclick="openImgLightbox('${img}',${_allImgsJson},'${pid}')" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'"><img src="${img}" style="width:100%;height:100%;object-fit:cover;" loading="lazy"></div>`;
-        }).join('')}</div>`
-      : '<div style="color:var(--muted);text-align:center;padding:30px;">Sin fotos aún</div>';
-
-    // ── TAB AMIGOS ──
-    if((u.friends||[]).length){
-      const fSnaps = await Promise.all((u.friends||[]).slice(0,18).map(fid=>getDoc(doc(db,'users',fid))));
-      const myF = window.CU?.friends || [];
-      document.getElementById('upTabAmigos').innerHTML = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">${fSnaps.filter(s=>s.exists()).map(s=>{
-        const f=s.data(); const fid=s.id;
-        const isMe = window.CU?.id===fid;
-        const alrFriend = myF.includes(fid);
-        const addBtn = (!isMe && !alrFriend) ? `<button onclick="sendFriendRequest('${fid}','${(f.nick||'').replace(/'/g,"\'")}','page');event.stopPropagation();" style="margin-top:5px;width:100%;padding:4px;background:var(--accent);border:none;border-radius:var(--rs);color:#000;font-size:.65rem;font-weight:700;cursor:pointer;">+ Agregar</button>` : alrFriend&&!isMe?`<div style="margin-top:5px;font-size:.65rem;color:var(--green);text-align:center;font-weight:700;">✓ Amigos</div>`:'';
-        return `<div onclick="openUserProfile('${fid}','${(f.nick||'').replace(/'/g,"\'")}');" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer;transition:border-color .2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-          <div style="width:44px;height:44px;border-radius:50%;background:var(--bg4);margin:0 auto 6px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;${f.verified?'border:2px solid gold;':'border:1px solid var(--border);'}">
-            ${`<img src="${f.av||getDefaultAv(f.gender||'')}" style="width:100%;height:100%;object-fit:cover;">`}
-          </div>
-          <div style="font-size:.72rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(f.nick||'?')}${f.verified?' ✅':''}</div>
-          ${addBtn}
-        </div>`;
-      }).join('')}</div>`;
-    } else {
-      document.getElementById('upTabAmigos').innerHTML = '<div style="color:var(--muted);text-align:center;padding:30px;">Sin amigos aún</div>';
-    }
-
   } catch(e){
     document.getElementById('upTabPosts').innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">No se pudo cargar el perfil</div>';
   }
@@ -12920,9 +13022,16 @@ async function _loadUserProfilePage(uid, nick){
 function swUpTab(btn, tabId){
   document.querySelectorAll('#upTabs .ptab').forEach(t=>t.classList.remove('on'));
   if(btn) btn.classList.add('on');
+  // upTabPosts contains the 2-col grid — show it but swap visibility inside
+  const postsGrid = document.getElementById('upPostsGrid');
   ['upTabPosts','upTabInfo','upTabFotos','upTabAmigos'].forEach(id=>{
     const el=document.getElementById(id);
-    if(el) el.style.display = id===tabId?'block':'none';
+    if(!el) return;
+    if(id==='upTabPosts'){
+      el.style.display = tabId==='upTabPosts' ? 'block' : 'none';
+    } else {
+      el.style.display = id===tabId?'block':'none';
+    }
   });
 }
 
@@ -14865,122 +14974,131 @@ async function openReactionsModal(pid){
 
   const myFriendsList = window.CU?.friendsList || [];
   const friendIds = new Set(myFriendsList.map(f=>f.id));
+  const myFriends = window.CU?.friends || [];
 
   const sorted = [...entries].sort(([a],[b])=>{
     const rank = id => id===window.CU?.id ? 0 : friendIds.has(id) ? 1 : 2;
     return rank(a) - rank(b);
   });
 
-  // Build or reuse modal first (show loading state)
+  // Build or reuse modal
   let modal = document.getElementById('mReactionsDetail');
   if(!modal){
     modal = document.createElement('div');
     modal.className = 'mo';
     modal.id = 'mReactionsDetail';
     modal.addEventListener('click', e => { if(e.target===modal) modal.classList.remove('open'); });
-    const box = document.createElement('div');
-    box.className = 'modal modal-sm';
-    box.style.maxWidth = '420px';
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'mcx';
-    closeBtn.textContent = '✕';
-    closeBtn.onclick = () => modal.classList.remove('open');
-    const content = document.createElement('div');
-    content.id = 'mReactionsDetailContent';
-    content.style.cssText = 'padding:16px 20px 20px;';
-    box.appendChild(closeBtn);
-    box.appendChild(content);
-    modal.appendChild(box);
     document.body.appendChild(modal);
   }
+  modal.innerHTML = '';
   modal.classList.add('open');
-  const content = document.getElementById('mReactionsDetailContent');
-  content.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">Cargando...</div>';
 
-  // Fetch unknown users from Firestore
+  const box = document.createElement('div');
+  box.className = 'modal';
+  box.style.cssText = 'max-width:460px;width:95vw;border-radius:12px;overflow:hidden;background:var(--bg2);display:flex;flex-direction:column;max-height:85vh;';
+
+  // Header
+  const header = document.createElement('div');
+  header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0;';
+  header.innerHTML = '<span style="font-size:1rem;font-weight:800;color:var(--text);">Reacciones</span>'
+    + '<button onclick="document.getElementById(\'mReactionsDetail\').classList.remove(\'open\')" style="background:var(--bg3);border:none;color:var(--muted);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;">✕</button>';
+  box.appendChild(header);
+
+  // Tabs row
+  const allEmojis = [...new Set(sorted.map(([,e])=>e))];
+  const tabsRow = document.createElement('div');
+  tabsRow.id = 'rxnTabsRow';
+  tabsRow.style.cssText = 'display:flex;gap:0;padding:0 12px;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;';
+
+  const tabDefs = [{ key:'Todas', label:'Todas', count: sorted.length }, ...allEmojis.map(e=>({ key:e, label:e, count: sorted.filter(([,x])=>x===e).length }))];
+  tabDefs.forEach(td=>{
+    const btn = document.createElement('button');
+    btn.dataset.tab = td.key;
+    btn.style.cssText = 'background:none;border:none;border-bottom:3px solid transparent;padding:12px 16px;font-size:.88rem;font-weight:700;cursor:pointer;font-family:\'Exo 2\',sans-serif;white-space:nowrap;transition:all .15s;color:var(--muted);display:flex;align-items:center;gap:5px;';
+    btn.innerHTML = `${td.label} <span style="font-size:.75rem;background:var(--bg3);padding:1px 7px;border-radius:100px;">${td.count}</span>`;
+    if(td.key==='Todas'){
+      btn.style.borderBottomColor = 'var(--accent)';
+      btn.style.color = 'var(--accent)';
+    }
+    tabsRow.appendChild(btn);
+  });
+  box.appendChild(tabsRow);
+
+  // List container
+  const listWrap = document.createElement('div');
+  listWrap.id = 'rxnListWrap';
+  listWrap.style.cssText = 'overflow-y:auto;flex:1;padding:0 4px;';
+  box.appendChild(listWrap);
+  modal.appendChild(box);
+
+  // Fetch unknown users
   const userCache = {};
-  // Pre-fill with known users
-  if(window.CU) userCache[window.CU.id] = {nick: window.CU.nick, av: window.CU.av||''};
-  for(const f of myFriendsList) userCache[f.id] = {nick: f.nick, av: f.av||''};
-
+  if(window.CU) userCache[window.CU.id] = {nick: window.CU.nick, av: window.CU.av||'', gender: window.CU.gender||''};
+  for(const f of myFriendsList) userCache[f.id] = {nick: f.nick, av: f.av||'', gender: f.gender||''};
   const unknownIds = sorted.map(([uid])=>uid).filter(uid=>!userCache[uid]);
   if(unknownIds.length){
     try {
-      const fetches = unknownIds.map(uid => getDoc(doc(db,'users',uid)));
-      const snaps = await Promise.all(fetches);
-      snaps.forEach(s => { if(s.exists()) userCache[s.id] = {nick: s.data().nick||'Usuario', av: s.data().av||''}; });
+      const snaps = await Promise.all(unknownIds.map(uid=>getDoc(doc(db,'users',uid))));
+      snaps.forEach(s=>{ if(s.exists()) userCache[s.id] = {nick:s.data().nick||'Usuario', av:s.data().av||'', gender:s.data().gender||''}; });
     } catch(e){}
   }
 
-  const allEmojis = [...new Set(sorted.map(([,e])=>e))];
-  const tabs = ['Todos', ...allEmojis];
-
-  function getInfo(uid){
-    const u = userCache[uid] || {nick:'Usuario', av:''};
-    const isMe = uid === window.CU?.id;
-    const isFriend = friendIds.has(uid);
-    return {
-      nick: isMe ? (window.CU.nick||u.nick) : u.nick,
-      av: isMe ? (window.CU.av||u.av) : u.av,
-      badge: isMe ? 'tú' : isFriend ? 'amigo' : '',
-      badgeColor: isMe ? 'var(--accent)' : 'var(--green)'
-    };
-  }
-
   function renderRow(uid, emoji){
-    const info = getInfo(uid);
-    const avHTML = info.av
-      ? '<img src="'+info.av+'" style="width:100%;height:100%;object-fit:cover;">'
-      : '<span>'+(info.nick||'?')[0].toUpperCase()+'</span>';
-    const badgeHTML = info.badge
-      ? '<span style="font-size:.62rem;color:'+info.badgeColor+';margin-left:5px;background:rgba(0,0,0,.15);padding:1px 5px;border-radius:100px;">'+info.badge+'</span>'
-      : '';
+    const u = userCache[uid] || {nick:'Usuario', av:'', gender:''};
     const isMe = uid === window.CU?.id;
-    const clickAttr = isMe ? '' : 'style="cursor:pointer;" onclick="document.getElementById(\'mReactionsDetail\').classList.remove(\'open\');openUserProfile(\''+uid+'\',\''+esc(info.nick)+'\')"';
-    return '<div '+clickAttr+' style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">'
-      + '<div style="width:38px;height:38px;border-radius:50%;background:var(--bg3);border:2px solid var(--border);overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.88rem;color:var(--accent);flex-shrink:0;">'+avHTML+'</div>'
-      + '<div style="flex:1;font-size:.85rem;font-weight:600;">'+esc(info.nick||'...')+badgeHTML+'</div>'
-      + '<span style="font-size:1.4rem;">'+emoji+'</span>'
-      + '</div>';
+    const isFriend = myFriends.includes(uid);
+    const nick = isMe ? (window.CU.nick||u.nick) : u.nick;
+    const av = isMe ? (window.CU.av||u.av) : u.av;
+    const avSrc = av || getDefaultAv(u.gender||'');
+    const avHTML = `<img src="${avSrc}" style="width:100%;height:100%;object-fit:cover;" onerror="this.src='hombre.png'">`;
+
+    let actionBtn = '';
+    if(isMe){
+      actionBtn = `<span style="font-size:.72rem;color:var(--accent);font-weight:700;padding:5px 12px;border-radius:100px;background:rgba(46,196,182,.1);border:1px solid rgba(46,196,182,.3);">Tú</span>`;
+    } else if(isFriend){
+      actionBtn = `<span style="font-size:.72rem;color:var(--green);font-weight:700;padding:5px 12px;border-radius:100px;background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.3);">✓ Amigos</span>`;
+    } else {
+      actionBtn = `<button onclick="event.stopPropagation();sendFriendRequest('${uid}','${nick.replace(/'/g,"\'")}','rxn');this.outerHTML='<span style=\\"font-size:.72rem;color:var(--accent);font-weight:700;padding:5px 12px;border-radius:100px;background:rgba(46,196,182,.1);border:1px solid rgba(46,196,182,.3);">Solicitud enviada</span>'" 
+        style="display:flex;align-items:center;gap:5px;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:7px 14px;border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .2s;white-space:nowrap;"
+        onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">
+        👤+ Agregar a amigos
+      </button>`;
+    }
+
+    const clickAttr = isMe ? '' : `onclick="document.getElementById('mReactionsDetail').classList.remove('open');openUserProfile('${uid}','${nick.replace(/'/g,"\\'")}');"`;
+    return `<div ${clickAttr} style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--border);${isMe?'':'cursor:pointer;'}transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+      <div style="position:relative;flex-shrink:0;">
+        <div style="width:44px;height:44px;border-radius:50%;background:var(--bg3);border:2px solid var(--border);overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;color:var(--accent);">${avHTML}</div>
+        <div style="position:absolute;bottom:-2px;right:-2px;font-size:.9rem;line-height:1;background:var(--bg2);border-radius:50%;padding:1px;">${emoji}</div>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:.9rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(nick)}</div>
+        ${mutualFriends&&mutualFriends.find&&mutualFriends.find(f=>f.id===uid)?`<div style="font-size:.72rem;color:var(--muted);margin-top:1px;">1 amigo en común</div>`:''}
+      </div>
+      <div onclick="event.stopPropagation();">${actionBtn}</div>
+    </div>`;
   }
 
   function renderList(filter){
-    const list = filter==='Todos' ? sorted : sorted.filter(([,e])=>e===filter);
-    return list.map(([uid,emoji])=>renderRow(uid,emoji)).join('')
-      || '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.82rem;">Sin reacciones</div>';
+    const list = filter==='Todas' ? sorted : sorted.filter(([,e])=>e===filter);
+    listWrap.innerHTML = list.length
+      ? list.map(([uid,emoji])=>renderRow(uid,emoji)).join('')
+      : '<div style="text-align:center;padding:30px;color:var(--muted);">Sin reacciones</div>';
   }
 
-  function renderTabs(activeFilter){
-    return tabs.map(t=>{
-      const isActive = t===activeFilter;
-      const label = t==='Todos' ? 'Todos ('+sorted.length+')' : t;
-      const bg = isActive ? 'rgba(0,198,255,.15)' : 'var(--bg3)';
-      const border = isActive ? 'var(--accent)' : 'var(--border)';
-      const color = isActive ? 'var(--accent)' : 'var(--muted)';
-      return '<button data-tab="'+t+'" style="background:'+bg+';border:1px solid '+border+';color:'+color+';padding:4px 12px;border-radius:100px;font-family:\'Exo 2\',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;">'+label+'</button>';
-    }).join('');
-  }
-
-  content.innerHTML =
-    '<div style="font-family:\'Orbitron\',monospace;font-size:.88rem;font-weight:700;color:var(--accent);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);">❤️ Reacciones &middot; '+sorted.length+'</div>'
-    + '<div id="rxnTabs" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:14px;">'+renderTabs('Todos')+'</div>'
-    + '<div id="rxnList" style="max-height:360px;overflow-y:auto;">'+renderList('Todos')+'</div>';
-
-  const tabsEl = content.querySelector('#rxnTabs');
-  if(tabsEl){
-    tabsEl.addEventListener('click', e=>{
-      const btn = e.target.closest('[data-tab]');
-      if(!btn) return;
-      const filter = btn.dataset.tab;
-      content.querySelector('#rxnList').innerHTML = renderList(filter);
-      tabsEl.querySelectorAll('[data-tab]').forEach(b=>{
-        const active = b.dataset.tab === filter;
-        b.style.background = active ? 'rgba(0,198,255,.15)' : 'var(--bg3)';
-        b.style.borderColor = active ? 'var(--accent)' : 'var(--border)';
-        b.style.color = active ? 'var(--accent)' : 'var(--muted)';
-      });
+  tabsRow.addEventListener('click', e=>{
+    const btn = e.target.closest('[data-tab]');
+    if(!btn) return;
+    const filter = btn.dataset.tab;
+    tabsRow.querySelectorAll('[data-tab]').forEach(b=>{
+      const active = b.dataset.tab===filter;
+      b.style.borderBottomColor = active ? 'var(--accent)' : 'transparent';
+      b.style.color = active ? 'var(--accent)' : 'var(--muted)';
     });
-  }
+    renderList(filter);
+  });
+
+  renderList('Todas');
 }
 
 // ===== PEZ DE LA SEMANA =====
