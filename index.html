@@ -947,7 +947,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
     <button class="tb-nav-btn on" onclick="gp('home');setNav(this)" title="Inicio">🏠</button>
     <button class="tb-nav-btn" onclick="gp('amigos');setNav(this);renderAmigosPage();" title="Amigos">👥</button>
     <button class="tb-nav-btn" id="shopNavBtn" onclick="gp('shop');setNav(this);renderShopPage();" title="Tienda" style="font-size:.75rem;font-weight:700;">🛒 Tienda</button>
-    <button class="tb-nav-btn" onclick="gp('trofeos-feed');setNav(this)" title="Feed de Trofeos Aprobados" style="font-size:.75rem;font-weight:700;">🥇 <span style="font-style:italic;">Está</span> en trofeos</button>
+    <button class="tb-nav-btn" onclick="gp('trofeos-feed');setNav(this)" title="Trofeos Recientes" style="font-size:.75rem;font-weight:700;">🥇 <span style="font-style:italic;">Está</span> en trofeos</button>
     <button class="tb-nav-btn" id="pezSemanalNavBtn" onclick="openPezSemanalModal();setNav(this)" title="Pez de la Semana" style="font-size:.75rem;font-weight:700;">🐟 Pez Semanal</button>
     <button class="tb-nav-btn" onclick="gp('peso-del-trofeo');setNav(this)" title="Peso del Trofeo" style="font-size:.75rem;font-weight:700;">🏆 Peso del Trofeo</button>
 
@@ -1027,7 +1027,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
 
       <div class="sl-item" onclick="gp('torneos')"><span class="sl-item-icon">🏆</span> Torneos</div>
       <div class="sl-item" onclick="gp('casitrofeo')"><span class="sl-item-icon">🏅</span> Casi Trofeo</div>
-      <div class="sl-item" onclick="gp('trofeos-feed');setNav(document.querySelector('.tb-nav-btn'))"><span class="sl-item-icon">🥇</span> Feed de Trofeos</div>
+      <div class="sl-item" onclick="gp('trofeos-feed');setNav(document.querySelector('.tb-nav-btn'))"><span class="sl-item-icon">🥇</span> Trofeos Recientes</div>
 
       <div class="sl-item" onclick="gp('peso-del-trofeo')"><span class="sl-item-icon">🏆</span> Peso del Trofeo</div>
       <div class="sl-item" onclick="gp('skill')"><span class="sl-item-icon">📈</span> Subir Skill</div>
@@ -2989,7 +2989,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
   <!-- Accesos rápidos -->
   <div style="display:flex;gap:8px;flex-wrap:wrap;">
     <button class="btn btn-s" style="font-size:.8rem;flex:1;" onclick="gp('peso-del-trofeo')">🔍 Ver pesos mínimos</button>
-    <button class="btn btn-s" style="font-size:.8rem;flex:1;" onclick="gp('trofeos-feed')">🥇 Feed de Trofeos</button>
+    <button class="btn btn-s" style="font-size:.8rem;flex:1;" onclick="gp('trofeos-feed')">🥇 Trofeos Recientes</button>
   </div>
 
 </div>
@@ -3098,7 +3098,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
 <div class="page" id="page-trofeos-feed" style="max-width:760px;margin:0 auto;padding:24px 16px 80px;">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:10px;">
     <div>
-      <div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:var(--gold);">🥇 Feed de Trofeos</div>
+      <div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:var(--gold);">🥇 Trofeos Recientes</div>
       <div style="font-size:.75rem;color:var(--muted);margin-top:3px;">Trofeos aprobados en <a href="#" onclick="gp('wiki-trofeos')" target="_blank" style="color:var(--accent);">WikipediaRF4</a> · actualización en tiempo real</div>
     </div>
     <div id="trofeoFeedBadge" style="display:none;background:rgba(255,215,0,.12);border:1px solid rgba(255,215,0,.35);color:var(--gold);padding:4px 12px;border-radius:100px;font-size:.72rem;font-weight:700;">
@@ -4419,7 +4419,7 @@ const ROUTES = {
   '/home': 'home',
   '/amigos': 'amigos',
   '/tienda': 'shop',
-  '/trofeos': 'trofeos-feed',
+  '/trofeos-resientes': 'trofeos-feed',
   '/galeria': 'galeria',
   '/videos': 'videos',
   '/skill': 'skill',
@@ -4441,7 +4441,7 @@ const PAGE_TO_URL = {
   'home':          '/',
   'amigos':        '/amigos',
   'shop':          '/tienda',
-  'trofeos-feed':  '/trofeos',
+  'trofeos-feed':  '/trofeos-resientes',
   'galeria':       '/galeria',
   'videos':        '/videos',
   'skill':         '/skill',
@@ -16635,7 +16635,7 @@ const _SIDEBAR_DEFAULT = [
   { id:'profile',       icon:'👤', label:'Mi Perfil' },
   { id:'torneos',       icon:'🏆', label:'Torneos' },
   { id:'casitrofeo',    icon:'🏅', label:'Casi Trofeo' },
-  { id:'trofeos-feed',  icon:'🥇', label:'Feed de Trofeos' },
+  { id:'trofeos-feed',  icon:'🥇', label:'Trofeos Recientes' },
   { id:'peso-del-trofeo',icon:'🏆',label:'Peso del Trofeo' },
   { id:'skill',         icon:'📈', label:'Subir Skill' },
   { id:'wiki-trofeos',  icon:'🏆', label:'Wiki Trofeos' },
