@@ -1031,7 +1031,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
 
       <div class="sl-item" onclick="gp('peso-del-trofeo')"><span class="sl-item-icon">🏆</span> Peso del Trofeo</div>
       <div class="sl-item" onclick="gp('skill')"><span class="sl-item-icon">📈</span> Subir Skill</div>
-      <div class="sl-item" onclick="gp('wiki-trofeos')" id="slWikiTrofeosBtn" style="background:linear-gradient(90deg,rgba(255,215,0,.08),transparent);border-left:3px solid #ffd700;"><span class="sl-item-icon">🏆</span> Wiki Trofeos</div>
+      <div class="sl-item" onclick="gp('wiki-trofeos')" id="slWikiTrofeosBtn" style="background:linear-gradient(90deg,rgba(255,215,0,.08),transparent);border-left:3px solid #ffd700;"><span class="sl-item-icon">🏆</span> Publicar Trofeos</div>
 
       <div class="sl-item"><span class="sl-item-icon">🔖</span> Guardados</div>
       <div class="sl-item" onclick="gp('parches')"><span class="sl-item-icon">🔧</span> Parches y Actualizaciones</div>
@@ -2919,10 +2919,10 @@ select.fi option{background:var(--bg3);color:var(--text);}
 </div>
 
 <!-- MAPAS PAGE -->
-<!-- Wiki Trofeos RF4 (legacy redirect) -->
+<!-- Publicar Trofeos (legacy redirect) -->
 <div class="page" id="page-trofeo" style="max-width:680px;margin:0 auto;padding:48px 16px 80px;text-align:center;">
   <div style="font-size:4rem;margin-bottom:16px;">🏆</div>
-  <div style="font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:900;color:var(--gold);margin-bottom:8px;">Wiki Trofeos RF4</div>
+  <div style="font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:900;color:var(--gold);margin-bottom:8px;">Publicar Trofeos</div>
   <div style="font-size:.88rem;color:var(--muted);margin-bottom:28px;line-height:1.7;">Accedé a la wiki de trofeos para publicar y consultar récords.</div>
   <button class="btn btn-p" style="font-size:.95rem;padding:12px 28px;" onclick="gp('publica-trofeo')">🏆 Publica tu Trofeo</button>
 </div>
@@ -3558,7 +3558,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
   <!-- SUB-PÁGINA: ADMIN WIKI -->
   <div id="wk-admin" style="display:none;">
     <div class="section">
-      <div class="stitle">⚙ Panel de Administración · Wiki Trofeos</div>
+      <div class="stitle">⚙ Panel de Administración · Publicar Trofeos</div>
       <div class="ssub">Control total — Solo ruizgustavo12</div>
       <div class="agrid">
         <div class="asb">
@@ -4434,6 +4434,7 @@ const ROUTES = {
   '/mensajes': 'mensajes',
   '/notificaciones': 'notificaciones',
   '/pez-semanal': 'pez-semanal',
+  '/publicar-trofeos': 'wiki-trofeos',
 };
 
 // Map page IDs to clean URLs
@@ -4458,7 +4459,7 @@ const PAGE_TO_URL = {
   'pez-semanal':   '/pez-semanal',
   'admin':         '/admin',
   'grupos':        '/grupos',
-  'wiki-trofeos':  '/wiki-trofeos',
+  'wiki-trofeos':  '/publicar-trofeos',
 };
 
 function navigateTo(id, pushState = true) {
@@ -12524,7 +12525,7 @@ const _PAGE_ACTIVITY = {
   'profile':       {icon:'👤', text:'viendo su perfil'},
   'userprofile':   {icon:'👤', text:'viendo un perfil'},
   'amigos':        {icon:'👥', text:'buscando amigos'},
-  'wiki-trofeos':  {icon:'🏆', text:'en la wiki de trofeos'},
+  'wiki-trofeos':  {icon:'🏆', text:'publicando trofeo'},
   'videos':        {icon:'📹', text:'viendo videos'},
   'spots':         {icon:'📍', text:'explorando spots'},
   'trofeos-feed':  {icon:'🥇', text:'viendo trofeos'},
@@ -16638,7 +16639,7 @@ const _SIDEBAR_DEFAULT = [
   { id:'trofeos-feed',  icon:'🥇', label:'Trofeos Recientes' },
   { id:'peso-del-trofeo',icon:'🏆',label:'Peso del Trofeo' },
   { id:'skill',         icon:'📈', label:'Subir Skill' },
-  { id:'wiki-trofeos',  icon:'🏆', label:'Wiki Trofeos' },
+  { id:'wiki-trofeos',  icon:'🏆', label:'Publicar Trofeos' },
   { id:'parches',       icon:'🔧', label:'Parches y Actualizaciones' },
   { id:'soporte',       icon:'🆘', label:'Soporte Técnico' },
 ];
