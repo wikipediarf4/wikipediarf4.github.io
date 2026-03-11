@@ -4431,6 +4431,8 @@ function listenPosts() {
   _postsUnsub = onSnapshot(
     query(collection(db, 'posts'), orderBy('time', 'desc'), limit(50)),
     snap => {
+      window._rtStatus.posts = '✅ OK ('+snap.docs.length+' posts)';
+      _updateRtPanel();
       _posts = snap.docs.map(d => ({ id: d.id, ...d.data(), time: d.data().time?.toMillis?.() || Date.now() }));
       const activePage = document.querySelector('.page.active');
       const pageId = activePage ? activePage.id : '';
@@ -4439,7 +4441,9 @@ function listenPosts() {
       else { renderFeed(); }
     },
     err => {
-      console.warn('listenPosts error:', err);
+      window._rtStatus.posts = '❌ ERROR: '+err.code;
+      _updateRtPanel();
+      console.error('[listenPosts] error:', err.code, err.message);
       // Fallback: intentar getDocs sin orderBy (evita error de índice faltante)
       getDocs(collection(db, 'posts')).then(snap => {
         _posts = snap.docs.map(d => ({ id: d.id, ...d.data(), time: d.data().time?.toMillis?.() || Date.now() }))
@@ -4471,19 +4475,16 @@ function listenStories() {
   _storiesUnsub = onSnapshot(
     query(collection(db, 'stories'), orderBy('time', 'desc'), limit(50)),
     snap => {
+      window._rtStatus.stories = '✅ OK ('+snap.docs.length+' historias)';
+      _updateRtPanel();
       const now = Date.now();
       const expiredIds = [];
       _stories = snap.docs.filter(d => {
         const raw = d.data().time;
-        // serverTimestamp() puede llegar como null la primera vez (pending write) — no descartar
-        if(raw === null || raw === undefined){
-          // Si el doc es muy reciente en el snapshot local, no lo consideramos expirado
-          return true;
-        }
+        // Firestore Timestamp o número directo
         const t = raw?.toMillis ? raw.toMillis() : (typeof raw === 'number' ? raw : 0);
-        if(!t) return true; // tiempo 0 = pendiente, no descartar
         const ttl = d.data().userVerified ? 172800000 : 86400000;
-        if((now - t) > ttl){ expiredIds.push(d.id); return false; }
+        if(!t || (now - t) > ttl){ expiredIds.push(d.id); return false; }
         return true;
       }).map(d => {
         const raw = d.data().time;
@@ -4494,8 +4495,10 @@ function listenStories() {
       renderStories();
     },
     err => {
+      window._rtStatus.stories = '❌ ERROR: '+err.code;
+      _updateRtPanel();
       console.error('[listenStories] error:', err.code, err.message);
-      if(err.code==='permission-denied') toast('⚠️ Sin permisos para leer historias — revisá reglas Firestore','err');
+      if(err.code==='permission-denied') toast('⚠️ Sin permisos para leer historias','err');
     }
   );
 }
@@ -4762,8 +4765,34 @@ async function doReg(){
   }
 }
 
+// ===== DIAGNÓSTICO TIEMPO REAL =====
+window._rtStatus = { posts: '⏳', notifs: '⏳', stories: '⏳', chat: '⏳', audio: '⏳' };
+function _updateRtPanel(){
+  const p = document.getElementById('_rtPanel');
+  if(!p) return;
+  const s = window._rtStatus;
+  p.innerHTML = `<b>🔍 Firebase Realtime</b><br>
+    Posts: ${s.posts}<br>Notifs: ${s.notifs}<br>Stories: ${s.stories}<br>Chat badge: ${s.chat}<br>Audio: ${s.audio}`;
+}
+function _showRtDiag(){
+  const old = document.getElementById('_rtPanel');
+  if(old) return;
+  const p = document.createElement('div');
+  p.id = '_rtPanel';
+  p.style.cssText = 'position:fixed;bottom:70px;right:12px;z-index:99999;background:#0d1117;border:1px solid #2ec4b6;border-radius:10px;padding:10px 14px;font-size:.72rem;color:#e6edf3;line-height:1.8;min-width:190px;box-shadow:0 4px 20px rgba(0,0,0,.5);';
+  p.innerHTML = '<b>🔍 Firebase Realtime</b><br>Iniciando...';
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = '✕';
+  closeBtn.style.cssText = 'position:absolute;top:4px;right:6px;background:none;border:none;color:#8b949e;cursor:pointer;font-size:.8rem;';
+  closeBtn.onclick = ()=>p.remove();
+  p.appendChild(closeBtn);
+  document.body.appendChild(p);
+  _updateRtPanel();
+}
+
 function onLogin(){
   updateNavUI();
+  _showRtDiag();
   listenVerifiedUsers().then(()=>{ listenPosts(); listenStories(); }).catch(()=>{ listenPosts(); listenStories(); });
   startPresence().then(()=>{ if(typeof updatePresenceActivity==='function') updatePresenceActivity('home'); });
   listenNotifs();
@@ -5463,7 +5492,7 @@ window.om = id => {
   else { el.classList.add('open'); }
   if(false && id==='mNotif_disabled' && _notifs.some(n=>!n.read)){
     _notifs.forEach(n=>n.read=true);
-    if(window.CU) updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,50)}).catch(()=>{});
+    if(window.CU) updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,30)}).catch(()=>{});
     updateNotifBadge(); updateMsgBadge();
   }
 };
@@ -6677,39 +6706,25 @@ async function _scSubmit(){ return submitStory(); }
 async function submitStory(){
   if(!window.CU){ toast('Inicia sesión primero','err'); return; }
   const mode = window._scMode || 'photo';
+  // In text mode, music is stored in window._storyMusic (set by _txtSelectTrack)
+  // In photo mode, music comes from storyMusicSearch flow (same window._storyMusic)
   const textEl = mode==='text' ? document.getElementById('storyTextText') : document.getElementById('storyText');
   const text = textEl?.value.trim() || '';
   if(!text && !_storyImgData && !window._storyGif){ toast('Escribe algo o sube una imagen','err'); return; }
   toast('Publicando historia...','inf');
   let imgUrl = '';
   let videoUrl = '';
-  try {
-    if(_storyImgData){
-      imgUrl = await uploadImage(_storyImgData, 'stories');
-      console.log('[story] imagen subida OK:', imgUrl.slice(0,60));
-    }
-    if(_storyVideoData) videoUrl = await uploadVideo(_storyVideoData, 'stories');
-  } catch(uploadErr){
-    console.error('[story] ERROR subiendo imagen:', uploadErr);
-    toast('❌ Error al subir la imagen: ' + (uploadErr.message||'intenta de nuevo'), 'err');
-    return;
-  }
+  if(_storyImgData) imgUrl = await uploadImage(_storyImgData, 'stories');
+  if(_storyVideoData) videoUrl = await uploadVideo(_storyVideoData, 'stories');
   if(!text && !imgUrl && !videoUrl && !window._storyGif){ toast('Agregá algo a la historia','err'); return; }
-  try {
-    await addDoc(collection(db, 'stories'), {
-      userId:window.CU.id, userNick:window.CU.nick, userAv:window.CU.av||'',
-      text, emoji:_storyEmojiPick||'🎣', img:imgUrl, video:videoUrl, yt:'', time:serverTimestamp(),
-      userVerified:window.CU?.verified||false,
-      music: window._storyMusic || _storyMusic || null,
-      bg: window._storyBg || null,
-      gif: window._storyGif || null
-    });
-    console.log('[story] guardada en Firestore OK');
-  } catch(dbErr){
-    console.error('[story] ERROR guardando en Firestore:', dbErr);
-    toast('❌ Error al publicar historia: ' + (dbErr.message||''), 'err');
-    return;
-  }
+  await addDoc(collection(db, 'stories'), {
+    userId:window.CU.id, userNick:window.CU.nick, userAv:window.CU.av||'',
+    text, emoji:_storyEmojiPick||'🎣', img:imgUrl, video:videoUrl, yt:'', time:serverTimestamp(),
+    userVerified:window.CU?.verified||false,
+    music: window._storyMusic || _storyMusic || null,
+    bg: window._storyBg || null,
+    gif: window._storyGif || null
+  });
   _storyImgData = null; _storyVideoData = null; _storyEmojiPick = ''; _storyMusic = null; window._storyMusic = null;
   window._storyBg = null; window._storyGif = null; window._scMode = 'chooser';
   const sv2 = document.getElementById('storyVideoPrev'); if(sv2) sv2.innerHTML='';
@@ -9614,22 +9629,63 @@ async function addNotif(text){
   if(!window.CU) return;
   const notif = {text, time:Date.now(), read:false};
   _notifs.unshift(notif);
-  try { await updateDoc(doc(db,'users',window.CU.id), {notifs:_notifs.slice(0,50)}); }
+  try { await updateDoc(doc(db,'users',window.CU.id), {notifs:_notifs.slice(0,30)}); }
   catch(e){ console.error('addNotif',e); }
   renderNotifs(); updateNotifBadge(); playNotifSound();
 }
 
+// ===== AUDIO UNLOCK (navegadores bloquean audio hasta interacción) =====
+let _audioCtxGlobal = null;
+let _audioUnlocked = false;
+function _unlockAudio(){
+  if(_audioUnlocked) return;
+  try {
+    _audioCtxGlobal = new (window.AudioContext||window.webkitAudioContext)();
+    if(_audioCtxGlobal.state === 'suspended') _audioCtxGlobal.resume();
+    _audioUnlocked = true;
+    window._rtStatus.audio = '✅ Desbloqueado';
+    _updateRtPanel();
+  } catch(e){ window._rtStatus.audio = '❌ No soportado'; _updateRtPanel(); }
+}
+document.addEventListener('click', _unlockAudio, {once:false, passive:true});
+document.addEventListener('keydown', _unlockAudio, {once:false, passive:true});
+document.addEventListener('touchstart', _unlockAudio, {once:false, passive:true});
+
 function playNotifSound(){
   try {
-    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const ctx = _audioCtxGlobal && _audioCtxGlobal.state !== 'closed'
+      ? _audioCtxGlobal
+      : new (window.AudioContext||window.webkitAudioContext)();
+    if(ctx.state === 'suspended') ctx.resume();
     const o = ctx.createOscillator(), g = ctx.createGain();
     o.connect(g); g.connect(ctx.destination);
-    o.frequency.setValueAtTime(660,ctx.currentTime);
-    o.frequency.setValueAtTime(880,ctx.currentTime+0.08);
-    g.gain.setValueAtTime(0.12,ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.25);
-    o.start(); o.stop(ctx.currentTime+0.25);
-  } catch(e){}
+    o.type = 'sine';
+    o.frequency.setValueAtTime(660, ctx.currentTime);
+    o.frequency.setValueAtTime(880, ctx.currentTime+0.08);
+    g.gain.setValueAtTime(0.18, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.3);
+    o.start(ctx.currentTime);
+    o.stop(ctx.currentTime+0.3);
+  } catch(e){ console.warn('playNotifSound error:', e); }
+}
+
+function playMsgSound(){
+  try {
+    const ctx = _audioCtxGlobal && _audioCtxGlobal.state !== 'closed'
+      ? _audioCtxGlobal
+      : new (window.AudioContext||window.webkitAudioContext)();
+    if(ctx.state === 'suspended') ctx.resume();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.frequency.setValueAtTime(1100, ctx.currentTime+0.1);
+    gain.gain.setValueAtTime(0.25, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.35);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime+0.35);
+  } catch(e){ console.warn('playMsgSound error:', e); }
 }
 let _notifTab = 'all';
 function switchNotifTab(tab){
@@ -9825,6 +9881,8 @@ function listenNotifs(){
   if(_notifUnsub){ _notifUnsub(); _notifUnsub=null; }
   _notifUnsub = onSnapshot(doc(db,'users',window.CU.id), snap=>{
     if(!snap.exists()) return;
+    window._rtStatus.notifs = '✅ OK';
+    _updateRtPanel();
     const d = snap.data();
     // Sincronizar window.CU con datos frescos (archivedChats, deletedChats, friendsList)
     if(window.CU){
@@ -9833,7 +9891,7 @@ function listenNotifs(){
       if(d.friendsList) window.CU.friendsList = d.friendsList;
     }
     const newNotifs = d.notifs || [];
-    // Trim a 50 si hay demasiadas — seguro aquí porque ya tenemos los datos sin race condition
+    // Trim seguro — sin race condition porque ya tenemos los datos
     if(newNotifs.length > 50){
       const trimmed = newNotifs.slice().sort((a,b)=>(b.time||0)-(a.time||0)).slice(0,50);
       updateDoc(doc(db,'users',window.CU.id),{notifs:trimmed}).catch(()=>{});
@@ -9870,7 +9928,11 @@ function listenNotifs(){
         _ln_list.innerHTML = _buildMessengerHTML();
       }
     }
-  }, err=>{ console.warn('[listenNotifs] error:', err); });
+  }, err=>{
+    window._rtStatus.notifs = '❌ ERROR: '+err.code;
+    _updateRtPanel();
+    console.error('[listenNotifs] error:', err.code, err.message);
+  });
 
   // Listener en tiempo real para badge de mensajes
   listenUnreadMsgsBadge();
@@ -9891,6 +9953,8 @@ function listenUnreadMsgsBadge(){
     const chatId = [myId, f.id].sort().join('_');
     const q = query(collection(db,'chats',chatId,'messages'), orderBy('time','desc'), limit(30));
     const unsub = onSnapshot(q, snap=>{
+      window._rtStatus.chat = '✅ OK (badge activo)';
+      _updateRtPanel();
       const unreadCount = snap.docs.filter(d=>{
         const m = d.data();
         return m.uid !== myId && !m.read && !(m.deletedFor||{})[myId];
@@ -9904,7 +9968,6 @@ function listenUnreadMsgsBadge(){
           text: md.sharedPostId ? '📤 Publicación compartida' : md.gif ? '🖼️ GIF' : md.audioUrl ? '🎤 Audio' : (md.text||''),
           time: md.time?.toMillis?.()||0,
           mine: md.uid === myId,
-          fromNick: md.uid !== myId ? (md.nick||'') : (lm.fromNick||''),
           unread: unreadCount > 0,
           unreadCount
         };
@@ -12960,7 +13023,8 @@ async function sendNotifToUserStory(uid, text, storyPreview, storyImg, storyId){
       fromAv: window.CU?.av||'', fromNick: window.CU?.nick||''};
     // arrayUnion agrega atómicamente sin race condition
     await updateDoc(doc(db,'users',uid), {notifs: arrayUnion(notif)});
-    // _trimNotifs eliminado: causaba race condition
+    // Recortar a 30 después (best effort)
+    _trimNotifs(uid);
   } catch(e){ console.error('notif story error',e); }
 }
 
@@ -12970,12 +13034,10 @@ async function sendNotifToUser(uid, text){
     const notif = {text, time:Date.now(), read:false,
       fromAv: window.CU?.av||'', fromNick: window.CU?.nick||''};
     await updateDoc(doc(db,'users',uid), {notifs: arrayUnion(notif)});
-    console.log('[notif OK] enviada a', uid, '→', text.slice(0,50));
+    console.log('[notif OK] →', uid.slice(0,8), text.slice(0,40));
   } catch(e){
     console.error('[notif ERROR]', e.code, e.message);
-    if(e.code==='permission-denied'||e.message?.includes('permission')){
-      toast('⚠️ Error de permisos Firebase — revisá las reglas de Firestore','err');
-    }
+    if(e.code==='permission-denied') toast('⚠️ Permisos Firestore — aplicá las reglas del archivo firestore.rules','err');
   }
 }
 
@@ -12985,27 +13047,16 @@ async function sendNotifToUserWithPost(uid, text, postId){
     const notif = {text, time:Date.now(), read:false, postId: postId||null,
       fromAv: window.CU?.av||'', fromNick: window.CU?.nick||''};
     await updateDoc(doc(db,'users',uid), {notifs: arrayUnion(notif)});
-    console.log('[notifPost OK] enviada a', uid, '→', text.slice(0,50));
+    console.log('[notifPost OK] →', uid.slice(0,8), text.slice(0,40));
   } catch(e){
     console.error('[notifPost ERROR]', e.code, e.message);
-    if(e.code==='permission-denied'||e.message?.includes('permission')){
-      toast('⚠️ Error de permisos Firebase — revisá las reglas de Firestore','err');
-    }
+    if(e.code==='permission-denied') toast('⚠️ Permisos Firestore — aplicá las reglas del archivo firestore.rules','err');
   }
 }
 
-// Recorta silenciosamente el array de notifs a 30 items (best effort, no bloquea)
+// _trimNotifs: solo se usa desde listenNotifs (sin race condition)
 async function _trimNotifs(uid){
-  try {
-    const snap = await getDoc(doc(db,'users',uid));
-    if(!snap.exists()) return;
-    const arr = snap.data().notifs||[];
-    if(arr.length > 30){
-      // Ordenar por time desc, mantener 30 más recientes
-      const trimmed = arr.slice().sort((a,b)=>(b.time||0)-(a.time||0)).slice(0,30);
-      await updateDoc(doc(db,'users',uid), {notifs: trimmed});
-    }
-  } catch(e){ /* silencioso */ }
+  // No se llama más desde sendNotif — el trim ocurre en listenNotifs de forma segura
 }
 
 // ===== MENSAJE MASIVO: Anuncio Tienda Gratis =====
@@ -13574,7 +13625,7 @@ async function acceptFriendRequest(fromId, fromNick, notifIndex){
     const idx = _notifs.findIndex(n=>n.type==='friendRequest' && n.fromId===fromId);
     if(idx !== -1) _notifs.splice(idx, 1);
     else if(notifIndex >= 0 && notifIndex < _notifs.length) _notifs.splice(notifIndex, 1);
-    await updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,50)});
+    await updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,30)});
     renderNotifs();
     updateNotifBadge();
     // Refresh local friends list & sidebar
@@ -13589,7 +13640,7 @@ async function rejectFriendRequest(notifIndex){
   if(!window.CU) return;
   try {
     if(notifIndex >= 0 && notifIndex < _notifs.length) _notifs.splice(notifIndex, 1);
-    await updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,50)});
+    await updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,30)});
     renderNotifs();
     toast('Solicitud rechazada','inf');
   } catch(e){ toast('Error','err'); }
@@ -13597,7 +13648,7 @@ async function rejectFriendRequest(notifIndex){
 
 async function dismissFriendRequest(notifIndex){
   if(notifIndex >= 0 && notifIndex < _notifs.length) _notifs.splice(notifIndex,1);
-  await updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,50)});
+  await updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,30)});
   renderNotifs();
 }
 
@@ -14039,19 +14090,7 @@ let _unsubChat = null;
 const msgSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhS0pikrmnj2BKSl+YtcObcmJnirjWx6d5YmFsm8fbtYZnX2OBsNvTsYdeWmN+rt7cvZBrX2Nzptrfv5dxZmZ3n9ncvJp4a2d1l9bav5t7bGh1kM3Vu5l7bGh1jcTRuZl6bGh4jcHQupd7bWh3i7zOuZZ8bml3ibnNuJZ9bmh4iLbMt5V/b2l4hrPLtpSBcGp4hK/KtZOCcGp4g6zJtJODcWt5ga/KtZODcWt5gbDKtpSFcmt7grHLt5WGc2x7g7LMuJaHdG19hLPNuZeJdm5+hbTOupiKd2+AhrXPu5mLd3CBh7bQvJqMe3OEh7fRvZuNfHSFiLjSvpyOfXWGibnTv52PfnaHirrVwJ6QgHiJi7vWwZ+RgXmLjLzXwqCSgniLjLzXwqCSgniKi7vWwZ+QgXiJirrUwJ+QgHeIibfPu5uLfHSGiLjRwJiMdW9+hbXNupuLdm+DhLTNu5mKdW1/hbPMuZaJdGx9g7LLuJSIcmx6ga/It5KHcGl4f6vFs5GHcGl4fqnEs5CHcGt4fbHGtZGHcGt4fLbHtZGGb2x4e7bHtZGFbmt4e7nIt5GFbmt3er3KuZKFbmt3er3KuZKFbmx4er7Lt5OGb214fMLMupSIcG55f8bPvZWJcW96gcnRwJaKcm57gs7Uw5mMdHB9g9LYxpqNdXF+hdPZx5uPd3OAh9fbypyQeHSBidrdy56Se3aEjt3gzp+UfHiGkN/i0KGXfnqIkuDj0qKYf3uKk+Hk06OZgHyLlOLl1KSagX2Mlefm1qWbgn6OmOnm2aadfn+RmersoriggIOUrvDx0KWkg4SWr/Px0qakg4SYsPTy06elg4SZsfXz1KilhIWbsvb01ainhoabtff12ainhoectvf32KuoiIidtvj32aypioqeve'+
 'YAbABAAAA');
 
-function playMsgSound(){
-  try { 
-    const ctx = new (window.AudioContext||window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.frequency.setValueAtTime(880,ctx.currentTime);
-    osc.frequency.setValueAtTime(1100,ctx.currentTime+0.1);
-    gain.gain.setValueAtTime(0.3,ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);
-    osc.start(ctx.currentTime); osc.stop(ctx.currentTime+0.3);
-  } catch(e){}
-}
+// playMsgSound definido arriba junto a playNotifSound
 
 function openMessenger(){
   _messengerOpen = true;
@@ -14062,7 +14101,7 @@ function openMessenger(){
   let changed = false;
   _notifs.forEach(n=>{ if(n.text?.startsWith('💬') && !n.read){ n.read=true; changed=true; } });
   if(changed && window.CU){
-    updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,50)}).catch(()=>{});
+    updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,30)}).catch(()=>{});
   }
   updateMsgBadge(); // siempre actualizar al abrir
 }
@@ -14415,9 +14454,6 @@ function openChatWith(uid, nick){
   if(inputRow) inputRow.style.display='flex';
 
   if(_unsubChat){ _unsubChat(); _unsubChat=null; }
-  // Limpiar badge inmediatamente al abrir el chat (sin esperar al onSnapshot)
-  if(_chatLastMsgs[uid]){ _chatLastMsgs[uid].unread=false; _chatLastMsgs[uid].unreadCount=0; }
-  updateMsgBadge();
   if(_presenceUnsub){ _presenceUnsub(); _presenceUnsub=null; }
   // Listen to the chat user's presence
   if(uid){
@@ -14793,19 +14829,12 @@ function markChatNotifsRead(nick){
   if(!nick || !window.CU) return;
   let changed = false;
   _notifs.forEach(n=>{
-    if(!n.read && n.text?.startsWith('💬')){
-      // Comparar por fromNick (más confiable) o por texto como fallback
-      const matchNick = n.fromNick && n.fromNick === nick;
-      const matchText = n.text.includes(nick+':') || n.text.includes(nick+' ');
-      if(matchNick || matchText){ n.read=true; changed=true; }
+    if(!n.read && n.text?.startsWith('💬') && n.text.includes(nick+':')){
+      n.read=true; changed=true;
     }
   });
   if(changed){
-    updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,50)}).catch(()=>{});
-    updateMsgBadge();
-    // Limpiar también el badge local inmediatamente
-    const uid = Object.entries(_chatLastMsgs).find(([,lm])=>lm.fromNick===nick)?.[0];
-    if(uid && _chatLastMsgs[uid]){ _chatLastMsgs[uid].unread=false; _chatLastMsgs[uid].unreadCount=0; }
+    updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,30)}).catch(()=>{});
     updateMsgBadge();
   }
 }
