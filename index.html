@@ -9601,7 +9601,8 @@ async function addNotif(text){
   if(!window.CU) return;
   const notif = {text, time:Date.now(), read:false};
   _notifs.unshift(notif);
-  try { await updateDoc(doc(db,'users',window.CU.id), {notifs:_notifs.slice(0,30)}); }
+  // Usar arrayUnion para NO sobreescribir notifs que llegaron de otros usuarios
+  try { await updateDoc(doc(db,'users',window.CU.id), {notifs: arrayUnion(notif)}); }
   catch(e){ console.error('addNotif',e); }
   renderNotifs(); updateNotifBadge();
   // NO reproducir sonido en notifs propias (acciones del propio usuario)
@@ -9668,10 +9669,18 @@ function switchNotifTab(tab){
   if(unread){ unread.style.background = tab==='unread'?'var(--accent)':'transparent'; unread.style.color = tab==='unread'?'#000':'var(--muted)'; }
   renderNotifs();
 }
-async function markAllNotifsRead(){
+async async function markAllNotifsRead(){
   if(!window.CU||!_notifs.length) return;
-  _notifs.forEach(n=>n.read=true);
-  await updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs});
+  // Leer array fresco de Firestore, marcar todo como leído sin pisar notifs nuevas
+  try {
+    const snap = await getDoc(doc(db,'users',window.CU.id));
+    const fresh = snap.exists() ? (snap.data().notifs||[]) : _notifs;
+    const updated = fresh.map(n=>({...n, read:true}));
+    _notifs = updated;
+    await updateDoc(doc(db,'users',window.CU.id),{notifs: updated.slice(0,50)});
+  } catch(e){
+    _notifs.forEach(n=>n.read=true);
+  }
   renderNotifs(); updateNotifBadge();
 }
 
@@ -9698,6 +9707,8 @@ function renderNotifs(){
   if(!el) return;
   // Excluir notificaciones de mensajes 💬 — esas van al ícono de chat, no a la campana
   const noMsg = _notifs.filter(n=>!(n.text&&n.text.startsWith('💬')));
+  // Ordenar por tiempo DESC (más nuevas primero)
+  noMsg.sort((a,b)=>(b.time||0)-(a.time||0));
   const list = _notifTab==='unread' ? noMsg.filter(n=>!n.read) : noMsg;
   if(!list.length){
     el.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--muted);">
@@ -9727,7 +9738,8 @@ function renderNotifs(){
     if(n.type==='friendRequest'){
       const safeNick = (n.fromNick||'').replace(/['"<>&]/g,'');
       return `<div style="display:flex;align-items:flex-start;gap:12px;padding:10px 16px;transition:background .15s;${isRead?'':'background:rgba(0,198,255,.05);'};cursor:pointer;"
-        onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='${isRead?'':'rgba(0,198,255,.05)'}'">
+        onmouseover="this.style.background='var(--bg3)';const xb=this.querySelector('[title=\'Borrar notificación\']');if(xb)xb.style.opacity='1';"
+      onmouseout="this.style.background='${isRead?'':'rgba(0,198,255,.05)}';const xb=this.querySelector('[title=\'Borrar notificación\']');if(xb)xb.style.opacity='0';">
         <div style="position:relative;flex-shrink:0;">
           <div style="width:52px;height:52px;border-radius:50%;background:var(--bg3);overflow:hidden;display:flex;align-items:center;justify-content:center;">${avInner}</div>
           <div style="position:absolute;bottom:-2px;right:-2px;width:20px;height:20px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;font-size:.7rem;border:2px solid var(--bg2);">${icon}</div>
@@ -9744,6 +9756,11 @@ function renderNotifs(){
               onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background='var(--bg3)'">Eliminar</button>
           </div>
         </div>
+        <button data-action="delete-notif" data-idx="${i}" onclick="event.stopPropagation()"
+          style="opacity:0;transition:opacity .15s;background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;padding:2px 6px;border-radius:50%;flex-shrink:0;"
+          title="Borrar notificación"
+          onmouseover="this.style.opacity='1';this.style.color='var(--red)'"
+          onmouseout="this.style.opacity='0';this.style.color='var(--muted)'">✕</button>
         ${!isRead?`<div style="width:10px;height:10px;background:var(--accent);border-radius:50%;flex-shrink:0;margin-top:4px;"></div>`:''}
       </div>`;
     }
@@ -9755,7 +9772,8 @@ function renderNotifs(){
     const clickable = !!(postId || bdayUid || storyId);
     return `<div data-action="notif-click" data-postid="${postId}" data-bdayuid="${bdayUid}" data-bdaynick="${n.bdayNick||''}" data-storyid="${storyId}"
       style="display:flex;align-items:flex-start;gap:12px;padding:10px 16px;transition:background .15s;${isRead?'':'background:rgba(0,198,255,.05);'}cursor:${clickable?'pointer':'default'};"
-      onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='${isRead?'':'rgba(0,198,255,.05)'}'">
+      onmouseover="this.style.background='var(--bg3)';const xb=this.querySelector('[title=\'Borrar notificación\']');if(xb)xb.style.opacity='1';"
+      onmouseout="this.style.background='${isRead?'':'rgba(0,198,255,.05)}';const xb=this.querySelector('[title=\'Borrar notificación\']');if(xb)xb.style.opacity='0';">
       <div style="position:relative;flex-shrink:0;">
         <div style="width:52px;height:52px;border-radius:50%;background:var(--bg3);overflow:hidden;display:flex;align-items:center;justify-content:center;">${avInner}</div>
         <div style="position:absolute;bottom:-2px;right:-2px;width:20px;height:20px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;font-size:.7rem;border:2px solid var(--bg2);">${icon}</div>
@@ -9773,6 +9791,11 @@ function renderNotifs(){
         </div>` : n.storyPreview ? `<div style="font-size:.72rem;color:var(--accent);margin-top:3px;padding:3px 8px;border-radius:6px;border-left:2px solid var(--accent);background:rgba(0,198,255,.06);">📖 "${esc(n.storyPreview)}"</div>` : ''}
         <div style="font-size:.72rem;color:${isRead?'var(--muted)':'var(--accent)'};margin-top:4px;font-weight:${isRead?'400':'700'};">${fmtT(n.time)}</div>
       </div>
+      <button data-action="delete-notif" data-idx="${i}" onclick="event.stopPropagation()"
+        style="opacity:0;transition:opacity .15s;background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;padding:2px 6px;border-radius:50%;flex-shrink:0;line-height:1;"
+        title="Borrar notificación"
+        onmouseover="this.style.opacity='1';this.style.color='var(--red)'" 
+        onmouseout="this.style.opacity='0';this.style.color='var(--muted)'">✕</button>
       ${!isRead?`<div style="width:10px;height:10px;background:var(--accent);border-radius:50%;flex-shrink:0;margin-top:4px;"></div>`:''}
     </div>`;
   }
@@ -9803,6 +9826,22 @@ function renderNotifs(){
       await acceptFriendRequest(row.dataset.uid, row.dataset.nick, parseInt(row.dataset.idx));
     } else if(action==='reject-friend'){
       await rejectFriendRequest(parseInt(row.dataset.idx));
+    } else if(action==='delete-notif'){
+      const idx = parseInt(row.dataset.idx);
+      const noMsg = _notifs.filter(n=>!(n.text&&n.text.startsWith('💬')));
+      noMsg.sort((a,b)=>(b.time||0)-(a.time||0));
+      const notifToRemove = noMsg[idx];
+      if(notifToRemove){
+        // Borrar del array local
+        const globalIdx = _notifs.indexOf(notifToRemove);
+        if(globalIdx > -1) _notifs.splice(globalIdx, 1);
+        // Borrar de Firestore con arrayRemove (no sobreescribe otras notifs)
+        if(window.CU){
+          updateDoc(doc(db,'users',window.CU.id), {notifs: arrayRemove(notifToRemove)}).catch(()=>{});
+        }
+        renderNotifs();
+        updateNotifBadge();
+      }
     }
   };
 }
@@ -13634,7 +13673,13 @@ async function acceptFriendRequest(fromId, fromNick, notifIndex){
     const idx = _notifs.findIndex(n=>n.type==='friendRequest' && n.fromId===fromId);
     if(idx !== -1) _notifs.splice(idx, 1);
     else if(notifIndex >= 0 && notifIndex < _notifs.length) _notifs.splice(notifIndex, 1);
-    await updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,30)});
+    // Leer fresco para no pisar notifs nuevas
+    try {
+      const freshSnap = await getDoc(doc(db,'users',window.CU.id));
+      const freshNotifs = freshSnap.exists() ? (freshSnap.data().notifs||[]) : _notifs;
+      const updatedNotifs = freshNotifs.filter(n=>!(n.type==='friendRequest'&&n.fromId===fromId));
+      await updateDoc(doc(db,'users',window.CU.id),{notifs:updatedNotifs.slice(0,50)});
+    } catch(e){ await updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,50)}).catch(()=>{}); }
     renderNotifs();
     updateNotifBadge();
     // Refresh local friends list & sidebar
@@ -13648,16 +13693,23 @@ async function acceptFriendRequest(fromId, fromNick, notifIndex){
 async function rejectFriendRequest(notifIndex){
   if(!window.CU) return;
   try {
+    const toRemove = notifIndex >= 0 && notifIndex < _notifs.length ? _notifs[notifIndex] : null;
     if(notifIndex >= 0 && notifIndex < _notifs.length) _notifs.splice(notifIndex, 1);
-    await updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,30)});
+    if(toRemove){ await updateDoc(doc(db,'users',window.CU.id),{notifs: arrayRemove(toRemove)}); }
+    else { await updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,50)}); }
     renderNotifs();
     toast('Solicitud rechazada','inf');
   } catch(e){ toast('Error','err'); }
 }
 
 async function dismissFriendRequest(notifIndex){
+  if(!window.CU) return;
+  const toRemove = notifIndex >= 0 && notifIndex < _notifs.length ? _notifs[notifIndex] : null;
   if(notifIndex >= 0 && notifIndex < _notifs.length) _notifs.splice(notifIndex,1);
-  await updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,30)});
+  try {
+    if(toRemove){ await updateDoc(doc(db,'users',window.CU.id),{notifs: arrayRemove(toRemove)}); }
+    else { await updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,50)}); }
+  } catch(e){}
   renderNotifs();
 }
 
@@ -14106,11 +14158,23 @@ function openMessenger(){
   om('mMessenger');
   renderMessengerList();
   // no pushState
-  // Marcar todas las notifs 💬 como leídas al abrir el messenger
-  let changed = false;
-  _notifs.forEach(n=>{ if(n.text?.startsWith('💬') && !n.read){ n.read=true; changed=true; } });
-  if(changed && window.CU){
-    updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,30)}).catch(()=>{});
+  // Marcar notifs 💬 como leídas al abrir el messenger — leer fresco para no pisar notifs nuevas
+  if(window.CU){
+    getDoc(doc(db,'users',window.CU.id)).then(snap=>{
+      if(!snap.exists()) return;
+      const fresh = snap.data().notifs || [];
+      let changed = false;
+      const updated = fresh.map(n=>{
+        if(n.text?.startsWith('💬') && !n.read){ changed=true; return {...n, read:true}; }
+        return n;
+      });
+      if(changed){
+        _notifs = updated;
+        updateDoc(doc(db,'users',window.CU.id),{notifs:updated.slice(0,50)}).catch(()=>{});
+        updateMsgBadge();
+        updateNotifBadge();
+      }
+    }).catch(()=>{});
   }
   updateMsgBadge(); // siempre actualizar al abrir
 }
@@ -14864,7 +14928,21 @@ function markChatNotifsRead(nick){
     }
   });
   if(changed){
-    updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,30)}).catch(()=>{});
+    // Leer array fresco de Firestore antes de escribir para no pisar notifs nuevas
+    getDoc(doc(db,'users',window.CU.id)).then(snap=>{
+      if(!snap.exists()) return;
+      const fresh = snap.data().notifs || [];
+      // Marcar como leídas las notifs de mensajes de este uid/nick en el array fresco
+      const updated = fresh.map(n=>{
+        if(!n.read && n.text?.startsWith('💬')){
+          const matchUid = n.fromUid && n.fromUid === _chatUserId;
+          const matchNick = n.fromNick && n.fromNick === _chatUserNick;
+          if(matchUid || matchNick) return {...n, read:true};
+        }
+        return n;
+      });
+      updateDoc(doc(db,'users',window.CU.id),{notifs: updated.slice(0,50)}).catch(()=>{});
+    }).catch(()=>{});
   }
   updateMsgBadge();
   updateNotifBadge();
