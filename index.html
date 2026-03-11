@@ -7968,6 +7968,10 @@ async function sendCmtGif(pid, gifUrl){
     await updateDoc(pRef,{comments:newComments});
     const localPost = (_posts||[]).find(lp=>lp.id===pid);
     if(localPost) localPost.comments = newComments;
+    // Notif al dueño del post
+    if(p.userId && p.userId !== window.CU.id){
+      sendNotifToUserWithPost(p.userId, `🖼️ ${window.CU.nick} comentó con un GIF`, pid);
+    }
     const listEl = document.getElementById('_cmtModalList_'+pid);
     const modal = document.getElementById('_cmtModal_'+pid);
     if(listEl && modal && modal._buildCmtHtml){ listEl.innerHTML = modal._buildCmtHtml(newComments); listEl.scrollTop = listEl.scrollHeight; }
@@ -10746,6 +10750,10 @@ async function igSendSticker(gifUrl){
   const nc=[...(p.comments||[]),{userId:window.CU.id,nick:window.CU.nick,av:window.CU.av||'',gender:window.CU.gender||'',gif:gifUrl,sticker:true,text:'',time:Date.now()}];
   p.comments=nc;
   await updateDoc(doc(db,colName,realId),{comments:nc});
+  // Notif al dueño del post
+  if(p.userId && p.userId !== window.CU.id){
+    sendNotifToUserWithPost(p.userId, `🎭 ${window.CU.nick} comentó con un sticker`, _galPostId);
+  }
 }
 window.igToggleStkPicker=igToggleStkPicker; window.igLoadStkCat=igLoadStkCat; window.igSearchSticker=igSearchSticker; window.igSendSticker=igSendSticker;
 window.igNav=igNav; window.igNavTo=igNavTo; window.igReact=igReact;
@@ -15367,6 +15375,10 @@ async function submitCommentGif(gifUrl, postId){
   };
   const updatedComments = [...(post.comments||[]), newComment];
   await updateDoc(postRef, { comments: updatedComments });
+  // Notif al dueño del post
+  if(post.userId && post.userId !== window.CU.id){
+    sendNotifToUserWithPost(post.userId, `🖼️ ${window.CU.nick} comentó con un GIF`, postId);
+  }
 }
 
 // Close gif pickers on outside click
