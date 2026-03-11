@@ -9906,7 +9906,10 @@ function listenNotifs(){
               time: n.time || Date.now(),
               mine: false,
               unread: true,
-              unreadCount: (existing.unreadCount || 0) + 1
+              unreadCount: (existing.unreadCount || 0) + 1,
+              fromNick: n.fromNick || existing.fromNick || '',
+              fromAv: n.fromAv || existing.fromAv || '',
+              nick: n.fromNick || existing.nick || ''
             };
           }
         });
@@ -14263,8 +14266,19 @@ function _buildMessengerHTML(){
   const deletedChats = window.CU?.deletedChats || [];
   const onlineIds  = _messengerOnlineIds;
 
+  // Incluir también contactos no-amigos que tengan mensajes no leídos (ej: admin)
+  const friendIds = new Set(friends.map(f=>f.id));
+  const extraContacts = Object.entries(_chatLastMsgs)
+    .filter(([uid, lm]) => !friendIds.has(uid) && lm?.unread && !archived.includes(uid) && !deletedChats.includes(uid))
+    .map(([uid, lm]) => ({
+      id: uid,
+      nick: lm.fromNick || lm.nick || uid,
+      av: lm.fromAv || lm.av || ''
+    }));
+  const allContacts = [...friends, ...extraContacts];
+
   // Badge "No leídos"
-  const unreadCount = friends.filter(f=>!archived.includes(f.id) && _chatLastMsgs[f.id]?.unread).length;
+  const unreadCount = allContacts.filter(f=>!archived.includes(f.id) && _chatLastMsgs[f.id]?.unread).length;
   const badge = document.getElementById('unreadChatBadge');
   if(badge){
     badge.style.display = unreadCount>0 ? 'inline-block' : 'none';
@@ -14273,15 +14287,16 @@ function _buildMessengerHTML(){
 
   let showFriends;
   if(_currentChatTab === 'archived'){
-    // Mostrar TODOS los archivados aunque no tengan mensajes cargados en _chatLastMsgs
-    showFriends = friends.filter(f=>archived.includes(f.id) && !deletedChats.includes(f.id));
+    showFriends = allContacts.filter(f=>archived.includes(f.id) && !deletedChats.includes(f.id));
   } else if(_currentChatTab === 'unread'){
-    showFriends = friends.filter(f=>!archived.includes(f.id) && !deletedChats.includes(f.id) && _chatLastMsgs[f.id]?.unread);
+    showFriends = allContacts.filter(f=>!archived.includes(f.id) && !deletedChats.includes(f.id) && _chatLastMsgs[f.id]?.unread);
   } else {
-    // Tab "Todos": excluir archivados y borrados sin mensajes nuevos
-    showFriends = friends.filter(f=>{
+    // Tab "Todos": mostrar amigos + no-amigos con mensajes no leídos
+    showFriends = allContacts.filter(f=>{
       if(archived.includes(f.id)) return false;
       if(deletedChats.includes(f.id)) return !!_chatLastMsgs[f.id];
+      // No-amigos solo se muestran si tienen mensajes
+      if(!friendIds.has(f.id)) return !!_chatLastMsgs[f.id];
       return true;
     });
   }
