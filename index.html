@@ -4474,11 +4474,17 @@ function listenStories() {
       const now = Date.now();
       const expiredIds = [];
       _stories = snap.docs.filter(d => {
-        const t = d.data().time?.toMillis?.() || 0;
+        const raw = d.data().time;
+        // Firestore Timestamp o número directo
+        const t = raw?.toMillis ? raw.toMillis() : (typeof raw === 'number' ? raw : 0);
         const ttl = d.data().userVerified ? 172800000 : 86400000;
-        if(t && (now - t) > ttl){ expiredIds.push(d.id); return false; }
+        if(!t || (now - t) > ttl){ expiredIds.push(d.id); return false; }
         return true;
-      }).map(d => ({ id: d.id, ...d.data(), time: d.data().time?.toMillis?.() || Date.now() }));
+      }).map(d => {
+        const raw = d.data().time;
+        const t = raw?.toMillis ? raw.toMillis() : (typeof raw === 'number' ? raw : Date.now());
+        return { id: d.id, ...d.data(), time: t };
+      });
       expiredIds.forEach(id => deleteDoc(doc(db, 'stories', id)).catch(()=>{}));
       renderStories();
     },
@@ -4554,7 +4560,11 @@ function toast(msg, type='inf'){
 
 function fmtT(ts){
   if(!ts) return '';
-  const d = new Date(ts), now = Date.now(), diff = now - d.getTime();
+  // Manejar Firestore Timestamp o número
+  const ms = ts?.toMillis ? ts.toMillis() : (typeof ts === 'number' ? ts : 0);
+  if(!ms) return '';
+  const d = new Date(ms), now = Date.now(), diff = now - d.getTime();
+  if(diff < 0) return 'Ahora';
   if(diff < 60000) return 'Ahora';
   if(diff < 3600000) return Math.floor(diff/60000)+'m';
   if(diff < 86400000) return Math.floor(diff/3600000)+'h';
@@ -9787,9 +9797,11 @@ function updateMsgBadge(){
   }
 }
 
+let _notifUnsub = null;
 function listenNotifs(){
   if(!window.CU) return;
-  onSnapshot(doc(db,'users',window.CU.id), snap=>{
+  if(_notifUnsub){ _notifUnsub(); _notifUnsub=null; }
+  _notifUnsub = onSnapshot(doc(db,'users',window.CU.id), snap=>{
     if(!snap.exists()) return;
     const d = snap.data();
     // Sincronizar window.CU con datos frescos (archivedChats, deletedChats, friendsList)
@@ -9831,7 +9843,7 @@ function listenNotifs(){
         _ln_list.innerHTML = _buildMessengerHTML();
       }
     }
-  });
+  }, err=>{ console.warn('[listenNotifs] error:', err); });
 
   // Listener en tiempo real para badge de mensajes
   listenUnreadMsgsBadge();
@@ -9844,7 +9856,7 @@ function listenUnreadMsgsBadge(){
   _unsubMsgBadgeListeners.forEach(u=>{ if(typeof u==='function') u(); });
   _unsubMsgBadgeListeners = [];
 
-  const friends = window.CU?.friendsList || [];
+  const friends = window.CU?.friendsList || window.CU?.friends?.map?.(id=>({id})) || [];
   const myId = window.CU?.id;
   if(!myId || !friends.length) return;
 
@@ -14024,7 +14036,10 @@ function closeMessenger(){
   const el = document.getElementById('mMessenger');
   if(el) el.classList.remove('open');
   document.getElementById('chatBubbleMin').style.display='none';
-  // no pushState
+  // Cancelar listeners al cerrar
+  if(_unsubChat){ _unsubChat(); _unsubChat=null; }
+  if(_presenceUnsub){ _presenceUnsub(); _presenceUnsub=null; }
+  _chatUserId = null;
 }
 
 function minimizeMessenger(){
