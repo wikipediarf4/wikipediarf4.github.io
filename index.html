@@ -12528,7 +12528,7 @@ const _PAGE_ACTIVITY = {
   'spots':         {icon:'📍', text:'explorando spots'},
   'trofeos-feed':  {icon:'🥇', text:'viendo trofeos'},
   'publica-trofeo':{icon:'🏆', text:'publicando trofeo'},
-  'peso-del-trofeo': {icon:'🔍', text:'buscando trofeos'},
+  'peso-del-trofeo': {icon:'🏆', text:'Peso del Trofeo'},
   'casitrofeo':    {icon:'🏅', text:'casi trofeo'},
   'torneos':       {icon:'⚔️', text:'viendo torneos'},
   'parches':       {icon:'🔧', text:'viendo novedades'},
@@ -12702,7 +12702,7 @@ function renderSidebarOnline(online, offline){
                  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px;">${nick}</span>
             ${devLabel(dev, isOnline)}
           </div>
-          ${statusText}
+          ${isOnline && u.activity ? `<span style="font-size:.62rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:130px;">${u.activityIcon||'📱'} ${u.activity}</span>` : statusText}
         </div>
 
         <!-- Chat button (solo online) -->
