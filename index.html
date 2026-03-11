@@ -12948,8 +12948,13 @@ async function sendNotifToUser(uid, text){
     const notif = {text, time:Date.now(), read:false,
       fromAv: window.CU?.av||'', fromNick: window.CU?.nick||''};
     await updateDoc(doc(db,'users',uid), {notifs: arrayUnion(notif)});
-    // _trimNotifs eliminado: causaba race condition sobreescribiendo notifs recién añadidas
-  } catch(e){ console.error('notif error',e); }
+    console.log('[notif OK] enviada a', uid, '→', text.slice(0,50));
+  } catch(e){
+    console.error('[notif ERROR]', e.code, e.message);
+    if(e.code==='permission-denied'||e.message?.includes('permission')){
+      toast('⚠️ Error de permisos Firebase — revisá las reglas de Firestore','err');
+    }
+  }
 }
 
 async function sendNotifToUserWithPost(uid, text, postId){
@@ -12958,8 +12963,13 @@ async function sendNotifToUserWithPost(uid, text, postId){
     const notif = {text, time:Date.now(), read:false, postId: postId||null,
       fromAv: window.CU?.av||'', fromNick: window.CU?.nick||''};
     await updateDoc(doc(db,'users',uid), {notifs: arrayUnion(notif)});
-    // _trimNotifs eliminado: causaba race condition sobreescribiendo notifs recién añadidas
-  } catch(e){ console.error('notif error',e); }
+    console.log('[notifPost OK] enviada a', uid, '→', text.slice(0,50));
+  } catch(e){
+    console.error('[notifPost ERROR]', e.code, e.message);
+    if(e.code==='permission-denied'||e.message?.includes('permission')){
+      toast('⚠️ Error de permisos Firebase — revisá las reglas de Firestore','err');
+    }
+  }
 }
 
 // Recorta silenciosamente el array de notifs a 30 items (best effort, no bloquea)
