@@ -9914,6 +9914,10 @@ function openImgLightbox(src, allImgs, postId){
   _galImages = Array.isArray(allImgs) && allImgs.length ? allImgs : (src ? [src] : []);
   _galIdx = _galImages.indexOf(src);
   if(_galIdx < 0) _galIdx = 0;
+  // Auto-resolve postId from global profile image map if not provided
+  if(!postId && src && window._upImgPostMap && window._upImgPostMap[src]){
+    postId = window._upImgPostMap[src];
+  }
   _galPostId = postId || null;
 
   const old = document.getElementById('_igModal');
@@ -9957,6 +9961,7 @@ function openImgLightbox(src, allImgs, postId){
     </div>` : `<div style="flex:1;color:#e4e6eb;font-weight:700;">Foto</div>`}
     <div style="display:flex;gap:6px;margin-left:auto;">
       ${_galPostId?`<button onclick="igDownload()" title="Descargar" style="background:rgba(255,255,255,.12);border:none;color:#e4e6eb;width:36px;height:36px;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">⬇️</button>`:''}
+      ${_galPostId&&window.CU?`<button onclick="igReport()" title="Reportar" style="background:rgba(255,255,255,.12);border:none;color:#e4e6eb;width:36px;height:36px;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">⚠️</button>`:''}
     </div>
   </div>
 
@@ -10071,16 +10076,18 @@ function igNavTo(i){
 // Load post data - reactions and comments scoped to image index
 async function igLoadPostData(pid, imgIdx){
   if(_galUnsub){ _galUnsub(); _galUnsub=null; }
-  const pRef = doc(db,'posts',pid);
+  const isTrofeo = pid.startsWith('trofeo_');
+  const realId = isTrofeo ? pid.replace('trofeo_','') : pid;
+  const colName = isTrofeo ? 'trofeosPendientes' : 'posts';
+  const pRef = doc(db, colName, realId);
   _galUnsub = onSnapshot(pRef, snap=>{
     if(!snap.exists()) return;
-    const p = {id:snap.id,...snap.data()};
+    const p = {id:pid,...snap.data()};
     // Update local cache
     const cached = (_posts||[]).find(x=>x.id===pid);
     if(cached){ Object.assign(cached, p); } else { (_posts||[]).push(p); }
     // Reactions: scoped per image if multiple images, else use post-level
     const hasMultiple = _galImages.length > 1;
-    const rxnKey = hasMultiple ? `imgReactions_${imgIdx}` : null;
     const rxns   = hasMultiple ? (p[`imgReactions_${imgIdx}`]||{}) : (p.reactions||{});
     const counts = hasMultiple ? (p[`imgReactionCounts_${imgIdx}`]||{}) : (p.reactionCounts||{});
     igRenderReactions(rxns, counts);
@@ -10196,6 +10203,9 @@ async function igReact(emoji){
   if(!_galPostId){ toast('Sin post asociado','inf'); return; }
   if(!window.CU){ toast('Iniciá sesión para reaccionar','err'); return; }
   const hasMultiple = _galImages.length > 1;
+  const isTrofeo = _galPostId.startsWith('trofeo_');
+  const realId = isTrofeo ? _galPostId.replace('trofeo_','') : _galPostId;
+  const colName = isTrofeo ? 'trofeosPendientes' : 'posts';
   if(!hasMultiple){
     // Post-level reaction (single image)
     await doReact(_galPostId, emoji);
@@ -10206,7 +10216,7 @@ async function igReact(emoji){
   const rxnField = `imgReactions_${idx}`;
   const cntField = `imgReactionCounts_${idx}`;
   let p = (_posts||[]).find(p=>p.id===_galPostId);
-  if(!p){ try{ const s=await getDoc(doc(db,'posts',_galPostId)); if(s.exists()){p={id:s.id,...s.data()};(_posts||[]).push(p);} }catch(e){return;} }
+  if(!p){ try{ const s=await getDoc(doc(db, colName, realId)); if(s.exists()){p={id:_galPostId,...s.data()};(_posts||[]).push(p);} }catch(e){return;} }
   const rxns = {...(p[rxnField]||{})};
   const cnts = {...(p[cntField]||{})};
   const prev = rxns[window.CU.id]||'';
@@ -10214,7 +10224,7 @@ async function igReact(emoji){
   if(prev===emoji){ delete rxns[window.CU.id]; }
   else { rxns[window.CU.id]=emoji; cnts[emoji]=(cnts[emoji]||0)+1; }
   p[rxnField]=rxns; p[cntField]=cnts;
-  await updateDoc(doc(db,'posts',_galPostId),{[rxnField]:rxns,[cntField]:cnts});
+  await updateDoc(doc(db, colName, realId),{[rxnField]:rxns,[cntField]:cnts});
 }
 
 async function igReactCmt(ci, em){
@@ -10276,12 +10286,15 @@ async function igSubmitComment(){
   const inp=document.getElementById('_igCmtInp');
   const txt=inp?inp.value.trim():'';
   if(!txt) return;
+  const isTrofeo = _galPostId.startsWith('trofeo_');
+  const realId = isTrofeo ? _galPostId.replace('trofeo_','') : _galPostId;
+  const colName = isTrofeo ? 'trofeosPendientes' : 'posts';
   let p=(_posts||[]).find(p=>p.id===_galPostId);
-  if(!p){ try{ const s=await getDoc(doc(db,'posts',_galPostId)); if(s.exists()){p={id:s.id,...s.data()};(_posts||[]).push(p);} }catch(e){} }
+  if(!p){ try{ const s=await getDoc(doc(db, colName, realId)); if(s.exists()){p={id:_galPostId,...s.data()};(_posts||[]).push(p);} }catch(e){} }
   if(!p){ toast('No se pudo cargar el post','err'); return; }
   const nc=[...(p.comments||[]),{userId:window.CU.id,nick:window.CU.nick,av:window.CU.av||'',gender:window.CU.gender||'',text:txt,time:Date.now()}];
   p.comments=nc;
-  await updateDoc(doc(db,'posts',_galPostId),{comments:nc});
+  await updateDoc(doc(db, colName, realId),{comments:nc});
   if(p.userId&&p.userId!==window.CU.id) sendNotifToUserWithPost(p.userId,`💬 ${window.CU.nick} comentó tu foto: "${txt.slice(0,40)}"`,_galPostId);
   if(inp) inp.value='';
 }
@@ -10296,10 +10309,18 @@ function igDownload(){
   a.href=src; a.download='foto_rf4latam.jpg'; a.target='_blank';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
+function igReport(){
+  if(!_galPostId){ toast('Sin post para reportar','inf'); return; }
+  const post = (_posts||[]).find(p=>p.id===_galPostId);
+  const nick = post?.userNick || '';
+  document.getElementById('_igModal')?.remove();
+  if(window._galUnsub){ window._galUnsub(); window._galUnsub=null; }
+  reportPost(_galPostId, nick);
+}
 window.igNav=igNav; window.igNavTo=igNavTo; window.igReact=igReact;
 window.igReactCmt=igReactCmt; window.igQuickRxnCmt=igQuickRxnCmt;
 window.igEditCmt=igEditCmt; window.igDelCmt=igDelCmt; window.igReplyCmt=igReplyCmt;
-window.igSubmitComment=igSubmitComment; window.igShare=igShare; window.igDownload=igDownload;
+window.igSubmitComment=igSubmitComment; window.igShare=igShare; window.igDownload=igDownload; window.igReport=igReport;
 window.openImgLightbox=openImgLightbox;
 window.openImgLightboxById=openImgLightboxById;
 
@@ -12966,22 +12987,26 @@ async function _loadUserProfilePage(uid, nick){
     const _imgPostMap = {};
     userPosts.forEach(p=>{ (p.images||[]).forEach(img=>{ _imgPostMap[img]=p.id; }); });
     const allImgs = userPosts.flatMap(p=>p.images||[]).filter(Boolean);
-    const _allImgsJson = JSON.stringify(allImgs);
+    // Store globally so onclick handlers can reference without inline JSON
+    window._upProfileImgs = allImgs;
+    window._upImgPostMap = _imgPostMap;
+
     if(upLeftFotosGrid && allImgs.length){
-      upLeftFotosGrid.innerHTML = allImgs.slice(0,9).map(img=>{
-        const pid = _imgPostMap[img]||'';
-        return `<div style="aspect-ratio:1;overflow:hidden;cursor:pointer;background:var(--bg3);" onclick="openImgLightbox('${img}',${_allImgsJson},'${pid}')"><img src="${img}" style="width:100%;height:100%;object-fit:cover;" loading="lazy"></div>`;
+      upLeftFotosGrid.innerHTML = allImgs.slice(0,9).map((img,i)=>{
+        return `<div style="aspect-ratio:1;overflow:hidden;cursor:pointer;background:var(--bg3);" onclick="openImgLightbox(window._upProfileImgs[${i}],window._upProfileImgs,window._upImgPostMap[window._upProfileImgs[${i}]]||'')"><img src="${img}" style="width:100%;height:100%;object-fit:cover;" loading="lazy"></div>`;
       }).join('');
       if(upLeftFotosCard) upLeftFotosCard.style.display='block';
     }
 
-    // ── COLUMNA IZQUIERDA: Amigos miniatura ──
+    // ── TAB FOTOS: grid completo ──
     document.getElementById('upTabFotos').innerHTML = allImgs.length
-      ? `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;">${allImgs.map(img=>{
-          const pid = _imgPostMap[img]||'';
-          return `<div style="aspect-ratio:1;overflow:hidden;cursor:pointer;border-radius:2px;transition:opacity .15s;" onclick="openImgLightbox('${img}',${_allImgsJson},'${pid}')" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'"><img src="${img}" style="width:100%;height:100%;object-fit:cover;" loading="lazy"></div>`;
-        }).join('')}</div>`
-      : '<div style="color:var(--muted);text-align:center;padding:30px;">Sin fotos aún</div>';
+      ? `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;">
+          <div style="padding:14px 16px;border-bottom:1px solid var(--border);font-weight:700;font-size:.95rem;">🖼️ Fotos · <span style="color:var(--muted);font-weight:400;font-size:.82rem;">${allImgs.length} foto${allImgs.length!==1?'s':''}</span></div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;">${allImgs.map((img,i)=>{
+            return `<div style="aspect-ratio:1;overflow:hidden;cursor:pointer;position:relative;transition:opacity .15s;" onclick="openImgLightbox(window._upProfileImgs[${i}],window._upProfileImgs,window._upImgPostMap[window._upProfileImgs[${i}]]||'')" onmouseover="this.querySelector('img').style.transform='scale(1.05)'" onmouseout="this.querySelector('img').style.transform='scale(1)'"><img src="${img}" style="width:100%;height:100%;object-fit:cover;transition:transform .2s;" loading="lazy"></div>`;
+          }).join('')}</div>
+        </div>`
+      : '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);color:var(--muted);text-align:center;padding:50px 20px;"><div style="font-size:2.5rem;margin-bottom:10px;">📷</div><div>Sin fotos aún</div></div>';
 
     // ── TAB AMIGOS + Columna izquierda mini amigos ──
     if((u.friends||[]).length){
