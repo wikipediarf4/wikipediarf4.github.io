@@ -4664,7 +4664,7 @@ async function doGoogleLogin(){
         cover: '', bio: '', country: '',
         favFish: '', favMap: '',
         social_yt: '', social_dc: '',
-        joined: new Date().getFullYear(),
+        joined: new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}),
         posts: 0, friends: 0, likes: 0,
         createdAt: serverTimestamp()
       };
@@ -4771,7 +4771,7 @@ async function doReg(){
   if(!document.getElementById('acceptTerms')?.checked){ document.getElementById('rErr').textContent='Debés aceptar los Términos y Condiciones'; return; }
   try {
     const cred = await createUserWithEmailAndPassword(auth, em, pw);
-    window.CU = {id:cred.user.uid, nick, nickLower:nick.toLowerCase(), email:em, country, av:'', cover:'', bio:'', favFish:'', favMap:'', social_yt:'', social_dc:'', joined:new Date().getFullYear(), posts:0, friends:0, likes:0};
+    window.CU = {id:cred.user.uid, nick, nickLower:nick.toLowerCase(), email:em, country, av:'', cover:'', bio:'', favFish:'', favMap:'', social_yt:'', social_dc:'', joined:new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}), posts:0, friends:0, likes:0};
     await setDoc(doc(db, 'users', cred.user.uid), window.CU);
     document.getElementById('mAuth').style.display='none';
     onLogin(); toast('¡Bienvenido '+nick+'! 🎣','ok');
@@ -8482,7 +8482,7 @@ function renderProfile(){
   setInfoField('profCityRow','profCity', window.CU.city);
   setInfoField('profAgeRow','profAge', window.CU.age);
   setInfoField('profGenderRow','profGender', window.CU.gender);
-  document.getElementById('profJoined').textContent = window.CU.joined||new Date().getFullYear();
+  document.getElementById('profJoined').textContent = window.CU.joined||new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'});
 
   // Social links
   if(window.CU.social_yt){ document.getElementById('profYTRow').style.display='flex'; document.getElementById('profYT').textContent=window.CU.social_yt.replace(/https?:\/\/(www\.)?/,''); document.getElementById('profYT').href=window.CU.social_yt; }
