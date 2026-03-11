@@ -9604,8 +9604,11 @@ async function addNotif(text){
 
 // ── AUDIO GLOBAL — se desbloquea en el primer click del usuario ──
 let _sharedACtx = null;
+let _audioUnlocked = false; // solo crear AudioContext tras gesto del usuario
 
 async function _ensureAudio(){
+  // No crear AudioContext hasta que el usuario haya interactuado con la página
+  if(!_audioUnlocked) return false;
   if(!_sharedACtx || _sharedACtx.state==='closed'){
     try{ _sharedACtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return false; }
   }
@@ -9614,8 +9617,12 @@ async function _ensureAudio(){
   }
   return _sharedACtx.state==='running';
 }
+// Desbloquear audio solo tras gesto real del usuario
 ['click','keydown','touchstart'].forEach(ev=>{
-  document.addEventListener(ev, ()=>{ _ensureAudio(); }, {passive:true});
+  document.addEventListener(ev, ()=>{
+    _audioUnlocked = true;
+    _ensureAudio();
+  }, {passive:true});
 });
 
 async function playNotifSound(){
@@ -14375,9 +14382,9 @@ function openChatWith(uid, nick){
   // Marcar notifs de mensajes de este usuario como leídas
   if(nick) markChatNotifsRead(nick);
 
-  // Update URL to /chat
+  // Update URL con hash para evitar 404
   const safeNickUrl = (nick||'usuario').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
-  history.pushState({ page: 'mensajes', chatUid: uid, chatNick: nick }, '', '/chat');
+  history.pushState({ page: 'mensajes', chatUid: uid, chatNick: nick }, '', window.location.pathname + '#chat');
 
   // Make sure messenger modal is open
   om('mMessenger');
