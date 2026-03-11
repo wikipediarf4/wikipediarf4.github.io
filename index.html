@@ -9597,50 +9597,46 @@ async function addNotif(text){
   renderNotifs(); updateNotifBadge(); playNotifSound();
 }
 
-// ── AUDIO: contexto compartido, desbloqueado en primer click ──
-let _sharedAudioCtx = null;
-function _getAudioCtx(){
-  if(!_sharedAudioCtx || _sharedAudioCtx.state === 'closed'){
-    _sharedAudioCtx = new (window.AudioContext||window.webkitAudioContext)();
+// ── AUDIO GLOBAL — se desbloquea en el primer click del usuario ──
+let _sharedACtx = null;
+function _getACtx(){
+  if(!_sharedACtx || _sharedACtx.state==='closed'){
+    try{ _sharedACtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; }
   }
-  if(_sharedAudioCtx.state === 'suspended') _sharedAudioCtx.resume();
-  return _sharedAudioCtx;
+  if(_sharedACtx.state==='suspended') _sharedACtx.resume().catch(()=>{});
+  return _sharedACtx;
 }
-// Desbloquear en primera interacción del usuario
-['click','keydown','touchstart'].forEach(ev=>{
-  document.addEventListener(ev, ()=>{
-    try{ _getAudioCtx(); }catch(e){}
-  }, {once:true, passive:true});
-});
+// Desbloquear en primera interacción — CRÍTICO para que el sonido funcione
+document.addEventListener('click',   ()=>{ try{ _getACtx(); }catch(e){} }, {passive:true});
+document.addEventListener('keydown',  ()=>{ try{ _getACtx(); }catch(e){} }, {passive:true});
+document.addEventListener('touchstart',()=>{ try{ _getACtx(); }catch(e){} }, {passive:true});
 
 function playNotifSound(){
-  try {
-    const ctx = _getAudioCtx();
-    const o = ctx.createOscillator(), g = ctx.createGain();
+  try{
+    const ctx = _getACtx(); if(!ctx) return;
+    const o=ctx.createOscillator(), g=ctx.createGain();
     o.connect(g); g.connect(ctx.destination);
-    o.type = 'sine';
+    o.type='sine';
     o.frequency.setValueAtTime(660, ctx.currentTime);
     o.frequency.setValueAtTime(880, ctx.currentTime+0.08);
-    g.gain.setValueAtTime(0.18, ctx.currentTime);
+    g.gain.setValueAtTime(0.2, ctx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.3);
-    o.start(ctx.currentTime);
-    o.stop(ctx.currentTime+0.3);
-  } catch(e){ console.warn('playNotifSound:', e.message); }
+    o.start(ctx.currentTime); o.stop(ctx.currentTime+0.3);
+  }catch(e){}
 }
 
 function playMsgSound(){
-  try {
-    const ctx = _getAudioCtx();
-    const o = ctx.createOscillator(), g = ctx.createGain();
+  try{
+    const ctx = _getACtx(); if(!ctx) return;
+    const o=ctx.createOscillator(), g=ctx.createGain();
     o.connect(g); g.connect(ctx.destination);
-    o.type = 'sine';
+    o.type='sine';
     o.frequency.setValueAtTime(880, ctx.currentTime);
     o.frequency.setValueAtTime(1100, ctx.currentTime+0.1);
     g.gain.setValueAtTime(0.22, ctx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.35);
-    o.start(ctx.currentTime);
-    o.stop(ctx.currentTime+0.35);
-  } catch(e){ console.warn('playMsgSound:', e.message); }
+    o.start(ctx.currentTime); o.stop(ctx.currentTime+0.35);
+  }catch(e){}
 }
 let _notifTab = 'all';
 function switchNotifTab(tab){
@@ -9845,42 +9841,38 @@ function listenNotifs(){
     }
     const newNotifs = d.notifs || [];
 
-    // ── DETECCIÓN DE NOTIFS NUEVAS ──
-    // IMPORTANTE: guardar conteos ANTES de reemplazar _notifs
-    const prevNonMsgUnread = _notifs.filter(n=>!n.read && !(n.text&&n.text.startsWith('💬'))).length;
-    const prevMsgUnread    = _notifs.filter(n=>!n.read &&  (n.text&&n.text.startsWith('💬'))).length;
-    const prevTotal        = _notifs.length;
+    // Guardar conteos ANTES de reemplazar — si se hace después prev==new siempre
+    const prevNonMsgUnread = _notifs.filter(n=>!n.read && !n.text?.startsWith('💬')).length;
+    const prevMsgUnread    = _notifs.filter(n=>!n.read &&  n.text?.startsWith('💬')).length;
+    const prevLen          = _notifs.length;
 
-    // Ahora sí reemplazar
     _notifs = newNotifs;
 
-    // Contar en el nuevo array
-    const newNonMsgUnread  = _notifs.filter(n=>!n.read && !(n.text&&n.text.startsWith('💬'))).length;
-    const newMsgUnread     = _notifs.filter(n=>!n.read &&  (n.text&&n.text.startsWith('💬'))).length;
+    const newNonMsgUnread = _notifs.filter(n=>!n.read && !n.text?.startsWith('💬')).length;
+    const newMsgUnread    = _notifs.filter(n=>!n.read &&  n.text?.startsWith('💬')).length;
 
-    // Detectar si llegó algo nuevo comparando por tiempo — más confiable que comparar conteos
-    const latestTime = _notifs.reduce((max,n)=>Math.max(max,n.time||0),0);
-    const isNewArrival = _notifs.length > prevTotal || latestTime > (window._lastNotifTime||0);
-    if(latestTime > 0) window._lastNotifTime = latestTime;
+    // Detectar notif nueva por tiempo (más confiable que contar — arrayUnion no garantiza orden)
+    const maxTime = _notifs.reduce((m,n)=>Math.max(m,n.time||0), 0);
+    const isNew = _notifs.length > prevLen || maxTime > (window._lastNotifMaxTime||0);
+    if(maxTime) window._lastNotifMaxTime = maxTime;
 
-    // Badge mensajes
-    if(newMsgUnread > prevMsgUnread || (isNewArrival && newMsgUnread > 0)){
+    // Badge + sonido mensajes
+    if(newMsgUnread > prevMsgUnread || (isNew && newMsgUnread > 0 && prevLen===0)){
       updateMsgBadge();
-      // Buscar la más reciente por tiempo, no por índice
-      const latestMsg = _notifs.filter(n=>!n.read && n.text?.startsWith('💬')).sort((a,b)=>(b.time||0)-(a.time||0))[0];
-      if(latestMsg && (latestMsg.time||0) > (window._lastPlayedMsgTime||0)){
-        window._lastPlayedMsgTime = latestMsg.time||0;
+      const latest = [..._notifs].filter(n=>!n.read && n.text?.startsWith('💬')).sort((a,b)=>(b.time||0)-(a.time||0))[0];
+      if(latest && (latest.time||0) > (window._lastMsgSoundTime||0)){
+        window._lastMsgSoundTime = latest.time||0;
         playMsgSound();
-        showNotifToast(latestMsg.text||'Nuevo mensaje');
+        showNotifToast(latest.text);
       }
     }
-    // Notificaciones normales
-    if(newNonMsgUnread > prevNonMsgUnread || (isNewArrival && newNonMsgUnread > 0)){
-      const latestNotif = _notifs.filter(n=>!n.read && !n.text?.startsWith('💬')).sort((a,b)=>(b.time||0)-(a.time||0))[0];
-      if(latestNotif && (latestNotif.time||0) > (window._lastPlayedNotifTime||0)){
-        window._lastPlayedNotifTime = latestNotif.time||0;
+    // Badge + sonido notifs normales
+    if(newNonMsgUnread > prevNonMsgUnread || (isNew && newNonMsgUnread > 0 && prevLen===0)){
+      const latest = [..._notifs].filter(n=>!n.read && !n.text?.startsWith('💬')).sort((a,b)=>(b.time||0)-(a.time||0))[0];
+      if(latest && (latest.time||0) > (window._lastNotifSoundTime||0)){
+        window._lastNotifSoundTime = latest.time||0;
         playNotifSound();
-        showNotifToast(latestNotif.text||'Nueva notificación');
+        showNotifToast(latest.text||'Nueva notificación');
       }
     }
     renderNotifs(); updateNotifBadge(); updateMsgBadge();
@@ -12988,11 +12980,7 @@ async function sendNotifToUser(uid, text){
     const notif = {text, time:Date.now(), read:false,
       fromAv: window.CU?.av||'', fromNick: window.CU?.nick||''};
     await updateDoc(doc(db,'users',uid), {notifs: arrayUnion(notif)});
-    console.log('[notif OK] →', uid.slice(0,8), text.slice(0,50));
-  } catch(e){
-    console.error('[notif ERROR]', e.code, e.message);
-    if(e.code==='permission-denied') toast('⚠️ Permisos Firestore — aplicá las reglas del archivo firestore.rules','err');
-  }
+  } catch(e){ console.error('[notif ERROR]', e.code, e.message); }
 }
 
 async function sendNotifToUserWithPost(uid, text, postId){
@@ -13001,16 +12989,11 @@ async function sendNotifToUserWithPost(uid, text, postId){
     const notif = {text, time:Date.now(), read:false, postId: postId||null,
       fromAv: window.CU?.av||'', fromNick: window.CU?.nick||''};
     await updateDoc(doc(db,'users',uid), {notifs: arrayUnion(notif)});
-    console.log('[notifPost OK] →', uid.slice(0,8), text.slice(0,50));
-  } catch(e){
-    console.error('[notifPost ERROR]', e.code, e.message);
-    if(e.code==='permission-denied') toast('⚠️ Permisos Firestore — aplicá las reglas del archivo firestore.rules','err');
-  }
+  } catch(e){ console.error('[notifPost ERROR]', e.code, e.message); }
 }
 
 // _trimNotifs deshabilitado — causaba race condition sobreescribiendo notifs recién añadidas
-// El trim ocurre de forma segura dentro de listenNotifs
-async function _trimNotifs(uid){ /* deshabilitado */ }
+async function _trimNotifs(uid){ /* no-op */ }
 
 // ===== MENSAJE MASIVO: Anuncio Tienda Gratis =====
 async function sendShopAnnouncementToAll(){
@@ -16884,15 +16867,21 @@ function openNotifDropdown(){
 
   dd.style.display = 'flex';
   if(isMobile) document.body.style.overflow = 'hidden';
+  // Siempre abrir en tab "Todas" para que las notifs sean visibles
+  _notifTab = 'all';
+  const tabAll = document.getElementById('ntab-all');
+  const tabUnread = document.getElementById('ntab-unread');
+  if(tabAll){ tabAll.style.background='var(--accent)'; tabAll.style.color='#000'; tabAll.style.fontWeight='700'; }
+  if(tabUnread){ tabUnread.style.background='transparent'; tabUnread.style.color='var(--muted)'; tabUnread.style.fontWeight='600'; }
   renderNotifs();
 
-  // Marcar leídas al abrir (con delay para que el usuario las vea primero)
+  // Marcar leídas solo después de 2s para que el usuario las vea
   if(_notifs.some(n=>!n.read)){
     setTimeout(async ()=>{
       _notifs.forEach(n=>n.read=true);
       if(window.CU) await updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs}).catch(()=>{});
-      updateNotifBadge();
-    }, 1500);
+      renderNotifs(); updateNotifBadge();
+    }, 2000);
   }
 
   // Cerrar al click fuera (solo desktop)
