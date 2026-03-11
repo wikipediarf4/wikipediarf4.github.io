@@ -4431,8 +4431,6 @@ function listenPosts() {
   _postsUnsub = onSnapshot(
     query(collection(db, 'posts'), orderBy('time', 'desc'), limit(50)),
     snap => {
-      window._rtStatus.posts = '✅ OK ('+snap.docs.length+' posts)';
-      _updateRtPanel();
       _posts = snap.docs.map(d => ({ id: d.id, ...d.data(), time: d.data().time?.toMillis?.() || Date.now() }));
       const activePage = document.querySelector('.page.active');
       const pageId = activePage ? activePage.id : '';
@@ -4441,9 +4439,7 @@ function listenPosts() {
       else { renderFeed(); }
     },
     err => {
-      window._rtStatus.posts = '❌ ERROR: '+err.code;
-      _updateRtPanel();
-      console.error('[listenPosts] error:', err.code, err.message);
+      console.warn('listenPosts error:', err);
       // Fallback: intentar getDocs sin orderBy (evita error de índice faltante)
       getDocs(collection(db, 'posts')).then(snap => {
         _posts = snap.docs.map(d => ({ id: d.id, ...d.data(), time: d.data().time?.toMillis?.() || Date.now() }))
@@ -4475,8 +4471,6 @@ function listenStories() {
   _storiesUnsub = onSnapshot(
     query(collection(db, 'stories'), orderBy('time', 'desc'), limit(50)),
     snap => {
-      window._rtStatus.stories = '✅ OK ('+snap.docs.length+' historias)';
-      _updateRtPanel();
       const now = Date.now();
       const expiredIds = [];
       _stories = snap.docs.filter(d => {
@@ -4494,12 +4488,7 @@ function listenStories() {
       expiredIds.forEach(id => deleteDoc(doc(db, 'stories', id)).catch(()=>{}));
       renderStories();
     },
-    err => {
-      window._rtStatus.stories = '❌ ERROR: '+err.code;
-      _updateRtPanel();
-      console.error('[listenStories] error:', err.code, err.message);
-      if(err.code==='permission-denied') toast('⚠️ Sin permisos para leer historias','err');
-    }
+    err => { console.warn('listenStories error:', err); }
   );
 }
 
@@ -4765,34 +4754,8 @@ async function doReg(){
   }
 }
 
-// ===== DIAGNÓSTICO TIEMPO REAL =====
-window._rtStatus = { posts: '⏳', notifs: '⏳', stories: '⏳', chat: '⏳', audio: '⏳' };
-function _updateRtPanel(){
-  const p = document.getElementById('_rtPanel');
-  if(!p) return;
-  const s = window._rtStatus;
-  p.innerHTML = `<b>🔍 Firebase Realtime</b><br>
-    Posts: ${s.posts}<br>Notifs: ${s.notifs}<br>Stories: ${s.stories}<br>Chat badge: ${s.chat}<br>Audio: ${s.audio}`;
-}
-function _showRtDiag(){
-  const old = document.getElementById('_rtPanel');
-  if(old) return;
-  const p = document.createElement('div');
-  p.id = '_rtPanel';
-  p.style.cssText = 'position:fixed;bottom:70px;right:12px;z-index:99999;background:#0d1117;border:1px solid #2ec4b6;border-radius:10px;padding:10px 14px;font-size:.72rem;color:#e6edf3;line-height:1.8;min-width:190px;box-shadow:0 4px 20px rgba(0,0,0,.5);';
-  p.innerHTML = '<b>🔍 Firebase Realtime</b><br>Iniciando...';
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = '✕';
-  closeBtn.style.cssText = 'position:absolute;top:4px;right:6px;background:none;border:none;color:#8b949e;cursor:pointer;font-size:.8rem;';
-  closeBtn.onclick = ()=>p.remove();
-  p.appendChild(closeBtn);
-  document.body.appendChild(p);
-  _updateRtPanel();
-}
-
 function onLogin(){
   updateNavUI();
-  _showRtDiag();
   listenVerifiedUsers().then(()=>{ listenPosts(); listenStories(); }).catch(()=>{ listenPosts(); listenStories(); });
   startPresence().then(()=>{ if(typeof updatePresenceActivity==='function') updatePresenceActivity('home'); });
   listenNotifs();
@@ -9634,29 +9597,25 @@ async function addNotif(text){
   renderNotifs(); updateNotifBadge(); playNotifSound();
 }
 
-// ===== AUDIO UNLOCK (navegadores bloquean audio hasta interacción) =====
-let _audioCtxGlobal = null;
-let _audioUnlocked = false;
-function _unlockAudio(){
-  if(_audioUnlocked) return;
-  try {
-    _audioCtxGlobal = new (window.AudioContext||window.webkitAudioContext)();
-    if(_audioCtxGlobal.state === 'suspended') _audioCtxGlobal.resume();
-    _audioUnlocked = true;
-    window._rtStatus.audio = '✅ Desbloqueado';
-    _updateRtPanel();
-  } catch(e){ window._rtStatus.audio = '❌ No soportado'; _updateRtPanel(); }
+// ── AUDIO: contexto compartido, desbloqueado en primer click ──
+let _sharedAudioCtx = null;
+function _getAudioCtx(){
+  if(!_sharedAudioCtx || _sharedAudioCtx.state === 'closed'){
+    _sharedAudioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  }
+  if(_sharedAudioCtx.state === 'suspended') _sharedAudioCtx.resume();
+  return _sharedAudioCtx;
 }
-document.addEventListener('click', _unlockAudio, {once:false, passive:true});
-document.addEventListener('keydown', _unlockAudio, {once:false, passive:true});
-document.addEventListener('touchstart', _unlockAudio, {once:false, passive:true});
+// Desbloquear en primera interacción del usuario
+['click','keydown','touchstart'].forEach(ev=>{
+  document.addEventListener(ev, ()=>{
+    try{ _getAudioCtx(); }catch(e){}
+  }, {once:true, passive:true});
+});
 
 function playNotifSound(){
   try {
-    const ctx = _audioCtxGlobal && _audioCtxGlobal.state !== 'closed'
-      ? _audioCtxGlobal
-      : new (window.AudioContext||window.webkitAudioContext)();
-    if(ctx.state === 'suspended') ctx.resume();
+    const ctx = _getAudioCtx();
     const o = ctx.createOscillator(), g = ctx.createGain();
     o.connect(g); g.connect(ctx.destination);
     o.type = 'sine';
@@ -9666,26 +9625,22 @@ function playNotifSound(){
     g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.3);
     o.start(ctx.currentTime);
     o.stop(ctx.currentTime+0.3);
-  } catch(e){ console.warn('playNotifSound error:', e); }
+  } catch(e){ console.warn('playNotifSound:', e.message); }
 }
 
 function playMsgSound(){
   try {
-    const ctx = _audioCtxGlobal && _audioCtxGlobal.state !== 'closed'
-      ? _audioCtxGlobal
-      : new (window.AudioContext||window.webkitAudioContext)();
-    if(ctx.state === 'suspended') ctx.resume();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(880, ctx.currentTime);
-    osc.frequency.setValueAtTime(1100, ctx.currentTime+0.1);
-    gain.gain.setValueAtTime(0.25, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.35);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime+0.35);
-  } catch(e){ console.warn('playMsgSound error:', e); }
+    const ctx = _getAudioCtx();
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = 'sine';
+    o.frequency.setValueAtTime(880, ctx.currentTime);
+    o.frequency.setValueAtTime(1100, ctx.currentTime+0.1);
+    g.gain.setValueAtTime(0.22, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.35);
+    o.start(ctx.currentTime);
+    o.stop(ctx.currentTime+0.35);
+  } catch(e){ console.warn('playMsgSound:', e.message); }
 }
 let _notifTab = 'all';
 function switchNotifTab(tab){
@@ -9881,8 +9836,6 @@ function listenNotifs(){
   if(_notifUnsub){ _notifUnsub(); _notifUnsub=null; }
   _notifUnsub = onSnapshot(doc(db,'users',window.CU.id), snap=>{
     if(!snap.exists()) return;
-    window._rtStatus.notifs = '✅ OK';
-    _updateRtPanel();
     const d = snap.data();
     // Sincronizar window.CU con datos frescos (archivedChats, deletedChats, friendsList)
     if(window.CU){
@@ -9891,33 +9844,43 @@ function listenNotifs(){
       if(d.friendsList) window.CU.friendsList = d.friendsList;
     }
     const newNotifs = d.notifs || [];
-    // Trim seguro — sin race condition porque ya tenemos los datos
-    if(newNotifs.length > 50){
-      const trimmed = newNotifs.slice().sort((a,b)=>(b.time||0)-(a.time||0)).slice(0,50);
-      updateDoc(doc(db,'users',window.CU.id),{notifs:trimmed}).catch(()=>{});
-    }
-    // Contar solo no-mensajes para detectar notifs reales nuevas
-    const prevNonMsgUnread = _notifs.filter(n=>!n.read && !(n.text&&n.text.startsWith('💬'))).length;
-    const prevMsgUnread    = _notifs.filter(n=>!n.read && n.text&&n.text.startsWith('💬')).length;
-    _notifs = newNotifs;
-    const newNonMsgUnread  = _notifs.filter(n=>!n.read && !(n.text&&n.text.startsWith('💬'))).length;
-    const newMsgUnread     = _notifs.filter(n=>!n.read && n.text&&n.text.startsWith('💬')).length;
 
-    // Actualizar badge de mensajes INMEDIATAMENTE cuando llega un 💬 nuevo
-    if(newMsgUnread > prevMsgUnread){
-      updateMsgBadge(); // badge del ícono de chat
-      const latest = _notifs[0];
-      if(latest?.text?.startsWith('💬')){
+    // ── DETECCIÓN DE NOTIFS NUEVAS ──
+    // IMPORTANTE: guardar conteos ANTES de reemplazar _notifs
+    const prevNonMsgUnread = _notifs.filter(n=>!n.read && !(n.text&&n.text.startsWith('💬'))).length;
+    const prevMsgUnread    = _notifs.filter(n=>!n.read &&  (n.text&&n.text.startsWith('💬'))).length;
+    const prevTotal        = _notifs.length;
+
+    // Ahora sí reemplazar
+    _notifs = newNotifs;
+
+    // Contar en el nuevo array
+    const newNonMsgUnread  = _notifs.filter(n=>!n.read && !(n.text&&n.text.startsWith('💬'))).length;
+    const newMsgUnread     = _notifs.filter(n=>!n.read &&  (n.text&&n.text.startsWith('💬'))).length;
+
+    // Detectar si llegó algo nuevo comparando por tiempo — más confiable que comparar conteos
+    const latestTime = _notifs.reduce((max,n)=>Math.max(max,n.time||0),0);
+    const isNewArrival = _notifs.length > prevTotal || latestTime > (window._lastNotifTime||0);
+    if(latestTime > 0) window._lastNotifTime = latestTime;
+
+    // Badge mensajes
+    if(newMsgUnread > prevMsgUnread || (isNewArrival && newMsgUnread > 0)){
+      updateMsgBadge();
+      // Buscar la más reciente por tiempo, no por índice
+      const latestMsg = _notifs.filter(n=>!n.read && n.text?.startsWith('💬')).sort((a,b)=>(b.time||0)-(a.time||0))[0];
+      if(latestMsg && (latestMsg.time||0) > (window._lastPlayedMsgTime||0)){
+        window._lastPlayedMsgTime = latestMsg.time||0;
         playMsgSound();
-        showNotifToast(latest.text||'Nuevo mensaje');
+        showNotifToast(latestMsg.text||'Nuevo mensaje');
       }
     }
-    // Notificaciones normales (no mensajes)
-    if(newNonMsgUnread > prevNonMsgUnread){
-      const latest = _notifs.find(n=>!n.read && !(n.text&&n.text.startsWith('💬')));
-      if(latest){
+    // Notificaciones normales
+    if(newNonMsgUnread > prevNonMsgUnread || (isNewArrival && newNonMsgUnread > 0)){
+      const latestNotif = _notifs.filter(n=>!n.read && !n.text?.startsWith('💬')).sort((a,b)=>(b.time||0)-(a.time||0))[0];
+      if(latestNotif && (latestNotif.time||0) > (window._lastPlayedNotifTime||0)){
+        window._lastPlayedNotifTime = latestNotif.time||0;
         playNotifSound();
-        showNotifToast(latest.text||'Nueva notificación');
+        showNotifToast(latestNotif.text||'Nueva notificación');
       }
     }
     renderNotifs(); updateNotifBadge(); updateMsgBadge();
@@ -9928,11 +9891,7 @@ function listenNotifs(){
         _ln_list.innerHTML = _buildMessengerHTML();
       }
     }
-  }, err=>{
-    window._rtStatus.notifs = '❌ ERROR: '+err.code;
-    _updateRtPanel();
-    console.error('[listenNotifs] error:', err.code, err.message);
-  });
+  }, err=>{ console.warn('[listenNotifs] error:', err); });
 
   // Listener en tiempo real para badge de mensajes
   listenUnreadMsgsBadge();
@@ -9951,10 +9910,8 @@ function listenUnreadMsgsBadge(){
 
   friends.forEach(f=>{
     const chatId = [myId, f.id].sort().join('_');
-    const q = query(collection(db,'chats',chatId,'messages'), orderBy('time','desc'), limit(30));
+    const q = query(collection(db,'chats',chatId,'messages'), orderBy('time','desc'), limit(15));
     const unsub = onSnapshot(q, snap=>{
-      window._rtStatus.chat = '✅ OK (badge activo)';
-      _updateRtPanel();
       const unreadCount = snap.docs.filter(d=>{
         const m = d.data();
         return m.uid !== myId && !m.read && !(m.deletedFor||{})[myId];
@@ -13021,11 +12978,8 @@ async function sendNotifToUserStory(uid, text, storyPreview, storyImg, storyId){
     const notif = {text, time:Date.now(), read:false, storyComment:true,
       storyPreview: storyPreview||'', storyImg: storyImg||'', storyId: storyId||'',
       fromAv: window.CU?.av||'', fromNick: window.CU?.nick||''};
-    // arrayUnion agrega atómicamente sin race condition
     await updateDoc(doc(db,'users',uid), {notifs: arrayUnion(notif)});
-    // Recortar a 30 después (best effort)
-    _trimNotifs(uid);
-  } catch(e){ console.error('notif story error',e); }
+  } catch(e){ console.error('[notifStory ERROR]', e.code, e.message); }
 }
 
 async function sendNotifToUser(uid, text){
@@ -13034,7 +12988,7 @@ async function sendNotifToUser(uid, text){
     const notif = {text, time:Date.now(), read:false,
       fromAv: window.CU?.av||'', fromNick: window.CU?.nick||''};
     await updateDoc(doc(db,'users',uid), {notifs: arrayUnion(notif)});
-    console.log('[notif OK] →', uid.slice(0,8), text.slice(0,40));
+    console.log('[notif OK] →', uid.slice(0,8), text.slice(0,50));
   } catch(e){
     console.error('[notif ERROR]', e.code, e.message);
     if(e.code==='permission-denied') toast('⚠️ Permisos Firestore — aplicá las reglas del archivo firestore.rules','err');
@@ -13047,17 +13001,16 @@ async function sendNotifToUserWithPost(uid, text, postId){
     const notif = {text, time:Date.now(), read:false, postId: postId||null,
       fromAv: window.CU?.av||'', fromNick: window.CU?.nick||''};
     await updateDoc(doc(db,'users',uid), {notifs: arrayUnion(notif)});
-    console.log('[notifPost OK] →', uid.slice(0,8), text.slice(0,40));
+    console.log('[notifPost OK] →', uid.slice(0,8), text.slice(0,50));
   } catch(e){
     console.error('[notifPost ERROR]', e.code, e.message);
     if(e.code==='permission-denied') toast('⚠️ Permisos Firestore — aplicá las reglas del archivo firestore.rules','err');
   }
 }
 
-// _trimNotifs: solo se usa desde listenNotifs (sin race condition)
-async function _trimNotifs(uid){
-  // No se llama más desde sendNotif — el trim ocurre en listenNotifs de forma segura
-}
+// _trimNotifs deshabilitado — causaba race condition sobreescribiendo notifs recién añadidas
+// El trim ocurre de forma segura dentro de listenNotifs
+async function _trimNotifs(uid){ /* deshabilitado */ }
 
 // ===== MENSAJE MASIVO: Anuncio Tienda Gratis =====
 async function sendShopAnnouncementToAll(){
@@ -14090,7 +14043,7 @@ let _unsubChat = null;
 const msgSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhS0pikrmnj2BKSl+YtcObcmJnirjWx6d5YmFsm8fbtYZnX2OBsNvTsYdeWmN+rt7cvZBrX2Nzptrfv5dxZmZ3n9ncvJp4a2d1l9bav5t7bGh1kM3Vu5l7bGh1jcTRuZl6bGh4jcHQupd7bWh3i7zOuZZ8bml3ibnNuJZ9bmh4iLbMt5V/b2l4hrPLtpSBcGp4hK/KtZOCcGp4g6zJtJODcWt5ga/KtZODcWt5gbDKtpSFcmt7grHLt5WGc2x7g7LMuJaHdG19hLPNuZeJdm5+hbTOupiKd2+AhrXPu5mLd3CBh7bQvJqMe3OEh7fRvZuNfHSFiLjSvpyOfXWGibnTv52PfnaHirrVwJ6QgHiJi7vWwZ+RgXmLjLzXwqCSgniLjLzXwqCSgniKi7vWwZ+QgXiJirrUwJ+QgHeIibfPu5uLfHSGiLjRwJiMdW9+hbXNupuLdm+DhLTNu5mKdW1/hbPMuZaJdGx9g7LLuJSIcmx6ga/It5KHcGl4f6vFs5GHcGl4fqnEs5CHcGt4fbHGtZGHcGt4fLbHtZGGb2x4e7bHtZGFbmt4e7nIt5GFbmt3er3KuZKFbmt3er3KuZKFbmx4er7Lt5OGb214fMLMupSIcG55f8bPvZWJcW96gcnRwJaKcm57gs7Uw5mMdHB9g9LYxpqNdXF+hdPZx5uPd3OAh9fbypyQeHSBidrdy56Se3aEjt3gzp+UfHiGkN/i0KGXfnqIkuDj0qKYf3uKk+Hk06OZgHyLlOLl1KSagX2Mlefm1qWbgn6OmOnm2aadfn+RmersoriggIOUrvDx0KWkg4SWr/Px0qakg4SYsPTy06elg4SZsfXz1KilhIWbsvb01ainhoabtff12ainhoectvf32KuoiIidtvj32aypioqeve'+
 'YAbABAAAA');
 
-// playMsgSound definido arriba junto a playNotifSound
+// playMsgSound definido arriba
 
 function openMessenger(){
   _messengerOpen = true;
@@ -14485,7 +14438,7 @@ function openChatWith(uid, nick){
 
   const chatId = [window.CU.id, uid].sort().join('_');
   _unsubChat = onSnapshot(
-    query(collection(db,'chats',chatId,'messages'), orderBy('time','asc'), limit(100)),
+    query(collection(db,'chats',chatId,'messages'), orderBy('time','asc')),
     snap=>{
       const el = document.getElementById('chatMessages');
       if(!el) return;
