@@ -4298,6 +4298,20 @@ const db = getFirestore(app);
 
 // ===== STATE =====
 window.CU = null;
+// ── HELPER: detectar si un usuario es admin ──
+function isAdminUser(u){
+  if(!u) return false;
+  return u.role==='admin' || u.nick==='ruizgustavo12' || u.email==='synxyes@gmail.com';
+}
+function isAdminUid(uid){
+  // Check against known admin uid or loaded profile data
+  if(!uid) return false;
+  const friends = window.CU?.friendsList || [];
+  const f = friends.find(f=>f.id===uid);
+  if(f && isAdminUser(f)) return true;
+  return false;
+}
+
 let _posts = [];
 let _stories = [];
 let _svIdx = 0;
@@ -12330,7 +12344,7 @@ async function renderNewFishers(){
             ${u.mutualFriends ? `<div style="font-size:.62rem;color:var(--muted);">👥 ${u.mutualFriends} amigos en común</div>` : ''}
             <!-- Botón Agregar -->
             ${!isFriend
-              ? `<button onclick="sendFriendRequest('${u.id}','${safenick}','sidebar');this.textContent='✓ Enviado';this.style.background='var(--bg4)';this.style.color='var(--muted)';this.style.cursor='default';this.disabled=true;event.stopPropagation();"
+              ? (isAdminUser(u) ? '' : `<button onclick="sendFriendRequest('${u.id}','${safenick}','sidebar');this.textContent='✓ Enviado';this.style.background='var(--bg4)';this.style.color='var(--muted)';this.style.cursor='default';this.disabled=true;event.stopPropagation();"`)
                   style="width:100%;padding:5px 0;background:rgba(46,196,182,.15);border:1px solid rgba(46,196,182,.4);border-radius:var(--rs);color:var(--accent);font-size:.7rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .18s;"
                   onmouseover="if(!this.disabled)this.style.background='rgba(46,196,182,.28)'" onmouseout="if(!this.disabled)this.style.background='rgba(46,196,182,.15)'">
                   + Agregar
@@ -13194,6 +13208,20 @@ async function _loadUserProfilePage(uid, nick){
     const uNick = u.nick || nick;
     const isVerified = !!u.verified;
 
+    // ── PERFIL PRIVADO ADMIN — bloquear contenido antes de renderizar ──
+    if(isAdminUser(u)){
+      const nameEl2 = document.getElementById('upName');
+      if(nameEl2) nameEl2.textContent = uNick;
+      document.getElementById('upTabInfo').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:.85rem;">🔒 Perfil privado</div>';
+      document.getElementById('upTabFotos').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:.85rem;">🔒 Perfil privado</div>';
+      document.getElementById('upTabAmigos').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:.85rem;">🔒 Perfil privado</div>';
+      const upPostsList2 = document.getElementById('upPostsList');
+      if(upPostsList2) upPostsList2.innerHTML = '<div style="text-align:center;padding:48px 20px;color:var(--muted);"><div style="font-size:2.5rem;margin-bottom:12px;">🔒</div><div style="font-size:.88rem;line-height:1.6;">Este es un perfil de administración.<br>El contenido es privado.</div></div>';
+      const upAct2 = document.getElementById('upActions');
+      if(upAct2) upAct2.innerHTML = '<div style="font-size:.78rem;color:var(--muted);padding:4px 12px;border:1px solid var(--border);border-radius:8px;">🛡️ Administrador</div>';
+      return;
+    }
+
     // ── COVER ──
     const cover = document.getElementById('upCover');
     const coverInner = document.getElementById('upCoverInner');
@@ -13409,9 +13437,13 @@ async function _loadUserProfilePage(uid, nick){
 
     // ── ACCIONES ──
     const isFriend = myFriends.includes(uid);
-    const friendBtn = isFriend
-      ? `<button disabled style="display:flex;align-items:center;gap:7px;padding:9px 18px;background:rgba(0,230,118,.1);border:1px solid rgba(0,230,118,.3);color:var(--green);border-radius:8px;font-size:.85rem;font-weight:700;font-family:'Exo 2',sans-serif;cursor:default;">✓ Amigos</button>`
-      : `<button id="btnAddFriend_${uid}" onclick="sendFriendRequestFromProfile('${uid}','${uNick.replace(/'/g,"\'")}','page')" style="display:flex;align-items:center;gap:7px;padding:9px 18px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:.85rem;font-weight:700;font-family:'Exo 2',sans-serif;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background='var(--bg3)'">👥 Agregar a amigos</button>`;
+    // Admins no se pueden agregar como amigos — perfil privado
+    const isViewingAdmin = isAdminUser(u);
+    const friendBtn = isViewingAdmin
+      ? '' // Sin botón de agregar para admins
+      : isFriend
+        ? `<button disabled style="display:flex;align-items:center;gap:7px;padding:9px 18px;background:rgba(0,230,118,.1);border:1px solid rgba(0,230,118,.3);color:var(--green);border-radius:8px;font-size:.85rem;font-weight:700;font-family:'Exo 2',sans-serif;cursor:default;">✓ Amigos</button>`
+        : `<button id="btnAddFriend_${uid}" onclick="sendFriendRequestFromProfile('${uid}','${uNick.replace(/'/g,"\'")}','page')" style="display:flex;align-items:center;gap:7px;padding:9px 18px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:.85rem;font-weight:700;font-family:'Exo 2',sans-serif;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background='var(--bg3)'">👥 Agregar a amigos</button>`;
     const msgBtn = isFriend
       ? `<button onclick="openChatWith('${uid}','${uNick.replace(/'/g,"\'")}')" style="display:flex;align-items:center;gap:7px;padding:9px 18px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:.85rem;font-weight:700;font-family:'Exo 2',sans-serif;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background='var(--bg3)'">💬 Mensaje</button>`
       : `<button disabled title="Solo podés mensajear a tus amigos" style="display:flex;align-items:center;gap:7px;padding:9px 18px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:.85rem;font-weight:700;cursor:not-allowed;font-family:'Exo 2',sans-serif;opacity:.5;">🔒 Mensaje</button>`;
@@ -13628,6 +13660,8 @@ async function sendFriendRequest(uid, nick){
   try {
     const snap = await getDoc(doc(db,'users',uid));
     if(!snap.exists()) return;
+    // No se puede agregar a admins
+    if(isAdminUser(snap.data())){ toast('No podés agregar a este usuario','err'); return; }
     const notifs = snap.data().notifs || [];
     // Avoid duplicate pending requests
     const alreadySent = notifs.some(n=>n.type==='friendRequest' && n.fromId===window.CU.id);
