@@ -1803,7 +1803,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
           </div>
           <span id="visitorsChevron" style="font-size:.75rem;color:gold;transition:transform .25s;">▼</span>
         </div>
-        <div id="profVisitorsList" style="display:none;margin-top:8px;"><div style="font-size:.72rem;color:var(--muted);">Cargando...</div></div>
+        <div id="profVisitorsList" style="display:block;margin-top:8px;"><div style="font-size:.72rem;color:var(--muted);">Cargando...</div></div>
       </div>
       <div class="profile-about-card">
         <div class="pac-title" style="display:flex;align-items:center;justify-content:space-between">Fotos <span style="font-size:.72rem;color:var(--accent);cursor:pointer">Ver todas</span></div>
@@ -16017,7 +16017,7 @@ function toggleVisitorsPanel(){
   if(!list) return;
   const open = list.style.display !== 'none';
   list.style.display = open ? 'none' : 'block';
-  if(chev) chev.style.transform = open ? '' : 'rotate(180deg)';
+  if(chev) chev.style.transform = open ? 'rotate(0deg)' : 'rotate(180deg)';
 }
 
 async function loadProfileVisitors(){
@@ -16967,11 +16967,10 @@ function wkBuildSheetTable(list) {
         ${sorted.map((t,i)=>{
           const medal = medals[i]||'';
           const dateStr = t.date||(t.createdAt?.toDate?.()?.toLocaleDateString('es-AR')||'');
-          const w = parseFloat(t.weight||0).toFixed(3);
-          return `<tr style="cursor:pointer" onclick="wkOpenDet('${t.id}')">
+               return `<tr style="cursor:pointer" onclick="wkOpenDet('${t.id}')">
             <td><span style="font-family:'Orbitron',monospace;font-weight:800;font-size:.8rem;color:${i===0?'#ffd700':i===1?'#c0c8d4':i===2?'#cd7f32':'var(--text-muted,#567)'}">${medal||('#'+(i+1))}</span></td>
             <td class="rec-fish">${wkEsc(t.fish||'?')}</td>
-            <td class="rec-weight">${w} kg</td>
+            <td class="rec-weight">${fmtKg(t.weight||0)}</td>
             <td style="font-size:.82rem">${wkEsc(t.map||'?')}</td>
             <td style="font-size:.82rem;color:var(--text-muted,#567)">${wkEsc(t.technique||'?')}</td>
             <td>
