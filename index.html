@@ -12667,9 +12667,21 @@ async function startPresence(){
   const presRef = doc(db,'presence',window.CU.id);
   const _isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
   const _device = _isMobile ? 'mobile' : 'desktop';
-  await setDoc(presRef, {nick:window.CU.nick, av:window.CU.av||'', last:serverTimestamp(), device:_device}, {merge:true});
+  await setDoc(presRef, {
+    nick: window.CU.nick,
+    av: window.CU.av||'',
+    last: serverTimestamp(),
+    device: _device,
+    role: window.CU.role||'',
+    verified: !!window.CU.verified,
+    xp: window.CU.xp||0,
+    gender: window.CU.gender||''
+  }, {merge:true});
   _presenceInterval = setInterval(async()=>{
-    if(window.CU) await setDoc(presRef,{nick:window.CU.nick,av:window.CU.av||'',last:serverTimestamp(),device:_device},{merge:true});
+    if(window.CU) await setDoc(presRef,{
+      nick:window.CU.nick, av:window.CU.av||'', last:serverTimestamp(), device:_device,
+      role:window.CU.role||'', verified:!!window.CU.verified, xp:window.CU.xp||0, gender:window.CU.gender||''
+    },{merge:true});
   }, 240000); // OPTIMIZADO: cada 4 min en vez de 2 min
   listenPresence();
 }
@@ -12753,6 +12765,14 @@ function renderSidebarOnline(online, offline){
       .frm-on-mob { animation: _frmOnMob 1.6s ease-in-out infinite; border: 2px solid #00e676 !important; }
       .frm-off-pc { animation: _frmOffPC 3s ease-in-out infinite;   border: 2px solid #5c6bc0 !important; }
       .frm-off-mob{ animation: _frmOffMob 3.5s ease-in-out infinite; border: 2px solid #bf360c !important; }
+      @keyframes _vShine {
+        0%   { background-position: 0% center; }
+        100% { background-position: 200% center; }
+      }
+      @keyframes _legShine {
+        0%   { background-position: 0% center; }
+        100% { background-position: 250% center; }
+      }
     `;
     document.head.appendChild(s);
   }
@@ -12778,28 +12798,86 @@ function renderSidebarOnline(online, offline){
     const nick = esc(u.nick||'?');
     const dev = u.device || 'desktop';
     const fc = frameClass(isOnline, dev);
-    const bgCard = isOnline
-      ? (dev==='mobile' ? 'rgba(0,230,118,.06)' : 'rgba(24,119,242,.07)')
-      : 'rgba(255,255,255,.02)';
-    const borderColor = isOnline
-      ? (dev==='mobile' ? '#00e676' : '#1877f2')
-      : (dev==='mobile' ? '#bf360c' : '#5c6bc0');
+    const isAdmin = u.nick==='ruizgustavo12' || u.role==='admin';
+    const isVerified = !!u.verified;
+    const uXp = u.xp || 0;
+    const uLvl = getLevel(uXp);
+    const isHighLvl = uXp >= 500; // nivel alto
+    const isLegend  = uXp >= 2000;
+
+    // ── Fondo y borde de la card ──
+    let bgCard, borderCard, cardExtra='';
+    if(isAdmin){
+      bgCard      = 'linear-gradient(135deg,rgba(255,100,0,.1),rgba(255,215,0,.08),rgba(255,60,0,.06))';
+      borderCard  = 'transparent';
+      cardExtra   = `background-image:${bgCard};border:1.5px solid transparent;background-clip:padding-box;box-shadow:0 0 0 1.5px rgba(255,180,0,.6),0 0 14px rgba(255,100,0,.3);`;
+    } else if(isVerified){
+      bgCard      = 'rgba(245,166,35,.06)';
+      borderCard  = 'rgba(245,166,35,.35)';
+      cardExtra   = `background:${bgCard};border:1.5px solid ${borderCard};box-shadow:0 0 8px rgba(245,166,35,.15);`;
+    } else if(isLegend){
+      bgCard      = 'rgba(180,100,255,.07)';
+      borderCard  = 'rgba(180,100,255,.4)';
+      cardExtra   = `background:${bgCard};border:1.5px solid ${borderCard};box-shadow:0 0 10px rgba(180,100,255,.2);`;
+    } else if(isHighLvl){
+      bgCard      = isOnline ? (dev==='mobile'?'rgba(0,230,118,.06)':'rgba(24,119,242,.07)') : 'rgba(255,255,255,.02)';
+      borderCard  = isOnline ? (dev==='mobile'?'#00e676':'#1877f2') : (dev==='mobile'?'#bf360c':'#5c6bc0');
+      cardExtra   = `background:${bgCard};border:1.5px solid ${borderCard};`;
+    } else {
+      bgCard      = isOnline ? (dev==='mobile'?'rgba(0,230,118,.04)':'rgba(24,119,242,.05)') : 'rgba(255,255,255,.015)';
+      borderCard  = isOnline ? (dev==='mobile'?'rgba(0,230,118,.3)':'rgba(24,119,242,.3)') : 'rgba(255,255,255,.07)';
+      cardExtra   = `background:${bgCard};border:1px solid ${borderCard};`;
+    }
+
+    // ── Nick con estilo ──
+    let nickHtml;
+    if(isAdmin){
+      nickHtml = `<span class="admin-name" style="font-size:.78rem;">${nick}</span><span class="admin-crown" style="font-size:.7rem;">👑</span>`;
+    } else if(isVerified){
+      nickHtml = `<span style="font-size:.8rem;font-weight:800;font-family:'Exo 2',sans-serif;
+        background:linear-gradient(90deg,#f5a623,#ffe082,#f5a623);background-size:200% auto;
+        -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+        animation:_vShine 2s linear infinite;">${nick}</span>
+        <span style="font-size:.72rem;-webkit-text-fill-color:initial;filter:drop-shadow(0 0 3px gold);">✅</span>`;
+    } else if(isLegend){
+      nickHtml = `<span style="font-size:.8rem;font-weight:800;font-family:'Exo 2',sans-serif;
+        background:linear-gradient(90deg,#ce93d8,#f48fb1,#b39ddb,#ce93d8);background-size:250% auto;
+        -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+        animation:_legShine 2.5s linear infinite;">${nick}</span>
+        <span style="font-size:.7rem;-webkit-text-fill-color:initial;filter:drop-shadow(0 0 3px #b39ddb);">⚡</span>`;
+    } else if(isHighLvl){
+      nickHtml = `<span style="font-size:.8rem;font-weight:700;font-family:'Exo 2',sans-serif;
+        color:${uLvl.color};text-shadow:0 0 6px ${uLvl.color}44;">${nick}</span>
+        <span style="font-size:.62rem;padding:0 4px;border-radius:4px;border:1px solid ${uLvl.border};color:${uLvl.color};
+          background:${uLvl.border.replace(/[\d.]+\)$/,'.12)')};-webkit-text-fill-color:${uLvl.color};">${uLvl.name}</span>`;
+    } else {
+      nickHtml = `<span style="font-size:.8rem;font-weight:700;color:var(--text);font-family:'Exo 2',sans-serif;
+                white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px;">${nick}</span>`;
+    }
+
+    // ── Avatar marco (admin tiene su propio glow) ──
+    const avatarBorderStyle = isAdmin
+      ? `border:2px solid rgba(255,180,0,.8);box-shadow:0 0 10px rgba(255,120,0,.6),0 0 20px rgba(255,60,0,.3);`
+      : '';
+    const avatarClass = isAdmin ? '' : fc;
+
     const statusText = isOnline
       ? `<span style="font-size:.65rem;font-weight:600;color:${dev==='mobile'?'#00e676':'#42a5f5'};">● En línea</span>`
       : `<span style="font-size:.68rem;color:var(--muted);">${fmtLastSeen(u.ts)}</span>`;
 
+    const chatBtnColor = isAdmin ? 'rgba(255,180,0,.7)' : (dev==='mobile'?'#00e676':'#42a5f5');
+
     return `
       <div style="position:relative;margin-bottom:5px;border-radius:10px;overflow:hidden;cursor:pointer;
-           background:${bgCard};border:1px solid ${borderColor};
-           transition:transform .15s,box-shadow .15s;height:46px;display:flex;align-items:center;"
+           ${cardExtra}transition:transform .15s,box-shadow .15s;height:46px;display:flex;align-items:center;"
            onmouseover="this.style.transform='translateX(2px)'"
            onmouseout="this.style.transform=''"
            onclick="openUserProfile('${u.id}','${nick}')">
 
         <!-- Avatar con marco animado -->
         <div style="position:relative;flex-shrink:0;margin:0 8px;z-index:2;">
-          <div class="${fc}" style="width:30px;height:30px;border-radius:50%;overflow:hidden;
-               display:flex;align-items:center;justify-content:center;background:var(--bg3);">
+          <div class="${avatarClass}" style="width:30px;height:30px;border-radius:50%;overflow:hidden;
+               display:flex;align-items:center;justify-content:center;background:var(--bg3);${avatarBorderStyle}">
             <img src="${u.av||getDefaultAv(u.gender||'')}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;${isOnline?'':'filter:grayscale(.4);opacity:.8;'}">
           </div>
           ${isOnline?`<div style="position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;border-radius:50%;
@@ -12808,19 +12886,20 @@ function renderSidebarOnline(online, offline){
         </div>
 
         <!-- Texto -->
-        <div style="flex:1;min-width:0;z-index:2;">
-          <div style="display:flex;align-items:center;gap:5px;">
-            <span style="font-size:.8rem;font-weight:700;color:var(--text);font-family:'Exo 2',sans-serif;
-                 white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px;">${nick}</span>
-            ${devLabel(dev, isOnline)}
+        <div style="flex:1;min-width:0;z-index:2;overflow:hidden;">
+          <div style="display:flex;align-items:center;gap:4px;flex-wrap:nowrap;overflow:hidden;">
+            ${nickHtml}
+            ${!isAdmin&&!isVerified&&!isLegend&&!isHighLvl?devLabel(dev,isOnline):''}
           </div>
-          ${isOnline && u.activity ? `<span style="font-size:.62rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:130px;">${u.activityIcon||'📱'} ${u.activity}</span>` : statusText}
+          ${isOnline && u.activity
+            ? `<span style="font-size:.62rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:130px;">${u.activityIcon||'📱'} ${u.activity}</span>`
+            : statusText}
         </div>
 
         <!-- Chat button (solo online) -->
         ${isOnline?`<button onclick="event.stopPropagation();openChatWith('${u.id}','${nick}')"
-          style="background:rgba(255,255,255,.07);border:1px solid ${borderColor};border-radius:6px;
-                 color:${dev==='mobile'?'#00e676':'#42a5f5'};font-size:.8rem;cursor:pointer;padding:3px 7px;
+          style="background:rgba(255,255,255,.07);border:1px solid ${chatBtnColor};border-radius:6px;
+                 color:${chatBtnColor};font-size:.8rem;cursor:pointer;padding:3px 7px;
                  margin-right:7px;z-index:3;font-family:'Exo 2',sans-serif;transition:background .15s;"
           onmouseover="this.style.background='rgba(255,255,255,.14)'" onmouseout="this.style.background='rgba(255,255,255,.07)'"
           title="Mensaje">💬</button>`:''}
