@@ -1028,7 +1028,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
       <div class="sl-item" onclick="gp('torneos')"><span class="sl-item-icon">🏆</span> Torneos</div>
       <div class="sl-item" onclick="gp('casitrofeo')"><span class="sl-item-icon">🏅</span> Casi Trofeo</div>
       <div class="sl-item" onclick="gp('trofeos-feed');setNav(document.querySelector('.tb-nav-btn'))"><span class="sl-item-icon">🥇</span> Feed de Trofeos</div>
-      <div class="sl-item" onclick="gp('publica-trofeo')"><span class="sl-item-icon">🏆</span> Publica tu Trofeo</div>
+
       <div class="sl-item" onclick="gp('peso-del-trofeo')"><span class="sl-item-icon">🏆</span> Peso del Trofeo</div>
       <div class="sl-item" onclick="gp('skill')"><span class="sl-item-icon">📈</span> Subir Skill</div>
       <div class="sl-item" onclick="gp('wiki-trofeos')" id="slWikiTrofeosBtn" style="background:linear-gradient(90deg,rgba(255,215,0,.08),transparent);border-left:3px solid #ffd700;"><span class="sl-item-icon">🏆</span> Wiki Trofeos</div>
@@ -2493,6 +2493,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
     <button class="adm-tab" onclick="swAdminTab(this,'admt-xplevels');renderXPLevelsAdmin();" style="background:rgba(255,215,0,.08);border-color:rgba(255,215,0,.3);color:var(--gold);">⚡ Niveles XP</button>
     <button class="adm-tab" onclick="swAdminTab(this,'admt-insignias');loadInsigniasPanel();" style="background:rgba(46,196,182,.08);border-color:rgba(46,196,182,.3);color:var(--accent);">🎣 Insignias & Roles</button>
     <button class="adm-tab" onclick="swAdminTab(this,'admt-soporte');loadSoporteTickets();" style="background:rgba(255,107,53,.1);border-color:rgba(255,107,53,.35);color:#ff6b35;" id="admTabSoporte">🆘 Soporte <span id="admSoporteBadge" style="display:none;background:#ff6b35;color:#fff;border-radius:100px;padding:1px 6px;font-size:.65rem;font-weight:800;margin-left:3px;">0</span></button>
+    <button class="adm-tab" onclick="swAdminTab(this,'admt-sidebar');initSidebarAdmin();" style="background:rgba(46,196,182,.08);border-color:rgba(46,196,182,.3);color:var(--accent);">🗂️ Sidebar</button>
   </div>
 
   <!-- TAB: Reportes -->
@@ -4426,7 +4427,7 @@ const ROUTES = {
   '/torneos': 'torneos',
   '/perfil': 'profile',
   '/peso-del-trofeo': 'peso-del-trofeo',
-  '/publica-trofeo': 'publica-trofeo',
+
   '/parches': 'parches',
   '/soporte': 'soporte',
   '/casitrofeo': 'casitrofeo',
@@ -4448,7 +4449,7 @@ const PAGE_TO_URL = {
   'torneos':       '/torneos',
   'profile':       '/perfil',
   'peso-del-trofeo': '/peso-del-trofeo',
-  'publica-trofeo':'/publica-trofeo',
+
   'parches':       '/parches',
   'soporte':       '/soporte',
   'casitrofeo':    '/casitrofeo',
@@ -16624,6 +16625,163 @@ window.wkUpdateBannerCounts=wkUpdateBannerCounts;
 <div id="emojiPickerWrap" style="display:none;position:fixed;z-index:9999;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:8px;box-shadow:0 8px 32px rgba(0,0,0,.7);width:280px;max-height:220px;overflow-y:auto;">
   <div id="emojiPickerGrid" style="display:grid;grid-template-columns:repeat(8,1fr);gap:2px;"></div>
 </div>
+
+<!-- SIDEBAR ADMIN TAB (dentro del page-admin) -->
+<script>
+// ═══════════════════════════════════════════════════
+// ADMIN — Reordenar Sidebar (drag & drop)
+// ═══════════════════════════════════════════════════
+const _SIDEBAR_DEFAULT = [
+  { id:'profile',       icon:'👤', label:'Mi Perfil' },
+  { id:'torneos',       icon:'🏆', label:'Torneos' },
+  { id:'casitrofeo',    icon:'🏅', label:'Casi Trofeo' },
+  { id:'trofeos-feed',  icon:'🥇', label:'Feed de Trofeos' },
+  { id:'peso-del-trofeo',icon:'🏆',label:'Peso del Trofeo' },
+  { id:'skill',         icon:'📈', label:'Subir Skill' },
+  { id:'wiki-trofeos',  icon:'🏆', label:'Wiki Trofeos' },
+  { id:'parches',       icon:'🔧', label:'Parches y Actualizaciones' },
+  { id:'soporte',       icon:'🆘', label:'Soporte Técnico' },
+];
+const _SIDEBAR_KEY = 'adminSidebarOrder';
+
+function _getSidebarOrder(){
+  try{
+    const saved = localStorage.getItem(_SIDEBAR_KEY);
+    if(saved){ const arr=JSON.parse(saved); if(arr&&arr.length) return arr; }
+  }catch(e){}
+  return _SIDEBAR_DEFAULT.map(x=>x.id);
+}
+
+function _saveSidebarOrder(order){
+  localStorage.setItem(_SIDEBAR_KEY, JSON.stringify(order));
+}
+
+function applySidebarOrder(){
+  const order = _getSidebarOrder();
+  const container = document.querySelector('.sidebar-left');
+  if(!container) return;
+  // Mapear id -> elemento del sidebar
+  const map = {};
+  _SIDEBAR_DEFAULT.forEach(item=>{
+    // buscar el sl-item que tenga onclick con gp('id')
+    const els = container.querySelectorAll('.sl-item');
+    els.forEach(el=>{
+      const oc = el.getAttribute('onclick')||'';
+      if(oc.includes("'"+item.id+"'") || oc.includes('"'+item.id+'"')){
+        map[item.id] = el;
+      }
+    });
+  });
+  // Encontrar el primer sl-item para insertar antes del divider
+  const firstItem = container.querySelector('.sl-item');
+  if(!firstItem) return;
+  const parent = firstItem.parentNode;
+  // Encontrar el punto de inserción (después del divider y antes del primer sl-item)
+  const divider = container.querySelector('.divider');
+  const anchor = divider ? divider.nextSibling : firstItem;
+  // Re-insertar en orden
+  order.forEach(id=>{
+    if(map[id]) parent.insertBefore(map[id], anchor ? anchor : null);
+  });
+}
+
+function initSidebarAdmin(){
+  const tab = document.getElementById('admt-sidebar');
+  if(!tab) return;
+  const order = _getSidebarOrder();
+  const items = order.map(id=>{
+    const def = _SIDEBAR_DEFAULT.find(x=>x.id===id);
+    return def || {id, icon:'📌', label:id};
+  });
+  // Agregar items que no estén en el orden guardado
+  _SIDEBAR_DEFAULT.forEach(d=>{
+    if(!items.find(x=>x.id===d.id)) items.push(d);
+  });
+
+  tab.innerHTML = `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px;">
+      <div style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:700;color:var(--accent);margin-bottom:6px;">🗂️ Orden del Sidebar</div>
+      <div style="font-size:.73rem;color:var(--muted);margin-bottom:16px;">Arrastrá los ítems para cambiar el orden. Se aplica al instante.</div>
+      <ul id="sidebarSortList" style="list-style:none;display:flex;flex-direction:column;gap:6px;">
+        ${items.map((item,i)=>`
+          <li draggable="true" data-id="${item.id}" data-idx="${i}"
+            style="display:flex;align-items:center;gap:12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:10px 14px;cursor:grab;transition:background .15s,border-color .15s;user-select:none;"
+            ondragstart="_sbDragStart(event)"
+            ondragover="_sbDragOver(event)"
+            ondrop="_sbDrop(event)"
+            ondragend="_sbDragEnd(event)"
+          >
+            <span style="font-size:1rem;flex-shrink:0;color:var(--muted);">⠿</span>
+            <span style="font-size:1.1rem;">${item.icon}</span>
+            <span style="font-size:.85rem;font-weight:600;color:var(--text);">${item.label}</span>
+            <span style="margin-left:auto;font-size:.68rem;color:var(--muted);font-family:monospace;">${item.id}</span>
+          </li>
+        `).join('')}
+      </ul>
+      <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;">
+        <button class="btn btn-p" style="font-size:.82rem;" onclick="_sbSave()">💾 Guardar y aplicar orden</button>
+        <button class="btn btn-s" style="font-size:.82rem;" onclick="_sbReset()">↺ Restablecer por defecto</button>
+      </div>
+      <div id="sbSaveMsg" style="display:none;margin-top:10px;padding:8px 14px;background:rgba(63,185,80,.12);border:1px solid rgba(63,185,80,.3);border-radius:var(--rs);font-size:.78rem;color:var(--green);">✅ Orden guardado y aplicado al sidebar.</div>
+    </div>
+  `;
+}
+
+let _sbDragging = null;
+function _sbDragStart(e){
+  _sbDragging = e.currentTarget;
+  e.currentTarget.style.opacity = '.45';
+  e.dataTransfer.effectAllowed = 'move';
+}
+function _sbDragOver(e){
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  const list = document.getElementById('sidebarSortList');
+  const items = [...list.querySelectorAll('li')];
+  const target = e.currentTarget;
+  if(target === _sbDragging) return;
+  const rect = target.getBoundingClientRect();
+  const after = e.clientY > rect.top + rect.height/2;
+  if(after) target.after(_sbDragging);
+  else target.before(_sbDragging);
+}
+function _sbDrop(e){ e.preventDefault(); }
+function _sbDragEnd(e){ e.currentTarget.style.opacity = '1'; _sbDragging = null; }
+
+function _sbSave(){
+  const list = document.getElementById('sidebarSortList');
+  if(!list) return;
+  const order = [...list.querySelectorAll('li')].map(li=>li.dataset.id);
+  _saveSidebarOrder(order);
+  applySidebarOrder();
+  const msg = document.getElementById('sbSaveMsg');
+  if(msg){ msg.style.display='block'; setTimeout(()=>msg.style.display='none', 2500); }
+}
+function _sbReset(){
+  localStorage.removeItem(_SIDEBAR_KEY);
+  applySidebarOrder();
+  initSidebarAdmin();
+  const msg = document.getElementById('sbSaveMsg');
+  if(msg){ msg.style.display='block'; msg.textContent='↺ Orden restablecido por defecto.'; setTimeout(()=>{msg.style.display='none';msg.textContent='✅ Orden guardado y aplicado al sidebar.';}, 2000); }
+}
+
+// Aplicar al cargar la página
+window.addEventListener('DOMContentLoaded', ()=>{ setTimeout(applySidebarOrder, 800); });
+</script>
+
+<!-- TAB: SIDEBAR ORDER (se inserta dentro del page-admin vía JS init) -->
+<script>
+// Parchar el page-admin para incluir el div del tab
+(function(){
+  const pageAdmin = document.getElementById('page-admin');
+  if(!pageAdmin) return;
+  const tabDiv = document.createElement('div');
+  tabDiv.id = 'admt-sidebar';
+  tabDiv.style.display = 'none';
+  tabDiv.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:.85rem;">Hacé click en la tab 🗂️ Sidebar para cargar.</div>';
+  pageAdmin.appendChild(tabDiv);
+})();
+</script>
 
 <!-- CHANGELOG ADMIN NOTIFICATION -->
 <script>
