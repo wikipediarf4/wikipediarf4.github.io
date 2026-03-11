@@ -6807,6 +6807,39 @@ function renderProfileFeed(){
 }
 
 function _renderProfileFeedHTML(el, mine){
+  // Actualizar contadores con datos reales de Firestore
+  document.getElementById('profPostCount').textContent = mine.length;
+  const totalLikesReal = mine.reduce((s,p)=>{
+    const rxnTotal = Object.values(p.reactionCounts||{}).reduce((a,b)=>a+(b||0),0);
+    return s + (rxnTotal || p.likes || 0);
+  }, 0);
+  const profLikeEl = document.getElementById('profLikeCount');
+  if(profLikeEl) profLikeEl.textContent = totalLikesReal;
+  // Actualizar badges con datos reales
+  const lvlMap = {Principiante:'🐟 Principiante',Intermedio:'🎣 Intermedio',Avanzado:'⭐ Avanzado',Experto:'🏆 Experto',Profesional:'👑 Profesional'};
+  const profLevelEl = document.getElementById('profLevel');
+  if(profLevelEl) profLevelEl.textContent = lvlMap[window.CU?.experience] || (mine.length>=10?'🏆 Experto':mine.length>=5?'⭐ Activo':mine.length>=1?'🎣 Pescador':'🐟 Novato');
+  const profBadgesEl = document.getElementById('profBadges');
+  if(profBadgesEl){
+    const badges = [];
+    if(mine.length>=1) badges.push('<span class="badge badge-green">🎣 Pescador</span>');
+    if(mine.length>=5) badges.push('<span class="badge badge-blue">⭐ Activo</span>');
+    if(totalLikesReal>=10) badges.push('<span class="badge badge-gold">🏆 Popular</span>');
+    if(window.CU?.experience==='Experto'||window.CU?.experience==='Profesional') badges.push('<span class="badge badge-gold">👑 Pro</span>');
+    profBadgesEl.innerHTML = badges.join(' ');
+  }
+  // Actualizar galería de fotos con datos reales
+  const allImgs = mine.flatMap(p=>p.images||[]).filter(Boolean);
+  const profPhotoGrid = document.getElementById('profPhotoGrid');
+  if(profPhotoGrid){
+    const _profImgsStr = JSON.stringify(allImgs.slice(0,9));
+    profPhotoGrid.innerHTML = allImgs.slice(0,9).map(img=>`<img src="${img}" style="width:100%;aspect-ratio:1;object-fit:cover;cursor:pointer" onclick="openImgLightbox('${img}',${_profImgsStr})">`).join('') || '<div style="color:var(--muted);font-size:.8rem;grid-column:1/-1;padding:8px">Sin fotos aún</div>';
+  }
+  const profileGalleryGrid = document.getElementById('profileGalleryGrid');
+  if(profileGalleryGrid){
+    profileGalleryGrid.innerHTML = allImgs.map(img=>`<img src="${img}" style="width:100%;aspect-ratio:1;object-fit:cover;cursor:pointer;border-radius:2px;" onclick="openImgLightbox('${img}',${JSON.stringify(allImgs)})">`).join('') || '<div style="color:var(--muted);font-size:.8rem;grid-column:1/-1;padding:8px">Sin fotos aún</div>';
+  }
+
   const scrollY = window.scrollY;
   let pinnedH='';
   if(window.CU?.verified&&window.CU.pinnedPostId){
@@ -8509,10 +8542,17 @@ function renderProfile(){
   const mine = _posts.filter(p=>p.userId===window.CU.id);
   document.getElementById('profLevel').textContent = lvlMap[window.CU.experience] || (mine.length>=10?'🏆 Experto':mine.length>=5?'⭐ Activo':mine.length>=1?'🎣 Pescador':'🐟 Novato');
 
-  const totalLikes = mine.reduce((s,p)=>s+p.likes,0);
-  document.getElementById('profPostCount').textContent = mine.length;
+  // Contar total de reacciones (reactionCounts incluye todos los emojis; p.likes es legacy y puede ser 0)
+  const totalLikes = mine.reduce((s,p)=>{
+    const rxnTotal = Object.values(p.reactionCounts||{}).reduce((a,b)=>a+(b||0),0);
+    return s + (rxnTotal || p.likes || 0);
+  }, 0);
+  // Solo actualizar contadores de posts/likes desde cache si ya hay datos; si no, _renderProfileFeedHTML los actualizará con datos reales de Firestore
+  if(mine.length > 0){
+    document.getElementById('profPostCount').textContent = mine.length;
+    document.getElementById('profLikeCount').textContent = totalLikes;
+  }
   document.getElementById('profFriendCount').textContent = getDemoFriends().length;
-  document.getElementById('profLikeCount').textContent = totalLikes;
   // Badges
   const badges = [];
   if(mine.length>=1) badges.push('<span class="badge badge-green">🎣 Pescador</span>');
@@ -8520,10 +8560,12 @@ function renderProfile(){
   if(totalLikes>=10) badges.push('<span class="badge badge-gold">🏆 Popular</span>');
   if(window.CU.experience==='Experto'||window.CU.experience==='Profesional') badges.push('<span class="badge badge-gold">👑 Pro</span>');
   document.getElementById('profBadges').innerHTML = badges.join(' ');
-  // Photo grid
-  const allImgs = mine.flatMap(p=>p.images||[]).filter(Boolean);
-  const _profImgsStr = JSON.stringify(allImgs.slice(0,9));
-  document.getElementById('profPhotoGrid').innerHTML = allImgs.slice(0,9).map(img=>`<img src="${img}" style="width:100%;aspect-ratio:1;object-fit:cover;cursor:pointer" onclick="openImgLightbox('${img}',${_profImgsStr})">`).join('') || '<div style="color:var(--muted);font-size:.8rem;grid-column:1/-1;padding:8px">Sin fotos aún</div>';
+  // Photo grid — solo actualizar si ya hay posts en cache; si no, _renderProfileFeedHTML lo hará con datos reales de Firestore
+  if(mine.length > 0){
+    const allImgs = mine.flatMap(p=>p.images||[]).filter(Boolean);
+    const _profImgsStr = JSON.stringify(allImgs.slice(0,9));
+    document.getElementById('profPhotoGrid').innerHTML = allImgs.slice(0,9).map(img=>`<img src="${img}" style="width:100%;aspect-ratio:1;object-fit:cover;cursor:pointer" onclick="openImgLightbox('${img}',${_profImgsStr})">`).join('') || '<div style="color:var(--muted);font-size:.8rem;grid-column:1/-1;padding:8px">Sin fotos aún</div>';
+  }
   // Friends grid - real friends
   const friends = getDemoFriends();
   document.getElementById('profFriendCount').textContent = friends.length;
