@@ -9737,9 +9737,10 @@ function renderNotifs(){
 
     if(n.type==='friendRequest'){
       const safeNick = (n.fromNick||'').replace(/['"<>&]/g,'');
+      const unreadBg = isRead ? '' : 'rgba(0,198,255,.05)';
       return `<div style="display:flex;align-items:flex-start;gap:12px;padding:10px 16px;transition:background .15s;${isRead?'':'background:rgba(0,198,255,.05);'};cursor:pointer;"
         onmouseover="this.style.background='var(--bg3)';const xb=this.querySelector('[title=\'Borrar notificación\']');if(xb)xb.style.opacity='1';"
-      onmouseout="this.style.background='${isRead?'':'rgba(0,198,255,.05)'}';const xb=this.querySelector('[title=\'Borrar notificación\']');if(xb)xb.style.opacity='0';">
+        onmouseout="this.style.background='${unreadBg}'">
         <div style="position:relative;flex-shrink:0;">
           <div style="width:52px;height:52px;border-radius:50%;background:var(--bg3);overflow:hidden;display:flex;align-items:center;justify-content:center;">${avInner}</div>
           <div style="position:absolute;bottom:-2px;right:-2px;width:20px;height:20px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;font-size:.7rem;border:2px solid var(--bg2);">${icon}</div>
@@ -9772,8 +9773,8 @@ function renderNotifs(){
     const clickable = !!(postId || bdayUid || storyId);
     return `<div data-action="notif-click" data-postid="${postId}" data-bdayuid="${bdayUid}" data-bdaynick="${n.bdayNick||''}" data-storyid="${storyId}"
       style="display:flex;align-items:flex-start;gap:12px;padding:10px 16px;transition:background .15s;${isRead?'':'background:rgba(0,198,255,.05);'}cursor:${clickable?'pointer':'default'};"
-      onmouseover="this.style.background='var(--bg3)';const xb=this.querySelector('[title=\'Borrar notificación\']');if(xb)xb.style.opacity='1';"
-      onmouseout="this.style.background='${isRead?'':'rgba(0,198,255,.05)'}';const xb=this.querySelector('[title=\'Borrar notificación\']');if(xb)xb.style.opacity='0';">
+      onmouseover="this.style.background='var(--bg3)'" 
+      onmouseout="this.style.background='${unreadBg}'">
       <div style="position:relative;flex-shrink:0;">
         <div style="width:52px;height:52px;border-radius:50%;background:var(--bg3);overflow:hidden;display:flex;align-items:center;justify-content:center;">${avInner}</div>
         <div style="position:absolute;bottom:-2px;right:-2px;width:20px;height:20px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;font-size:.7rem;border:2px solid var(--bg2);">${icon}</div>
