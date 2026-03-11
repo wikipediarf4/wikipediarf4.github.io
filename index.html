@@ -3367,37 +3367,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
      ====================================================== -->
 <div class="page" id="page-wiki-trofeos" style="min-height:100vh;padding-bottom:80px;">
 
-  <!-- Banner online fishing -->
-  <div id="wkOnlineBanner" style="width:100%;background:linear-gradient(90deg,rgba(0,15,28,.97),rgba(0,30,50,.95),rgba(0,15,28,.97));border-bottom:1px solid rgba(0,212,255,.18);padding:10px 20px;display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap;position:sticky;top:62px;z-index:900;backdrop-filter:blur(12px);">
-    <div style="display:flex;align-items:center;gap:6px">
-      <div style="width:7px;height:7px;border-radius:50%;background:#00ff88;box-shadow:0 0 8px #00ff88;animation:pulse 2s infinite;flex-shrink:0"></div>
-      <span style="font-family:'Orbitron',monospace;font-size:.58rem;font-weight:700;color:#00ff88;letter-spacing:2px;text-transform:uppercase">En Vivo</span>
-    </div>
-    <div style="width:1px;height:22px;background:rgba(0,212,255,.2)"></div>
-    <div style="display:flex;align-items:center;gap:10px">
-      <span style="font-family:'Orbitron',monospace;font-size:.78rem;font-weight:800;color:#ffd700;letter-spacing:2px;text-transform:uppercase;text-shadow:0 0 10px rgba(255,215,0,.5)">🔍 Buscando Trofeos</span>
-      <div style="display:flex;align-items:baseline;gap:7px">
-        <div style="position:relative;padding:3px 10px;border-radius:8px;animation:borderBlink 1.4s linear infinite;">
-          <span id="wkOnlineCount" style="font-family:'Orbitron',monospace;font-size:1.65rem;font-weight:900;color:#ff4dff;text-shadow:0 0 18px rgba(255,77,255,.8);line-height:1;transition:all .35s ease">—</span>
-        </div>
-        <div style="display:flex;flex-direction:column;line-height:1.2">
-          <span style="font-family:'Orbitron',monospace;font-size:.56rem;font-weight:800;color:#ff9900;letter-spacing:1.5px">PESCADORES</span>
-          <span style="font-family:'Orbitron',monospace;font-size:.56rem;font-weight:800;color:#ff9900;letter-spacing:1.5px">ONLINE</span>
-        </div>
-      </div>
-    </div>
-    <div style="width:1px;height:22px;background:rgba(0,212,255,.2)"></div>
-    <div style="display:flex;align-items:center;gap:10px">
-      <span style="font-size:1.1rem;">🏆</span>
-      <div style="display:flex;align-items:baseline;gap:7px">
-        <span id="wkTotalTrophy" style="font-family:'Orbitron',monospace;font-size:1.65rem;font-weight:900;color:#ffd700;text-shadow:0 0 18px rgba(255,215,0,.8);line-height:1;transition:all .35s ease">—</span>
-        <div style="display:flex;flex-direction:column;line-height:1.2">
-          <span style="font-family:'Orbitron',monospace;font-size:.56rem;font-weight:800;color:#ffd700;letter-spacing:1.5px">TROFEOS</span>
-          <span style="font-family:'Orbitron',monospace;font-size:.56rem;font-weight:800;color:#ffd700;letter-spacing:1.5px">PUBLICADOS</span>
-        </div>
-      </div>
-    </div>
-  </div>
+
 
   <!-- Sub-navegación Wiki -->
   <div class="wk-nav">
@@ -3642,23 +3612,17 @@ select.fi option{background:var(--bg3);color:var(--text);}
       <button onclick="mapaFiltrar('especie')" class="mapa-filter-btn" data-filter="especie" style="padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);background:transparent;color:var(--text);font-size:.75rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .2s;">🐟 Por Especie</button>
       <select id="mapaRioSelect" onchange="mapaFiltrarRio(this.value)" style="display:none;padding:6px 12px;border-radius:20px;border:1.5px solid #00b478;background:var(--bg3);color:var(--text);font-size:.75rem;font-family:'Exo 2',sans-serif;cursor:pointer;outline:none;">
         <option value="">Todos los ríos</option>
-        <option value="Belaya River">🌊 Belaya River</option>
-        <option value="Volkhov River">🌊 Volkhov River</option>
-        <option value="Akhtuba River">🌊 Akhtuba River</option>
-        <option value="Winding Rivulet">🌊 Winding Rivulet</option>
-        <option value="Old Burg Lake">🌊 Old Burg Lake</option>
-        <option value="Sura River">🌊 Sura River</option>
-        <option value="Ladoga Lake">🌊 Ladoga Lake</option>
-        <option value="Amber Lake">🌊 Amber Lake</option>
-        <option value="Bear Lake">🌊 Bear Lake</option>
-        <option value="Mosquito Lake">🌊 Mosquito Lake</option>
-        <option value="Seversky Donets">🌊 Seversky Donets</option>
-        <option value="Yama River">🌊 Yama River</option>
-        <option value="Archipiélago Ladoga">🌊 Archipiélago Ladoga</option>
-        <option value="Mar de Noruega">🌊 Mar de Noruega</option>
-        <option value="Lago Elk">🌊 Lago Elk</option>
+        <option value="Volga">🌊 Volga</option>
+        <option value="Ladoga">🌊 Ladoga</option>
+        <option value="Karelia">🌊 Karelia</option>
+        <option value="Akhtuba">🌊 Akhtuba</option>
         <option value="Kuori">🌊 Kuori</option>
-        <option value="Cooper Lake">🌊 Cooper Lake</option>
+        <option value="Sura">🌊 Sura</option>
+        <option value="Tungus">🌊 Tungus</option>
+        <option value="Oka">🌊 Oka</option>
+        <option value="Bear Lake">🌊 Bear Lake</option>
+        <option value="Winding Rivulet">🌊 Winding Rivulet</option>
+        <option value="otro">Otro</option>
       </select>
     </div>
   </div>
