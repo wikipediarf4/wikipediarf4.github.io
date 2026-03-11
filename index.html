@@ -5636,7 +5636,7 @@ function _renderViewersList(docs){
   });
   el.innerHTML = sorted.map(d=>{
     const v = typeof d.data === 'function' ? d.data() : d;
-    const av = `<img src="${v.viewerAv||getDefaultAv('')}" style="width:100%;height:100%;object-fit:cover;">`;
+    const av = `<img src="${v.viewerAv||getDefaultAv()}" style="width:100%;height:100%;object-fit:cover;">`;
     const t = v.time ? new Date(v.time).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}) : '';
     return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.06);">
       <div style="width:28px;height:28px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:var(--accent);flex-shrink:0;">${av}</div>
@@ -7171,7 +7171,7 @@ function postHTML(p){
     ${isVerif?`<div class="verif-post-tag">✅ VERIFICADO</div>`:''}
     <div class="post-header" style="position:relative;">
       <div class="${isVerif?'post-av-wrap':''} ${_postMarcoClass}" style="display:inline-block;border-radius:50%;">
-        <div class="post-av" style="cursor:pointer;" onclick="openUserProfile('${p.userId}','${esc(p.userNick)}')"><img src="${p.userAv||getDefaultAv(p.userGender||'')}" onerror="if(!this.dataset.e){this.dataset.e=1;this.src=getDefaultAv('');}" style="width:100%;height:100%;object-fit:cover;"></div>
+        <div class="post-av" style="cursor:pointer;" onclick="openUserProfile('${p.userId}','${esc(p.userNick)}')"><img src="${p.userAv||getDefaultAv(p.userGender||'')}" onerror="if(!this.dataset.e){this.dataset.e=1;this.src=getDefaultAv();}" style="width:100%;height:100%;object-fit:cover;"></div>
       </div>
       <div class="post-meta" style="cursor:pointer" onclick="openUserProfile('${p.userId}','${esc(p.userNick)}')">
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
@@ -8081,7 +8081,7 @@ function _reRenderInlineCmts(pid, p, cmts){
 
     return '<div class="comment-item" style="'+(isReply?'margin-left:40px;':'')+'">'
       +'<div class="sl-av" style="width:'+sz+'px;height:'+sz+'px;font-size:.75rem;flex-shrink:0;cursor:pointer;" onclick="openUserProfile(\''+uid+'\',\''+safeN+'\')">'
-        +'<img src="'+avSrc+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="if(!this.dataset.e){this.dataset.e=1;this.src=getDefaultAv('');}">'
+        +'<img src="'+avSrc+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="if(!this.dataset.e){this.dataset.e=1;this.src=getDefaultAv();}">'
       +'</div>'
       +'<div style="flex:1;min-width:0;">'
         +'<div style="position:relative;display:inline-block;max-width:100%;">'
@@ -9666,7 +9666,7 @@ function renderNotifs(){
     // Avatar del que generó la notif
     const fromAv = n.fromAv || n.visitorAv || '';
     const fromNick = n.fromNick || n.visitorNick || 'RF4';
-    const avInner = `<img src="${fromAv||getDefaultAv('')}" style="width:100%;height:100%;object-fit:cover;">`;
+    const avInner = `<img src="${fromAv||getDefaultAv()}" style="width:100%;height:100%;object-fit:cover;">`;
 
     if(n.type==='friendRequest'){
       const safeNick = (n.fromNick||'').replace(/['"<>&]/g,'');
@@ -9953,7 +9953,7 @@ document.addEventListener('error', function(e){
   // Detectar si es una imagen de avatar (dentro de sl-av, post-av, profile-av-big, upAv, comment-item, navAv, etc.)
   const isAv = img.closest('.sl-av,.post-av,.profile-av-big,#upAv,#profAvBig,.comment-item,#navAv,[class*="-av"]');
   if(isAv){
-    img.src = getDefaultAv('');
+    img.src = getDefaultAv();
     img.style.opacity = '0.5';
   }
 }, true);
@@ -10021,8 +10021,8 @@ function openImgLightbox(src, allImgs, postId){
 
   const post = _galPostId ? (_posts||[]).find(p=>p.id===_galPostId) : null;
   const cu = window.CU;
-  const avHtml = cu ? `<img src="${cu.av||getDefaultAv(cu.gender||'')}" style="width:100%;height:100%;object-fit:cover;" onerror="if(!this.dataset.e){this.dataset.e=1;this.src=getDefaultAv('');}">` : '';
-  const postAvHtml = post ? `<img src="${post.userAv||getDefaultAv('')}" style="width:100%;height:100%;object-fit:cover;" onerror="if(!this.dataset.e){this.dataset.e=1;this.src=getDefaultAv('');}">` : '';
+  const avHtml = cu ? `<img src="${cu.av||getDefaultAv(cu.gender||'')}" style="width:100%;height:100%;object-fit:cover;" onerror="if(!this.dataset.e){this.dataset.e=1;this.src=getDefaultAv();}">` : '';
+  const postAvHtml = post ? `<img src="${post.userAv||getDefaultAv()}" style="width:100%;height:100%;object-fit:cover;" onerror="if(!this.dataset.e){this.dataset.e=1;this.src=getDefaultAv();}">` : '';
   const RXNS = [{e:'👍',l:'Me gusta'},{e:'❤️',l:'Me encanta'},{e:'😂',l:'Me divierte'},{e:'😮',l:'Me asombra'},{e:'😢',l:'Me entristece'},{e:'😡',l:'Me enoja'},{e:'🎣',l:'Pescador'}];
 
   const modal = document.createElement('div');
@@ -10244,7 +10244,7 @@ function igRenderComments(comments, imgIdx){
 
     return `<div id="_igCmt_${ci}" style="display:flex;gap:8px;align-items:flex-start;">
       <div style="width:36px;height:36px;border-radius:50%;overflow:hidden;background:#21262d;flex-shrink:0;cursor:pointer;" onclick="openUserProfile('${uid}','${safeN}')">
-        <img src="${avSrc}" style="width:100%;height:100%;object-fit:cover;" onerror="if(!this.dataset.e){this.dataset.e=1;this.src=getDefaultAv('');}">
+        <img src="${avSrc}" style="width:100%;height:100%;object-fit:cover;" onerror="if(!this.dataset.e){this.dataset.e=1;this.src=getDefaultAv();}">
       </div>
       <div style="flex:1;min-width:0;">
         <div style="position:relative;display:inline-block;max-width:calc(100% - 34px);">
@@ -11758,7 +11758,7 @@ function spotCardHTML(s){
   return `<div id="spot_${s.id}" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:14px;overflow:hidden;">
     <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;">
       <div style="width:40px;height:40px;border-radius:50%;border:2px solid var(--accent);overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent);background:var(--bg3);flex-shrink:0;cursor:pointer;" onclick="openUserProfile('${s.userId}','${(s.userNick||'').replace(/'/g,"\'")}')">
-        ${`<img src="${s.userAv||getDefaultAv('')}" style="width:100%;height:100%;object-fit:cover;">`}
+        ${`<img src="${s.userAv||getDefaultAv()}" style="width:100%;height:100%;object-fit:cover;">`}
       </div>
       <div style="flex:1;">
         <div style="font-weight:700;font-size:.9rem;cursor:pointer;" onclick="openUserProfile('${s.userId}','${(s.userNick||'').replace(/'/g,"\'")}'")">${esc(s.userNick||'')}</div>
@@ -15233,7 +15233,7 @@ async function openReactionsModal(pid){
     const nick = isMe ? (window.CU.nick||u.nick) : u.nick;
     const av = isMe ? (window.CU.av||u.av) : u.av;
     const avSrc = av || getDefaultAv(u.gender||'');
-    const avHTML = `<img src="${avSrc}" style="width:100%;height:100%;object-fit:cover;" onerror="this.src=getDefaultAv('')">`;
+    const avHTML = `<img src="${avSrc}" style="width:100%;height:100%;object-fit:cover;" onerror="this.src=getDefaultAv()">`;
 
     let actionBtn = '';
     if(isMe){
