@@ -5455,7 +5455,7 @@ window.om = id => {
   else { el.classList.add('open'); }
   if(false && id==='mNotif_disabled' && _notifs.some(n=>!n.read)){
     _notifs.forEach(n=>n.read=true);
-    if(window.CU) updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,30)}).catch(()=>{});
+    if(window.CU) updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,50)}).catch(()=>{});
     updateNotifBadge(); updateMsgBadge();
   }
 };
@@ -9592,7 +9592,7 @@ async function addNotif(text){
   if(!window.CU) return;
   const notif = {text, time:Date.now(), read:false};
   _notifs.unshift(notif);
-  try { await updateDoc(doc(db,'users',window.CU.id), {notifs:_notifs.slice(0,30)}); }
+  try { await updateDoc(doc(db,'users',window.CU.id), {notifs:_notifs.slice(0,50)}); }
   catch(e){ console.error('addNotif',e); }
   renderNotifs(); updateNotifBadge(); playNotifSound();
 }
@@ -9811,6 +9811,11 @@ function listenNotifs(){
       if(d.friendsList) window.CU.friendsList = d.friendsList;
     }
     const newNotifs = d.notifs || [];
+    // Trim a 50 si hay demasiadas — seguro aquí porque ya tenemos los datos sin race condition
+    if(newNotifs.length > 50){
+      const trimmed = newNotifs.slice().sort((a,b)=>(b.time||0)-(a.time||0)).slice(0,50);
+      updateDoc(doc(db,'users',window.CU.id),{notifs:trimmed}).catch(()=>{});
+    }
     // Contar solo no-mensajes para detectar notifs reales nuevas
     const prevNonMsgUnread = _notifs.filter(n=>!n.read && !(n.text&&n.text.startsWith('💬'))).length;
     const prevMsgUnread    = _notifs.filter(n=>!n.read && n.text&&n.text.startsWith('💬')).length;
@@ -9862,7 +9867,7 @@ function listenUnreadMsgsBadge(){
 
   friends.forEach(f=>{
     const chatId = [myId, f.id].sort().join('_');
-    const q = query(collection(db,'chats',chatId,'messages'), orderBy('time','desc'), limit(15));
+    const q = query(collection(db,'chats',chatId,'messages'), orderBy('time','desc'), limit(30));
     const unsub = onSnapshot(q, snap=>{
       const unreadCount = snap.docs.filter(d=>{
         const m = d.data();
@@ -9877,6 +9882,7 @@ function listenUnreadMsgsBadge(){
           text: md.sharedPostId ? '📤 Publicación compartida' : md.gif ? '🖼️ GIF' : md.audioUrl ? '🎤 Audio' : (md.text||''),
           time: md.time?.toMillis?.()||0,
           mine: md.uid === myId,
+          fromNick: md.uid !== myId ? (md.nick||'') : (lm.fromNick||''),
           unread: unreadCount > 0,
           unreadCount
         };
@@ -12932,8 +12938,7 @@ async function sendNotifToUserStory(uid, text, storyPreview, storyImg, storyId){
       fromAv: window.CU?.av||'', fromNick: window.CU?.nick||''};
     // arrayUnion agrega atómicamente sin race condition
     await updateDoc(doc(db,'users',uid), {notifs: arrayUnion(notif)});
-    // Recortar a 30 después (best effort)
-    _trimNotifs(uid);
+    // _trimNotifs eliminado: causaba race condition
   } catch(e){ console.error('notif story error',e); }
 }
 
@@ -12943,7 +12948,7 @@ async function sendNotifToUser(uid, text){
     const notif = {text, time:Date.now(), read:false,
       fromAv: window.CU?.av||'', fromNick: window.CU?.nick||''};
     await updateDoc(doc(db,'users',uid), {notifs: arrayUnion(notif)});
-    _trimNotifs(uid);
+    // _trimNotifs eliminado: causaba race condition sobreescribiendo notifs recién añadidas
   } catch(e){ console.error('notif error',e); }
 }
 
@@ -12953,7 +12958,7 @@ async function sendNotifToUserWithPost(uid, text, postId){
     const notif = {text, time:Date.now(), read:false, postId: postId||null,
       fromAv: window.CU?.av||'', fromNick: window.CU?.nick||''};
     await updateDoc(doc(db,'users',uid), {notifs: arrayUnion(notif)});
-    _trimNotifs(uid);
+    // _trimNotifs eliminado: causaba race condition sobreescribiendo notifs recién añadidas
   } catch(e){ console.error('notif error',e); }
 }
 
@@ -13537,7 +13542,7 @@ async function acceptFriendRequest(fromId, fromNick, notifIndex){
     const idx = _notifs.findIndex(n=>n.type==='friendRequest' && n.fromId===fromId);
     if(idx !== -1) _notifs.splice(idx, 1);
     else if(notifIndex >= 0 && notifIndex < _notifs.length) _notifs.splice(notifIndex, 1);
-    await updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,30)});
+    await updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,50)});
     renderNotifs();
     updateNotifBadge();
     // Refresh local friends list & sidebar
@@ -13552,7 +13557,7 @@ async function rejectFriendRequest(notifIndex){
   if(!window.CU) return;
   try {
     if(notifIndex >= 0 && notifIndex < _notifs.length) _notifs.splice(notifIndex, 1);
-    await updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,30)});
+    await updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,50)});
     renderNotifs();
     toast('Solicitud rechazada','inf');
   } catch(e){ toast('Error','err'); }
@@ -13560,7 +13565,7 @@ async function rejectFriendRequest(notifIndex){
 
 async function dismissFriendRequest(notifIndex){
   if(notifIndex >= 0 && notifIndex < _notifs.length) _notifs.splice(notifIndex,1);
-  await updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,30)});
+  await updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,50)});
   renderNotifs();
 }
 
@@ -14025,7 +14030,7 @@ function openMessenger(){
   let changed = false;
   _notifs.forEach(n=>{ if(n.text?.startsWith('💬') && !n.read){ n.read=true; changed=true; } });
   if(changed && window.CU){
-    updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,30)}).catch(()=>{});
+    updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,50)}).catch(()=>{});
   }
   updateMsgBadge(); // siempre actualizar al abrir
 }
@@ -14378,6 +14383,9 @@ function openChatWith(uid, nick){
   if(inputRow) inputRow.style.display='flex';
 
   if(_unsubChat){ _unsubChat(); _unsubChat=null; }
+  // Limpiar badge inmediatamente al abrir el chat (sin esperar al onSnapshot)
+  if(_chatLastMsgs[uid]){ _chatLastMsgs[uid].unread=false; _chatLastMsgs[uid].unreadCount=0; }
+  updateMsgBadge();
   if(_presenceUnsub){ _presenceUnsub(); _presenceUnsub=null; }
   // Listen to the chat user's presence
   if(uid){
@@ -14409,7 +14417,7 @@ function openChatWith(uid, nick){
 
   const chatId = [window.CU.id, uid].sort().join('_');
   _unsubChat = onSnapshot(
-    query(collection(db,'chats',chatId,'messages'), orderBy('time','asc')),
+    query(collection(db,'chats',chatId,'messages'), orderBy('time','asc'), limit(100)),
     snap=>{
       const el = document.getElementById('chatMessages');
       if(!el) return;
@@ -14753,12 +14761,19 @@ function markChatNotifsRead(nick){
   if(!nick || !window.CU) return;
   let changed = false;
   _notifs.forEach(n=>{
-    if(!n.read && n.text?.startsWith('💬') && n.text.includes(nick+':')){
-      n.read=true; changed=true;
+    if(!n.read && n.text?.startsWith('💬')){
+      // Comparar por fromNick (más confiable) o por texto como fallback
+      const matchNick = n.fromNick && n.fromNick === nick;
+      const matchText = n.text.includes(nick+':') || n.text.includes(nick+' ');
+      if(matchNick || matchText){ n.read=true; changed=true; }
     }
   });
   if(changed){
-    updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,30)}).catch(()=>{});
+    updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,50)}).catch(()=>{});
+    updateMsgBadge();
+    // Limpiar también el badge local inmediatamente
+    const uid = Object.entries(_chatLastMsgs).find(([,lm])=>lm.fromNick===nick)?.[0];
+    if(uid && _chatLastMsgs[uid]){ _chatLastMsgs[uid].unread=false; _chatLastMsgs[uid].unreadCount=0; }
     updateMsgBadge();
   }
 }
