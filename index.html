@@ -1983,7 +1983,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
         <div class="sv-music-title" style="font-size:.75rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
         <div class="sv-music-artist" style="font-size:.65rem;color:rgba(255,255,255,.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
       </div>
-      <div class="sv-music-playbtn" style="display:none;width:26px;height:26px;background:rgba(255,255,255,.2);border-radius:50%;align-items:center;justify-content:center;cursor:pointer;font-size:.75rem;flex-shrink:0;">▶</div>
+      <div class="sv-music-playbtn" style="display:none;width:32px;height:32px;background:rgba(255,255,255,.9);border-radius:50%;align-items:center;justify-content:center;cursor:pointer;font-size:.85rem;flex-shrink:0;color:#000;box-shadow:0 2px 8px rgba(0,0,0,.4);" title="Reproducir música">▶</div>
       <span style="font-size:.75rem;">🎵</span>
     </div>
 
@@ -5740,67 +5740,114 @@ function renderSV(){
   const svMusic = document.getElementById('svMusicBar');
 
   async function _svPlayMusic(previewUrl, musicData){
+    const cover    = svMusic ? svMusic.querySelector('.sv-music-cover')   : null;
+    const titleEl  = svMusic ? svMusic.querySelector('.sv-music-title')   : null;
+    const artistEl = svMusic ? svMusic.querySelector('.sv-music-artist')  : null;
+    const playBtn  = svMusic ? svMusic.querySelector('.sv-music-playbtn') : null;
+
     if(svMusic){
       svMusic.style.display = 'flex';
-      const cover = svMusic.querySelector('.sv-music-cover');
-      const titleEl = svMusic.querySelector('.sv-music-title');
-      const artistEl = svMusic.querySelector('.sv-music-artist');
-      const playBtn = svMusic.querySelector('.sv-music-playbtn');
-      if(cover) cover.src = musicData.cover || '';
-      if(titleEl) titleEl.textContent = musicData.title || '';
+      if(cover)    cover.src            = musicData.cover  || '';
+      if(titleEl)  titleEl.textContent  = musicData.title  || '';
       if(artistEl) artistEl.textContent = musicData.artist || '';
-      if(playBtn) playBtn.style.display = 'none';
+      if(playBtn)  playBtn.style.display = 'none';
+      // Animación de rotación en la portada
+      if(cover && !document.getElementById('_svCoverSpin')){
+        const st = document.createElement('style');
+        st.id = '_svCoverSpin';
+        st.textContent = '@keyframes _svSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}';
+        document.head.appendChild(st);
+      }
+      if(cover) cover.style.animation = 'none';
     }
 
-    // Guardar el storyId actual para verificar que no cambió antes de reproducir
     const playStoryId = s.id;
 
+    const _showPlayBtn = () => {
+      if(playBtn){
+        playBtn.style.display = 'flex';
+        playBtn.onclick = () => {
+          audio.play().then(()=>{
+            playBtn.style.display = 'none';
+            if(cover) cover.style.animation = '_svSpin 4s linear infinite';
+          }).catch(()=>{});
+        };
+      }
+    };
+
     const doPlay = () => {
-      // Si el usuario ya cambió de historia antes de que cargue, no reproducir
       if(window._svCurrentStoryId !== playStoryId) return;
-      audio.play().catch(()=>{
-        const playBtn = svMusic?.querySelector('.sv-music-playbtn');
-        if(playBtn){
-          playBtn.style.display = 'flex';
-          playBtn.onclick = () => { audio.play(); playBtn.style.display = 'none'; };
-        }
-      });
+      const p = audio.play();
+      if(p && typeof p.then === 'function'){
+        p.then(()=>{
+          if(cover) cover.style.animation = '_svSpin 4s linear infinite';
+          if(playBtn) playBtn.style.display = 'none';
+        }).catch(()=>{
+          // Autoplay bloqueado por el navegador — mostrar botón manual
+          _showPlayBtn();
+        });
+      }
+    };
+
+    const _tryFallback = async () => {
+      if(window._svCurrentStoryId !== playStoryId) return;
+      if(!musicData.title) { _showPlayBtn(); return; }
+      const proxies = [
+        q=>`https://corsproxy.io/?${encodeURIComponent('https://api.deezer.com/search?q='+encodeURIComponent(q)+'&limit=5')}`,
+        q=>`https://api.allorigins.win/get?url=${encodeURIComponent('https://api.deezer.com/search?q='+encodeURIComponent(q)+'&limit=5')}`,
+        q=>`https://thingproxy.freeboard.io/fetch/https://api.deezer.com/search?q=${encodeURIComponent(q)}&limit=5`
+      ];
+      const q2 = (musicData.title||'') + ' ' + (musicData.artist||'');
+      for(const pFn of proxies){
+        try {
+          const r = await fetch(pFn(q2), {signal: AbortSignal.timeout ? AbortSignal.timeout(5000) : undefined});
+          const d = await r.json();
+          const data = d.data ? d : (d.contents ? JSON.parse(d.contents) : null);
+          if(data?.data?.[0]?.preview){
+            if(window._svCurrentStoryId !== playStoryId) return;
+            audio.onerror = null;
+            audio.src = data.data[0].preview;
+            audio.load();
+            audio.addEventListener('canplay', function h(){ audio.removeEventListener('canplay',h); doPlay(); }, {once:true});
+            return;
+          }
+        } catch(e){}
+      }
+      // Todos los proxies fallaron — mostrar botón manual
+      if(window._svCurrentStoryId === playStoryId) _showPlayBtn();
     };
 
     audio.onerror = async ()=>{
       audio.onerror = null;
       if(window._svCurrentStoryId !== playStoryId) return;
-      if(!musicData.title) return;
-      try {
-        const proxies = [
-          q=>`https://corsproxy.io/?${encodeURIComponent('https://api.deezer.com/search?q='+encodeURIComponent(q)+'&limit=5')}`,
-          q=>`https://api.allorigins.win/get?url=${encodeURIComponent('https://api.deezer.com/search?q='+encodeURIComponent(q)+'&limit=5')}`
-        ];
-        const q2 = (musicData.title||'') + ' ' + (musicData.artist||'');
-        for(const pFn of proxies){
-          try {
-            const r = await fetch(pFn(q2));
-            const d = await r.json();
-            const data = d.data ? d : (d.contents ? JSON.parse(d.contents) : null);
-            if(data?.data?.[0]?.preview){
-              if(window._svCurrentStoryId !== playStoryId) return;
-              audio.src = data.data[0].preview;
-              audio.load();
-              audio.oncanplay = ()=>{ audio.oncanplay=null; doPlay(); };
-              return;
-            }
-          } catch(e){}
-        }
-      } catch(e){}
+      await _tryFallback();
     };
 
     audio.src = previewUrl;
     audio.load();
-    // Si ya está en caché readyState >= 2, oncanplay no se dispara — llamar directo
-    if(audio.readyState >= 2){
+
+    // Timeout de seguridad: si en 10s no inicia, intentar fallback
+    const _safetyTimer = setTimeout(async ()=>{
+      if(window._svCurrentStoryId !== playStoryId) return;
+      if(audio.paused && audio.readyState < 2){
+        audio.onerror = null;
+        audio.removeEventListener('canplay', _onCanPlay);
+        await _tryFallback();
+      }
+    }, 10000);
+
+    const _onCanPlay = () => {
+      if(window._svCurrentStoryId !== playStoryId) return;
+      clearTimeout(_safetyTimer);
       doPlay();
-    } else {
-      audio.oncanplay = ()=>{ audio.oncanplay=null; doPlay(); };
+    };
+    audio.addEventListener('canplay', _onCanPlay, {once:true});
+
+    // Si ya está cacheado (readyState HAVE_FUTURE_DATA o HAVE_ENOUGH_DATA)
+    if(audio.readyState >= 3){
+      clearTimeout(_safetyTimer);
+      audio.removeEventListener('canplay', _onCanPlay);
+      doPlay();
     }
   }
 
@@ -5965,18 +6012,16 @@ let _storyPreviewAudio = null;
 
 // Proxies Deezer en orden de prioridad
 const _DEEZER_PROXIES = [
-  // corsproxy.io — más confiable
+  // corsproxy.io
   q => `https://corsproxy.io/?${encodeURIComponent('https://api.deezer.com/search?q='+encodeURIComponent(q)+'&limit=12')}`,
-  // allorigins — wraps in {contents}
+  // allorigins
   q => `https://api.allorigins.win/get?url=${encodeURIComponent('https://api.deezer.com/search?q='+encodeURIComponent(q)+'&limit=12')}`,
-  // cors.sh
-  q => { const u='https://api.deezer.com/search?q='+encodeURIComponent(q)+'&limit=12'; return `https://cors.sh/${u}`; },
-  // proxy.cors.st
-  q => `https://proxy.cors.st/https://api.deezer.com/search?q=${encodeURIComponent(q)}&limit=12`,
-  // crossorigin.me
-  q => `https://crossorigin.me/https://api.deezer.com/search?q=${encodeURIComponent(q)}&limit=12`,
+  // corsproxy.org
+  q => `https://corsproxy.org/?url=${encodeURIComponent('https://api.deezer.com/search?q='+encodeURIComponent(q)+'&limit=12')}`,
   // thingproxy
   q => `https://thingproxy.freeboard.io/fetch/https://api.deezer.com/search?q=${encodeURIComponent(q)}&limit=12`,
+  // api.codetabs
+  q => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent('https://api.deezer.com/search?q='+encodeURIComponent(q)+'&limit=12')}`,
 ];
 
 // Sugerencias rápidas mientras escriben (artistas populares de pesca/latam)
@@ -6235,32 +6280,54 @@ function _stopStoryPreview(){
 }
 
 async function _fetchDeezer(q){
-  for(const proxyFn of _DEEZER_PROXIES){
+  // Intentar los primeros 3 proxies en paralelo — gana el mas rapido
+  const _tryProxy = async (proxyFn) => {
+    const url = proxyFn(q);
+    const ctrl = new AbortController();
+    const tId = setTimeout(()=>ctrl.abort(), 5000);
     try {
-      const url = proxyFn(q);
-      const r = await fetch(url, {signal: AbortSignal.timeout(7000)});
-      if(!r.ok) continue;
+      const r = await fetch(url, {signal: ctrl.signal});
+      clearTimeout(tId);
+      if(!r || !r.ok) return null;
       const text = await r.text();
-      let raw;
-      try { raw = JSON.parse(text); } catch(e){ continue; }
-      // allorigins wraps in {contents:'...'}
+      let raw; try { raw = JSON.parse(text); } catch(e){ return null; }
       let data = raw;
-      if(raw.contents){
-        try { data = JSON.parse(raw.contents); } catch(e){ continue; }
-      }
-      if(data.data && data.data.length > 0){
-        // Normalize tracks
+      if(raw && raw.contents){ try { data = JSON.parse(raw.contents); } catch(e){ return null; } }
+      if(data && data.data){
+        if(data.data.length === 0) return [];
         return data.data.map(t=>({
           id: t.id,
           title: t.title || '',
           artist: t.artist?.name || '',
-          cover: t.album?.cover_medium || t.album?.cover || '',
+          cover: t.album?.cover_medium || t.album?.cover_small || t.album?.cover || '',
           preview: t.preview || ''
         }));
       }
-    } catch(e){ continue; }
+      return null;
+    } catch(e){ clearTimeout(tId); return null; }
+  };
+
+  // Carrera paralela entre los primeros 3 proxies
+  const raceResult = await new Promise(resolve => {
+    let done = false;
+    let pending = 3;
+    _DEEZER_PROXIES.slice(0,3).forEach(fn => {
+      _tryProxy(fn).then(res => {
+        if(done) return;
+        if(res !== null){ done = true; resolve(res); }
+        else if(--pending === 0) resolve(null); // los 3 fallaron
+      });
+    });
+  });
+
+  if(raceResult !== null) return raceResult;
+
+  // Fallback secuencial con los proxies restantes
+  for(const proxyFn of _DEEZER_PROXIES.slice(3)){
+    const res = await _tryProxy(proxyFn);
+    if(res !== null) return res;
   }
-  return [];
+  return null; // todos fallaron = error de red
 }
 
 async function searchStoryMusic(){
@@ -6473,8 +6540,12 @@ async function _txtMusicSearch(){
   const tracks = await _fetchDeezer(q);
   if(spin) spin.style.display='none';
 
-  if(!tracks || tracks.length === 0){
-    res.innerHTML = '<div style="text-align:center;padding:14px;color:var(--muted);font-size:.8rem;">😕 Sin resultados para "'+q+'"</div>';
+  if(tracks === null){
+    res.innerHTML = '<div style="text-align:center;padding:14px;"><div style="font-size:1.2rem;margin-bottom:6px;">😕</div><div style="font-size:.8rem;color:var(--muted);">No se pudo conectar. Verifícate que tengas internet.</div><div onclick="_txtMusicSearch()" style="margin-top:8px;background:var(--accent);border:none;border-radius:8px;color:#fff;padding:6px 16px;font-weight:700;cursor:pointer;display:inline-block;font-size:.78rem;">🔄 Reintentar</div></div>';
+    return;
+  }
+  if(!tracks.length){
+    res.innerHTML = '<div style="text-align:center;padding:14px;color:var(--muted);font-size:.8rem;">Sin resultados para "'+q+'"</div>';
     return;
   }
 
@@ -6621,8 +6692,12 @@ async function _fotoMusicSearch(){
   res.innerHTML = '<div style="text-align:center;padding:14px;color:var(--muted);font-size:.8rem;">⏳ Buscando en Deezer...</div>';
   const tracks = await _fetchDeezer(q);
   if(spin) spin.style.display='none';
-  if(!tracks || tracks.length === 0){
-    res.innerHTML = '<div style="text-align:center;padding:14px;color:var(--muted);font-size:.8rem;">😕 Sin resultados para "'+q+'"</div>';
+  if(tracks === null){
+    res.innerHTML = '<div style="text-align:center;padding:14px;"><div style="font-size:1.2rem;margin-bottom:6px;">😕</div><div style="font-size:.8rem;color:var(--muted);">No se pudo conectar. Verifícate que tengas internet.</div><div onclick="_fotoMusicSearch()" style="margin-top:8px;background:var(--accent);border:none;border-radius:8px;color:#fff;padding:6px 16px;font-weight:700;cursor:pointer;display:inline-block;font-size:.78rem;">🔄 Reintentar</div></div>';
+    return;
+  }
+  if(!tracks.length){
+    res.innerHTML = '<div style="text-align:center;padding:14px;color:var(--muted);font-size:.8rem;">Sin resultados para "'+q+'"</div>';
     return;
   }
   window._fotoDeezerTracks = tracks;
