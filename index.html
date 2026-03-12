@@ -4577,7 +4577,15 @@ function listenPosts() {
       const pageId = activePage ? activePage.id : '';
       if(pageId === 'page-profile'){ renderProfileFeed(); }
       else if(pageId === 'page-casitrofeo'){ renderMapPosts(); }
-      else { renderFeed(); }
+      else {
+        // Si había banner de populares, limpiarlo para mostrar posts reales
+        const feedEl = document.getElementById('feedPosts');
+        if(feedEl && _posts.length){
+          const banner = feedEl.querySelector('[data-popular-banner]');
+          if(banner) banner.remove();
+        }
+        renderFeed();
+      }
     },
     err => {
       console.warn('listenPosts error:', err);
@@ -7255,6 +7263,41 @@ function previewPostVideo(input){
 function pickStoryEmoji(em){ _storyEmojiPick = em; toast('Emoji '+em+' seleccionado','inf'); }
 
 // ===== POSTS =====
+// Carga las publicaciones más vistas cuando el feed está vacío
+async function _loadMostViewedPosts(el){
+  el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);font-size:.85rem;">⏳ Cargando publicaciones populares...</div>';
+  try {
+    // Intentar por likes desc
+    let snap;
+    try {
+      snap = await getDocs(query(collection(db,'posts'), orderBy('likes','desc'), limit(30)));
+    } catch(e){
+      snap = await getDocs(query(collection(db,'posts'), limit(30)));
+    }
+    if(snap.empty){
+      el.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--muted);font-size:.88rem;">🎣 No hay publicaciones aún.<br><span style="font-size:.78rem;opacity:.7;">¡Sé el primero en compartir tu pesca!</span></div>';
+      return;
+    }
+    // Ordenar por total de reacciones + likes + comentarios (más vistas/populares)
+    const posts = snap.docs.map(d=>({id:d.id,...d.data(),time:d.data().time?.toMillis?.()|| Date.now()}));
+    posts.sort((a,b)=>{
+      const scoreA = (a.likes||0) + (a.commentCount||0) + Object.values(a.reactions||{}).reduce((s,v)=>s+(Array.isArray(v)?v.length:0),0);
+      const scoreB = (b.likes||0) + (b.commentCount||0) + Object.values(b.reactions||{}).reduce((s,v)=>s+(Array.isArray(v)?v.length:0),0);
+      return scoreB - scoreA;
+    });
+    // Merge en _posts para que funcionen likes/comentarios
+    posts.forEach(p=>{ if(!_posts.find(x=>x.id===p.id)) _posts.push(p); });
+    el.innerHTML = `
+      <div data-popular-banner style="display:flex;align-items:center;gap:8px;padding:10px 4px 6px;margin-bottom:4px;border-bottom:1px solid var(--border);">
+        <span style="font-size:1.1rem;">🔥</span>
+        <span style="font-size:.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;">Publicaciones más populares</span>
+      </div>
+      ${posts.map(p=>postHTML(p)).join('')}`;
+  } catch(e){
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:.85rem;">⚠️ Error al cargar.<br><button onclick="listenPosts()" style="margin-top:12px;background:var(--accent);color:#000;border:none;border-radius:8px;padding:8px 20px;font-size:.82rem;font-weight:700;cursor:pointer;">🔄 Reintentar</button></div>';
+  }
+}
+
 function renderFeed(){
   const el = document.getElementById('feedPosts');
   if(!el) return;
@@ -7265,7 +7308,7 @@ function renderFeed(){
   const hasRealPosts = _posts.some(p=>document.getElementById('post_'+p.id));
   if(!hasRealPosts){
     if(!_posts.length){
-      el.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--muted);font-size:.88rem;">🎣 No hay publicaciones aún.<br><span style="font-size:.78rem;opacity:.7;">¡Sé el primero en compartir tu pesca!</span></div>';
+      _loadMostViewedPosts(el);
       return;
     }
     el.innerHTML = _posts.map(p=>postHTML(p)).join('');
