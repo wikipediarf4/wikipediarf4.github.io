@@ -4918,6 +4918,7 @@ async function doLogin(){
     else if(e.code === 'auth/user-not-found') msg = 'Usuario no encontrado. Verificá el email.';
     else if(e.code === 'auth/wrong-password') msg = 'Contraseña incorrecta';
     else if(e.code === 'auth/invalid-credential') msg = 'Email o contraseña incorrectos';
+    else if(e.code === 'auth/invalid-login-credentials') msg = 'Email o contraseña incorrectos';
     else if(e.code === 'auth/too-many-requests') msg = 'Demasiados intentos. Esperá unos minutos.';
     else if(e.code === 'auth/network-request-failed') msg = 'Error de red. Verificá tu conexión.';
     else if(e.code === 'auth/operation-not-allowed') msg = '⚠️ Login con email no está habilitado en Firebase. Activalo en Firebase Console → Authentication → Sign-in methods.';
@@ -14747,12 +14748,20 @@ function renderSidebarOnline(online, offline){
 // ===== HELPER: Extraer emoji de bandera del string de país =====
 function getCountryFlag(country){
   if(!country) return '';
-  // El país está almacenado como "🇦🇷 Argentina" — extraer el emoji inicial
-  const match = country.match(/^(\p{Emoji_Presentation}+|\p{Extended_Pictographic}+)/u);
-  if(match) return match[0];
-  // Fallback: primer char si es emoji
-  const first = [...country][0];
-  if(first && first.codePointAt(0) > 127) return first;
+  // Las banderas son pares de indicadores regionales (U+1F1E6–U+1F1FF)
+  // Ej: "🇺🇾 Uruguay" → extraer los primeros dos chars que son el par de bandera
+  const chars = [...country]; // spread para manejar correctamente los code points
+  // Verificar si los primeros 1-2 caracteres son indicadores regionales (banderas)
+  if(chars.length >= 2){
+    const c0 = chars[0].codePointAt(0);
+    const c1 = chars[1].codePointAt(0);
+    // Indicadores regionales: rango 0x1F1E6 – 0x1F1FF
+    if(c0 >= 0x1F1E6 && c0 <= 0x1F1FF && c1 >= 0x1F1E6 && c1 <= 0x1F1FF){
+      return chars[0] + chars[1]; // bandera = 2 indicadores regionales juntos
+    }
+  }
+  // Fallback: si el primer char es cualquier emoji (code point > 127)
+  if(chars.length && chars[0].codePointAt(0) > 127) return chars[0];
   return '';
 }
 
