@@ -2435,6 +2435,33 @@ select.fi option{background:var(--bg3);color:var(--text);}
             </div>
           </div>
         </div>
+        <!-- COLOR Y ESTILO (foto mode) -->
+        <div>
+          <label style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:block;">🎨 Color del texto</label>
+          <div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center;">
+            <div onclick="pickTextColor('#ffffff',this)" data-tc="#ffffff" title="Blanco" style="width:26px;height:26px;border-radius:50%;background:#ffffff;cursor:pointer;border:3px solid white;box-shadow:0 0 0 2px var(--accent);transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'"></div>
+            <div onclick="pickTextColor('#000000',this)" data-tc="#000000" title="Negro" style="width:26px;height:26px;border-radius:50%;background:#000000;cursor:pointer;border:3px solid transparent;box-shadow:0 0 0 2px #444;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'"></div>
+            <div onclick="pickTextColor('#FFD700',this)" data-tc="#FFD700" title="Dorado" style="width:26px;height:26px;border-radius:50%;background:#FFD700;cursor:pointer;border:3px solid transparent;box-shadow:0 0 0 2px #444;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'"></div>
+            <div onclick="pickTextColor('#2ec4b6',this)" data-tc="#2ec4b6" title="Celeste" style="width:26px;height:26px;border-radius:50%;background:#2ec4b6;cursor:pointer;border:3px solid transparent;box-shadow:0 0 0 2px #444;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'"></div>
+            <div onclick="pickTextColor('#ff6b6b',this)" data-tc="#ff6b6b" title="Rojo" style="width:26px;height:26px;border-radius:50%;background:#ff6b6b;cursor:pointer;border:3px solid transparent;box-shadow:0 0 0 2px #444;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'"></div>
+            <div onclick="pickTextColor('#feca57',this)" data-tc="#feca57" title="Amarillo" style="width:26px;height:26px;border-radius:50%;background:#feca57;cursor:pointer;border:3px solid transparent;box-shadow:0 0 0 2px #444;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'"></div>
+            <div onclick="pickTextColor('#a29bfe',this)" data-tc="#a29bfe" title="Lila" style="width:26px;height:26px;border-radius:50%;background:#a29bfe;cursor:pointer;border:3px solid transparent;box-shadow:0 0 0 2px #444;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'"></div>
+            <div onclick="pickTextColor('#55efc4',this)" data-tc="#55efc4" title="Verde" style="width:26px;height:26px;border-radius:50%;background:#55efc4;cursor:pointer;border:3px solid transparent;box-shadow:0 0 0 2px #444;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'"></div>
+            <div onclick="pickTextColor('#fd79a8',this)" data-tc="#fd79a8" title="Rosa" style="width:26px;height:26px;border-radius:50%;background:#fd79a8;cursor:pointer;border:3px solid transparent;box-shadow:0 0 0 2px #444;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'"></div>
+          </div>
+        </div>
+        <div>
+          <label style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:block;">✍️ Estilo del texto</label>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;">
+            <div onclick="pickTextStyle('normal',this)" data-ts="normal" style="padding:6px 4px;border-radius:8px;background:var(--bg3);border:2px solid var(--accent);cursor:pointer;text-align:center;font-size:.72rem;color:#fff;font-weight:700;transition:all .15s;">Normal</div>
+            <div onclick="pickTextStyle('bold',this)" data-ts="bold" style="padding:6px 4px;border-radius:8px;background:var(--bg3);border:2px solid transparent;cursor:pointer;text-align:center;font-size:.72rem;color:#fff;font-weight:900;transition:all .15s;">Negrita</div>
+            <div onclick="pickTextStyle('shadow',this)" data-ts="shadow" style="padding:6px 4px;border-radius:8px;background:var(--bg3);border:2px solid transparent;cursor:pointer;text-align:center;font-size:.72rem;color:#fff;text-shadow:2px 2px 6px #000;font-weight:700;transition:all .15s;">Sombra</div>
+            <div onclick="pickTextStyle('dark-bg',this)" data-ts="dark-bg" style="padding:6px 4px;border-radius:8px;background:rgba(0,0,0,.65);border:2px solid transparent;cursor:pointer;text-align:center;font-size:.72rem;color:#fff;font-weight:700;transition:all .15s;">Fondo negro</div>
+            <div onclick="pickTextStyle('light-bg',this)" data-ts="light-bg" style="padding:6px 4px;border-radius:8px;background:rgba(255,255,255,.85);border:2px solid transparent;cursor:pointer;text-align:center;font-size:.72rem;color:#000;font-weight:700;transition:all .15s;">Fondo blanco</div>
+            <div onclick="pickTextStyle('neon',this)" data-ts="neon" style="padding:6px 4px;border-radius:8px;background:var(--bg3);border:2px solid transparent;cursor:pointer;text-align:center;font-size:.72rem;color:#2ec4b6;text-shadow:0 0 8px #2ec4b6;font-weight:800;transition:all .15s;">Neón</div>
+          </div>
+        </div>
+
         <!-- Music — mismo sistema que modo texto, IDs foto_ -->
         <div>
           <label style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:block;">🎵 Música (opcional)</label>
@@ -2508,6 +2535,38 @@ select.fi option{background:var(--bg3);color:var(--text);}
             <div onclick="pickStoryBg('linear-gradient(160deg,#11998e,#38ef7d)',this)" style="height:36px;border-radius:8px;background:linear-gradient(160deg,#11998e,#38ef7d);cursor:pointer;border:2px solid transparent;"></div>
             <div onclick="pickStoryBg('linear-gradient(160deg,#e96c19,#f7971e)',this)" style="height:36px;border-radius:8px;background:linear-gradient(160deg,#e96c19,#f7971e);cursor:pointer;border:2px solid transparent;"></div>
             <div onclick="pickStoryBg('linear-gradient(160deg,#232526,#414345)',this)" style="height:36px;border-radius:8px;background:linear-gradient(160deg,#232526,#414345);cursor:pointer;border:2px solid transparent;"></div>
+          </div>
+        </div>
+
+        <!-- COLOR Y ESTILO DE TEXTO -->
+        <div>
+          <label style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:block;">🎨 Color del texto</label>
+          <div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center;">
+            <div onclick="pickTextColor('#ffffff',this)" data-tc="#ffffff" title="Blanco" style="width:28px;height:28px;border-radius:50%;background:#ffffff;cursor:pointer;border:3px solid white;box-shadow:0 0 0 2px var(--accent);transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'"></div>
+            <div onclick="pickTextColor('#000000',this)" data-tc="#000000" title="Negro" style="width:28px;height:28px;border-radius:50%;background:#000000;cursor:pointer;border:3px solid transparent;box-shadow:0 0 0 2px #444;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'"></div>
+            <div onclick="pickTextColor('#FFD700',this)" data-tc="#FFD700" title="Dorado" style="width:28px;height:28px;border-radius:50%;background:#FFD700;cursor:pointer;border:3px solid transparent;box-shadow:0 0 0 2px #444;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'"></div>
+            <div onclick="pickTextColor('#2ec4b6',this)" data-tc="#2ec4b6" title="Celeste" style="width:28px;height:28px;border-radius:50%;background:#2ec4b6;cursor:pointer;border:3px solid transparent;box-shadow:0 0 0 2px #444;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'"></div>
+            <div onclick="pickTextColor('#ff6b6b',this)" data-tc="#ff6b6b" title="Rojo" style="width:28px;height:28px;border-radius:50%;background:#ff6b6b;cursor:pointer;border:3px solid transparent;box-shadow:0 0 0 2px #444;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'"></div>
+            <div onclick="pickTextColor('#feca57',this)" data-tc="#feca57" title="Amarillo" style="width:28px;height:28px;border-radius:50%;background:#feca57;cursor:pointer;border:3px solid transparent;box-shadow:0 0 0 2px #444;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'"></div>
+            <div onclick="pickTextColor('#a29bfe',this)" data-tc="#a29bfe" title="Lila" style="width:28px;height:28px;border-radius:50%;background:#a29bfe;cursor:pointer;border:3px solid transparent;box-shadow:0 0 0 2px #444;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'"></div>
+            <div onclick="pickTextColor('#55efc4',this)" data-tc="#55efc4" title="Verde" style="width:28px;height:28px;border-radius:50%;background:#55efc4;cursor:pointer;border:3px solid transparent;box-shadow:0 0 0 2px #444;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'"></div>
+            <div onclick="pickTextColor('#fd79a8',this)" data-tc="#fd79a8" title="Rosa" style="width:28px;height:28px;border-radius:50%;background:#fd79a8;cursor:pointer;border:3px solid transparent;box-shadow:0 0 0 2px #444;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'"></div>
+          </div>
+        </div>
+
+        <!-- ESTILO DE TEXTO -->
+        <div>
+          <label style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:block;">✍️ Estilo del texto</label>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
+            <div onclick="pickTextStyle('normal',this)" data-ts="normal" style="padding:8px 4px;border-radius:8px;background:var(--bg3);border:2px solid var(--accent);cursor:pointer;text-align:center;font-size:.78rem;color:#fff;font-weight:700;transition:all .15s;">Normal</div>
+            <div onclick="pickTextStyle('bold',this)" data-ts="bold" style="padding:8px 4px;border-radius:8px;background:var(--bg3);border:2px solid transparent;cursor:pointer;text-align:center;font-size:.78rem;color:#fff;font-weight:900;transition:all .15s;">Negrita</div>
+            <div onclick="pickTextStyle('shadow',this)" data-ts="shadow" style="padding:8px 4px;border-radius:8px;background:var(--bg3);border:2px solid transparent;cursor:pointer;text-align:center;font-size:.78rem;color:#fff;text-shadow:2px 2px 6px #000,0 0 14px #000;font-weight:700;transition:all .15s;">Sombra</div>
+            <div onclick="pickTextStyle('dark-bg',this)" data-ts="dark-bg" style="padding:8px 4px;border-radius:8px;background:rgba(0,0,0,.65);border:2px solid transparent;cursor:pointer;text-align:center;font-size:.78rem;color:#fff;font-weight:700;transition:all .15s;">Fondo negro</div>
+            <div onclick="pickTextStyle('light-bg',this)" data-ts="light-bg" style="padding:8px 4px;border-radius:8px;background:rgba(255,255,255,.85);border:2px solid transparent;cursor:pointer;text-align:center;font-size:.78rem;color:#000;font-weight:700;transition:all .15s;">Fondo blanco</div>
+            <div onclick="pickTextStyle('neon',this)" data-ts="neon" style="padding:8px 4px;border-radius:8px;background:var(--bg3);border:2px solid transparent;cursor:pointer;text-align:center;font-size:.78rem;color:#2ec4b6;text-shadow:0 0 8px #2ec4b6,0 0 18px #2ec4b6;font-weight:800;transition:all .15s;">Neón</div>
+            <div onclick="pickTextStyle('italic',this)" data-ts="italic" style="padding:8px 4px;border-radius:8px;background:var(--bg3);border:2px solid transparent;cursor:pointer;text-align:center;font-size:.78rem;color:#fff;font-style:italic;font-weight:700;transition:all .15s;">Cursiva</div>
+            <div onclick="pickTextStyle('outline',this)" data-ts="outline" style="padding:8px 4px;border-radius:8px;background:var(--bg3);border:2px solid transparent;cursor:pointer;text-align:center;font-size:.78rem;color:#fff;-webkit-text-stroke:1px #000;font-weight:900;transition:all .15s;">Contorno</div>
+            <div onclick="pickTextStyle('orbitron',this)" data-ts="orbitron" style="padding:8px 4px;border-radius:8px;background:var(--bg3);border:2px solid transparent;cursor:pointer;text-align:center;font-size:.68rem;color:#d4a017;font-family:'Orbitron',monospace;font-weight:700;transition:all .15s;">RF4</div>
           </div>
         </div>
 
@@ -5810,6 +5869,9 @@ function renderSV(){
     svTextEl.style.textAlign = 'center';
     svTextEl.style.zIndex = '10';
     svTextEl.style.pointerEvents = 'none';
+    if(typeof _applyTextStyleToEl === 'function'){
+      _applyTextStyleToEl(svTextEl, s.textColor||'#ffffff', s.textStyle||'normal');
+    }
   }
   // GIF en historia
   let svGifEl = document.getElementById('_svGif');
@@ -6161,11 +6223,15 @@ function _getSuggestions(q){
 window._storyBg = null;
 window._storyGif = null;
 window._scMode = 'chooser'; // chooser | photo | text
+window._storyTextColor = '#ffffff';
+window._storyTextStyle = 'normal';
 
 function openStoryChooser(){
   _loadPopularStoryMusic();
   // Reset state
   window._storyBg = 'linear-gradient(160deg,#1877f2,#0a3d7c)';
+  window._storyTextColor = '#ffffff';
+  window._storyTextStyle = 'normal';
   window._storyGif = null;
   window._scMode = 'chooser';
   // Set user info
@@ -6216,20 +6282,90 @@ function _scToggleMusic(){
   if(panel) panel.style.display = panel.style.display==='none' ? 'block' : 'none';
 }
 
+function _applyTextStyleToEl(el, color, style){
+  if(!el) return;
+  el.style.color = color || '#ffffff';
+  el.style.fontWeight = '700';
+  el.style.fontStyle = 'normal';
+  el.style.fontFamily = "'Exo 2', sans-serif";
+  el.style.background = 'none';
+  el.style.padding = '0';
+  el.style.borderRadius = '0';
+  el.style.webkitTextStroke = '';
+  el.style.textShadow = '0 2px 8px rgba(0,0,0,.5)';
+  switch(style){
+    case 'bold':
+      el.style.fontWeight = '900'; break;
+    case 'shadow':
+      el.style.textShadow = '2px 2px 8px #000, 0 0 20px rgba(0,0,0,.8), -1px -1px 4px #000'; break;
+    case 'dark-bg':
+      el.style.background = 'rgba(0,0,0,.65)';
+      el.style.padding = '8px 14px';
+      el.style.borderRadius = '10px';
+      el.style.textShadow = 'none'; break;
+    case 'light-bg':
+      el.style.background = 'rgba(255,255,255,.88)';
+      el.style.color = '#111';
+      el.style.padding = '8px 14px';
+      el.style.borderRadius = '10px';
+      el.style.textShadow = 'none'; break;
+    case 'neon':
+      el.style.color = color || '#2ec4b6';
+      el.style.textShadow = '0 0 8px '+( color||'#2ec4b6')+', 0 0 20px '+(color||'#2ec4b6')+', 0 0 40px '+(color||'#2ec4b6');
+      el.style.fontWeight = '900'; break;
+    case 'italic':
+      el.style.fontStyle = 'italic';
+      el.style.fontWeight = '700'; break;
+    case 'outline':
+      el.style.webkitTextStroke = '1.5px #000';
+      el.style.fontWeight = '900';
+      el.style.textShadow = 'none'; break;
+    case 'orbitron':
+      el.style.fontFamily = "'Orbitron', monospace";
+      el.style.fontWeight = '700';
+      el.style.color = color || '#d4a017';
+      el.style.textShadow = '0 0 10px rgba(212,160,23,.5)'; break;
+  }
+}
+
 function _scUpdatePreview(){
   const mode = window._scMode;
+  const color = window._storyTextColor || '#ffffff';
+  const style = window._storyTextStyle || 'normal';
   if(mode === 'text'){
     const txt = document.getElementById('storyTextText')?.value || '';
     const el = document.getElementById('_scPreviewText');
-    if(el) el.textContent = txt || '';
+    if(el){ el.textContent = txt || ''; _applyTextStyleToEl(el, color, style); }
     const bg = window._storyBg || 'linear-gradient(160deg,#1877f2,#0a3d7c)';
     document.getElementById('_scPreviewBg').style.background = bg;
   } else if(mode === 'photo'){
     const txt = document.getElementById('storyText')?.value || '';
     const el = document.getElementById('_scPreviewText');
-    if(el) el.textContent = txt || '';
+    if(el){ el.textContent = txt || ''; _applyTextStyleToEl(el, color, style); }
   }
 }
+
+function pickTextColor(color, el){
+  window._storyTextColor = color;
+  document.querySelectorAll('[data-tc]').forEach(d=>{
+    d.style.boxShadow = '0 0 0 2px #444';
+    d.style.transform = 'scale(1)';
+  });
+  if(el){ el.style.boxShadow = '0 0 0 3px var(--accent)'; el.style.transform = 'scale(1.15)'; }
+  _scUpdatePreview();
+}
+
+function pickTextStyle(style, el){
+  window._storyTextStyle = style;
+  document.querySelectorAll('[data-ts]').forEach(d=>{
+    d.style.border = '2px solid transparent';
+    d.style.opacity = '0.75';
+  });
+  if(el){ el.style.border = '2px solid var(--accent)'; el.style.opacity = '1'; }
+  _scUpdatePreview();
+}
+window.pickTextColor = pickTextColor;
+window.pickTextStyle = pickTextStyle;
 
 function pickStoryBg(bg, el){
   window._storyBg = bg === 'none' ? null : bg;
@@ -6948,10 +7084,13 @@ async function submitStory(){
     userVerified:window.CU?.verified||false,
     music: window._storyMusic || _storyMusic || null,
     bg: window._storyBg || null,
-    gif: window._storyGif || null
+    gif: window._storyGif || null,
+    textColor: window._storyTextColor || '#ffffff',
+    textStyle: window._storyTextStyle || 'normal'
   });
   _storyImgData = null; _storyVideoData = null; _storyEmojiPick = ''; _storyMusic = null; window._storyMusic = null;
   window._storyBg = null; window._storyGif = null; window._scMode = 'chooser';
+  window._storyTextColor = '#ffffff'; window._storyTextStyle = 'normal';
   const sv2 = document.getElementById('storyVideoPrev'); if(sv2) sv2.innerHTML='';
   const t1 = document.getElementById('storyText'); if(t1) t1.value='';
   const t2 = document.getElementById('storyTextText'); if(t2) t2.value='';
