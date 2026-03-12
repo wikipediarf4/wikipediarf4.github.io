@@ -17143,137 +17143,85 @@ let _reelsData = [];
 let _reelsLoaded = false;
 
 async function loadReelsPage(){
+  const overlay = document.getElementById('reelsOverlay');
   const el = document.getElementById('reelsFeed');
   if(!el) return;
 
-  // Si ya cargamos, solo re-renderizamos (para cuando el usuario navega de vuelta)
-  // Siempre recargar para tener los últimos videos
+  // Use exact pixel heights — vh units fail inside fixed overlays in some browsers
+  const H = window.innerHeight;
+  if(overlay){ overlay.style.height = H+'px'; }
+  el.style.cssText = 'width:100%;height:'+H+'px;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;';
+
+  el.innerHTML = '<div style="height:'+H+'px;display:flex;align-items:center;justify-content:center;color:#fff;gap:12px;flex-direction:column;"><div style="font-size:2rem;">⏳</div><div style="font-size:.9rem;opacity:.7;">Cargando reels...</div></div>';
   _reelsLoaded = false;
   _reelsData = [];
 
-  el.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--muted);"><div style="font-size:2rem;margin-bottom:10px;animation:pulse 1s infinite;">🎬</div><div>Cargando reels...</div></div>';
-
   try {
-    // Buscar posts con video en Firestore — los posts usan campo 'time'
-    const snap = await getDocs(query(
-      collection(db, 'posts'),
-      orderBy('time', 'desc'),
-      limit(300)
-    ));
-
+    const snap = await getDocs(query(collection(db,'posts'), orderBy('time','desc'), limit(300)));
     const isVideoPost = p => {
       if(!p.video) return false;
-      return extractYtId(p.video) ||
-             isTikTok(p.video) ||
-             (p.video.includes('cloudinary') && /\.(mp4|webm|mov)/i.test(p.video));
+      return extractYtId(p.video) || isTikTok(p.video) || /\.(mp4|webm|mov)/i.test(p.video);
     };
-
-    _reelsData = snap.docs
-      .map(d => ({ id: d.id, ...d.data() }))
-      .filter(isVideoPost);
-
-    // También incluir posts en memoria que no estén ya en la lista
-    const inMemory = (_posts || []).filter(p => isVideoPost(p) && !_reelsData.find(r => r.id === p.id));
-    _reelsData = [..._reelsData, ...inMemory]
-      .sort((a,b) => {
-        const ta = a.time?.toMillis?.() ?? a.createdAt?.toMillis?.() ?? 0;
-        const tb = b.time?.toMillis?.() ?? b.createdAt?.toMillis?.() ?? 0;
-        return tb - ta;
-      });
-
-    // Agregar al cache _posts para que toggleComments/quickReact/sharePost los encuentren
+    _reelsData = snap.docs.map(d=>({id:d.id,...d.data()})).filter(isVideoPost);
+    const inMem = (_posts||[]).filter(p=>isVideoPost(p)&&!_reelsData.find(r=>r.id===p.id));
+    _reelsData = [..._reelsData,...inMem].sort((a,b)=>(b.time?.toMillis?.()??0)-(a.time?.toMillis?.()??0));
     if(window._posts){
-      _reelsData.forEach(rp => {
-        if(!_posts.find(p => p.id === rp.id)) _posts.unshift(rp);
-      });
+      _reelsData.forEach(rp=>{if(!_posts.find(p=>p.id===rp.id))_posts.unshift(rp);});
     }
     _reelsLoaded = true;
-    _renderReelsFeed(el);
-    // Force scroll-snap reset
-    requestAnimationFrame(()=>{
-      const feed = document.getElementById('reelsFeed');
-      if(feed){ feed.scrollTop = 0; }
-    });
-  } catch(e) {
-    console.error('loadReelsPage error:', e);
-    // Fallback: usar solo posts en memoria
-    const isVideoPost = p => p.video && (extractYtId(p.video) || isTikTok(p.video) || /\.(mp4|webm|mov)/i.test(p.video));
-    _reelsData = (_posts || []).filter(isVideoPost);
+    _renderReelsFeed(el, H);
+  } catch(e){
+    console.error('loadReelsPage error:',e);
+    const isVideoPost = p => p.video&&(extractYtId(p.video)||isTikTok(p.video)||/\.(mp4|webm|mov)/i.test(p.video));
+    _reelsData = (_posts||[]).filter(isVideoPost);
     _reelsLoaded = true;
-    _renderReelsFeed(el);
+    _renderReelsFeed(el, H);
   }
 }
 
-function _renderReelsFeed(el){
+function _renderReelsFeed(el, H){
+  H = H || window.innerHeight;
+  el.style.cssText = 'width:100%;height:'+H+'px;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;';
   if(!_reelsData.length){
-    el.innerHTML = `<div style="height:100vh;display:flex;align-items:center;justify-content:center;color:#fff;flex-direction:column;gap:12px;"><div style="font-size:3rem;">🎬</div><div style="font-size:1rem;font-weight:700;">Sin reels aún</div><div style="font-size:.82rem;opacity:.6;">Publicá un video de YouTube o TikTok</div></div>`;
+    el.innerHTML = '<div style="height:'+H+'px;display:flex;align-items:center;justify-content:center;color:#fff;flex-direction:column;gap:12px;"><div style="font-size:3rem;">🎬</div><div style="font-size:1rem;font-weight:700;">Sin reels aún</div><div style="font-size:.82rem;opacity:.6;">Publicá un video de YouTube o TikTok</div></div>';
     return;
   }
-  // Each card is a 100vh block — no gaps, no padding on container
-  el.style.cssText = 'width:100%;height:100vh;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;';
-  el.innerHTML = _reelsData.map(p => _reelCard(p)).join('');
+  el.innerHTML = _reelsData.map(p=>_reelCard(p,H)).join('');
+  requestAnimationFrame(()=>{ el.scrollTop=0; });
 }
 
-function _reelCard(p){
-  const ytId = extractYtId(p.video || '');
-  const ttId = extractTikTokId(p.video || '');
+function _reelCard(p, H){
+  H = H || window.innerHeight;
+  const ytId = extractYtId(p.video||'');
+  const ttId = extractTikTokId(p.video||'');
   const isCloudVideo = !ytId && !ttId && p.video;
-  const nick = p.userNick || 'Usuario';
-  const av   = p.userAv || getDefaultAv(p.userGender||'');
+  const nick = p.userNick||'Usuario';
+  const av   = p.userAv||getDefaultAv(p.userGender||'');
   const text = (p.text||'').slice(0,140);
-  const likes    = p.likes || 0;
-  const cmtCount = p.commentCount || 0;
-  const fmtN = n => n>999?(n/1000).toFixed(1)+'K':(n||'0');
+  const likes    = p.likes||0;
+  const cmtCount = p.commentCount||0;
+  const fmtN = n=>n>999?(n/1000).toFixed(1)+'K':(n||'0');
   const safeNick = nick.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
 
-  let videoInner = '';
+  let videoInner='';
   if(ytId){
-    videoInner = `<iframe src="https://www.youtube.com/embed/${ytId}?rel=0" frameborder="0" allowfullscreen allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" style="width:100%;height:100%;border:none;display:block;" loading="lazy"></iframe>`;
+    videoInner=`<iframe src="https://www.youtube.com/embed/${ytId}?rel=0" frameborder="0" allowfullscreen allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" style="width:100%;height:100%;border:none;display:block;" loading="lazy"></iframe>`;
   } else if(ttId && !isTikTokShortLink(p.video)){
-    videoInner = `<iframe src="https://www.tiktok.com/embed/v2/${ttId}" frameborder="0" allowfullscreen allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" style="width:100%;height:100%;border:none;display:block;" loading="lazy"></iframe>`;
+    videoInner=`<iframe src="https://www.tiktok.com/embed/v2/${ttId}" frameborder="0" allowfullscreen allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" style="width:100%;height:100%;border:none;display:block;" loading="lazy"></iframe>`;
   } else if(isTikTok(p.video)){
-    videoInner = `<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#111;"><div style="font-size:3rem;">🎵</div><div style="color:#fff;font-size:.9rem;font-weight:700;">Video de TikTok</div><a href="${p.video}" target="_blank" rel="noopener" style="background:linear-gradient(135deg,#69C9D0,#EE1D52);color:#fff;padding:10px 28px;border-radius:100px;font-weight:800;font-size:.85rem;text-decoration:none;">Ver en TikTok ↗</a></div>`;
+    videoInner=`<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#111;"><div style="font-size:3rem;">🎵</div><div style="color:#fff;font-size:.9rem;font-weight:700;">Video de TikTok</div><a href="${p.video}" target="_blank" rel="noopener" style="background:linear-gradient(135deg,#69C9D0,#EE1D52);color:#fff;padding:10px 28px;border-radius:100px;font-weight:800;font-size:.85rem;text-decoration:none;">Ver en TikTok ↗</a></div>`;
   } else if(isCloudVideo){
-    videoInner = `<video src="${p.video}" controls playsinline style="width:100%;height:100%;object-fit:contain;display:block;"></video>`;
+    videoInner=`<video src="${p.video}" controls playsinline style="width:100%;height:100%;object-fit:contain;display:block;"></video>`;
   }
 
   const badge = ytId
     ? `<span style="background:#FF0000;color:#fff;font-size:.63rem;font-weight:800;padding:2px 9px;border-radius:100px;">▶ YouTube</span>`
     : `<span style="background:#010101;color:#fff;font-size:.63rem;font-weight:800;padding:2px 9px;border-radius:100px;border:1px solid #444;"><span style="color:#69C9D0;">♪</span> TikTok</span>`;
 
-  // Each reel = exactly 100vh, scroll-snap per item
-  return `<div data-reel-pid="${p.id}" style="
-      height:100vh;
-      width:100%;
-      scroll-snap-align:start;
-      scroll-snap-stop:always;
-      display:flex;
-      flex-direction:row;
-      background:#0d1117;
-      overflow:hidden;
-    ">
-    <!-- VIDEO -->
-    <div style="flex:1;height:100%;overflow:hidden;background:#000;">
-      ${videoInner}
-    </div>
-
-    <!-- PANEL DERECHO -->
-    <div style="
-      width:200px;
-      min-width:200px;
-      max-width:200px;
-      height:100%;
-      background:#161b22;
-      border-left:1px solid #30363d;
-      overflow-y:auto;
-      display:flex;
-      flex-direction:column;
-      padding:16px 12px;
-      gap:12px;
-      box-sizing:border-box;
-    ">
+  return `<div data-reel-pid="${p.id}" style="width:100%;height:${H}px;flex-shrink:0;scroll-snap-align:start;scroll-snap-stop:always;display:flex;flex-direction:row;background:#0d1117;overflow:hidden;">
+    <div style="flex:1;height:${H}px;overflow:hidden;background:#000;">${videoInner}</div>
+    <div style="width:200px;min-width:200px;height:${H}px;background:#161b22;border-left:1px solid #30363d;display:flex;flex-direction:column;padding:14px 12px;gap:10px;overflow-y:auto;box-sizing:border-box;">
       ${badge}
-
       <div style="display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="openUserProfile('${p.userId||''}','${safeNick}')">
         <img src="${av}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #30363d;flex-shrink:0;">
         <div style="min-width:0;">
@@ -17281,40 +17229,16 @@ function _reelCard(p){
           <div style="font-size:.67rem;color:#58a6ff;margin-top:2px;">Ver perfil →</div>
         </div>
       </div>
-
       <div style="height:1px;background:#30363d;"></div>
-
-      ${text ? `<div style="font-size:.76rem;color:#c9d1d9;line-height:1.5;">${esc(text)}${(p.text||'').length>140?'…':''}</div>` : ''}
-      ${p.fish ? `<div style="font-size:.74rem;color:#ffd700;font-weight:700;">🐟 ${esc(p.fish)}${p.map?' · 📍'+esc(p.map):''}</div>` : ''}
-
-      <div style="flex:1;"></div>
+      ${text?`<div style="font-size:.76rem;color:#c9d1d9;line-height:1.5;flex:1;">${esc(text)}${(p.text||'').length>140?'…':''}</div>`:'<div style="flex:1"></div>'}
+      ${p.fish?`<div style="font-size:.74rem;color:#ffd700;font-weight:700;">🐟 ${esc(p.fish)}${p.map?' · 📍'+esc(p.map):''}</div>`:''}
       <div style="height:1px;background:#30363d;"></div>
-
-      <!-- ❤️ -->
       <div class="rxn-wrap" style="position:relative;" onmouseenter="showRxnPop('${p.id}')" onmouseleave="schedHideRxnPop('${p.id}')">
-        <button id="rxnt_${p.id}" onclick="quickReact('${p.id}')"
-          style="width:100%;background:#21262d;border:1px solid #30363d;color:#e6edf3;padding:9px 10px;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;box-sizing:border-box;"
-          onmouseover="this.style.background='#30363d'" onmouseout="this.style.background='#21262d'">
-          ❤️ Me gusta <span style="margin-left:auto;color:#8b949e;font-size:.7rem;">${fmtN(likes)}</span>
-        </button>
-        <div class="rxn-pop" id="rxnp_${p.id}" onmouseenter="cancelHideRxnPop('${p.id}')" onmouseleave="schedHideRxnPop('${p.id}')" style="bottom:calc(100% + 4px);left:0;right:auto;">
-          ${REACTIONS.map(r=>`<button class="rxn-btn" onclick="doReact('${p.id}','${r.emoji}')" title="${r.label}">${r.emoji}</button>`).join('')}
-        </div>
+        <button id="rxnt_${p.id}" onclick="quickReact('${p.id}')" style="width:100%;background:#21262d;border:1px solid #30363d;color:#e6edf3;padding:8px 10px;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;box-sizing:border-box;" onmouseover="this.style.background='#30363d'" onmouseout="this.style.background='#21262d'">❤️ Me gusta<span style="margin-left:auto;color:#8b949e;font-size:.7rem;">${fmtN(likes)}</span></button>
+        <div class="rxn-pop" id="rxnp_${p.id}" onmouseenter="cancelHideRxnPop('${p.id}')" onmouseleave="schedHideRxnPop('${p.id}')" style="bottom:calc(100% + 4px);left:0;right:auto;">${REACTIONS.map(r=>`<button class="rxn-btn" onclick="doReact('${p.id}','${r.emoji}')" title="${r.label}">${r.emoji}</button>`).join('')}</div>
       </div>
-
-      <!-- 💬 -->
-      <button onclick="toggleComments('${p.id}')"
-        style="width:100%;background:#21262d;border:1px solid #30363d;color:#e6edf3;padding:9px 10px;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;box-sizing:border-box;"
-        onmouseover="this.style.background='#30363d'" onmouseout="this.style.background='#21262d'">
-        💬 Comentar <span style="margin-left:auto;color:#8b949e;font-size:.7rem;">${fmtN(cmtCount)}</span>
-      </button>
-
-      <!-- ↗️ -->
-      <button onclick="sharePost('${p.id}')"
-        style="width:100%;background:#21262d;border:1px solid #30363d;color:#e6edf3;padding:9px 10px;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;box-sizing:border-box;"
-        onmouseover="this.style.background='#30363d'" onmouseout="this.style.background='#21262d'">
-        ↗️ Compartir
-      </button>
+      <button onclick="toggleComments('${p.id}')" style="width:100%;background:#21262d;border:1px solid #30363d;color:#e6edf3;padding:8px 10px;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;box-sizing:border-box;" onmouseover="this.style.background='#30363d'" onmouseout="this.style.background='#21262d'">💬 Comentar<span style="margin-left:auto;color:#8b949e;font-size:.7rem;">${fmtN(cmtCount)}</span></button>
+      <button onclick="sharePost('${p.id}')" style="width:100%;background:#21262d;border:1px solid #30363d;color:#e6edf3;padding:8px 10px;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;box-sizing:border-box;" onmouseover="this.style.background='#30363d'" onmouseout="this.style.background='#21262d'">↗️ Compartir</button>
     </div>
   </div>`;
 }
