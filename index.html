@@ -17205,11 +17205,15 @@ function _reelCard(p, H){
   const isCloudVideo = !ytId && !ttId && p.video;
   const nick = p.userNick||'Usuario';
   const av   = p.userAv||getDefaultAv(p.userGender||'');
-  const text = (p.text||'').slice(0,140);
+  const text = (p.text||'').slice(0,100);
   const likes    = p.likes||0;
   const cmtCount = p.commentCount||0;
   const fmtN = n=>n>999?(n/1000).toFixed(1)+'K':(n||'0');
   const safeNick = nick.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+
+  // Panel height = 110px fixed bottom strip
+  const PANEL = 110;
+  const videoH = H - PANEL;
 
   let videoInner='';
   if(ytId){
@@ -17223,30 +17227,56 @@ function _reelCard(p, H){
   }
 
   const badge = ytId
-    ? `<span style="background:#FF0000;color:#fff;font-size:.63rem;font-weight:800;padding:2px 9px;border-radius:100px;">▶ YouTube</span>`
-    : `<span style="background:#010101;color:#fff;font-size:.63rem;font-weight:800;padding:2px 9px;border-radius:100px;border:1px solid #444;"><span style="color:#69C9D0;">♪</span> TikTok</span>`;
+    ? `<span style="background:#FF0000;color:#fff;font-size:.6rem;font-weight:800;padding:2px 7px;border-radius:100px;">▶ YouTube</span>`
+    : `<span style="background:#010101;color:#fff;font-size:.6rem;font-weight:800;padding:2px 7px;border-radius:100px;border:1px solid #555;"><span style="color:#69C9D0;">♪</span> TikTok</span>`;
 
-  return `<div data-reel-pid="${p.id}" style="width:100%;height:${H}px;flex-shrink:0;scroll-snap-align:start;scroll-snap-stop:always;display:flex;flex-direction:row;background:#0d1117;overflow:hidden;">
-    <div style="flex:1;height:${H}px;overflow:hidden;background:#000;">${videoInner}</div>
-    <div style="width:200px;min-width:200px;height:${H}px;background:#161b22;border-left:1px solid #30363d;display:flex;flex-direction:column;padding:14px 12px;gap:10px;overflow-y:auto;box-sizing:border-box;">
-      ${badge}
-      <div style="display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="openUserProfile('${p.userId||''}','${safeNick}')">
-        <img src="${av}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #30363d;flex-shrink:0;">
-        <div style="min-width:0;">
-          <div style="font-size:.8rem;font-weight:800;color:#e6edf3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(nick)}${p.userVerified?' ✅':''}</div>
-          <div style="font-size:.67rem;color:#58a6ff;margin-top:2px;">Ver perfil →</div>
+  return `<div data-reel-pid="${p.id}" style="width:100%;height:${H}px;flex-shrink:0;scroll-snap-align:start;scroll-snap-stop:always;display:flex;flex-direction:column;background:#0d1117;overflow:hidden;">
+
+    <!-- VIDEO -->
+    <div style="width:100%;height:${videoH}px;flex-shrink:0;overflow:hidden;background:#000;position:relative;">
+      ${videoInner}
+    </div>
+
+    <!-- PANEL INFERIOR — fuera del video, no recibe clicks del iframe -->
+    <div style="width:100%;height:${PANEL}px;flex-shrink:0;background:#161b22;border-top:1px solid #30363d;display:flex;flex-direction:row;align-items:center;padding:0 14px;gap:10px;box-sizing:border-box;overflow:hidden;">
+
+      <!-- Avatar + info -->
+      <img src="${av}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #30363d;flex-shrink:0;cursor:pointer;" onclick="openUserProfile('${p.userId||''}','${safeNick}')">
+      <div style="flex:1;min-width:0;overflow:hidden;">
+        <div style="font-size:.8rem;font-weight:800;color:#e6edf3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(nick)}${p.userVerified?' ✅':''} ${badge}</div>
+        ${text?`<div style="font-size:.72rem;color:#8b949e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(text)}</div>`:''}
+        ${p.fish?`<div style="font-size:.7rem;color:#ffd700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">🐟 ${esc(p.fish)}${p.map?' · 📍'+esc(p.map):''}</div>`:''}
+      </div>
+
+      <!-- BOTONES -->
+      <div style="display:flex;flex-direction:row;align-items:center;gap:6px;flex-shrink:0;">
+
+        <!-- ❤️ reaccionar -->
+        <div style="position:relative;" onmouseenter="showRxnPop('${p.id}')" onmouseleave="schedHideRxnPop('${p.id}')">
+          <button id="rxnt_${p.id}" onclick="quickReact('${p.id}')"
+            style="background:#21262d;border:1px solid #30363d;color:#e6edf3;padding:7px 10px;border-radius:8px;font-size:.78rem;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;">
+            ❤️ <span>${fmtN(likes)}</span>
+          </button>
+          <div class="rxn-popup" id="rxnp_${p.id}"
+            onmouseenter="cancelHideRxnPop('${p.id}')" onmouseleave="schedHideRxnPop('${p.id}')"
+            style="bottom:calc(100% + 6px);left:0;right:auto;z-index:6000;">
+            ${REACTIONS.map(r=>`<button class="rxn-btn" onclick="doReact('${p.id}','${r.emoji}')" title="${r.label}">${r.emoji}</button>`).join('')}
+          </div>
         </div>
+
+        <!-- 💬 comentar -->
+        <button onclick="toggleComments('${p.id}')"
+          style="background:#21262d;border:1px solid #30363d;color:#e6edf3;padding:7px 10px;border-radius:8px;font-size:.78rem;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;">
+          💬 <span>${fmtN(cmtCount)}</span>
+        </button>
+
+        <!-- ↗️ compartir -->
+        <button onclick="sharePost('${p.id}')"
+          style="background:#21262d;border:1px solid #30363d;color:#e6edf3;padding:7px 10px;border-radius:8px;font-size:.78rem;cursor:pointer;display:flex;align-items:center;gap:5px;">
+          ↗️
+        </button>
+
       </div>
-      <div style="height:1px;background:#30363d;"></div>
-      ${text?`<div style="font-size:.76rem;color:#c9d1d9;line-height:1.5;flex:1;">${esc(text)}${(p.text||'').length>140?'…':''}</div>`:'<div style="flex:1"></div>'}
-      ${p.fish?`<div style="font-size:.74rem;color:#ffd700;font-weight:700;">🐟 ${esc(p.fish)}${p.map?' · 📍'+esc(p.map):''}</div>`:''}
-      <div style="height:1px;background:#30363d;"></div>
-      <div class="rxn-wrap" style="position:relative;" onmouseenter="showRxnPop('${p.id}')" onmouseleave="schedHideRxnPop('${p.id}')">
-        <button id="rxnt_${p.id}" onclick="quickReact('${p.id}')" style="width:100%;background:#21262d;border:1px solid #30363d;color:#e6edf3;padding:8px 10px;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;box-sizing:border-box;" onmouseover="this.style.background='#30363d'" onmouseout="this.style.background='#21262d'">❤️ Me gusta<span style="margin-left:auto;color:#8b949e;font-size:.7rem;">${fmtN(likes)}</span></button>
-        <div class="rxn-popup" id="rxnp_${p.id}" onmouseenter="cancelHideRxnPop('${p.id}')" onmouseleave="schedHideRxnPop('${p.id}')" style="bottom:calc(100% + 4px);left:0;right:auto;z-index:6000;">${REACTIONS.map(r=>`<button class="rxn-btn" onclick="doReact('${p.id}','${r.emoji}')" title="${r.label}">${r.emoji}</button>`).join('')}</div>
-      </div>
-      <button onclick="toggleComments('${p.id}')" style="width:100%;background:#21262d;border:1px solid #30363d;color:#e6edf3;padding:8px 10px;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;box-sizing:border-box;" onmouseover="this.style.background='#30363d'" onmouseout="this.style.background='#21262d'">💬 Comentar<span style="margin-left:auto;color:#8b949e;font-size:.7rem;">${fmtN(cmtCount)}</span></button>
-      <button onclick="sharePost('${p.id}')" style="width:100%;background:#21262d;border:1px solid #30363d;color:#e6edf3;padding:8px 10px;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;box-sizing:border-box;" onmouseover="this.style.background='#30363d'" onmouseout="this.style.background='#21262d'">↗️ Compartir</button>
     </div>
   </div>`;
 }
