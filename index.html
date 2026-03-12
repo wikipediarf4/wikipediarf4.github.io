@@ -18799,13 +18799,84 @@ window.wkUpdateBannerCounts=wkUpdateBannerCounts;
 
 </script>
 <!-- ===== FOOTER ===== -->
+<!-- ===== MODALES FOOTER ===== -->
+<!-- Acuerdo de Usuario -->
+<div id="modalAcuerdo" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.75);align-items:center;justify-content:center;">
+  <div style="background:#161b22;border:1px solid #30363d;border-radius:14px;max-width:620px;width:92%;max-height:82vh;overflow-y:auto;padding:28px 30px;position:relative;box-shadow:0 8px 40px rgba(0,0,0,.7);">
+    <button onclick="document.getElementById('modalAcuerdo').style.display='none'" style="position:absolute;top:14px;right:16px;background:none;border:none;color:#8b949e;font-size:1.4rem;cursor:pointer;line-height:1;">✕</button>
+    <h2 style="font-family:'Orbitron',monospace;color:var(--accent);margin:0 0 18px;font-size:1.1rem;">📜 Acuerdo de Usuario — WikipediaRF4</h2>
+    <p style="color:#8b949e;font-size:.78rem;margin:0 0 14px;">Última actualización: enero 2026</p>
+
+    <h3 style="color:var(--text);font-size:.9rem;margin:16px 0 8px;">1. Aceptación de los términos</h3>
+    <p style="color:#c9d1d9;font-size:.82rem;line-height:1.6;">Al acceder o usar WikipediaRF4 ("la Plataforma"), aceptás estos términos en su totalidad. Si no estás de acuerdo, no uses la Plataforma.</p>
+
+    <h3 style="color:var(--text);font-size:.9rem;margin:16px 0 8px;">2. Elegibilidad</h3>
+    <p style="color:#c9d1d9;font-size:.82rem;line-height:1.6;">Debés tener al menos 13 años para registrarte. Al crear una cuenta, declarás que cumplís con este requisito y que la información que proporcionás es verídica.</p>
+
+    <h3 style="color:var(--text);font-size:.9rem;margin:16px 0 8px;">3. Conducta del usuario</h3>
+    <p style="color:#c9d1d9;font-size:.82rem;line-height:1.6;">Te comprometés a no publicar contenido ofensivo, spam, material protegido por derechos de autor sin autorización, ni información falsa. WikipediaRF4 puede suspender cuentas que violen estas normas sin previo aviso.</p>
+
+    <h3 style="color:var(--text);font-size:.9rem;margin:16px 0 8px;">4. Contenido generado por usuarios</h3>
+    <p style="color:#c9d1d9;font-size:.82rem;line-height:1.6;">Al publicar contenido (fotos, textos, comentarios) otorgás a WikipediaRF4 una licencia no exclusiva, mundial y gratuita para mostrarlo dentro de la Plataforma. Seguís siendo el propietario de tu contenido.</p>
+
+    <h3 style="color:var(--text);font-size:.9rem;margin:16px 0 8px;">5. Propiedad intelectual</h3>
+    <p style="color:#c9d1d9;font-size:.82rem;line-height:1.6;">El diseño, código y marca de WikipediaRF4 son propiedad de sus creadores. No podés copiar, redistribuir ni modificar la Plataforma sin autorización expresa.</p>
+
+    <h3 style="color:var(--text);font-size:.9rem;margin:16px 0 8px;">6. Limitación de responsabilidad</h3>
+    <p style="color:#c9d1d9;font-size:.82rem;line-height:1.6;">WikipediaRF4 se ofrece "tal como está". No nos hacemos responsables por interrupciones del servicio, pérdida de datos ni daños derivados del uso de la Plataforma.</p>
+
+    <h3 style="color:var(--text);font-size:.9rem;margin:16px 0 8px;">7. Modificaciones</h3>
+    <p style="color:#c9d1d9;font-size:.82rem;line-height:1.6;">Podemos actualizar este acuerdo en cualquier momento. Los cambios entran en vigencia al publicarse. El uso continuo de la Plataforma implica la aceptación de los nuevos términos.</p>
+
+    <h3 style="color:var(--text);font-size:.9rem;margin:16px 0 8px;">8. Contacto</h3>
+    <p style="color:#c9d1d9;font-size:.82rem;line-height:1.6;">Para consultas sobre este acuerdo, contactanos a través de la sección de soporte dentro de WikipediaRF4.</p>
+
+    <div style="text-align:center;margin-top:24px;">
+      <button onclick="document.getElementById('modalAcuerdo').style.display='none'" style="background:var(--accent);color:#0d1117;border:none;border-radius:8px;padding:10px 28px;font-weight:700;cursor:pointer;font-family:'Orbitron',monospace;font-size:.8rem;">Entendido ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- Accesibilidad -->
+<div id="modalAccesibilidad" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.75);align-items:center;justify-content:center;">
+  <div style="background:#161b22;border:1px solid #30363d;border-radius:14px;max-width:620px;width:92%;max-height:82vh;overflow-y:auto;padding:28px 30px;position:relative;box-shadow:0 8px 40px rgba(0,0,0,.7);">
+    <button onclick="document.getElementById('modalAccesibilidad').style.display='none'" style="position:absolute;top:14px;right:16px;background:none;border:none;color:#8b949e;font-size:1.4rem;cursor:pointer;line-height:1;">✕</button>
+    <h2 style="font-family:'Orbitron',monospace;color:var(--accent);margin:0 0 18px;font-size:1.1rem;">♿ Accesibilidad — WikipediaRF4</h2>
+    <p style="color:#8b949e;font-size:.78rem;margin:0 0 14px;">Nuestro compromiso con la inclusión digital</p>
+
+    <h3 style="color:var(--text);font-size:.9rem;margin:16px 0 8px;">Nuestro compromiso</h3>
+    <p style="color:#c9d1d9;font-size:.82rem;line-height:1.6;">WikipediaRF4 está comprometida con hacer la Plataforma accesible para todas las personas, independientemente de sus capacidades o el dispositivo que utilicen.</p>
+
+    <h3 style="color:var(--text);font-size:.9rem;margin:16px 0 8px;">Características de accesibilidad</h3>
+    <ul style="color:#c9d1d9;font-size:.82rem;line-height:1.8;padding-left:20px;margin:8px 0;">
+      <li>Diseño responsivo: adaptado a móviles, tablets y escritorio</li>
+      <li>Contraste de color optimizado para legibilidad</li>
+      <li>Textos alternativos en imágenes principales</li>
+      <li>Navegación por teclado en elementos interactivos</li>
+      <li>Fuentes escalables que respetan la configuración del sistema</li>
+      <li>Soporte multiidioma: Español, Inglés, Portugués y Ruso</li>
+    </ul>
+
+    <h3 style="color:var(--text);font-size:.9rem;margin:16px 0 8px;">Tecnologías de asistencia</h3>
+    <p style="color:#c9d1d9;font-size:.82rem;line-height:1.6;">La Plataforma fue desarrollada procurando compatibilidad con lectores de pantalla y otras tecnologías de asistencia. Seguimos trabajando para mejorar esta experiencia continuamente.</p>
+
+    <h3 style="color:var(--text);font-size:.9rem;margin:16px 0 8px;">Reportar un problema</h3>
+    <p style="color:#c9d1d9;font-size:.82rem;line-height:1.6;">Si encontrás alguna barrera de accesibilidad en WikipediaRF4, por favor reportála desde la sección de soporte. Tu feedback nos ayuda a mejorar para toda la comunidad.</p>
+
+    <h3 style="color:var(--text);font-size:.9rem;margin:16px 0 8px;">Estándar de referencia</h3>
+    <p style="color:#c9d1d9;font-size:.82rem;line-height:1.6;">Nos guiamos por las pautas WCAG 2.1 (Web Content Accessibility Guidelines) como referencia para el desarrollo accesible de la Plataforma.</p>
+
+    <div style="text-align:center;margin-top:24px;">
+      <button onclick="document.getElementById('modalAccesibilidad').style.display='none'" style="background:var(--accent);color:#0d1117;border:none;border-radius:8px;padding:10px 28px;font-weight:700;cursor:pointer;font-family:'Orbitron',monospace;font-size:.8rem;">Entendido ✓</button>
+    </div>
+  </div>
+</div>
+
 <div id="siteFooter" style="display:none;background:#161b22;border-top:1px solid #30363d;margin-top:32px;">
   <div style="max-width:980px;margin:0 auto;padding:18px 24px 20px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;">
     <!-- Brand -->
     <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
-      <div style="width:34px;height:34px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;box-shadow:0 0 12px rgba(46,196,182,.4);">
-        <span style="font-size:1rem;">🎣</span>
-      </div>
+      <img src="icon-192.png" alt="WikipediaRF4" style="width:34px;height:34px;border-radius:50%;object-fit:cover;box-shadow:0 0 12px rgba(46,196,182,.4);">
       <span style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:900;color:var(--text);">Wikipedia<span style="color:var(--accent);">RF4</span></span>
     </div>
     <!-- Links -->
@@ -18814,9 +18885,9 @@ window.wkUpdateBannerCounts=wkUpdateBannerCounts;
       <span style="color:#30363d;">·</span>
       <span onclick="openPrivacyModal()" style="color:#8b949e;cursor:pointer;transition:color .2s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='#8b949e'">Política de Privacidad</span>
       <span style="color:#30363d;">·</span>
-      <span style="color:#8b949e;cursor:pointer;transition:color .2s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='#8b949e'">Acuerdo de Usuario</span>
+      <span onclick="document.getElementById('modalAcuerdo').style.display='flex'" style="color:#8b949e;cursor:pointer;transition:color .2s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='#8b949e'">Acuerdo de Usuario</span>
       <span style="color:#30363d;">·</span>
-      <span style="color:#8b949e;cursor:pointer;transition:color .2s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='#8b949e'">Accesibilidad</span>
+      <span onclick="document.getElementById('modalAccesibilidad').style.display='flex'" style="color:#8b949e;cursor:pointer;transition:color .2s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='#8b949e'">Accesibilidad</span>
     </div>
     <!-- Copyright -->
     <div style="font-size:.68rem;color:#6b6f75;white-space:nowrap;font-family:'Orbitron',monospace;letter-spacing:.03em;">
