@@ -4670,7 +4670,7 @@ function init(){
         if (snap.exists()) {
           window.CU = {id: user.uid, ...snap.data()};
           // Pre-populate user info cache with own data
-          if(window._userInfoCache) window._userInfoCache[user.uid] = {nick: window.CU.nick||'', av: window.CU.av||'', gender: window.CU.gender||''};
+          if(window._userInfoCache) window._userInfoCache[user.uid] = {nick: window.CU.nick||'', av: window.CU.av||'', gender: window.CU.gender||'', country: window.CU.country||''};
           document.getElementById('mAuth').style.display = 'none';
           hideSplash();
           // Si no tiene país configurado, pedir país obligatorio
@@ -10641,7 +10641,7 @@ async function _fetchUserInfo(uid){
   window._userInfoPending[uid] = getDoc(doc(db,'users',uid)).then(snap=>{
     if(snap.exists()){
       const d = snap.data();
-      window._userInfoCache[uid] = {nick: d.nick||'?', av: d.av||'', gender: d.gender||''};
+      window._userInfoCache[uid] = {nick: d.nick||'?', av: d.av||'', gender: d.gender||'', country: d.country||''};
     } else {
       window._userInfoCache[uid] = {nick:'?', av:'', gender:''};
     }
@@ -14471,12 +14471,14 @@ async function startPresence(){
     role: window.CU.role||'',
     verified: !!window.CU.verified,
     xp: window.CU.xp||0,
-    gender: window.CU.gender||''
+    gender: window.CU.gender||'',
+    country: window.CU.country||''
   }, {merge:true});
   _presenceInterval = setInterval(async()=>{
     if(window.CU) await setDoc(presRef,{
       nick:window.CU.nick, av:window.CU.av||'', last:serverTimestamp(), device:_device,
-      role:window.CU.role||'', verified:!!window.CU.verified, xp:window.CU.xp||0, gender:window.CU.gender||''
+      role:window.CU.role||'', verified:!!window.CU.verified, xp:window.CU.xp||0, gender:window.CU.gender||'',
+      country:window.CU.country||''
     },{merge:true});
   }, 240000); // OPTIMIZADO: cada 4 min en vez de 2 min
   listenPresence();
@@ -14489,7 +14491,31 @@ async function _fetchPresence(){
     const since = Timestamp.fromMillis(Date.now() - 300000); // 5 minutos
     const onlineSnap = await getDocs(query(collection(db,'presence'), where('last','>',since), limit(50)));
     const now = Date.now();
-    const online = onlineSnap.docs.map(d=>({id:d.id,...d.data(),ts:d.data().last?.toMillis?.()||0}));
+    const online = onlineSnap.docs.map(d=>{
+      const data = d.data();
+      // Si no tiene country en presence, intentar sacarlo del caché de usuarios
+      const cachedUser = window._userInfoCache?.[d.id];
+      const country = data.country || cachedUser?.country || '';
+      return {id:d.id, ...data, country, ts:data.last?.toMillis?.()||0};
+    });
+    // Enriquecer country de usuarios que no lo tienen en presence via cache
+    const missingCountry = online.filter(u => !u.country);
+    if(missingCountry.length){
+      await Promise.all(missingCountry.map(async u=>{
+        try {
+          const cached = window._userInfoCache?.[u.id];
+          if(cached?.country){ u.country = cached.country; return; }
+          const snap = await getDoc(doc(db,'users',u.id));
+          if(snap.exists()){
+            const country = snap.data().country||'';
+            u.country = country;
+            if(window._userInfoCache) window._userInfoCache[u.id] = {...(window._userInfoCache[u.id]||{}), country};
+            // Actualizar presence para la próxima vez
+            if(country) setDoc(doc(db,'presence',u.id),{country},{merge:true}).catch(()=>{});
+          }
+        } catch(e){}
+      }));
+    }
     // offline: usamos cache local para no hacer otra query
     const offline = Object.values(window._presenceCache||{})
       .filter(u=> now - u.ts >= 300000 && now - u.ts < 3600000)
