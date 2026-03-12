@@ -12841,10 +12841,17 @@ function extractYtId(url){
 
 function extractTikTokId(url){
   if(!url) return null;
-  // Formats: tiktok.com/@user/video/123456789 or vm.tiktok.com/ZMxxx
-  const m = url.match(/tiktok\.com\/@[^/]+\/video\/(\d+)/);
+  // Format: tiktok.com/@user/video/1234567890
+  const m = url.match(/tiktok\.com\/@[^/?]+\/video\/(\d+)/);
   if(m) return m[1];
+  // Format: vm.tiktok.com/ZMxxxxxxx/ — short link, return the short code for embed
+  const vm = url.match(/(?:vm|vt)\.tiktok\.com\/([A-Za-z0-9]+)/);
+  if(vm) return vm[1];
   return null;
+}
+
+function isTikTokShortLink(url){
+  return url && (url.includes('vm.tiktok.com') || url.includes('vt.tiktok.com'));
 }
 
 function isTikTok(url){
@@ -17146,32 +17153,49 @@ async function loadReelsPage(){
   if(!el) return;
 
   // Si ya cargamos, solo re-renderizamos (para cuando el usuario navega de vuelta)
-  if(_reelsLoaded && _reelsData.length){
-    _renderReelsFeed(el);
-    return;
-  }
+  // Siempre recargar para tener los últimos videos
+  _reelsLoaded = false;
+  _reelsData = [];
 
   el.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--muted);"><div style="font-size:2rem;margin-bottom:10px;animation:pulse 1s infinite;">🎬</div><div>Cargando reels...</div></div>';
 
   try {
-    // Buscar posts con video de YT/TikTok en Firestore
+    // Buscar posts con video en Firestore — los posts usan campo 'time'
     const snap = await getDocs(query(
       collection(db, 'posts'),
-      orderBy('createdAt', 'desc'),
-      limit(200)
+      orderBy('time', 'desc'),
+      limit(300)
     ));
+
+    const isVideoPost = p => {
+      if(!p.video) return false;
+      return extractYtId(p.video) ||
+             isTikTok(p.video) ||
+             (p.video.includes('cloudinary') && /\.(mp4|webm|mov)/i.test(p.video));
+    };
 
     _reelsData = snap.docs
       .map(d => ({ id: d.id, ...d.data() }))
-      .filter(p => {
-        if(!p.video) return false;
-        return extractYtId(p.video) || extractTikTokId(p.video) || (p.video.includes('cloudinary') && p.video.match(/\.(mp4|webm|mov)/i));
+      .filter(isVideoPost);
+
+    // También incluir posts en memoria que no estén ya en la lista
+    const inMemory = (_posts || []).filter(p => isVideoPost(p) && !_reelsData.find(r => r.id === p.id));
+    _reelsData = [..._reelsData, ...inMemory]
+      .sort((a,b) => {
+        const ta = a.time?.toMillis?.() ?? a.createdAt?.toMillis?.() ?? 0;
+        const tb = b.time?.toMillis?.() ?? b.createdAt?.toMillis?.() ?? 0;
+        return tb - ta;
       });
 
     _reelsLoaded = true;
     _renderReelsFeed(el);
   } catch(e) {
-    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">⚠️ Error al cargar reels</div>';
+    console.error('loadReelsPage error:', e);
+    // Fallback: usar solo posts en memoria
+    const isVideoPost = p => p.video && (extractYtId(p.video) || isTikTok(p.video) || /\.(mp4|webm|mov)/i.test(p.video));
+    _reelsData = (_posts || []).filter(isVideoPost);
+    _reelsLoaded = true;
+    _renderReelsFeed(el);
   }
 }
 
@@ -17206,14 +17230,26 @@ function _reelCard(p){
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         style="width:100%;height:100%;display:block;border:none;" loading="lazy"></iframe>
     </div>`;
-  } else if(ttId){
+  } else if(ttId || isTikTok(p.video)){
     badgeHTML = '<span style="background:#010101;color:#fff;font-size:.65rem;font-weight:800;padding:2px 8px;border-radius:100px;display:flex;align-items:center;gap:4px;"><span style="color:#69C9D0;">♪</span> TikTok</span>';
     isVertical = true;
-    embedHTML = `<div style="width:100%;max-width:340px;margin:0 auto;aspect-ratio:9/16;background:#000;border-radius:0;">
-      <iframe src="https://www.tiktok.com/embed/v2/${ttId}" frameborder="0" allowfullscreen
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        style="width:100%;height:100%;display:block;border:none;" loading="lazy"></iframe>
-    </div>`;
+    // Si es URL corta vm.tiktok, mostrar link directo en vez de embed (TikTok bloquea iframes de short links)
+    if(!ttId || isTikTokShortLink(p.video)){
+      embedHTML = `<div style="width:100%;max-width:340px;margin:0 auto;background:#010101;border-radius:0;aspect-ratio:9/16;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:20px;">
+        <div style="font-size:3rem;">🎵</div>
+        <div style="color:#fff;font-size:.9rem;font-weight:700;text-align:center;">Video de TikTok</div>
+        <a href="${p.video}" target="_blank" rel="noopener"
+          style="background:linear-gradient(135deg,#69C9D0,#EE1D52);color:#fff;padding:10px 24px;border-radius:100px;font-weight:800;font-size:.85rem;text-decoration:none;">
+          Ver en TikTok ↗
+        </a>
+      </div>`;
+    } else {
+      embedHTML = `<div style="width:100%;max-width:340px;margin:0 auto;aspect-ratio:9/16;background:#000;border-radius:0;">
+        <iframe src="https://www.tiktok.com/embed/v2/${ttId}" frameborder="0" allowfullscreen
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          style="width:100%;height:100%;display:block;border:none;" loading="lazy"></iframe>
+      </div>`;
+    }
   } else if(isCloudVideo){
     badgeHTML = '<span style="background:var(--accent);color:#fff;font-size:.65rem;font-weight:800;padding:2px 8px;border-radius:100px;">🎬 Video</span>';
     embedHTML = `<video src="${p.video}" controls playsinline style="width:100%;max-height:520px;background:#000;display:block;"></video>`;
