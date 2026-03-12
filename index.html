@@ -10599,141 +10599,181 @@ function _closeSearchDrop(){
   if(d) d.remove();
 }
 
+function _searchSection(icon, title, items, renderFn, onVerTodo){
+  if(!items.length) return '';
+  let h = `
+  <div style="padding:14px 16px 6px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <span style="font-size:.82rem;font-weight:900;color:var(--text);letter-spacing:.3px;">${icon} ${title}</span>
+      <span onclick="${onVerTodo}" style="font-size:.75rem;font-weight:700;color:var(--accent);cursor:pointer;padding:3px 10px;background:rgba(46,196,182,.1);border-radius:100px;transition:background .15s;" onmouseover="this.style.background='rgba(46,196,182,.2)'" onmouseout="this.style.background='rgba(46,196,182,.1)'">Ver todo →</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2px;">`;
+  items.forEach(it => { h += renderFn(it); });
+  h += `</div></div><div style="height:1px;background:var(--border);margin:0 16px;"></div>`;
+  return h;
+}
+
 async function _runSearch(q){
   const v = q.toLowerCase();
-  const el = document.getElementById('feedPosts');
 
-  // Show loading state
   let drop = document.getElementById('_searchDrop');
   if(!drop){
     drop = document.createElement('div');
     drop.id = '_searchDrop';
     const bar = document.querySelector('.tb-search');
-    if(bar){
-      bar.style.position = 'relative';
-      bar.appendChild(drop);
-    }
+    if(bar){ bar.style.position='relative'; bar.appendChild(drop); }
   }
-  drop.style.cssText = 'position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:9999;max-height:480px;overflow-y:auto;padding:8px 0;min-width:320px;';
-  drop.innerHTML = '<div style="padding:14px 16px;color:var(--muted);font-size:.8rem;text-align:center;">🔍 Buscando...</div>';
+  drop.style.cssText = 'position:absolute;top:calc(100% + 8px);left:-60px;width:420px;max-width:95vw;background:var(--bg2);border:1px solid var(--border);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.55);z-index:9999;max-height:560px;overflow-y:auto;';
+  drop.innerHTML = `<div style="padding:18px 16px;color:var(--muted);font-size:.82rem;text-align:center;display:flex;align-items:center;justify-content:center;gap:8px;"><span style="animation:spin 1s linear infinite;display:inline-block;">⏳</span> Buscando <strong style="color:var(--text)">"${esc(q)}"</strong>...</div>`;
 
-  // Close on outside click
   setTimeout(()=>{
-    const handler = (e)=>{ if(!drop.contains(e.target) && e.target.id!=='searchInput'){ _closeSearchDrop(); document.removeEventListener('click', handler); } };
+    const handler=(e)=>{ if(!drop.contains(e.target)&&e.target.id!=='searchInput'){ _closeSearchDrop(); document.removeEventListener('click',handler); } };
     document.addEventListener('click', handler);
   }, 100);
 
   try {
-    const results = { users:[], posts:[], groups:[], torneos:[], trofeos:[] };
+    const R = { users:[], posts:[], groups:[], torneos:[], trofeos:[] };
 
-    // 1. Posts en memoria
-    results.posts = _posts.filter(p=>
-      (p.text||'').toLowerCase().includes(v) ||
-      (p.fish||'').toLowerCase().includes(v) ||
-      (p.userNick||'').toLowerCase().includes(v) ||
-      (p.map||'').toLowerCase().includes(v)
-    ).slice(0,5);
+    // Posts en memoria
+    R.posts = _posts.filter(p=>{
+      const s = [(p.text||''),(p.fish||''),(p.userNick||''),(p.map||''),(p.location||'')].join(' ').toLowerCase();
+      return s.includes(v);
+    }).slice(0,3);
 
-    // 2. Usuarios
+    // Usuarios
     try {
-      const uSnap = await getDocs(query(collection(db,'users'), limit(200)));
-      results.users = uSnap.docs.map(d=>({id:d.id,...d.data()}))
-        .filter(u=>(u.nick||'').toLowerCase().includes(v)||(u.email||'').toLowerCase().includes(v))
-        .slice(0,5);
+      const uSnap = await getDocs(query(collection(db,'users'), limit(300)));
+      R.users = uSnap.docs.map(d=>({id:d.id,...d.data()}))
+        .filter(u=>[(u.nick||''),(u.email||''),(u.bio||'')].join(' ').toLowerCase().includes(v))
+        .slice(0,4);
     } catch(e){}
 
-    // 3. Grupos
+    // Grupos
     try {
       const gSnap = await getDocs(query(collection(db,'groups'), limit(100)));
-      results.groups = gSnap.docs.map(d=>({id:d.id,...d.data()}))
-        .filter(g=>(g.name||'').toLowerCase().includes(v)||(g.desc||'').toLowerCase().includes(v))
-        .slice(0,4);
+      R.groups = gSnap.docs.map(d=>({id:d.id,...d.data()}))
+        .filter(g=>[(g.name||''),(g.desc||''),(g.cat||'')].join(' ').toLowerCase().includes(v))
+        .slice(0,3);
     } catch(e){}
 
-    // 4. Torneos
+    // Torneos
     try {
       const tSnap = await getDocs(query(collection(db,'torneos'), limit(100)));
-      results.torneos = tSnap.docs.map(d=>({id:d.id,...d.data()}))
-        .filter(t=>(t.name||'').toLowerCase().includes(v)||(t.desc||'').toLowerCase().includes(v))
-        .slice(0,4);
+      R.torneos = tSnap.docs.map(d=>({id:d.id,...d.data()}))
+        .filter(t=>[(t.name||''),(t.desc||'')].join(' ').toLowerCase().includes(v))
+        .slice(0,3);
     } catch(e){}
 
-    // 5. Trofeos aprobados
+    // Trofeos aprobados
     try {
-      const trSnap = await getDocs(query(collection(db,'trofeosPendientes'), where('status','==','approved'), limit(100)));
-      results.trofeos = trSnap.docs.map(d=>({id:d.id,...d.data()}))
-        .filter(t=>(t.fish||'').toLowerCase().includes(v)||(t.map||'').toLowerCase().includes(v)||(t.nick||'').toLowerCase().includes(v))
+      const trSnap = await getDocs(query(collection(db,'trofeosPendientes'), where('status','==','approved'), limit(200)));
+      R.trofeos = trSnap.docs.map(d=>({id:d.id,...d.data()}))
+        .filter(t=>[(t.fish||''),(t.map||''),(t.nick||''),(t.note||t.notes||'')].join(' ').toLowerCase().includes(v))
+        .sort((a,b)=>(b.createdAt?.toMillis?.()??0)-(a.createdAt?.toMillis?.()??0))
         .slice(0,4);
     } catch(e){}
 
-    const total = results.users.length + results.posts.length + results.groups.length + results.torneos.length + results.trofeos.length;
+    const total = R.users.length+R.posts.length+R.groups.length+R.torneos.length+R.trofeos.length;
 
     if(!total){
-      drop.innerHTML = `<div style="padding:20px 16px;text-align:center;color:var(--muted);font-size:.84rem;">🎣 Sin resultados para <strong>"${esc(q)}"</strong></div>`;
+      drop.innerHTML = `
+        <div style="padding:32px 20px;text-align:center;">
+          <div style="font-size:2rem;margin-bottom:10px;">🎣</div>
+          <div style="font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:4px;">Sin resultados para "${esc(q)}"</div>
+          <div style="font-size:.78rem;color:var(--muted);">Intentá con otra palabra clave</div>
+        </div>`;
       return;
     }
 
-    let html = `<div style="padding:6px 14px 4px;font-size:.68rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;">${total} resultado${total!==1?'s':''} para "${esc(q)}"</div>`;
+    let html = `<div style="padding:12px 16px 8px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:.78rem;color:var(--muted);">Resultados de búsqueda · <strong style="color:var(--text)">${total}</strong></span>
+      <span onclick="document.getElementById('searchInput').value='';_closeSearchDrop();renderFeed();" style="font-size:1rem;cursor:pointer;color:var(--muted);padding:2px 6px;" title="Cerrar">✕</span>
+    </div>`;
 
-    // Usuarios
-    if(results.users.length){
-      html += `<div style="padding:4px 14px 2px;font-size:.7rem;color:var(--accent);font-weight:800;text-transform:uppercase;letter-spacing:.6px;">👤 Usuarios</div>`;
-      results.users.forEach(u=>{
-        html += `<div onclick="gp('profile');loadProfile('${u.id}');_closeSearchDrop();" style="display:flex;align-items:center;gap:10px;padding:8px 16px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
-          <img src="${u.av||getDefaultAv(u.gender||'')}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:1px solid var(--border);flex-shrink:0;">
-          <div><div style="font-size:.84rem;font-weight:700;">${esc(u.nick||'')} ${getCountryFlag(u.country)||''} ${u.verified?'✅':''}</div><div style="font-size:.7rem;color:var(--muted);">${esc(u.email||'')}${u.country?' · '+esc(u.country):''}</div></div>
-        </div>`;
-      });
-    }
+    // ── TROFEOS RECIENTES ──
+    html += _searchSection('🥇','Trofeos Recientes', R.trofeos, t=>`
+      <div onclick="_closeSearchDrop();gp('trofeos-feed');listenTrofeosFeed();setTimeout(()=>{const el=document.getElementById('trofeo_${t.id}');if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.style.outline='2px solid var(--gold)';setTimeout(()=>{if(el)el.style.outline='';},2200);}},650);"
+        style="display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:10px;cursor:pointer;transition:background .13s;"
+        onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+        <div style="width:48px;height:48px;border-radius:8px;overflow:hidden;flex-shrink:0;background:var(--bg3);border:1px solid rgba(255,215,0,.25);display:flex;align-items:center;justify-content:center;font-size:1.4rem;">
+          ${t.img?`<img src="${t.img}" style="width:100%;height:100%;object-fit:cover;">`:`🐟`}
+        </div>
+        <div style="min-width:0;flex:1;">
+          <div style="font-size:.88rem;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(t.fish||'Pez sin nombre')}</div>
+          <div style="font-size:.75rem;color:var(--gold);font-weight:700;">${t.weight?t.weight+' kg':''} ${t.length?'· '+t.length+' cm':''}</div>
+          <div style="font-size:.72rem;color:var(--muted);">👤 ${esc(t.nick||'')}${t.map?' · 📍'+esc(t.map):''}</div>
+        </div>
+        <span style="font-size:.65rem;background:rgba(255,215,0,.12);color:var(--gold);padding:2px 7px;border-radius:100px;white-space:nowrap;flex-shrink:0;">Trofeo</span>
+      </div>`, `_closeSearchDrop();gp('trofeos-feed');listenTrofeosFeed();`);
 
-    // Posts
-    if(results.posts.length){
-      html += `<div style="padding:4px 14px 2px;font-size:.7rem;color:var(--accent);font-weight:800;text-transform:uppercase;letter-spacing:.6px;margin-top:4px;">📝 Publicaciones</div>`;
-      results.posts.forEach(p=>{
-        const preview = (p.text||'').slice(0,80)+(p.text&&p.text.length>80?'…':'');
-        html += `<div onclick="_closeSearchDrop();document.getElementById('feedPosts').querySelector('[data-pid=\\'${p.id}\\']')?.scrollIntoView({behavior:'smooth'});" style="padding:7px 16px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
-          <div style="font-size:.82rem;font-weight:700;">${esc(p.userNick||'')} ${p.fish?'· 🐟 '+esc(p.fish):''}</div>
-          <div style="font-size:.74rem;color:var(--muted);">${esc(preview)||'(sin texto)'}</div>
-        </div>`;
-      });
-    }
+    // ── PERSONAS ──
+    html += _searchSection('👤','Personas', R.users, u=>`
+      <div onclick="_closeSearchDrop();openUserProfile('${u.id}','${(u.nick||'').replace(/'/g,"\\'").replace(/"/g,'\\"')}');"
+        style="display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:10px;cursor:pointer;transition:background .13s;"
+        onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+        <div style="position:relative;flex-shrink:0;">
+          <img src="${u.av||getDefaultAv(u.gender||'')}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--border);">
+          ${u.verified?`<span style="position:absolute;bottom:-2px;right:-2px;font-size:.7rem;">✅</span>`:''}
+        </div>
+        <div style="min-width:0;flex:1;">
+          <div style="font-size:.88rem;font-weight:800;color:var(--text);">${esc(u.nick||'')} ${getCountryFlag(u.country)||''}</div>
+          <div style="font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${u.bio?esc(u.bio.slice(0,55)):esc(u.email||'')}</div>
+        </div>
+        <span style="font-size:.65rem;background:rgba(46,196,182,.1);color:var(--accent);padding:2px 7px;border-radius:100px;white-space:nowrap;flex-shrink:0;">Perfil</span>
+      </div>`, `_closeSearchDrop();gp('amigos');`);
 
-    // Grupos
-    if(results.groups.length){
-      html += `<div style="padding:4px 14px 2px;font-size:.7rem;color:var(--accent);font-weight:800;text-transform:uppercase;letter-spacing:.6px;margin-top:4px;">🎣 Grupos</div>`;
-      results.groups.forEach(g=>{
-        html += `<div onclick="gp('grupos');_closeSearchDrop();" style="display:flex;align-items:center;gap:10px;padding:7px 16px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
-          ${g.img?`<img src="${g.img}" style="width:30px;height:30px;border-radius:6px;object-fit:cover;flex-shrink:0;">`:``}
-          <div><div style="font-size:.83rem;font-weight:700;">${esc(g.name||'')}</div><div style="font-size:.72rem;color:var(--muted);">${esc((g.desc||'').slice(0,60))}</div></div>
-        </div>`;
-      });
-    }
+    // ── PUBLICACIONES ──
+    html += _searchSection('📝','Publicaciones', R.posts, p=>{
+      const thumb = (p.images&&p.images[0])||p.image||'';
+      const preview = (p.text||'').slice(0,72)+(p.text&&p.text.length>72?'…':'');
+      return `
+      <div onclick="_closeSearchDrop();gp('home');setTimeout(()=>{const el=document.querySelector('[data-pid=\\'${p.id}\\']');if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.style.outline='2px solid var(--accent)';setTimeout(()=>{if(el)el.style.outline='';},2000);}},400);"
+        style="display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:10px;cursor:pointer;transition:background .13s;"
+        onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+        <div style="width:48px;height:48px;border-radius:8px;overflow:hidden;flex-shrink:0;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.4rem;">
+          ${thumb?`<img src="${thumb}" style="width:100%;height:100%;object-fit:cover;">`:`📝`}
+        </div>
+        <div style="min-width:0;flex:1;">
+          <div style="font-size:.82rem;font-weight:700;color:var(--text);">${esc(p.userNick||'')}${p.fish?' · 🐟 '+esc(p.fish):''}</div>
+          <div style="font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(preview)||'(sin texto)'}</div>
+        </div>
+        <span style="font-size:.65rem;background:rgba(139,148,158,.12);color:var(--muted);padding:2px 7px;border-radius:100px;white-space:nowrap;flex-shrink:0;">Post</span>
+      </div>`;
+    }, `_closeSearchDrop();gp('home');`);
 
-    // Torneos
-    if(results.torneos.length){
-      html += `<div style="padding:4px 14px 2px;font-size:.7rem;color:var(--accent);font-weight:800;text-transform:uppercase;letter-spacing:.6px;margin-top:4px;">🏆 Torneos</div>`;
-      results.torneos.forEach(t=>{
-        html += `<div onclick="gp('torneos');_closeSearchDrop();" style="padding:7px 16px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
-          <div style="font-size:.83rem;font-weight:700;">${esc(t.name||'')}</div>
-          <div style="font-size:.72rem;color:var(--muted);">${esc((t.desc||'').slice(0,60))}</div>
-        </div>`;
-      });
-    }
+    // ── GRUPOS ──
+    html += _searchSection('🎣','Grupos', R.groups, g=>`
+      <div onclick="_closeSearchDrop();gp('grupos');"
+        style="display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:10px;cursor:pointer;transition:background .13s;"
+        onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+        <div style="width:48px;height:48px;border-radius:8px;overflow:hidden;flex-shrink:0;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.5rem;">
+          ${g.img?`<img src="${g.img}" style="width:100%;height:100%;object-fit:cover;">`:`🎣`}
+        </div>
+        <div style="min-width:0;flex:1;">
+          <div style="font-size:.88rem;font-weight:800;color:var(--text);">${esc(g.name||'')}</div>
+          <div style="font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${g.memberCount?g.memberCount+' miembros · ':''} ${esc((g.desc||'').slice(0,50))}</div>
+        </div>
+        <span style="font-size:.65rem;background:rgba(46,196,182,.1);color:var(--accent);padding:2px 7px;border-radius:100px;flex-shrink:0;">Grupo</span>
+      </div>`, `_closeSearchDrop();gp('grupos');`);
 
-    // Trofeos
-    if(results.trofeos.length){
-      html += `<div style="padding:4px 14px 2px;font-size:.7rem;color:var(--accent);font-weight:800;text-transform:uppercase;letter-spacing:.6px;margin-top:4px;">🥇 Trofeos</div>`;
-      results.trofeos.forEach(t=>{
-        html += `<div onclick="gp('trofeos-feed');_closeSearchDrop();" style="padding:7px 16px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
-          <div style="font-size:.83rem;font-weight:700;">🐟 ${esc(t.fish||'')} ${t.weight?'· '+t.weight+'kg':''}</div>
-          <div style="font-size:.72rem;color:var(--muted);">${esc(t.nick||'')}${t.map?' · '+esc(t.map):''}</div>
-        </div>`;
-      });
-    }
+    // ── TORNEOS ──
+    html += _searchSection('🏆','Torneos', R.torneos, t=>`
+      <div onclick="_closeSearchDrop();gp('torneos');"
+        style="display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:10px;cursor:pointer;transition:background .13s;"
+        onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+        <div style="width:48px;height:48px;border-radius:8px;overflow:hidden;flex-shrink:0;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.5rem;">
+          ${t.images&&t.images[0]?`<img src="${t.images[0]}" style="width:100%;height:100%;object-fit:cover;">`:`🏆`}
+        </div>
+        <div style="min-width:0;flex:1;">
+          <div style="font-size:.88rem;font-weight:800;color:var(--text);">${esc(t.name||'')}</div>
+          <div style="font-size:.72rem;color:var(--muted);">${esc((t.desc||'').slice(0,55))}</div>
+        </div>
+        <span style="font-size:.65rem;background:rgba(255,215,0,.1);color:var(--gold);padding:2px 7px;border-radius:100px;flex-shrink:0;">Torneo</span>
+      </div>`, `_closeSearchDrop();gp('torneos');`);
 
     drop.innerHTML = html;
   } catch(e){
-    drop.innerHTML = `<div style="padding:14px 16px;color:var(--red);font-size:.8rem;">⚠️ Error al buscar</div>`;
+    drop.innerHTML = `<div style="padding:20px;color:var(--red);font-size:.82rem;text-align:center;">⚠️ Error al buscar: ${e.message}</div>`;
   }
 }
 window._closeSearchDrop = _closeSearchDrop;
