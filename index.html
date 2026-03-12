@@ -17219,7 +17219,7 @@ function _reelCard(p){
   const isCloudVideo = !ytId && !ttId && p.video;
   const nick = p.userNick || 'Usuario';
   const av   = p.userAv || getDefaultAv(p.userGender||'');
-  const text = (p.text||'').slice(0,160);
+  const text = (p.text||'').slice(0,140);
   const likes    = p.likes || 0;
   const cmtCount = p.commentCount || 0;
   const fmtN = n => n>999?(n/1000).toFixed(1)+'K':(n||'0');
@@ -17237,42 +17237,62 @@ function _reelCard(p){
   }
 
   const badge = ytId
-    ? `<span style="background:#FF0000;color:#fff;font-size:.63rem;font-weight:800;padding:2px 8px;border-radius:100px;">▶ YouTube</span>`
-    : `<span style="background:#010101;color:#fff;font-size:.63rem;font-weight:800;padding:2px 8px;border-radius:100px;border:1px solid #444;"><span style="color:#69C9D0;">♪</span> TikTok</span>`;
+    ? `<span style="background:#FF0000;color:#fff;font-size:.63rem;font-weight:800;padding:2px 9px;border-radius:100px;">▶ YouTube</span>`
+    : `<span style="background:#010101;color:#fff;font-size:.63rem;font-weight:800;padding:2px 9px;border-radius:100px;border:1px solid #444;"><span style="color:#69C9D0;">♪</span> TikTok</span>`;
 
-  return `
-  <div data-reel-pid="${p.id}" style="width:100%;height:100vh;scroll-snap-align:start;scroll-snap-stop:always;display:flex;flex-direction:row;align-items:center;justify-content:center;background:#0d1117;overflow:hidden;gap:0;">
-
-    <!-- VIDEO con tamaño fijo según plataforma -->
-    <div style="${ytId ? 'width:min(75vh*16/9,70vw);' : 'width:min(56.25vh,360px);'}height:${ytId ? 'min(70vh, 45vw*9/16)' : '100vh'};flex-shrink:0;background:#000;overflow:hidden;">
+  // Each reel = exactly 100vh, scroll-snap per item
+  return `<div data-reel-pid="${p.id}" style="
+      height:100vh;
+      width:100%;
+      scroll-snap-align:start;
+      scroll-snap-stop:always;
+      display:flex;
+      flex-direction:row;
+      background:#0d1117;
+      overflow:hidden;
+    ">
+    <!-- VIDEO -->
+    <div style="flex:1;height:100%;overflow:hidden;background:#000;">
       ${videoInner}
     </div>
 
-    <!-- PANEL pegado al video -->
-    <div style="width:190px;flex-shrink:0;height:100vh;background:#161b22;border-left:1px solid #30363d;display:flex;flex-direction:column;padding:14px 12px;gap:10px;overflow-y:auto;align-self:stretch;">
-
+    <!-- PANEL DERECHO -->
+    <div style="
+      width:200px;
+      min-width:200px;
+      max-width:200px;
+      height:100%;
+      background:#161b22;
+      border-left:1px solid #30363d;
+      overflow-y:auto;
+      display:flex;
+      flex-direction:column;
+      padding:16px 12px;
+      gap:12px;
+      box-sizing:border-box;
+    ">
       ${badge}
 
-      <!-- Usuario -->
-      <div style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 0;" onclick="openUserProfile('${p.userId||''}','${safeNick}')">
-        <img src="${av}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid #30363d;flex-shrink:0;">
+      <div style="display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="openUserProfile('${p.userId||''}','${safeNick}')">
+        <img src="${av}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #30363d;flex-shrink:0;">
         <div style="min-width:0;">
-          <div style="font-size:.8rem;font-weight:800;color:#e6edf3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(nick)}${p.userVerified?' ✅':''}</div>
-          <div style="font-size:.67rem;color:#58a6ff;margin-top:1px;">Ver perfil →</div>
+          <div style="font-size:.8rem;font-weight:800;color:#e6edf3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(nick)}${p.userVerified?' ✅':''}</div>
+          <div style="font-size:.67rem;color:#58a6ff;margin-top:2px;">Ver perfil →</div>
         </div>
       </div>
 
       <div style="height:1px;background:#30363d;"></div>
 
-      ${text ? `<div style="font-size:.76rem;color:#c9d1d9;line-height:1.45;flex:1;">${esc(text)}${(p.text||'').length>160?'<span style="color:#8b949e"> …</span>':''}</div>` : '<div style="flex:1;"></div>'}
+      ${text ? `<div style="font-size:.76rem;color:#c9d1d9;line-height:1.5;">${esc(text)}${(p.text||'').length>140?'…':''}</div>` : ''}
       ${p.fish ? `<div style="font-size:.74rem;color:#ffd700;font-weight:700;">🐟 ${esc(p.fish)}${p.map?' · 📍'+esc(p.map):''}</div>` : ''}
 
+      <div style="flex:1;"></div>
       <div style="height:1px;background:#30363d;"></div>
 
-      <!-- ❤️ Me gusta -->
-      <div class="rxn-wrap" onmouseenter="showRxnPop('${p.id}')" onmouseleave="schedHideRxnPop('${p.id}')" style="position:relative;">
+      <!-- ❤️ -->
+      <div class="rxn-wrap" style="position:relative;" onmouseenter="showRxnPop('${p.id}')" onmouseleave="schedHideRxnPop('${p.id}')">
         <button id="rxnt_${p.id}" onclick="quickReact('${p.id}')"
-          style="width:100%;background:#21262d;border:1px solid #30363d;color:#e6edf3;padding:8px 10px;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;"
+          style="width:100%;background:#21262d;border:1px solid #30363d;color:#e6edf3;padding:9px 10px;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;box-sizing:border-box;"
           onmouseover="this.style.background='#30363d'" onmouseout="this.style.background='#21262d'">
           ❤️ Me gusta <span style="margin-left:auto;color:#8b949e;font-size:.7rem;">${fmtN(likes)}</span>
         </button>
@@ -17281,20 +17301,19 @@ function _reelCard(p){
         </div>
       </div>
 
-      <!-- 💬 Comentar -->
+      <!-- 💬 -->
       <button onclick="toggleComments('${p.id}')"
-        style="width:100%;background:#21262d;border:1px solid #30363d;color:#e6edf3;padding:8px 10px;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;"
+        style="width:100%;background:#21262d;border:1px solid #30363d;color:#e6edf3;padding:9px 10px;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;box-sizing:border-box;"
         onmouseover="this.style.background='#30363d'" onmouseout="this.style.background='#21262d'">
         💬 Comentar <span style="margin-left:auto;color:#8b949e;font-size:.7rem;">${fmtN(cmtCount)}</span>
       </button>
 
-      <!-- ↗️ Compartir -->
+      <!-- ↗️ -->
       <button onclick="sharePost('${p.id}')"
-        style="width:100%;background:#21262d;border:1px solid #30363d;color:#e6edf3;padding:8px 10px;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;"
+        style="width:100%;background:#21262d;border:1px solid #30363d;color:#e6edf3;padding:9px 10px;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;box-sizing:border-box;"
         onmouseover="this.style.background='#30363d'" onmouseout="this.style.background='#21262d'">
         ↗️ Compartir
       </button>
-
     </div>
   </div>`;
 }
@@ -20890,7 +20909,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   <!-- Botón cerrar fijo -->
   <button onclick="closeReelsOverlay()" style="position:absolute;top:12px;right:12px;z-index:30;background:rgba(0,0,0,.6);border:1.5px solid rgba(255,255,255,.2);color:#fff;width:36px;height:36px;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
   <!-- Feed scroll centrado -->
-  <div id="reelsFeed" style="width:100%;height:100%;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;align-items:center;">
+  <div id="reelsFeed" style="width:100%;height:100%;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;">
     <div style="height:100vh;width:100%;display:flex;align-items:center;justify-content:center;color:#fff;">
       <div style="text-align:center;"><div style="font-size:2.5rem;margin-bottom:12px;">🎬</div><div style="font-size:.9rem;opacity:.7;">Cargando reels...</div></div>
     </div>
