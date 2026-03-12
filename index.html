@@ -8211,7 +8211,7 @@ async function doReact(pid, emoji){
 function quickReact(pid){ if(!window.CU){toast('Inicia sesión','err');return;} doReact(pid,'👍'); }
 
 // ===== COMMENTS =====
-function toggleComments(pid){
+async function toggleComments(pid){
   const el = document.getElementById('cmts_'+pid);
   if(el){
     const wasOpen = el.classList.contains('open');
@@ -8226,8 +8226,16 @@ function toggleComments(pid){
   }
 
   // Fallback: modal (solo si no hay sección inline en el DOM)
-  const post = (_posts||[]).find(p=>p.id===pid);
-  if(!post){ return; }
+  let post = (_posts||[]).find(p=>p.id===pid);
+  if(!post){
+    // Post no está en memoria (ej: viene de Reels) — cargar de Firestore
+    try {
+      const snap = await getDoc(doc(db,'posts',pid));
+      if(!snap.exists()){ toast('Publicación no encontrada','err'); return; }
+      post = {id:pid,...snap.data()};
+      if(window._posts) _posts.push(post);
+    } catch(e){ toast('Error al cargar comentarios','err'); return; }
+  }
 
   const existing = document.getElementById('_cmtModal_'+pid);
   if(existing){ existing.remove(); return; }
