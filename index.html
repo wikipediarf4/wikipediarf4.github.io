@@ -9062,7 +9062,7 @@ function renderProfile(){
   setInfoField('profFavMapRow','profFavMap', window.CU.favMap);
   setInfoField('profTechRow','profTech', window.CU.favTech);
   setInfoField('profExpRow','profExp', window.CU.experience);
-  document.getElementById('profCountry').textContent = window.CU.country||'No especificado';
+  document.getElementById('profCountry').textContent = window.CU.country ? (getCountryFlag(window.CU.country) + ' ' + window.CU.country).trim() : 'No especificado';
   // Email propio: siempre visible (es el dueño), mostrar enmascarado con etiqueta de privacidad
   const _myEmail = (auth.currentUser && auth.currentUser.email) || window.CU.email || '';
   const _emailPriv = window.CU.emailPrivacy || 'only';
@@ -14714,7 +14714,7 @@ function renderSidebarOnline(online, offline){
         <div style="flex:1;min-width:0;z-index:2;overflow:hidden;">
           <div style="display:flex;align-items:center;gap:4px;flex-wrap:nowrap;overflow:hidden;">
             ${nickHtml}
-            ${getCountryFlag(u.country)?`<span title="${esc(u.country||'')}" style="font-size:.85rem;flex-shrink:0;line-height:1;">${getCountryFlag(u.country)}</span>`:''}
+            ${getCountryFlag(u.country)?`<span style="font-size:.85rem;flex-shrink:0;line-height:1;">${getCountryFlag(u.country)}</span>`:''}
             ${!isAdmin&&!isVerified&&!isLegend&&!isHighLvl?devLabel(dev,isOnline):''}
           </div>
           ${isOnline && u.activity
@@ -14802,7 +14802,7 @@ function renderContacts(onlineUsers){
         <div class="online-dot"></div>
       </div>
       <div style="flex:1;min-width:0;">
-        <div class="contact-name">${esc(u.nick)}${getCountryFlag(u.country)?` <span title="${esc(u.country||'')}" style="font-size:.9rem;">${getCountryFlag(u.country)}</span>`:''}</div>
+        <div class="contact-name">${esc(u.nick)} ${getCountryFlag(u.country)||''}</div>
         <div class="contact-status">● En línea</div>
       </div>
       <button onclick="event.stopPropagation();openChatWith('${u.id}','${esc(u.nick)}')" title="Enviar mensaje" style="background:rgba(24,119,242,.1);border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.85rem;transition:background .15s;" onmouseover="this.style.background='rgba(24,119,242,.22)'" onmouseout="this.style.background='rgba(24,119,242,.1)'">💬</button>
