@@ -1474,6 +1474,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
       <div class="sl-item"><span class="sl-item-icon">🔖</span> Guardados</div>
       <div class="sl-item" onclick="gp('parches')"><span class="sl-item-icon">🔧</span> Parches y Actualizaciones</div>
       <div class="sl-item" onclick="gp('soporte')"><span class="sl-item-icon">🆘</span> Soporte Técnico</div>
+      <div class="sl-item" id="slPuntosPescaBtn" style="display:none;background:linear-gradient(90deg,rgba(46,196,182,.08),transparent);border-left:3px solid var(--accent);" onclick="gp('puntos-pesca')"><span class="sl-item-icon">🗺️</span> Puntos de Pesca</div>
       <div class="divider"></div>
       <!-- Nuevos Pescadores -->
       <div style="padding:0 6px 8px;">
@@ -3946,6 +3947,215 @@ select.fi option{background:var(--bg3);color:var(--text);}
 </div>
 <!-- ===== FIN SOPORTE ===== -->
 
+<!-- ===== PUNTOS DE PESCA (solo admin) ===== -->
+<div class="page" id="page-puntos-pesca" style="padding:0;max-width:100%;height:calc(100vh - 56px);">
+
+  <!-- Header -->
+  <div style="background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+    <span style="font-size:1.1rem;">🗺️</span>
+    <span style="font-family:'Orbitron',monospace;font-weight:900;font-size:.9rem;">Puntos de Pesca</span>
+    <span style="color:var(--border);">›</span>
+    <!-- Selector de mapa -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;" id="mapSelectorBtns">
+      <button onclick="selectMap('mosquito')" class="map-sel-btn active" style="background:rgba(46,196,182,.15);border:1px solid var(--accent);color:var(--accent);padding:5px 14px;border-radius:20px;font-size:.72rem;font-weight:700;cursor:pointer;font-family:'Orbitron',monospace;transition:all .15s;">🦟 Mosquito Lake</button>
+      <button onclick="selectMap('coming')" class="map-sel-btn" style="background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:5px 14px;border-radius:20px;font-size:.72rem;font-weight:700;cursor:pointer;font-family:'Orbitron',monospace;transition:all .15s;">+ Próximamente</button>
+    </div>
+    <span style="margin-left:auto;background:rgba(46,196,182,.1);border:1px solid rgba(46,196,182,.25);color:var(--accent);font-size:.65rem;font-weight:700;padding:3px 10px;border-radius:12px;font-family:'Orbitron',monospace;">🔒 SOLO ADMIN</span>
+  </div>
+
+  <!-- MAP CONTENT -->
+  <div id="mapContent" style="height:calc(100% - 52px);position:relative;">
+
+    <!-- MOSQUITO LAKE -->
+    <div id="mapMosquito" style="display:flex;height:100%;">
+
+      <!-- MAP AREA -->
+      <div style="flex:1;position:relative;overflow:hidden;background:#0a1520;cursor:crosshair;">
+        <img style="width:100%;height:100%;object-fit:cover;opacity:.85;display:block;user-select:none;pointer-events:none;"
+             src="https://en.rf4h.ru/templates/rf4m/maps/img/mosquito_lake.webp"
+             onerror="this.style.background='#0a1520'" alt="Mosquito Lake">
+        <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(13,17,23,.3) 0%,transparent 50%,rgba(13,17,23,.2) 100%);pointer-events:none;"></div>
+
+        <!-- SPOTS -->
+        <div class="mspot" style="left:52%;top:38%;" data-id="1" onclick="mSelectSpot(1)"><div class="msdot green"><div class="mspulse"></div>1</div><div class="mslabel">46:78</div></div>
+        <div class="mspot" style="left:58%;top:44%;" data-id="2" onclick="mSelectSpot(2)"><div class="msdot teal"><div class="mspulse"></div>2</div><div class="mslabel">52:91</div></div>
+        <div class="mspot" style="left:63%;top:50%;" data-id="3" onclick="mSelectSpot(3)"><div class="msdot yellow"><div class="mspulse"></div>3</div><div class="mslabel">56:48</div></div>
+        <div class="mspot" style="left:68%;top:42%;" data-id="4" onclick="mSelectSpot(4)"><div class="msdot blue"><div class="mspulse"></div>4</div><div class="mslabel">61:53</div></div>
+        <div class="mspot" style="left:74%;top:36%;" data-id="5" onclick="mSelectSpot(5)"><div class="msdot purple"><div class="mspulse"></div>5</div><div class="mslabel">73:77</div></div>
+        <div class="mspot" style="left:80%;top:30%;" data-id="6" onclick="mSelectSpot(6)"><div class="msdot orange"><div class="mspulse"></div>6</div><div class="mslabel">83:68</div></div>
+        <div class="mspot" style="left:76%;top:55%;" data-id="7" onclick="mSelectSpot(7)"><div class="msdot teal"><div class="mspulse"></div>7</div><div class="mslabel">85:45</div></div>
+        <div class="mspot" style="left:82%;top:48%;" data-id="8" onclick="mSelectSpot(8)"><div class="msdot red"><div class="mspulse"></div>8</div><div class="mslabel">86:46</div></div>
+        <div class="mspot" style="left:86%;top:38%;" data-id="9" onclick="mSelectSpot(9)"><div class="msdot pink"><div class="mspulse"></div>9</div><div class="mslabel">88:79</div></div>
+        <div class="mspot" style="left:88%;top:55%;" data-id="10" onclick="mSelectSpot(10)"><div class="msdot green"><div class="mspulse"></div>10</div><div class="mslabel">89:88</div></div>
+        <div class="mspot" style="left:91%;top:45%;" data-id="11" onclick="mSelectSpot(11)"><div class="msdot yellow"><div class="mspulse"></div>11</div><div class="mslabel">92:55</div></div>
+
+        <!-- LEYENDA -->
+        <div style="position:absolute;top:12px;right:12px;background:rgba(13,17,23,.9);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:.65rem;z-index:5;">
+          <div style="font-family:'Orbitron',monospace;font-size:.58rem;color:var(--muted);margin-bottom:7px;font-weight:700;">CALIDAD</div>
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;color:var(--muted);"><div style="width:10px;height:10px;border-radius:50%;background:#22c55e;flex-shrink:0;"></div>Excelente</div>
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;color:var(--muted);"><div style="width:10px;height:10px;border-radius:50%;background:#2ec4b6;flex-shrink:0;"></div>Muy bueno</div>
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;color:var(--muted);"><div style="width:10px;height:10px;border-radius:50%;background:#d4a017;flex-shrink:0;"></div>Bueno</div>
+          <div style="display:flex;align-items:center;gap:7px;color:var(--muted);"><div style="width:10px;height:10px;border-radius:50%;background:#f85149;flex-shrink:0;"></div>Trophy zone</div>
+        </div>
+
+        <!-- HUD -->
+        <div style="position:absolute;bottom:12px;left:12px;background:rgba(13,17,23,.85);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-family:'Orbitron',monospace;font-size:.68rem;color:var(--muted);pointer-events:none;">
+          Mosquito Lake · <span style="color:var(--accent);">11 spots · 18 especies</span>
+        </div>
+      </div>
+
+      <!-- SIDEBAR -->
+      <div style="width:320px;background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;">
+
+        <!-- Filtros -->
+        <div style="padding:14px 16px 10px;border-bottom:1px solid var(--border);background:var(--bg2);">
+          <div style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:900;margin-bottom:10px;">🎣 Spots</div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;" id="mFilterBtns">
+            <button onclick="mFilter('all',this)" class="mfbtn active">Todos</button>
+            <button onclick="mFilter('trophy',this)" class="mfbtn">🏆 Trofeos</button>
+            <button onclick="mFilter('spin',this)" class="mfbtn">Spinning</button>
+            <button onclick="mFilter('bottom',this)" class="mfbtn">Fondo</button>
+            <button onclick="mFilter('float',this)" class="mfbtn">Flotador</button>
+          </div>
+        </div>
+
+        <!-- Lista spots -->
+        <div id="mSpotList" style="overflow-y:auto;flex:1;"></div>
+
+        <!-- Detalle -->
+        <div id="mDetailPanel" style="background:var(--bg3);border-top:1px solid var(--border);padding:14px 16px;min-height:120px;">
+          <div style="text-align:center;color:var(--muted);font-size:.75rem;padding:16px 0;">📍 Seleccioná un spot para ver detalles</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- COMING SOON -->
+    <div id="mapComing" style="display:none;height:100%;align-items:center;justify-content:center;flex-direction:column;gap:16px;">
+      <div style="font-size:3rem;">🗺️</div>
+      <div style="font-family:'Orbitron',monospace;font-size:1rem;color:var(--accent);font-weight:700;">Próximos mapas</div>
+      <div style="color:var(--muted);font-size:.82rem;text-align:center;max-width:300px;">Belaya River, Bear Lake, Old Burg Lake y más están en camino.</div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+.mspot{position:absolute;transform:translate(-50%,-50%);cursor:pointer;z-index:10;transition:transform .2s;}
+.mspot:hover{transform:translate(-50%,-50%) scale(1.3);z-index:20;}
+.msdot{width:18px;height:18px;border-radius:50%;border:2.5px solid rgba(255,255,255,.8);position:relative;display:flex;align-items:center;justify-content:center;font-size:.58rem;font-weight:900;color:#fff;font-family:'Orbitron',monospace;box-shadow:0 0 12px currentColor,0 2px 8px rgba(0,0,0,.6);transition:box-shadow .2s;}
+.mspot:hover .msdot{box-shadow:0 0 22px currentColor,0 0 40px currentColor,0 2px 8px rgba(0,0,0,.6);}
+.msdot.green{background:#22c55e;color:#0a2010;border-color:#86efac;}
+.msdot.teal{background:#2ec4b6;color:#042220;border-color:#99f6f0;}
+.msdot.yellow{background:#d4a017;color:#1a0e00;border-color:#fde68a;}
+.msdot.blue{background:#3b82f6;color:#000820;border-color:#93c5fd;}
+.msdot.purple{background:#a855f7;color:#1a0030;border-color:#d8b4fe;}
+.msdot.orange{background:#f97316;color:#1a0800;border-color:#fdba74;}
+.msdot.red{background:#f85149;color:#1a0000;border-color:#fca5a5;}
+.msdot.pink{background:#ec4899;color:#1a0010;border-color:#f9a8d4;}
+.mspulse{position:absolute;inset:-6px;border-radius:50%;border:2px solid currentColor;opacity:0;animation:mpulse 2.5s ease-out infinite;}
+@keyframes mpulse{0%{transform:scale(.8);opacity:.7;}100%{transform:scale(2);opacity:0;}}
+.msdot.green .mspulse{color:#22c55e;}.msdot.teal .mspulse{color:#2ec4b6;}.msdot.yellow .mspulse{color:#d4a017;}
+.msdot.blue .mspulse{color:#3b82f6;}.msdot.purple .mspulse{color:#a855f7;}.msdot.orange .mspulse{color:#f97316;}
+.msdot.red .mspulse{color:#f85149;}.msdot.pink .mspulse{color:#ec4899;}
+.mslabel{position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%);background:rgba(13,17,23,.95);border:1px solid var(--border);color:var(--accent);font-size:.6rem;font-family:'Orbitron',monospace;font-weight:700;padding:2px 6px;border-radius:4px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;}
+.mspot:hover .mslabel{opacity:1;}
+.mfbtn{background:var(--bg3);border:1px solid var(--border);color:var(--muted);font-size:.63rem;font-weight:700;padding:4px 9px;border-radius:20px;cursor:pointer;transition:all .15s;font-family:'Exo 2',sans-serif;}
+.mfbtn:hover,.mfbtn.active{background:rgba(46,196,182,.15);border-color:var(--accent);color:var(--accent);}
+.mscard{padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;}
+.mscard:hover{background:var(--bg3);}
+.mscard.sel{background:rgba(46,196,182,.08);border-left:3px solid var(--accent);}
+#mSpotList::-webkit-scrollbar{width:3px;}
+#mSpotList::-webkit-scrollbar-track{background:var(--bg2);}
+#mSpotList::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+</style>
+
+<script>
+const MS_SPOTS = [
+  {id:1,coord:'46:78',color:'green',rating:'excellent',rl:'Excelente',fish:['Gibel Carp','Crucian Carp','Perch','Tench'],trophy:['Crucian Carp','Tench'],methods:['bottom','float','spin'],tip:'Gran zona para principiantes. Ideal para subir nivel rápido.',depth:'1–3m',cast:'15–30m'},
+  {id:2,coord:'52:91',color:'teal',rating:'good',rl:'Muy bueno',fish:['Bream','White Bream','Ide','Common Roach','Perch'],trophy:[],methods:['bottom','float'],tip:'Buen spot para Bream y White Bream. Activo con ground bait.',depth:'2–4m',cast:'20–35m'},
+  {id:3,coord:'56:48',color:'yellow',rating:'ok',rl:'Bueno',fish:['Bream','White Bream','Ide','Perch','Common Roach','Common Carp'],trophy:[],methods:['bottom','float','spin'],tip:'~75–95% de fuerza de lanzamiento.',depth:'2–5m',cast:'25–40m'},
+  {id:4,coord:'61:53',color:'blue',rating:'excellent',rl:'Excelente',fish:['Bream','White Bream','Ide','Perch','Pike','Common Roach','Common Carp'],trophy:['Bream'],methods:['bottom','float','spin'],tip:'¡El mejor spot de Bream! Hasta 94 capturas/hora registradas.',depth:'3–5m',cast:'15–25m'},
+  {id:5,coord:'73:77',color:'purple',rating:'good',rl:'Muy bueno',fish:['Crucian Carp','Gibel Carp','Tench','Ide','Perch','Pike'],trophy:['Pike','Tench'],methods:['bottom','float','spin'],tip:'Zona de spinning muy activa. Bueno para Tench trofeo.',depth:'2–4m',cast:'20–35m'},
+  {id:6,coord:'83:68',color:'orange',rating:'good',rl:'Muy bueno',fish:['Common Carp','Chinese Sleeper','Crucian Carp','Gibel Carp','Perch','Pike'],trophy:['Common Carp','Chinese Sleeper'],methods:['bottom','float'],tip:'Excelente para Carp. Chinese Sleeper trofeo con cebo apropiado.',depth:'3–6m',cast:'7–12m clip'},
+  {id:7,coord:'85:45',color:'teal',rating:'good',rl:'Muy bueno',fish:['Gibel Carp','Crucian Carp','Frog','Bleak','Bream','White Bream','Ide'],trophy:['Gibel Carp'],methods:['bottom','float'],tip:'Frog aparece en verano. Se puede pescar en casi cualquier punto.',depth:'1–3m',cast:'10–20m'},
+  {id:8,coord:'86:46',color:'red',rating:'excellent',rl:'Excelente',fish:['Chinese Sleeper','Gibel Carp','Crucian Carp','Common Carp','Perch','Pike'],trophy:['Chinese Sleeper','Crucian Carp','Gibel Carp'],methods:['bottom','float','spin'],tip:'🏆 Zona de trofeos! NE 7–10m clip. Mejor spot para Chinese Sleeper trofeo.',depth:'2–5m',cast:'7–10m clip NE'},
+  {id:9,coord:'88:79',color:'pink',rating:'good',rl:'Muy bueno',fish:['White Bream','Bream','Perch','Ide','Chinese Sleeper','Common Roach'],trophy:['Ide'],methods:['bottom','float','spin'],tip:'Ide trofeo se registra con frecuencia en este spot.',depth:'2–4m',cast:'20–30m'},
+  {id:10,coord:'89:88',color:'green',rating:'excellent',rl:'Excelente',fish:['White Bream','Bream','Ide','Perch','Pike'],trophy:['Bream','Pike'],methods:['bottom','float','spin'],tip:'Aim 20m Sur. Pike trofeo con spinning.',depth:'3–6m',cast:'20m Sur'},
+  {id:11,coord:'92:55',color:'yellow',rating:'ok',rl:'Bueno',fish:['Bream','White Bream','Common Carp','Ruffe','Common Roach','Perch'],trophy:['Common Carp'],methods:['bottom','float'],tip:'Esquina del lago. Buen spot para nivel temprano.',depth:'2–4m',cast:'15–25m'}
+];
+const MS_COLORS = {green:'#22c55e',teal:'#2ec4b6',yellow:'#d4a017',blue:'#3b82f6',purple:'#a855f7',orange:'#f97316',red:'#f85149',pink:'#ec4899'};
+let mSelId = null, mCurFilter = 'all';
+
+function mRenderList(f){
+  let spots = MS_SPOTS;
+  if(f==='trophy') spots=spots.filter(s=>s.trophy.length>0);
+  if(f==='spin')   spots=spots.filter(s=>s.methods.includes('spin'));
+  if(f==='bottom') spots=spots.filter(s=>s.methods.includes('bottom'));
+  if(f==='float')  spots=spots.filter(s=>s.methods.includes('float'));
+  document.getElementById('mSpotList').innerHTML = spots.map(s=>`
+    <div class="mscard ${mSelId===s.id?'sel':''}" id="mcard-${s.id}" onclick="mSelectSpot(${s.id})">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:7px;">
+        <div style="width:24px;height:24px;border-radius:50%;background:${MS_COLORS[s.color]};display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:900;font-family:'Orbitron',monospace;color:#fff;flex-shrink:0;">${s.id}</div>
+        <span style="font-family:'Orbitron',monospace;font-size:.8rem;font-weight:700;">${s.coord}</span>
+        <span style="margin-left:auto;font-size:.62rem;padding:2px 7px;border-radius:10px;font-weight:700;${s.rating==='excellent'?'background:rgba(34,197,94,.15);color:#22c55e;border:1px solid rgba(34,197,94,.3);':s.rating==='good'?'background:rgba(46,196,182,.15);color:#2ec4b6;border:1px solid rgba(46,196,182,.3);':'background:rgba(212,160,23,.15);color:#d4a017;border:1px solid rgba(212,160,23,.3);'}">${s.rl}</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:3px;">
+        ${s.fish.slice(0,4).map(f=>`<span style="background:var(--bg);border:1px solid ${s.trophy.includes(f)?'rgba(212,160,23,.4)':'var(--border)'};color:${s.trophy.includes(f)?'#d4a017':'var(--muted)'};font-size:.6rem;padding:1px 6px;border-radius:8px;">${s.trophy.includes(f)?'🏆 ':''}${f}</span>`).join('')}
+        ${s.fish.length>4?`<span style="background:var(--bg);border:1px solid var(--border);color:var(--muted);font-size:.6rem;padding:1px 6px;border-radius:8px;">+${s.fish.length-4}</span>`:''}
+      </div>
+      <div style="display:flex;gap:4px;margin-top:6px;">
+        ${s.methods.includes('bottom')?'<span style="font-size:.57rem;padding:1px 5px;border-radius:3px;font-weight:700;background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.25);">⚓ Fondo</span>':''}
+        ${s.methods.includes('float')?'<span style="font-size:.57rem;padding:1px 5px;border-radius:3px;font-weight:700;background:rgba(168,85,247,.15);color:#c084fc;border:1px solid rgba(168,85,247,.25);">🪝 Flotador</span>':''}
+        ${s.methods.includes('spin')?'<span style="font-size:.57rem;padding:1px 5px;border-radius:3px;font-weight:700;background:rgba(249,115,22,.15);color:#fb923c;border:1px solid rgba(249,115,22,.25);">🎣 Spinning</span>':''}
+      </div>
+    </div>`).join('');
+}
+
+function mSelectSpot(id){
+  mSelId = id;
+  const s = MS_SPOTS.find(x=>x.id===id);
+  if(!s) return;
+  document.querySelectorAll('.mspot').forEach(el=>{
+    const isMe = parseInt(el.dataset.id)===id;
+    el.style.transform = isMe ? 'translate(-50%,-50%) scale(1.4)' : 'translate(-50%,-50%)';
+    el.style.zIndex = isMe ? '20' : '10';
+  });
+  mRenderList(mCurFilter);
+  setTimeout(()=>{ const c=document.getElementById(`mcard-${id}`); if(c) c.scrollIntoView({behavior:'smooth',block:'nearest'}); },50);
+  document.getElementById('mDetailPanel').innerHTML = `
+    <div style="font-family:'Orbitron',monospace;font-size:.78rem;color:var(--accent);margin-bottom:10px;font-weight:700;">📍 Spot ${s.id} — ${s.coord}</div>
+    <div style="display:flex;flex-direction:column;gap:4px;font-size:.73rem;">
+      <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(48,54,61,.5);"><span style="color:var(--muted);">Profundidad</span><span style="font-weight:600;">${s.depth}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(48,54,61,.5);"><span style="color:var(--muted);">Distancia</span><span style="font-weight:600;">${s.cast}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(48,54,61,.5);"><span style="color:var(--muted);">Trofeos</span><span style="color:#d4a017;font-weight:600;">${s.trophy.length?s.trophy.join(', '):'—'}</span></div>
+    </div>
+    <div style="margin-top:8px;padding:8px 10px;background:rgba(46,196,182,.07);border-radius:7px;border:1px solid rgba(46,196,182,.15);font-size:.72rem;color:#c9d1d9;line-height:1.5;">💡 ${s.tip}</div>`;
+}
+
+function mFilter(f, btn){
+  mCurFilter = f;
+  document.querySelectorAll('.mfbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  mRenderList(f);
+}
+
+function selectMap(id){
+  document.getElementById('mapMosquito').style.display = id==='mosquito' ? 'flex' : 'none';
+  document.getElementById('mapComing').style.display   = id==='coming'   ? 'flex' : 'none';
+  document.querySelectorAll('.map-sel-btn').forEach(b=>{
+    const isActive = b.getAttribute('onclick').includes(id);
+    b.style.background = isActive ? 'rgba(46,196,182,.15)' : 'var(--bg3)';
+    b.style.borderColor = isActive ? 'var(--accent)' : 'var(--border)';
+    b.style.color = isActive ? 'var(--accent)' : 'var(--muted)';
+  });
+}
+
+// Init cuando se abre la página
+document.addEventListener('DOMContentLoaded', ()=>{ mRenderList('all'); });
+window.addEventListener('rf4PageChange', (e)=>{ if(e.detail==='puntos-pesca') mRenderList('all'); });
+</script>
+
 <!-- ======================================================
      WIKI TROFEOS — Integración completa rf4wikipedia
      Firebase: charlasrf4 · Colección: trofeos
@@ -4996,6 +5206,8 @@ function updateNavUI(){
   if(adminNavBtn) adminNavBtn.style.display = isAdmin ? 'inline-flex' : 'none';
   if(userMenuAdmin) userMenuAdmin.style.display = isAdmin ? 'flex' : 'none';
   if(shopNavBtn) shopNavBtn.style.display = 'inline-flex'; // visible para todos
+  const slPuntosPescaBtn = document.getElementById('slPuntosPescaBtn');
+  if(slPuntosPescaBtn) slPuntosPescaBtn.style.display = isAdmin ? 'flex' : 'none';
 }
 
 function renderShopPage(){
@@ -5181,6 +5393,7 @@ window.gp = (id, pushState = true) => {
   navigateTo(id, pushState);
   if(id==='profile') renderProfile();
   if(id==='admin') { loadAdminData(); loadPezSemana(); loadSoporteBadge(); }
+  if(id==='puntos-pesca') { setTimeout(()=>{ if(typeof mRenderList==='function') mRenderList('all'); }, 50); }
   // Show video button in posts only for verified users
   const pvBtn = document.getElementById('postVideoBtn');
   if(pvBtn) pvBtn.style.display = window.CU?.verified ? 'flex' : 'none';
