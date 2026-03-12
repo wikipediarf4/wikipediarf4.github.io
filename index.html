@@ -2234,6 +2234,59 @@ select.fi option{background:var(--bg3);color:var(--text);}
   </div>
 </div>
 
+<!-- Modal Selección de País Obligatorio (Google Login) -->
+<div id="mCountryPick" style="display:none;position:fixed;inset:0;z-index:10002;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:16px;">
+  <div style="background:#161b22;border:1px solid #30363d;border-radius:16px;max-width:440px;width:100%;padding:32px 28px;box-shadow:0 8px 40px rgba(0,0,0,.4);animation:mIn .25s ease;">
+    <div style="text-align:center;margin-bottom:22px;">
+      <div style="font-size:2.5rem;margin-bottom:8px;">🌎</div>
+      <div style="font-family:'Orbitron',monospace;font-size:1.05rem;font-weight:900;color:var(--accent);">¿De dónde sos?</div>
+      <div style="font-size:.82rem;color:var(--muted);margin-top:6px;">Para completar tu cuenta, seleccioná tu país.<br>Este dato aparecerá en tu perfil.</div>
+    </div>
+    <div class="fg">
+      <label class="fl">País <span style="color:var(--red);">*</span></label>
+      <select class="fi" id="cpCountrySelect" style="font-size:.95rem;padding:11px 14px;">
+        <option value="">— Seleccioná tu país —</option>
+        <option value="🇦🇷 Argentina">🇦🇷 Argentina</option>
+        <option value="🇲🇽 México">🇲🇽 México</option>
+        <option value="🇪🇸 España">🇪🇸 España</option>
+        <option value="🇨🇴 Colombia">🇨🇴 Colombia</option>
+        <option value="🇨🇱 Chile">🇨🇱 Chile</option>
+        <option value="🇵🇪 Perú">🇵🇪 Perú</option>
+        <option value="🇻🇪 Venezuela">🇻🇪 Venezuela</option>
+        <option value="🇺🇾 Uruguay">🇺🇾 Uruguay</option>
+        <option value="🇧🇷 Brasil">🇧🇷 Brasil</option>
+        <option value="🇧🇴 Bolivia">🇧🇴 Bolivia</option>
+        <option value="🇵🇾 Paraguay">🇵🇾 Paraguay</option>
+        <option value="🇪🇨 Ecuador">🇪🇨 Ecuador</option>
+        <option value="🇵🇦 Panamá">🇵🇦 Panamá</option>
+        <option value="🇨🇷 Costa Rica">🇨🇷 Costa Rica</option>
+        <option value="🇬🇹 Guatemala">🇬🇹 Guatemala</option>
+        <option value="🇭🇳 Honduras">🇭🇳 Honduras</option>
+        <option value="🇸🇻 El Salvador">🇸🇻 El Salvador</option>
+        <option value="🇩🇴 Rep. Dominicana">🇩🇴 Rep. Dominicana</option>
+        <option value="🇨🇺 Cuba">🇨🇺 Cuba</option>
+        <option value="🇵🇷 Puerto Rico">🇵🇷 Puerto Rico</option>
+        <option value="🇷🇺 Rusia">🇷🇺 Rusia</option>
+        <option value="🇺🇸 Estados Unidos">🇺🇸 Estados Unidos</option>
+        <option value="🇩🇪 Alemania">🇩🇪 Alemania</option>
+        <option value="🇫🇷 Francia">🇫🇷 Francia</option>
+        <option value="🇮🇹 Italia">🇮🇹 Italia</option>
+        <option value="🇵🇹 Portugal">🇵🇹 Portugal</option>
+        <option value="🇵🇱 Polonia">🇵🇱 Polonia</option>
+        <option value="🇺🇦 Ucrania">🇺🇦 Ucrania</option>
+        <option value="🇬🇧 Reino Unido">🇬🇧 Reino Unido</option>
+        <option value="🇨🇦 Canadá">🇨🇦 Canadá</option>
+        <option value="🇦🇺 Australia">🇦🇺 Australia</option>
+        <option value="🌍 Otro">🌍 Otro</option>
+      </select>
+    </div>
+    <div id="cpErr" style="color:var(--red);font-size:.8rem;margin-bottom:10px;display:none;">⚠️ Debés seleccionar tu país para continuar.</div>
+    <button onclick="confirmCountryPick()" style="width:100%;padding:13px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;border:none;border-radius:8px;font-family:'Exo 2',sans-serif;font-size:1rem;font-weight:800;cursor:pointer;transition:opacity .15s;margin-top:4px;" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
+      ✅ Confirmar y entrar →
+    </button>
+  </div>
+</div>
+
 <!-- Modal Beneficios Verificado -->
 <div id="mVerifBenefits" style="display:none;position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:16px;">
   <div style="background:#161b22;border-radius:12px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.3);position:relative;">
@@ -3946,7 +3999,6 @@ select.fi option{background:var(--bg3);color:var(--text);}
 </div>
 <!-- ===== FIN SOPORTE ===== -->
 
-
 <!-- ======================================================
      WIKI TROFEOS — Integración completa rf4wikipedia
      Firebase: charlasrf4 · Colección: trofeos
@@ -4621,7 +4673,14 @@ function init(){
           if(window._userInfoCache) window._userInfoCache[user.uid] = {nick: window.CU.nick||'', av: window.CU.av||'', gender: window.CU.gender||''};
           document.getElementById('mAuth').style.display = 'none';
           hideSplash();
-          onLogin();
+          // Si no tiene país configurado, pedir país obligatorio
+          if(!window.CU.country){
+            window._pendingGoogleOnboard = false;
+            const cpModal = document.getElementById('mCountryPick');
+            if(cpModal){ cpModal.style.display='flex'; }
+          } else {
+            onLogin();
+          }
         } else {
           hideSplash();
           document.getElementById('mAuth').style.display = 'block';
@@ -4723,7 +4782,7 @@ async function doGoogleLogin(){
     const userRef = doc(db, 'users', user.uid);
     const userSnap = await getDoc(userRef);
     if(!userSnap.exists()){
-      // Usuario nuevo — crear perfil automáticamente
+      // Usuario nuevo — crear perfil base y pedir país obligatorio
       const nick = (user.displayName?.replace(/\s+/g,'') || 'User' + Date.now().toString().slice(-4));
       const newUser = {
         nick, nickLower: nick.toLowerCase(),
@@ -4738,8 +4797,22 @@ async function doGoogleLogin(){
       };
       await setDoc(userRef, newUser);
       window.CU = { id: user.uid, ...newUser };
+      document.getElementById('mAuth').style.display = 'none';
+      // Mostrar modal de país obligatorio
+      window._pendingGoogleOnboard = true;
+      const cpModal = document.getElementById('mCountryPick');
+      if(cpModal){ cpModal.style.display='flex'; }
+      return;
     } else {
       window.CU = { id: user.uid, ...userSnap.data() };
+    }
+    // Si ya existe pero no tiene país, pedir también
+    if(!window.CU.country){
+      document.getElementById('mAuth').style.display = 'none';
+      window._pendingGoogleOnboard = false;
+      const cpModal = document.getElementById('mCountryPick');
+      if(cpModal){ cpModal.style.display='flex'; }
+      return;
     }
     document.getElementById('mAuth').style.display = 'none';
     onLogin();
@@ -4750,6 +4823,34 @@ async function doGoogleLogin(){
     errEl.textContent = e.message;
   }
 }
+
+// ===== CONFIRMAR PAÍS (modal Google onboard) =====
+window.confirmCountryPick = async function(){
+  const sel = document.getElementById('cpCountrySelect');
+  const errEl = document.getElementById('cpErr');
+  const country = sel ? sel.value.trim() : '';
+  if(!country){ if(errEl){ errEl.style.display='block'; } return; }
+  if(errEl) errEl.style.display='none';
+  try {
+    if(window.CU?.id){
+      const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js');
+      await updateDoc(doc(db,'users',window.CU.id), { country });
+      window.CU.country = country;
+    }
+    const cpModal = document.getElementById('mCountryPick');
+    if(cpModal) cpModal.style.display='none';
+    onLogin();
+    toast('¡Bienvenido ' + window.CU.nick + '! 🎣', 'ok');
+  } catch(e){
+    console.error('Error guardando país:', e);
+    // Intentar continuar de todas formas
+    if(window.CU) window.CU.country = country;
+    const cpModal = document.getElementById('mCountryPick');
+    if(cpModal) cpModal.style.display='none';
+    onLogin();
+    toast('¡Bienvenido ' + window.CU.nick + '! 🎣', 'ok');
+  }
+};
 
 // ===== AUTH =====
 async function doLogin(){
@@ -14584,6 +14685,7 @@ function renderSidebarOnline(online, offline){
         <div style="flex:1;min-width:0;z-index:2;overflow:hidden;">
           <div style="display:flex;align-items:center;gap:4px;flex-wrap:nowrap;overflow:hidden;">
             ${nickHtml}
+            ${getCountryFlag(u.country)?`<span title="${esc(u.country||'')}" style="font-size:.85rem;flex-shrink:0;line-height:1;">${getCountryFlag(u.country)}</span>`:''}
             ${!isAdmin&&!isVerified&&!isLegend&&!isHighLvl?devLabel(dev,isOnline):''}
           </div>
           ${isOnline && u.activity
@@ -14616,6 +14718,18 @@ function renderSidebarOnline(online, offline){
   el.innerHTML = html;
 }
 
+// ===== HELPER: Extraer emoji de bandera del string de país =====
+function getCountryFlag(country){
+  if(!country) return '';
+  // El país está almacenado como "🇦🇷 Argentina" — extraer el emoji inicial
+  const match = country.match(/^(\p{Emoji_Presentation}+|\p{Extended_Pictographic}+)/u);
+  if(match) return match[0];
+  // Fallback: primer char si es emoji
+  const first = [...country][0];
+  if(first && first.codePointAt(0) > 127) return first;
+  return '';
+}
+
 function renderContacts(onlineUsers){
   const users = onlineUsers || [];
   const el = document.getElementById('contactsList');
@@ -14627,7 +14741,7 @@ function renderContacts(onlineUsers){
         <div class="online-dot"></div>
       </div>
       <div style="flex:1;min-width:0;">
-        <div class="contact-name">${esc(u.nick)}</div>
+        <div class="contact-name">${esc(u.nick)}${getCountryFlag(u.country)?` <span title="${esc(u.country||'')}" style="font-size:.9rem;">${getCountryFlag(u.country)}</span>`:''}</div>
         <div class="contact-status">● En línea</div>
       </div>
       <button onclick="event.stopPropagation();openChatWith('${u.id}','${esc(u.nick)}')" title="Enviar mensaje" style="background:rgba(24,119,242,.1);border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.85rem;transition:background .15s;" onmouseover="this.style.background='rgba(24,119,242,.22)'" onmouseout="this.style.background='rgba(24,119,242,.1)'">💬</button>
