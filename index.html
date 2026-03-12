@@ -4578,7 +4578,6 @@ function listenPosts() {
       if(pageId === 'page-profile'){ renderProfileFeed(); }
       else if(pageId === 'page-casitrofeo'){ renderMapPosts(); }
       else {
-        // Si había banner de populares, limpiarlo para mostrar posts reales
         const feedEl = document.getElementById('feedPosts');
         if(feedEl && _posts.length){
           const banner = feedEl.querySelector('[data-popular-banner]');
@@ -4677,11 +4676,9 @@ function init(){
         const snap = await getDoc(doc(db, 'users', user.uid));
         if (snap.exists()) {
           window.CU = {id: user.uid, ...snap.data()};
-          // Pre-populate user info cache with own data
           if(window._userInfoCache) window._userInfoCache[user.uid] = {nick: window.CU.nick||'', av: window.CU.av||'', gender: window.CU.gender||'', country: window.CU.country||''};
           document.getElementById('mAuth').style.display = 'none';
           hideSplash();
-          // Si no tiene país configurado, pedir país obligatorio
           if(!window.CU.country){
             window._pendingGoogleOnboard = false;
             const cpModal = document.getElementById('mCountryPick');
@@ -4790,7 +4787,6 @@ async function doGoogleLogin(){
     const userRef = doc(db, 'users', user.uid);
     const userSnap = await getDoc(userRef);
     if(!userSnap.exists()){
-      // Usuario nuevo — crear perfil base y pedir país obligatorio
       const nick = (user.displayName?.replace(/\s+/g,'') || 'User' + Date.now().toString().slice(-4));
       const newUser = {
         nick, nickLower: nick.toLowerCase(),
@@ -4806,7 +4802,6 @@ async function doGoogleLogin(){
       await setDoc(userRef, newUser);
       window.CU = { id: user.uid, ...newUser };
       document.getElementById('mAuth').style.display = 'none';
-      // Mostrar modal de país obligatorio
       window._pendingGoogleOnboard = true;
       const cpModal = document.getElementById('mCountryPick');
       if(cpModal){ cpModal.style.display='flex'; }
@@ -4814,7 +4809,6 @@ async function doGoogleLogin(){
     } else {
       window.CU = { id: user.uid, ...userSnap.data() };
     }
-    // Si ya existe pero no tiene país, pedir también
     if(!window.CU.country){
       document.getElementById('mAuth').style.display = 'none';
       window._pendingGoogleOnboard = false;
@@ -4832,7 +4826,7 @@ async function doGoogleLogin(){
   }
 }
 
-// ===== CONFIRMAR PAÍS (modal Google onboard) =====
+// ===== CONFIRMAR PAÍS =====
 window.confirmCountryPick = async function(){
   const sel = document.getElementById('cpCountrySelect');
   const errEl = document.getElementById('cpErr');
@@ -4841,8 +4835,8 @@ window.confirmCountryPick = async function(){
   if(errEl) errEl.style.display='none';
   try {
     if(window.CU?.id){
-      const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js');
-      await updateDoc(doc(db,'users',window.CU.id), { country });
+      const { doc: _doc, updateDoc: _upd } = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js');
+      await _upd(_doc(db,'users',window.CU.id), { country });
       window.CU.country = country;
     }
     const cpModal = document.getElementById('mCountryPick');
@@ -4850,8 +4844,6 @@ window.confirmCountryPick = async function(){
     onLogin();
     toast('¡Bienvenido ' + window.CU.nick + '! 🎣', 'ok');
   } catch(e){
-    console.error('Error guardando país:', e);
-    // Intentar continuar de todas formas
     if(window.CU) window.CU.country = country;
     const cpModal = document.getElementById('mCountryPick');
     if(cpModal) cpModal.style.display='none';
@@ -4921,21 +4913,20 @@ async function doLogin(){
     onLogin();
     toast('¡Bienvenido '+window.CU.nick+'! 🎣','ok');
   } catch(e) {
-    let msg = '';
-    const code = e.code || '';
-    if(code === 'auth/invalid-email') msg = 'Email inválido';
-    else if(code === 'auth/user-not-found') msg = 'Usuario no encontrado. Verificá el email.';
-    else if(code === 'auth/wrong-password') msg = 'Contraseña incorrecta';
-    else if(code === 'auth/invalid-credential' || code === 'auth/invalid-login-credentials') msg = 'Email o contraseña incorrectos. Verificá bien los datos o usá "¿Olvidaste tu contraseña?".';
-    else if(code === 'auth/too-many-requests') msg = 'Cuenta bloqueada temporalmente por demasiados intentos. Restablecé tu contraseña o esperá unos minutos.';
-    else if(code === 'auth/network-request-failed') msg = 'Error de red. Verificá tu conexión a internet.';
-    else if(code === 'auth/user-disabled') msg = 'Esta cuenta fue deshabilitada.';
-    else if(code === 'auth/operation-not-allowed') msg = '⚠️ Login con email no está habilitado en Firebase Console.';
-    else if(code === 'auth/configuration-not-found') msg = '⚠️ Firebase no está configurado para email/contraseña.';
-    else msg = 'Error al iniciar sesión (' + (code || e.message || 'desconocido') + ')';
+    let msg = 'Error: ' + (e.code || e.message || 'desconocido');
+    if(e.code === 'auth/invalid-email') msg = 'Email inválido';
+    else if(e.code === 'auth/user-not-found') msg = 'Usuario no encontrado. Verificá el email.';
+    else if(e.code === 'auth/wrong-password') msg = 'Contraseña incorrecta';
+    else if(e.code === 'auth/invalid-credential') msg = 'Email o contraseña incorrectos. Verificá bien los datos.';
+    else if(e.code === 'auth/invalid-login-credentials') msg = 'Email o contraseña incorrectos. Verificá bien los datos o usá ¿Olvidaste tu contraseña?';
+    else if(e.code === 'auth/user-disabled') msg = 'Esta cuenta fue deshabilitada.';
+    else if(e.code === 'auth/too-many-requests') msg = 'Demasiados intentos. Esperá unos minutos.';
+    else if(e.code === 'auth/network-request-failed') msg = 'Error de red. Verificá tu conexión.';
+    else if(e.code === 'auth/operation-not-allowed') msg = '⚠️ Login con email no está habilitado en Firebase. Activalo en Firebase Console → Authentication → Sign-in methods.';
+    else if(e.code === 'auth/configuration-not-found') msg = '⚠️ Firebase no está configurado para email/contraseña. Activalo en Firebase Console.';
     errEl.textContent = msg;
     errEl.style.display='block';
-    console.error('Login error:', code, e.message);
+    console.error('Login error:', e.code, e.message);
     if(btn){ btn.disabled=false; btn.textContent='Iniciar sesión'; }
   }
 }
@@ -7263,38 +7254,26 @@ function previewPostVideo(input){
 function pickStoryEmoji(em){ _storyEmojiPick = em; toast('Emoji '+em+' seleccionado','inf'); }
 
 // ===== POSTS =====
-// Carga las publicaciones más vistas cuando el feed está vacío
 async function _loadMostViewedPosts(el){
   el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);font-size:.85rem;">⏳ Cargando publicaciones populares...</div>';
   try {
-    // Intentar por likes desc
     let snap;
-    try {
-      snap = await getDocs(query(collection(db,'posts'), orderBy('likes','desc'), limit(30)));
-    } catch(e){
-      snap = await getDocs(query(collection(db,'posts'), limit(30)));
-    }
+    try { snap = await getDocs(query(collection(db,'posts'), orderBy('likes','desc'), limit(30))); }
+    catch(e){ snap = await getDocs(query(collection(db,'posts'), limit(30))); }
     if(snap.empty){
       el.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--muted);font-size:.88rem;">🎣 No hay publicaciones aún.<br><span style="font-size:.78rem;opacity:.7;">¡Sé el primero en compartir tu pesca!</span></div>';
       return;
     }
-    // Ordenar por total de reacciones + likes + comentarios (más vistas/populares)
-    const posts = snap.docs.map(d=>({id:d.id,...d.data(),time:d.data().time?.toMillis?.()|| Date.now()}));
+    const posts = snap.docs.map(d=>({id:d.id,...d.data(),time:d.data().time?.toMillis?.()||Date.now()}));
     posts.sort((a,b)=>{
-      const scoreA = (a.likes||0) + (a.commentCount||0) + Object.values(a.reactions||{}).reduce((s,v)=>s+(Array.isArray(v)?v.length:0),0);
-      const scoreB = (b.likes||0) + (b.commentCount||0) + Object.values(b.reactions||{}).reduce((s,v)=>s+(Array.isArray(v)?v.length:0),0);
-      return scoreB - scoreA;
+      const scoreA=(a.likes||0)+(a.commentCount||0)+Object.values(a.reactions||{}).reduce((s,v)=>s+(Array.isArray(v)?v.length:0),0);
+      const scoreB=(b.likes||0)+(b.commentCount||0)+Object.values(b.reactions||{}).reduce((s,v)=>s+(Array.isArray(v)?v.length:0),0);
+      return scoreB-scoreA;
     });
-    // Merge en _posts para que funcionen likes/comentarios
     posts.forEach(p=>{ if(!_posts.find(x=>x.id===p.id)) _posts.push(p); });
-    el.innerHTML = `
-      <div data-popular-banner style="display:flex;align-items:center;gap:8px;padding:10px 4px 6px;margin-bottom:4px;border-bottom:1px solid var(--border);">
-        <span style="font-size:1.1rem;">🔥</span>
-        <span style="font-size:.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;">Publicaciones más populares</span>
-      </div>
-      ${posts.map(p=>postHTML(p)).join('')}`;
+    el.innerHTML = `<div data-popular-banner style="display:flex;align-items:center;gap:8px;padding:10px 4px 6px;margin-bottom:4px;border-bottom:1px solid var(--border);"><span style="font-size:1.1rem;">🔥</span><span style="font-size:.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;">Publicaciones más populares</span></div>${posts.map(p=>postHTML(p)).join('')}`;
   } catch(e){
-    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:.85rem;">⚠️ Error al cargar.<br><button onclick="listenPosts()" style="margin-top:12px;background:var(--accent);color:#000;border:none;border-radius:8px;padding:8px 20px;font-size:.82rem;font-weight:700;cursor:pointer;">🔄 Reintentar</button></div>';
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">⚠️ Error al cargar.</div>';
   }
 }
 
@@ -10687,7 +10666,7 @@ async function _fetchUserInfo(uid){
   window._userInfoPending[uid] = getDoc(doc(db,'users',uid)).then(snap=>{
     if(snap.exists()){
       const d = snap.data();
-      window._userInfoCache[uid] = {nick: d.nick||'?', av: d.av||'', gender: d.gender||'', country: d.country||''};
+      window._userInfoCache[uid] = {nick: d.nick||'?', av: d.av||'', gender: d.gender||''};
     } else {
       window._userInfoCache[uid] = {nick:'?', av:'', gender:''};
     }
@@ -14537,17 +14516,12 @@ async function _fetchPresence(){
     const since = Timestamp.fromMillis(Date.now() - 300000); // 5 minutos
     const onlineSnap = await getDocs(query(collection(db,'presence'), where('last','>',since), limit(50)));
     const now = Date.now();
-    const online = onlineSnap.docs.map(d=>{
-      const data = d.data();
-      return {id:d.id, ...data, ts:data.last?.toMillis?.()||0};
-    });
-    // Enriquecer country desde caché o Firestore para TODOS los usuarios
+    const online = onlineSnap.docs.map(d=>({id:d.id,...d.data(),ts:d.data().last?.toMillis?.()||0}));
+    // Enriquecer country desde caché o Firestore
     await Promise.all(online.map(async u=>{
       try {
-        // Primero intentar del caché
         const cached = window._userInfoCache?.[u.id];
         if(cached?.country){ u.country = cached.country; return; }
-        // Si no hay en caché, buscar en Firestore users
         const snap = await getDoc(doc(db,'users',u.id));
         if(snap.exists()){
           const country = snap.data().country||'';
@@ -14785,11 +14759,10 @@ function renderSidebarOnline(online, offline){
   el.innerHTML = html;
 }
 
-// ===== HELPER: Extraer emoji de bandera del string de país =====
+// Extraer emoji de bandera del string de país
 function getCountryFlag(country){
   if(!country) return '';
   const chars = [...country.trim()];
-  // Caso 1: empieza con par de indicadores regionales (bandera emoji), ej: "🇺🇾 Uruguay"
   if(chars.length >= 2){
     const c0 = chars[0].codePointAt(0);
     const c1 = chars[1].codePointAt(0);
@@ -14797,7 +14770,6 @@ function getCountryFlag(country){
       return chars[0] + chars[1];
     }
   }
-  // Caso 2: código de 2 letras, ej: "uy", "ar", "mx" — convertir a bandera
   const codeMap = {
     ar:'🇦🇷',mx:'🇲🇽',es:'🇪🇸',co:'🇨🇴',cl:'🇨🇱',pe:'🇵🇪',
     ve:'🇻🇪',uy:'🇺🇾',br:'🇧🇷',bo:'🇧🇴',py:'🇵🇾',ec:'🇪🇨',
@@ -14818,11 +14790,8 @@ function getCountryFlag(country){
     'reino unido':'🇬🇧','canadá':'🇨🇦','canada':'🇨🇦','australia':'🇦🇺'
   };
   const lower = country.trim().toLowerCase();
-  // Código 2 letras exacto
   if(lower.length === 2 && codeMap[lower]) return codeMap[lower];
-  // Nombre de país
   if(nameMap[lower]) return nameMap[lower];
-  // Buscar si el nombre del país está dentro del string (ej: "🇺🇾 Uruguay" ya manejado arriba)
   for(const [name, flag] of Object.entries(nameMap)){
     if(lower.includes(name)) return flag;
   }
