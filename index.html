@@ -4237,7 +4237,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
     </div>
     <div class="wk-fg"><label class="wk-fl">Descripción / Setup</label><textarea class="wk-fi" id="wkPDesc" placeholder="Señuelo, profundidad, condiciones del agua..." style="min-height:65px"></textarea></div>
     <div class="wk-fg">
-      <label class="wk-fl">📸 Fotos (máx. 4)</label>
+      <label class="wk-fl">📸 Fotos (máx. 5)</label>
       <div class="wk-dz" id="wkDropzone">
         <div>📁 Arrastrá o hacé clic para subir fotos</div>
         <div style="font-size:.75rem;color:var(--muted,#567890);margin-top:4px">JPG, PNG · Max 5MB c/u</div>
@@ -18900,11 +18900,46 @@ async function wkUpdateBannerCounts() {
 }
 
 // Card HTML builder
+// Store per-card current image index
+window._wkCardIdx = window._wkCardIdx || {};
+
+window.wkCardNav = function(event, cardId, dir) {
+  event.stopPropagation();
+  const imgs = window._wkCardImgs && window._wkCardImgs[cardId];
+  if(!imgs || imgs.length <= 1) return;
+  let idx = (window._wkCardIdx[cardId] || 0) + dir;
+  if(idx < 0) idx = imgs.length - 1;
+  if(idx >= imgs.length) idx = 0;
+  window._wkCardIdx[cardId] = idx;
+  const imgEl = document.getElementById('wkci-' + cardId);
+  const dotEls = document.querySelectorAll('.wkcd-' + cardId);
+  if(imgEl){ imgEl.style.opacity='0'; setTimeout(()=>{ imgEl.src=imgs[idx]; imgEl.style.opacity='1'; },100); }
+  dotEls.forEach((d,i)=>{ d.style.background = i===idx ? '#fff' : 'rgba(255,255,255,.4)'; });
+};
+
 function wkCard(t, showSt=false) {
   const liked = window.CU && t.reactions && t.reactions[window.CU.id]?.emoji==='❤️';
+  const hasImgs = t.images && t.images.length > 0;
+  const multiImg = t.images && t.images.length > 1;
+  window._wkCardImgs = window._wkCardImgs || {};
+  if(hasImgs) window._wkCardImgs[t.id] = t.images;
+  window._wkCardIdx[t.id] = window._wkCardIdx[t.id] || 0;
   return `<div class="tcard" onclick="wkOpenDet('${t.id}')">
-    <div class="tcard-img">
-      ${t.images&&t.images[0]?`<img src="${t.images[0]}" alt="${wkEsc(t.fish)}" loading="lazy">`:`<span>🐟</span>`}
+    <div class="tcard-img" style="position:relative;">
+      ${hasImgs
+        ? `<img id="wkci-${t.id}" src="${t.images[0]}" alt="${wkEsc(t.fish)}" loading="lazy" style="transition:opacity .1s;">`
+        : `<span>🐟</span>`}
+      ${multiImg ? `
+        <div onclick="wkCardNav(event,'${t.id}',-1)" style="position:absolute;top:0;left:0;width:40%;height:100%;z-index:5;cursor:w-resize;display:flex;align-items:center;justify-content:flex-start;padding-left:6px;opacity:0;transition:opacity .2s;" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0'">
+          <div style="background:rgba(0,0,0,.55);color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:1rem;">‹</div>
+        </div>
+        <div onclick="wkCardNav(event,'${t.id}',1)" style="position:absolute;top:0;right:0;width:40%;height:100%;z-index:5;cursor:e-resize;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;opacity:0;transition:opacity .2s;" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0'">
+          <div style="background:rgba(0,0,0,.55);color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:1rem;">›</div>
+        </div>
+        <div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:4px;z-index:6;">
+          ${t.images.map((_,i)=>`<div class="wkcd-${t.id}" onclick="event.stopPropagation();wkCardNav({stopPropagation:()=>{}},'${t.id}',${i - (window._wkCardIdx[t.id]||0)})" style="width:6px;height:6px;border-radius:50%;background:${i===0?'#fff':'rgba(255,255,255,.4)'};cursor:pointer;transition:background .2s;"></div>`).join('')}
+        </div>
+      ` : ''}
       <div class="twbadge">${fmtKg(t.weight||0)}</div>
       ${showSt&&t.status?`<div class="status-badge status-${t.status}">${t.status==='pending'?'⏳ Pendiente':t.status==='approved'?'✅ Aprobado':'❌ Rechazado'}</div>`:''}
     </div>
@@ -19338,13 +19373,14 @@ window.wkResetForm = () => {
   const dt = document.getElementById('wkPDt');
   if(dt) dt.value = new Date().toISOString().split('T')[0];
   _wkImgs=[]; _wkEditId=null; wkPvRender();
+  window._wkCardIdx = {};
   const err=document.getElementById('wkPubErr'); if(err) err.textContent='';
 };
 
 // File handling for publish form
 window.wkHFiles = (files) => {
   Array.from(files).forEach(f=>{
-    if(_wkImgs.length>=4) return;
+    if(_wkImgs.length>=5) return;
     if(!f.type.startsWith('image/')) return;
     const reader=new FileReader();
     reader.onload=e=>{ _wkImgs.push({file:f,preview:e.target.result}); wkPvRender(); };
