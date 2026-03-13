@@ -2413,6 +2413,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
         🎬 Video <span style="font-size:.65rem;background:rgba(255,200,0,.18);color:#f5c842;border-radius:100px;padding:1px 6px;margin-left:2px;font-weight:700;">Próximamente</span>
       </button>
       <button class="btn btn-s" style="font-size:.8rem" onclick="openEmojiPicker(event,'postText')">😊 Emoji</button>
+      <button class="btn btn-s" style="font-size:.8rem" onclick="openFeelingModal()">🙂 Sentimiento</button>
       <button class="btn btn-s" style="font-size:.8rem" onclick="insertFishTag()">🎣 Etiqueta pez</button>
       <button class="btn btn-s" style="font-size:.8rem" onclick="focusPostTextAndAt()">🏷️ Etiquetar persona</button>
       <button class="btn btn-s" style="font-size:.8rem" onclick="toggleLinkInput()">🔗 Link</button>
@@ -2451,6 +2452,28 @@ select.fi option{background:var(--bg3);color:var(--text);}
       </div>
     </div>
     <button class="btn btn-p btn-full" onclick="submitPost()">Publicar</button>
+  </div>
+</div>
+
+<!-- Modal: ¿Cómo te sientes? -->
+<div class="mo" id="mFeeling">
+  <div class="modal modal-md" style="max-height:90vh;display:flex;flex-direction:column;">
+    <div style="display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <button onclick="cm('mFeeling')" style="background:var(--bg3);border:none;color:var(--text);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;flex-shrink:0;">←</button>
+      <span style="font-size:1rem;font-weight:700;color:var(--text);flex:1;text-align:center;">¿Cómo te sientes?</span>
+    </div>
+    <!-- Tabs -->
+    <div style="display:flex;border-bottom:1px solid var(--border);flex-shrink:0;margin-top:4px;">
+      <button id="feelingTabSent" onclick="switchFeelingTab('sentimientos')" style="flex:1;background:none;border:none;border-bottom:2px solid var(--accent);color:var(--accent);padding:10px;cursor:pointer;font-size:.88rem;font-weight:700;transition:.15s;">Sentimientos</button>
+      <button id="feelingTabAct" onclick="switchFeelingTab('actividades')" style="flex:1;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);padding:10px;cursor:pointer;font-size:.88rem;font-weight:600;transition:.15s;">Actividades</button>
+    </div>
+    <!-- Search -->
+    <div style="padding:10px 0 4px;flex-shrink:0;">
+      <input id="feelingSearch" type="text" placeholder="🔍  Buscar" oninput="filterFeelings(this.value)"
+        style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px 14px;color:var(--text);font-size:.88rem;outline:none;box-sizing:border-box;">
+    </div>
+    <!-- List -->
+    <div id="feelingList" style="overflow-y:auto;flex:1;padding-top:6px;"></div>
   </div>
 </div>
 
@@ -8093,6 +8116,95 @@ function insertEmojiChar(em){
 
 function insertEmoji(){ document.getElementById('postText').value += ' 🎣'; }
 function insertFishTag(){ document.getElementById('fishTagRow').style.display = document.getElementById('fishTagRow').style.display==='none'?'block':'none'; }
+
+// ── Sentimientos / Actividades ──────────────────────────────────────────────
+const _FEELINGS = {
+  sentimientos: [
+    {e:'😊',l:'feliz'},{e:'😇',l:'bendecido'},{e:'🥰',l:'amado'},{e:'😢',l:'triste'},
+    {e:'😍',l:'encantador'},{e:'🙏',l:'agradecido'},{e:'😃',l:'entusiasmado'},{e:'😍',l:'enamorado'},
+    {e:'😜',l:'loco'},{e:'😌',l:'complacido'},{e:'😄',l:'dichoso'},{e:'😁',l:'fantástico'},
+    {e:'🤡',l:'bobo'},{e:'🎉',l:'festivo'},{e:'😎',l:'genial'},{e:'🤩',l:'asombrado'},
+    {e:'😤',l:'orgulloso'},{e:'😔',l:'melancólico'},{e:'🥳',l:'celebrando'},{e:'😴',l:'cansado'},
+    {e:'🤔',l:'pensativo'},{e:'😡',l:'enojado'},{e:'😰',l:'nervioso'},{e:'🤗',l:'agradable'},
+    {e:'😂',l:'gracioso'},{e:'🥺',l:'nostálgico'},{e:'😑',l:'aburrido'},{e:'🤭',l:'avergonzado'},
+  ],
+  actividades: [
+    {e:'🎣',l:'pescando'},{e:'🏃',l:'corriendo'},{e:'🍕',l:'comiendo'},{e:'🎮',l:'jugando'},
+    {e:'📚',l:'estudiando'},{e:'✈️',l:'viajando'},{e:'🏋️',l:'entrenando'},{e:'🎵',l:'escuchando música'},
+    {e:'🎬',l:'viendo una película'},{e:'😴',l:'durmiendo'},{e:'🍺',l:'tomando algo'},{e:'🏊',l:'nadando'},
+    {e:'🚴',l:'pedaleando'},{e:'🧘',l:'meditando'},{e:'👨‍🍳',l:'cocinando'},{e:'📸',l:'sacando fotos'},
+    {e:'🎤',l:'cantando'},{e:'🌿',l:'en la naturaleza'},{e:'🐟',l:'con mi pesca'},{e:'🏕️',l:'acampando'},
+    {e:'🚣',l:'remando'},{e:'☀️',l:'disfrutando el sol'},{e:'🌙',l:'en una noche tranquila'},{e:'🤝',l:'con amigos'},
+  ]
+};
+let _feelingTab = 'sentimientos';
+window._selectedFeeling = null;
+
+window.openFeelingModal = function(){
+  _feelingTab = 'sentimientos';
+  window._selectedFeeling = null;
+  renderFeelingList('');
+  const si = document.getElementById('feelingSearch');
+  if(si) si.value = '';
+  switchFeelingTab('sentimientos');
+  om('mFeeling');
+};
+
+window.switchFeelingTab = function(tab){
+  _feelingTab = tab;
+  const ts = document.getElementById('feelingTabSent');
+  const ta = document.getElementById('feelingTabAct');
+  if(ts && ta){
+    ts.style.borderBottomColor = tab==='sentimientos' ? 'var(--accent)' : 'transparent';
+    ts.style.color = tab==='sentimientos' ? 'var(--accent)' : 'var(--muted)';
+    ta.style.borderBottomColor = tab==='actividades' ? 'var(--accent)' : 'transparent';
+    ta.style.color = tab==='actividades' ? 'var(--accent)' : 'var(--muted)';
+  }
+  const si = document.getElementById('feelingSearch');
+  renderFeelingList(si ? si.value : '');
+};
+
+window.filterFeelings = function(q){ renderFeelingList(q); };
+
+function renderFeelingList(q){
+  const el = document.getElementById('feelingList');
+  if(!el) return;
+  const items = _FEELINGS[_feelingTab] || [];
+  const filtered = q.trim() ? items.filter(f=>f.l.includes(q.toLowerCase())) : items;
+  if(!filtered.length){ el.innerHTML = `<div style="padding:20px;text-align:center;color:var(--muted);font-size:.85rem;">Sin resultados</div>`; return; }
+  const cols = [];
+  const half = Math.ceil(filtered.length/2);
+  const left = filtered.slice(0,half);
+  const right = filtered.slice(half);
+  let html = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;">`;
+  const maxLen = Math.max(left.length, right.length);
+  for(let i=0;i<maxLen;i++){
+    [left[i], right[i]].forEach(f=>{
+      if(!f){ html += `<div></div>`; return; }
+      html += `<div onclick="selectFeeling('${f.e}','${f.l}')" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+        <span style="font-size:1.4rem;flex-shrink:0;">${f.e}</span>
+        <span style="font-size:.88rem;color:var(--text);">${f.l}</span>
+      </div>`;
+    });
+  }
+  html += `</div>`;
+  el.innerHTML = html;
+}
+
+window.selectFeeling = function(emoji, label){
+  window._selectedFeeling = {emoji, label};
+  cm('mFeeling');
+  // Insertar en el texto del post
+  const tx = document.getElementById('postText');
+  if(tx){
+    const tag = ` ${emoji} se siente ${label}`;
+    if(!tx.value.includes('se siente')) tx.value += tag;
+    else tx.value = tx.value.replace(/ [^\s]+ se siente \S+/, tag);
+    tx.dispatchEvent(new Event('input'));
+  }
+  // Asegurar que el modal de post esté abierto
+  if(!document.getElementById('mCreatePost')?.classList.contains('open')) om('mCreatePost');
+};
 function focusPostTextAndAt(){
   const inp = document.getElementById('postText');
   if(!inp) return;
