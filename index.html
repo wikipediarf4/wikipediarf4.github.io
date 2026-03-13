@@ -4408,7 +4408,7 @@ function _stub(name){ return function(){ _q.push([name, arguments]); }; }
 <script type="module">
 // ===== FIREBASE SETUP (modular ESM — sin eval, compatible con CSP) =====
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, GoogleAuthProvider, FacebookAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, GoogleAuthProvider, signInWithPopup } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
 import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, addDoc, deleteDoc, onSnapshot, query, orderBy, limit, serverTimestamp, increment, where, deleteField, Timestamp, arrayUnion, arrayRemove } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
 
@@ -4835,65 +4835,6 @@ async function doGoogleLogin(){
 }
 
 // ===== FACEBOOK LOGIN =====
-async function doFacebookLogin(){
-  const errEl = document.getElementById('lErr');
-  errEl.textContent = ''; errEl.style.display = 'none';
-  try {
-    const provider = new FacebookAuthProvider();
-    provider.addScope('email');
-    await signInWithRedirect(auth, provider);
-  } catch(e) {
-    errEl.style.display = 'block';
-    errEl.textContent = e.message;
-  }
-}
-window.doFacebookLogin = doFacebookLogin;
-
-// Manejar resultado del redirect de Facebook al cargar la página
-(async () => {
-  try {
-    const result = await getRedirectResult(auth);
-    if(result && result.providerId === 'facebook.com'){
-      const user = result.user;
-      const userRef = doc(db, 'users', user.uid);
-      const userSnap = await getDoc(userRef);
-      if(!userSnap.exists()){
-        const nick = (user.displayName?.replace(/\s+/g,'') || 'User' + Date.now().toString().slice(-4));
-        const newUser = {
-          nick, nickLower: nick.toLowerCase(),
-          email: user.email || '',
-          av: user.photoURL ? user.photoURL + '?type=large' : '',
-          cover: '', bio: '', country: '',
-          favFish: '', favMap: '',
-          social_yt: '', social_dc: '',
-          joined: new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}),
-          posts: 0, friends: 0, likes: 0,
-          createdAt: serverTimestamp()
-        };
-        await setDoc(userRef, newUser);
-        window.CU = { id: user.uid, ...newUser };
-        document.getElementById('mAuth').style.display = 'none';
-        const cpModal = document.getElementById('mCountryPick');
-        if(cpModal){ cpModal.style.display='flex'; }
-        return;
-      } else {
-        window.CU = { id: user.uid, ...userSnap.data() };
-      }
-      if(!window.CU.country){
-        document.getElementById('mAuth').style.display = 'none';
-        const cpModal = document.getElementById('mCountryPick');
-        if(cpModal){ cpModal.style.display='flex'; }
-        return;
-      }
-      document.getElementById('mAuth').style.display = 'none';
-      onLogin();
-      toast('¡Bienvenido ' + window.CU.nick + '! 🎣', 'ok');
-    }
-  } catch(e) {
-    if(e.code !== 'auth/popup-closed-by-user') console.warn('FB redirect result:', e);
-  }
-})();
-
 // ===== CONFIRMAR PAÍS =====
 window.confirmCountryPick = async function(){
   const sel = document.getElementById('cpCountrySelect');
