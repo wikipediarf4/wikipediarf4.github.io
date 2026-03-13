@@ -83,9 +83,9 @@ button{font-family:'Exo 2',sans-serif;cursor:pointer;}
 /* ===== STORIES ===== */
 .stories-row{display:flex;gap:10px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px;}
 .stories-row::-webkit-scrollbar{height:3px;}
-.story-card{flex-shrink:0;width:80px;height:140px;border-radius:var(--r);overflow:hidden;cursor:pointer;position:relative;
-  background:#21262d;border:1px solid var(--border);transition:transform .2s;}
-.story-card:hover{transform:scale(1.03);}
+.story-card{flex-shrink:0;width:115px;height:200px;border-radius:12px;overflow:hidden;cursor:pointer;position:relative;
+  background:#21262d;border:1px solid var(--border);transition:transform .2s,box-shadow .2s;}
+.story-card:hover{transform:scale(1.03);box-shadow:0 4px 16px rgba(0,0,0,.3);}
 .story-card img{width:100%;height:100%;object-fit:cover;}
 .story-card-bg{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
   background:linear-gradient(135deg,#21262d,#161b22);}
@@ -1509,7 +1509,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
     <div class="feed">
       <!-- Stories -->
       <div class="stories-row" id="storiesRow">
-        <div onclick="openStoryChooser()" style="border:none;border-radius:12px;overflow:hidden;cursor:pointer;position:relative;width:80px;height:140px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.15);transition:transform .2s,box-shadow .2s;" onmouseover="this.style.transform='scale(1.03)';this.style.boxShadow='0 4px 14px rgba(0,0,0,.22)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 2px 8px rgba(0,0,0,.15)'">
+        <div onclick="openStoryChooser()" style="border:none;border-radius:12px;overflow:hidden;cursor:pointer;position:relative;width:115px;height:200px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.15);transition:transform .2s,box-shadow .2s;" onmouseover="this.style.transform='scale(1.03)';this.style.boxShadow='0 4px 14px rgba(0,0,0,.22)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 2px 8px rgba(0,0,0,.15)'">
           <!-- Top ~65%: user photo background -->
           <div id="storyAddPhoto" style="position:absolute;top:0;left:0;right:0;height:65%;background:var(--bg3);overflow:hidden;display:flex;align-items:center;justify-content:center;">
             <span id="storyAddPhotoInner" style="font-size:2.2rem;opacity:.3;">👤</span>
@@ -1538,8 +1538,13 @@ select.fi option{background:var(--bg3);color:var(--text);}
       <!-- Post Box -->
       <div class="post-box">
         <div class="post-box-top">
-          <div class="sl-av" id="pbAv" style="width:40px;height:40px">👤</div>
+          <div class="sl-av" id="pbAv" style="width:40px;height:40px;flex-shrink:0;">👤</div>
           <div class="post-input" onclick="om('mCreatePost')" id="postBoxPlaceholder">¿Qué estás pensando?</div>
+          <div style="display:flex;gap:2px;flex-shrink:0;">
+            <button onclick="om('mCreatePost')" style="background:none;border:none;cursor:pointer;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'" title="Video en vivo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="14" height="12" rx="2" fill="#e04040"/><polygon points="16,9 22,6 22,18 16,15" fill="#e04040"/></svg></button>
+            <button onclick="om('mCreatePost');setTimeout(()=>{document.getElementById('postImgInput')?.click()},200)" style="background:none;border:none;cursor:pointer;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'" title="Foto/Video"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="2" fill="#45b36b"/><circle cx="12" cy="12" r="4" fill="#fff" opacity=".9"/><circle cx="12" cy="12" r="2.5" fill="#45b36b"/><circle cx="17.5" cy="7.5" r="1.2" fill="#fff" opacity=".9"/></svg></button>
+            <button onclick="om('mCreatePost')" style="background:none;border:none;cursor:pointer;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'" title="Actividad"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#f5a623"/><path d="M8 14s1.5 2 4 2 4-2 4-2" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="10" r="1.2" fill="#fff"/><circle cx="15" cy="10" r="1.2" fill="#fff"/></svg></button>
+          </div>
         </div>
         <div class="post-box-actions">
           <button class="pba" onclick="om('mCreatePost');setTimeout(()=>{document.getElementById('postImgInput')?.click()},200)">📸 Foto</button>
@@ -15197,29 +15202,52 @@ window.toggleSidebarSearch = function(){
   if(!visible && inp){ inp.value=''; inp.focus(); filterSidebarContacts(''); }
 };
 
-// Filtrar contactos por nick
-window.filterSidebarContacts = function(q){
+// Filtrar contactos — busca en todos los usuarios de Firestore
+window.filterSidebarContacts = async function(q){
   const el = document.getElementById('sidebarOnlineList');
   if(!el) return;
-  const online = window._sidebarAllOnline || [];
-  const offline = window._sidebarAllOffline || [];
-  const banner = window._sidebarUserBanner;
-  if(!banner) return;
   const search = q.toLowerCase().trim();
+
+  // Sin búsqueda: restaurar lista de amigos normal
   if(!search){
+    const online = window._sidebarAllOnline || [];
+    const offline = window._sidebarAllOffline || [];
+    const banner = window._sidebarUserBanner;
+    if(!banner) return;
     let html = '';
     if(online.length) html += online.map(u=>banner(u,true)).join('');
     if(offline.length) html += offline.map(u=>banner(u,false)).join('');
     if(!html) html = `<div style="text-align:center;padding:16px 8px;color:var(--muted);font-size:.75rem;">🎣 Sin contactos aún</div>`;
-    el.innerHTML = html; return;
-  }
-  const allUsers = [...online.map(u=>({...u,_on:true})), ...offline.map(u=>({...u,_on:false}))];
-  const filtered = allUsers.filter(u => (u.nick||'').toLowerCase().includes(search));
-  if(!filtered.length){
-    el.innerHTML = `<div style="text-align:center;padding:16px 8px;color:var(--muted);font-size:.75rem;">Sin resultados para "${q}"</div>`;
+    el.innerHTML = html;
     return;
   }
-  el.innerHTML = filtered.map(u=>banner(u, u._on)).join('');
+
+  el.innerHTML = `<div style="padding:10px 14px;font-size:.75rem;color:var(--muted);">Buscando...</div>`;
+
+  try {
+    const snap = await getDocs(query(collection(db,'users'), limit(200)));
+    const all = snap.docs.map(d=>({id:d.id,...d.data()}));
+    const filtered = all.filter(u=>(u.nick||'').toLowerCase().includes(search));
+    if(!filtered.length){
+      el.innerHTML = `<div style="text-align:center;padding:16px 8px;color:var(--muted);font-size:.75rem;">Sin resultados para "${q}"</div>`;
+      return;
+    }
+    const banner = window._sidebarUserBanner;
+    const onlineIds = new Set((window._sidebarAllOnline||[]).map(u=>u.id));
+    if(banner){
+      el.innerHTML = filtered.map(u=>banner(u, onlineIds.has(u.id))).join('');
+    } else {
+      // Fallback simple
+      el.innerHTML = filtered.map(u=>`
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''" onclick="openUserProfile('${u.id}','${u.nick||''}')">
+          <img src="${u.av||''}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;background:var(--bg3);" onerror="this.style.display='none'">
+          <span style="font-size:.82rem;font-weight:600;color:var(--text);">${u.nick||'Usuario'}</span>
+        </div>`).join('');
+    }
+  } catch(e){
+    el.innerHTML = `<div style="padding:10px 14px;font-size:.75rem;color:var(--muted);">Error al buscar</div>`;
+    console.error('sidebarSearch error:', e);
+  }
 };
 
 // Extraer emoji de bandera del string de país
