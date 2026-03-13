@@ -4878,28 +4878,42 @@ async function doLogin(){
       const nickLower = input.toLowerCase();
       let found = null;
       try {
-        const q = await getDocs(query(collection(db,'users'), where('nick','==',input)));
-        found = q.docs[0];
-      } catch(e2){}
+        const q = await getDocs(query(collection(db,'users'), where('nickLower','==',nickLower)));
+        if(q && !q.empty) found = q.docs[0];
+      } catch(e2){ console.warn('nickLower query error:', e2); }
       if(!found){
         try {
-          const q2 = await getDocs(query(collection(db,'users'), where('nickLower','==',nickLower)));
-          found = q2.docs[0];
-        } catch(e3){}
+          const q2 = await getDocs(query(collection(db,'users'), where('nick','==',input)));
+          if(q2 && !q2.empty) found = q2.docs[0];
+        } catch(e3){ console.warn('nick query error:', e3); }
       }
       if(!found){
-        errEl.textContent = 'Nick no encontrado. Verificá el nombre.';
+        // Last resort: scan users (only if small collection)
+        try {
+          const all = await getDocs(collection(db,'users'));
+          found = all.docs.find(d => {
+            const n = d.data().nick||'';
+            const nl = d.data().nickLower||'';
+            return n===input || nl===nickLower || n.toLowerCase()===nickLower;
+          });
+        } catch(e4){ console.warn('scan error:', e4); }
+      }
+      if(!found){
+        errEl.textContent = 'Nick no encontrado. Probá con tu email.';
+        errEl.style.display='block';
         if(btn){ btn.disabled=false; btn.textContent='Iniciar sesión'; }
         return;
       }
       input = found.data().email;
       if(!input){
         errEl.textContent = 'No se pudo obtener el email de este nick';
+        errEl.style.display='block';
         if(btn){ btn.disabled=false; btn.textContent='Iniciar sesión'; }
         return;
       }
     } catch(e){
       errEl.textContent = 'Error de conexión. Reintentá.';
+      errEl.style.display='block';
       if(btn){ btn.disabled=false; btn.textContent='Iniciar sesión'; }
       return;
     }
