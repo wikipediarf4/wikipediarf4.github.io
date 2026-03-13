@@ -1560,40 +1560,29 @@ select.fi option{background:var(--bg3);color:var(--text);}
 
     <!-- RIGHT -->
     <div class="sidebar-right">
-      <!-- PEZ DE LA SEMANA -->
 
+      <!-- CONTACTOS estilo Facebook -->
+      <div style="margin-bottom:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px 8px;">
+          <span style="font-size:.88rem;font-weight:700;color:var(--muted);">Contactos</span>
+          <div style="display:flex;gap:4px;">
+            <div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.9rem;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''" title="Buscar">🔍</div>
+            <div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.9rem;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''" title="Opciones">···</div>
+          </div>
+        </div>
+        <div id="sidebarOnlineList" style="padding:2px 0;"></div>
+      </div>
 
-      <!-- CONECTADOS -->
-      <div style="margin-bottom:14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);">
-          <span style="font-size:.8rem;font-weight:700;">🟢 Conectados <span id="sidebarOnlineCount" style="background:var(--green);color:#fff;border-radius:100px;font-size:.6rem;font-weight:700;padding:1px 6px;margin-left:4px;">0</span></span>
-        </div>
-        <div id="sidebarOnlineList" style="padding:6px;max-height:280px;overflow-y:auto;">
-          <div style="font-size:.75rem;color:var(--muted);padding:6px 4px;">Cargando...</div>
-        </div>
-      </div>
-      <div class="divider"></div>
-      <!-- PERFILES SUGERIDOS ALEATORIOS EN SIDEBAR RIGHT -->
-      <div id="suggestedProfilesWidget" style="margin-bottom:14px;">
-        <div class="sr-title" style="display:flex;align-items:center;justify-content:space-between;">
-          <span>🕐 Última Conexión</span>
-          <span style="font-size:.7rem;color:var(--accent);cursor:pointer;font-weight:600;" onclick="renderSuggestedUsers()">↻</span>
-        </div>
-        <div id="suggestedUsersList"></div>
-      </div>
-      <div class="divider"></div>
       <!-- ÚLTIMOS TROFEOS WIDGET -->
       <div id="trofeoSidebarWidget" style="margin-bottom:14px;">
         <div class="sr-title" style="display:flex;align-items:center;justify-content:space-between;">
-          <span>🥇 Últimos 5 Agregados</span>
+          <span>🥇 Últimos Trofeos</span>
           <span style="font-size:.72rem;color:var(--accent);cursor:pointer;font-weight:600;" onclick="gp('trofeos-feed')">Ver todos</span>
         </div>
         <div id="trofeoSidebarList"><div style="font-size:.75rem;color:var(--muted);padding:6px 4px;">Cargando...</div></div>
       </div>
 
     </div>
-  </div>
-</div>
 
 <!-- PAGE: AMIGOS -->
 <div class="page" id="page-amigos" style="max-width:680px;margin:0 auto;padding:16px 16px 80px;">
@@ -15168,15 +15157,13 @@ function renderSidebarOnline(online, offline){
 
   let html = '';
   if(onlineFiltered.length){
-    html += `<div style="font-size:.6rem;color:var(--muted);padding:4px 4px 3px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;">🟢 En línea · ${onlineFiltered.length}</div>`;
     html += onlineFiltered.map(u=>userBanner(u,true)).join('');
   }
   if(offline.length){
-    html += `<div style="font-size:.6rem;color:var(--muted);padding:${onlineFiltered.length?'8px':'4px'} 4px 3px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;">⚫ Desconectados</div>`;
     html += offline.map(u=>userBanner(u,false)).join('');
   }
   if(!onlineFiltered.length && !offline.length){
-    html = `<div style="text-align:center;padding:16px 8px;color:var(--muted);font-size:.75rem;">🎣 Nadie conectado</div>`;
+    html = `<div style="text-align:center;padding:16px 8px;color:var(--muted);font-size:.75rem;">🎣 Sin contactos aún</div>`;
   }
   el.innerHTML = html;
 }
