@@ -21312,21 +21312,47 @@ document.addEventListener('DOMContentLoaded', ()=>{
   </div>
 </div>
 
+<!-- ===== REDIRECT SPA desde 404.html ===== -->
+<script>
+(function(){
+  // Si venimos de un 404 redirect, restaurar la ruta
+  var redirect = sessionStorage.getItem('rf4_redirect');
+  if(redirect){
+    sessionStorage.removeItem('rf4_redirect');
+    // Simular navegación a la ruta guardada
+    if(window.history && window.history.replaceState){
+      window.history.replaceState(null, '', redirect);
+    }
+    // Disparar el router de la app si existe
+    window.dispatchEvent(new PopStateEvent('popstate', {state: null}));
+  }
+  // También leer el parámetro ?r= por si acaso
+  var params = new URLSearchParams(window.location.search);
+  var r = params.get('r');
+  if(r){
+    if(window.history && window.history.replaceState){
+      window.history.replaceState(null, '', r);
+    }
+    window.dispatchEvent(new PopStateEvent('popstate', {state: null}));
+  }
+})();
+</script>
+
 <!-- ===== BOTÓN FLOTANTE RECARGAR ===== -->
-<a href="http://wikipediarf4.uy/" title="Recargar página"
+<button onclick="window.location.href='http://wikipediarf4.uy' + window.location.pathname + window.location.search" title="Recargar página"
   style="position:fixed;bottom:24px;right:24px;z-index:9999;
     width:52px;height:52px;border-radius:50%;
     background:linear-gradient(135deg,#2ec4b6,#1a8a82);
     box-shadow:0 4px 16px rgba(46,196,182,.5);
     display:flex;align-items:center;justify-content:center;
-    transition:transform .2s,box-shadow .2s;
-    text-decoration:none;"
+    border:none;
+    transition:transform .2s,box-shadow .2s;cursor:pointer;"
   onmouseover="this.style.transform='scale(1.12)';this.style.boxShadow='0 6px 24px rgba(46,196,182,.7)'"
   onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 16px rgba(46,196,182,.5)'">
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
     <polyline points="23 4 23 10 17 10"></polyline>
     <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
   </svg>
-</a>
+</button>
 </body>
 </html>

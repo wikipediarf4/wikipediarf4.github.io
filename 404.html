@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>WikiPediaRF4.UY</title>
+<script>
+  // Guarda la ruta actual y redirige al index
+  var path = window.location.pathname;
+  sessionStorage.setItem('rf4_redirect', path);
+  window.location.replace('http://wikipediarf4.uy/?r=' + encodeURIComponent(path));
+</script>
+</head>
+<body></body>
+</html>
