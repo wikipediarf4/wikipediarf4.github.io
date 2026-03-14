@@ -1903,10 +1903,10 @@ select.fi option{background:var(--bg3);color:var(--text);}
           </div>
 
           <div class="profile-bio" id="profBioEl" style="margin-top:5px;font-size:.88rem;"></div>
-          <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;" id="profBadges"></div>
+          <div style="display:none;" id="profBadges"></div>
 
           <!-- XP + Streak bar -->
-          <div id="profXpBlock" style="margin-top:10px;max-width:280px;display:none;">
+          <div id="profXpBlock" style="display:none !important;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
               <span id="profLevelBadge" class="level-badge"></span>
               <span id="profStreakBadge" class="streak-badge" style="display:none;"></span>
@@ -1971,9 +1971,9 @@ select.fi option{background:var(--bg3);color:var(--text);}
           <div class="pac-item" id="profFavMapRow" style="display:none">🗺️ Mapa favorito: <strong id="profFavMap">—</strong></div>
           <div class="pac-item" id="profTechRow" style="display:none">🎯 Técnica: <strong id="profTech">—</strong></div>
           <div class="pac-item" id="profExpRow" style="display:none">⭐ Experiencia: <strong id="profExp">—</strong></div>
-          <div class="pac-item" id="profStreakRow" style="display:none;">🔥 Racha: <strong id="profStreakInfo">—</strong></div>
-          <div class="pac-item">🏅 Nivel: <strong id="profLevel">Novato</strong></div>
-          <div class="pac-item" id="profXpInfoRow" style="display:none;">⚡ XP Total: <strong id="profXpInfo">—</strong></div>
+          <div class="pac-item" id="profStreakRow" style="display:none !important;">🔥 Racha: <strong id="profStreakInfo">—</strong></div>
+          <div class="pac-item" style="display:none;">🏅 Nivel: <strong id="profLevel">Novato</strong></div>
+          <div class="pac-item" id="profXpInfoRow" style="display:none !important;">⚡ XP Total: <strong id="profXpInfo">—</strong></div>
           <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:12px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border);">👤 Personal</div>
           <div class="pac-item" id="profEmailRow" style="display:none">✉️ Email: <strong id="profEmailEl">—</strong></div>
           <div class="pac-item">📍 País: <strong id="profCountry">—</strong></div>
@@ -7748,7 +7748,7 @@ function _renderProfileFeedHTML(el, mine){
     if(mine.length>=5) badges.push('<span class="badge badge-blue">⭐ Activo</span>');
     if(totalLikesReal>=10) badges.push('<span class="badge badge-gold">🏆 Popular</span>');
     if(window.CU?.experience==='Experto'||window.CU?.experience==='Profesional') badges.push('<span class="badge badge-gold">👑 Pro</span>');
-    profBadgesEl.innerHTML = badges.join(' ');
+    profBadgesEl.innerHTML = ''; // badges ocultos
   }
   // Actualizar galería de fotos con datos reales
   const allImgs = mine.flatMap(p=>p.images||[]).filter(Boolean);
