@@ -14841,7 +14841,7 @@ async function _loadUserProfilePage(uid, nick){
 
     // ── NIVEL ──
     const lvl = getLevel(u.xp||0);
-    document.getElementById('upLevel').innerHTML = `<span style="display:inline-flex;align-items:center;gap:5px;padding:2px 10px;border-radius:100px;font-size:.72rem;font-weight:700;border:1px solid;color:${lvl.color};border-color:${lvl.border};background:${lvl.border.replace(/[\d.]+\)$/,'.1)')};">${lvl.name}</span>${(u.streak||0)>=2?` <span style="font-size:.7rem;color:#ff8c42;font-weight:700;margin-left:4px;">🔥 ${u.streak} días</span>`:''}`;
+    document.getElementById('upLevel').innerHTML = `<span style="display:inline-flex;align-items:center;gap:5px;padding:2px 10px;border-radius:100px;font-size:.72rem;font-weight:700;border:1px solid;color:${lvl.color};border-color:${lvl.border};background:${lvl.border.replace(/[\d.]+\)$/,'.1)')};">${lvl.name}</span>`;
     document.getElementById('upBio').textContent = u.bio||'';
     const meta = [u.country, u.favFish?'🎣 '+u.favFish:'', u.favMap?'📍 '+u.favMap:''].filter(Boolean).join(' · ');
     document.getElementById('upMeta').textContent = meta;
@@ -17780,16 +17780,12 @@ function renderXPUI(){
     const nxt = document.getElementById('profXpNext');
     if(nxt) nxt.textContent=prog.needed>0?prog.current+'/'+prog.needed+' para siguiente nivel':'¡Nivel máximo!';
     const sb = document.getElementById('profStreakBadge');
-    if(sb){
-      if(streak>=2){ sb.style.display='inline-flex'; sb.textContent='🔥 '+streak+' días'; }
-      else { sb.style.display='none'; }
-    }
+    if(sb){ sb.style.display='none'; }
   }
 
   // ── About tab ──
   const sr = document.getElementById('profStreakRow');
-  const si = document.getElementById('profStreakInfo');
-  if(sr&&si&&streak>=1){ sr.style.display='flex'; si.textContent=streak+' días seguidos 🔥'; }
+  if(sr) sr.style.display='none';
   const xr = document.getElementById('profXpInfoRow');
   const xi = document.getElementById('profXpInfo');
   if(xr&&xi){ xr.style.display='flex'; xi.textContent=xp+' XP — '+lvl.name; }
