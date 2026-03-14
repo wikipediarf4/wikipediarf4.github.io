@@ -4475,7 +4475,7 @@ import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'http
 
 const firebaseConfig = {
   apiKey: "AIzaSyA9oat9dd0S9vlxkg1osH4dW3XhRDGiOiw",
-  authDomain: "wikipediarf4.uy",
+  authDomain: "charlasrf4.firebaseapp.com",
   projectId: "charlasrf4",
   storageBucket: "charlasrf4.firebasestorage.app",
   messagingSenderId: "345019626508",
@@ -5332,7 +5332,6 @@ window.addEventListener('popstate', (e) => {
 // On page load, navigate to the correct page based on URL
 window.addEventListener('DOMContentLoaded', () => {
   // Recuperar ruta guardada por 404.html (GitHub Pages SPA trick)
-  // Primero intentar ?r= en la URL (funciona sin sessionStorage/incognito)
   const rParam = new URLSearchParams(window.location.search).get('r');
   if (rParam) {
     const redirectPath = decodeURIComponent(rParam);
