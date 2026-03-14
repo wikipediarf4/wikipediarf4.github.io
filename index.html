@@ -14884,7 +14884,7 @@ async function _loadUserProfilePage(uid, nick){
 
     // ── NIVEL ──
     const lvl = getLevel(u.xp||0);
-    document.getElementById('upLevel').innerHTML = `<span style="display:inline-flex;align-items:center;gap:5px;padding:2px 10px;border-radius:100px;font-size:.72rem;font-weight:700;border:1px solid;color:${lvl.color};border-color:${lvl.border};background:${lvl.border.replace(/[\d.]+\)$/,'.1)')};">${lvl.name}</span>`;
+    document.getElementById('upLevel').innerHTML = '';
     document.getElementById('upBio').textContent = u.bio||'';
     const meta = [u.country, u.favFish?'🎣 '+u.favFish:'', u.favMap?'📍 '+u.favMap:''].filter(Boolean).join(' · ');
     document.getElementById('upMeta').textContent = meta;
@@ -17830,27 +17830,12 @@ function renderXPUI(){
   const sr = document.getElementById('profStreakRow');
   if(sr) sr.style.display='none';
   const xr = document.getElementById('profXpInfoRow');
-  const xi = document.getElementById('profXpInfo');
-  if(xr&&xi){ xr.style.display='flex'; xi.textContent=xp+' XP — '+lvl.name; }
+  if(xr) xr.style.display='none';
   document.getElementById('profLevel').textContent = lvl.name;
 
-  // ── Sidebar widget ──
+  // ── Sidebar widget — oculto ──
   const sw = document.getElementById('sidebarStreakWidget');
-  if(sw){
-    if(streak>=1){
-      sw.style.display='block';
-      const sc = document.getElementById('sidebarStreakCount');
-      if(sc) sc.textContent=streak;
-      const slb = document.getElementById('sidebarLevelBadge');
-      if(slb){ slb.textContent=lvl.name; slb.style.color=lvl.color; }
-      const sxp = document.getElementById('sidebarXpLabel');
-      if(sxp) sxp.textContent=xp+' XP';
-      const sbar = document.getElementById('sidebarXpBar');
-      if(sbar) sbar.style.width=prog.pct+'%';
-    } else {
-      sw.style.display='none';
-    }
-  }
+  if(sw) sw.style.display='none';
 }
 
 async function checkDailyStreak(){
