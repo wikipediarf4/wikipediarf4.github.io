@@ -1462,6 +1462,8 @@ select.fi option{background:var(--bg3);color:var(--text);}
         <div onclick="openLangModal();toggleUserMenu()" style="padding:10px 14px;cursor:pointer;font-size:.83rem;display:flex;align-items:center;gap:8px;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">🌐 <span data-i18n="menu_language">Idioma</span> <span id="langCurrentFlag" style="margin-left:auto;font-size:.8rem;color:var(--muted);">ES</span></div>
         <div id="userMenuAdmin" style="display:none;" onclick="gp('admin');toggleUserMenu()" style="padding:10px 14px;cursor:pointer;font-size:.83rem;display:flex;align-items:center;gap:8px;transition:background .15s;color:var(--red);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">🛡️ Panel Admin</div>
         <div style="height:1px;background:var(--border);"></div>
+        <div id="pushNotifMenuItem" onclick="requestPushPermission();toggleUserMenu()" style="padding:10px 14px;cursor:pointer;font-size:.83rem;display:flex;align-items:center;gap:8px;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">🔔 Activar notificaciones</div>
+        <div style="height:1px;background:var(--border);"></div>
         <div onclick="doLogout()" style="padding:10px 14px;cursor:pointer;font-size:.83rem;display:flex;align-items:center;gap:8px;color:var(--red);transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''" data-i18n="menu_logout">🚪 Cerrar sesión</div>
       </div>
     </div>
@@ -4568,6 +4570,7 @@ function _stub(name){ return function(){ _q.push([name, arguments]); }; }
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, GoogleAuthProvider, signInWithPopup } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
 import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, addDoc, deleteDoc, onSnapshot, query, orderBy, limit, serverTimestamp, increment, where, deleteField, Timestamp, arrayUnion, arrayRemove } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging.js';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
 
 const firebaseConfig = {
@@ -4579,6 +4582,80 @@ const firebaseConfig = {
   appId: "1:345019626508:web:d099ca499acb29eac12a29"
 };
 const app = initializeApp(firebaseConfig);
+
+// ===== PUSH NOTIFICATIONS (FCM) =====
+let _messaging = null;
+try { _messaging = getMessaging(app); } catch(e) {}
+
+// VAPID key publica — generala en Firebase Console → Project Settings → Cloud Messaging → Web Push certificates
+const VAPID_KEY = 'IqsQiPbDYaJo7n2ymy9kKaNNGcpfIX1Cr_sJ-JZPK5s';
+
+// Registrar service worker y pedir permiso
+async function initPushNotifications() {
+  if (!('Notification' in window) || !_messaging) return;
+  try {
+    // Registrar SW
+    const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    console.log('[FCM] Service worker registrado');
+
+    // Escuchar mensajes cuando la app está abierta
+    onMessage(_messaging, (payload) => {
+      const { title, body } = payload.notification || {};
+      toast('🏆 ' + (body || title || 'Nuevo trofeo publicado'), 'ok');
+    });
+
+    // Si ya tiene permiso, obtener token
+    if (Notification.permission === 'granted') {
+      await _saveFCMToken(reg);
+    }
+  } catch(e) {
+    console.warn('[FCM] Error iniciando push:', e);
+  }
+}
+
+// Guardar token FCM del usuario en Firestore
+async function _saveFCMToken(swReg) {
+  if (!window.CU || !_messaging) return;
+  try {
+    const token = await getToken(_messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
+    if (token) {
+      await setDoc(doc(db, 'fcmTokens', window.CU.id), {
+        token, userId: window.CU.id, nick: window.CU.nick || '?',
+        updatedAt: new Date()
+      }, { merge: true });
+      console.log('[FCM] Token guardado');
+    }
+  } catch(e) {
+    console.warn('[FCM] Error guardando token:', e);
+  }
+}
+
+// Pedir permiso al usuario (llamar cuando haga click en algo, no automático)
+window.requestPushPermission = async function() {
+  if (!('Notification' in window)) { toast('Tu navegador no soporta notificaciones', 'err'); return; }
+  const perm = await Notification.requestPermission();
+  if (perm === 'granted') {
+    const reg = await navigator.serviceWorker.getRegistration('/firebase-messaging-sw.js');
+    if (reg) await _saveFCMToken(reg);
+    toast('🔔 Notificaciones activadas', 'ok');
+  } else {
+    toast('Notificaciones bloqueadas', 'err');
+  }
+};
+
+// Notificar a todos los suscriptores cuando se publica un trofeo
+async function _notifyNewTrophy(fish, weight, nick, imageUrl) {
+  try {
+    // Guardar notificacion pendiente en Firestore — un Cloud Function o el propio cliente la procesa
+    await addDoc(collection(db, 'pushQueue'), {
+      type: 'newTrophy',
+      title: '🏆 Nuevo trofeo publicado',
+      body: nick + ' atrapó ' + fish + (weight ? ' de ' + Number(weight).toFixed(3) + ' kg' : ''),
+      imageUrl: imageUrl || '',
+      createdAt: new Date()
+    });
+  } catch(e) {}
+}
 const storage = getStorage(app);
 
 const auth = getAuth(app);
@@ -5166,6 +5243,15 @@ async function doReg(){
 }
 
 function onLogin(){
+  // Iniciar push notifications
+  setTimeout(async () => {
+    await initPushNotifications();
+    // Actualizar texto del menú si ya tiene permiso
+    if (Notification.permission === 'granted') {
+      const btn = document.getElementById('pushNotifMenuItem');
+      if (btn) btn.innerHTML = '🔔 Notificaciones activadas ✓';
+    }
+  }, 2000);
   updateNavUI();
   listenVerifiedUsers().then(()=>{ listenPosts(); listenStories(); }).catch(()=>{ listenPosts(); listenStories(); });
   startPresence().then(()=>{ if(typeof updatePresenceActivity==='function') updatePresenceActivity('home'); });
@@ -19979,6 +20065,8 @@ window.wkSubmitTrophy = async () => {
     }catch(e){ console.warn('No se pudo actualizar config/lastTrophy:',e); }
     // Actualizar contador de trofeos del usuario
     try{ await updateDoc(doc(db,'users',window.CU.id),{trophyCount:increment(1)}); }catch(e){}
+    // Notificar a todos los suscriptores
+    try{ _notifyNewTrophy(fish, weight, window.CU.nick||'?', imageUrls[0]||''); }catch(e){}
     wkCm('wkMPublish'); wkResetForm();
     toast('🏆 ¡Trofeo publicado!','ok');
     _wkLoaded=false; wkLoadHome();
