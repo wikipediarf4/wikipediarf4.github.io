@@ -4828,37 +4828,30 @@ function init(){
 }
 
 // ===== CARGA TROFEOS EN PANTALLA DE LOGIN =====
+// Opcion 3: lee solo 1 documento (config/lastTrophy) en vez de toda la coleccion
 function loadAuthTrofeos(){
   const el = document.getElementById('authTrofeosList');
   if(!el) return;
-  getDocs(collection(db,'trofeosPendientes')).then(snap => {
-    const items = snap.docs
-      .map(d=>({id:d.id,...d.data()}))
-      .filter(t => t.status === 'approved')
-      .sort((a,b)=>{
-        const ts = x => x.createdAt?.toMillis ? x.createdAt.toMillis() : (x.createdAt?.seconds ? x.createdAt.seconds*1000 : (typeof x.createdAt==='number'?x.createdAt:0));
-        return ts(b) - ts(a);
-      })
-      .slice(0,1);
-    if(!items.length){
-      el.innerHTML='<div style="font-size:.75rem;color:#8b949e;text-align:center;padding:8px;">Sin trofeos aún</div>';
+  getDoc(doc(db,'config','lastTrophy')).then(snap => {
+    if(!snap.exists()){
+      el.innerHTML='<div style="font-size:.75rem;color:#8b949e;text-align:center;padding:8px;">Sin trofeos aun</div>';
       return;
     }
-    const t = items[0];
-    const img = (t.images&&t.images[0])||t.imageUrl||t.img||'';
-    const fish = (t.fish||t.especie||'?').substring(0,28);
-    const kg = t.weight||t.peso||0;
-    const map = (t.map||t.mapa||'').substring(0,22);
-    const nick = (t.userNick||t.submittedBy||'Anónimo').substring(0,20);
+    const t = snap.data();
+    const img = t.imageUrl||'';
+    const fish = (t.fish||'?').substring(0,28);
+    const kg = t.weight||0;
+    const map = (t.map||'').substring(0,22);
+    const nick = (t.nick||'Anonimo').substring(0,20);
     const w = kg ? (Number(kg).toFixed(3)+' kg') : '';
     el.innerHTML = `<div style="display:flex;align-items:center;gap:12px;background:rgba(255,215,0,.07);border:1px solid rgba(255,215,0,.25);border-radius:12px;padding:10px 14px;">
       ${img
         ? `<img src="${img}" style="width:72px;height:72px;object-fit:cover;border-radius:10px;flex-shrink:0;border:1.5px solid rgba(255,215,0,.3);" onerror="this.style.display='none'">`
-        : `<div style="width:72px;height:72px;border-radius:10px;background:rgba(255,215,0,.1);display:flex;align-items:center;justify-content:center;font-size:2.2rem;flex-shrink:0;">🐟</div>`}
+        : `<div style="width:72px;height:72px;border-radius:10px;background:rgba(255,215,0,.1);display:flex;align-items:center;justify-content:center;font-size:2.2rem;flex-shrink:0;">&#x1F41F;</div>`}
       <div style="min-width:0;flex:1;">
-        <div style="font-family:'Orbitron',monospace;font-size:.82rem;font-weight:900;color:var(--gold,#d4a017);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">🥇 ${fish}</div>
+        <div style="font-family:'Orbitron',monospace;font-size:.82rem;font-weight:900;color:var(--gold,#d4a017);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">&#x1F947; ${fish}</div>
         ${w?`<div style="font-size:1rem;font-weight:800;color:#e6edf3;margin-top:2px;">${w}</div>`:''}
-        <div style="font-size:.7rem;color:#8b949e;margin-top:3px;">${map?'📍 '+map+' · ':''}<span style="color:var(--accent,#2ec4b6);">@${nick}</span></div>
+        <div style="font-size:.7rem;color:#8b949e;margin-top:3px;">${map?'&#x1F4CD; '+map+' &middot; ':''}<span style="color:var(--accent,#2ec4b6);">@${nick}</span></div>
       </div>
     </div>`;
   }).catch(e=>{
@@ -8142,6 +8135,9 @@ async function submitPost(){
     likes:0, comments:[], reactions:{}, reactionCounts:{}
   });
 
+  // config/stats: incrementar totalPosts
+  try{ await setDoc(doc(db,'config','stats'),{totalPosts: increment(1)},{merge:true}); }catch(e){}
+
   // Notificar a personas etiquetadas desde el modal
   if(window._taggedPeople && window._taggedPeople.length){
     for(const u of window._taggedPeople){
@@ -11045,12 +11041,16 @@ async function _runSearch(q){
       return s.includes(v);
     }).slice(0,3);
 
-    // Usuarios
+    // Usuarios - buscar por nickLower con where() para evitar leer toda la coleccion
     try {
-      const uSnap = await getDocs(query(collection(db,'users'), limit(300)));
-      R.users = uSnap.docs.map(d=>({id:d.id,...d.data()}))
-        .filter(u=>[(u.nick||''),(u.email||''),(u.bio||'')].join(' ').toLowerCase().includes(v))
-        .slice(0,4);
+      // Busqueda por prefijo: nickLower >= v && nickLower < v + ''
+      const uSnap = await getDocs(query(
+        collection(db,'users'),
+        where('nickLower','>=',v),
+        where('nickLower','<=',v+''),
+        limit(8)
+      ));
+      R.users = uSnap.docs.map(d=>({id:d.id,...d.data()})).slice(0,4);
     } catch(e){}
 
     // Grupos
@@ -11987,18 +11987,26 @@ function swAdminTab(el, tabId){
 
 async function loadAdminData(){
   if(!window.CU || (window.CU.nick !== 'ruizgustavo12' && window.CU.email !== 'synxyes@gmail.com')) return;
-  const [postsSnap, usersSnap, reportsSnap, storiesSnap, groupsSnap] = await Promise.all([
+
+  // config/stats: leer contadores desde 1 documento en vez de colecciones completas
+  try{
+    const statsSnap = await getDoc(doc(db,'config','stats'));
+    if(statsSnap.exists()){
+      const st = statsSnap.data();
+      if(document.getElementById('adminStatPosts')) document.getElementById('adminStatPosts').textContent = st.totalPosts||'—';
+      if(document.getElementById('adminStatUsers')) document.getElementById('adminStatUsers').textContent = st.totalUsers||'—';
+      if(document.getElementById('adminStatGroups')) document.getElementById('adminStatGroups').textContent = st.totalGroups||'—';
+    }
+  }catch(e){}
+
+  // Reports y posts siguen leyendose para mostrar la lista (necesario)
+  const [postsSnap, reportsSnap, storiesSnap] = await Promise.all([
     getDocs(collection(db,'posts')),
-    getDocs(collection(db,'users')),
     getDocs(collection(db,'reports')),
     getDocs(collection(db,'stories')),
-    getDocs(collection(db,'groups')),
   ]);
-  document.getElementById('adminStatPosts').textContent = postsSnap.size;
-  document.getElementById('adminStatUsers').textContent = usersSnap.size;
-  document.getElementById('adminStatReports').textContent = reportsSnap.size;
-  document.getElementById('adminStatStories').textContent = storiesSnap.size;
-  if(document.getElementById('adminStatGroups')) document.getElementById('adminStatGroups').textContent = groupsSnap.size;
+  if(document.getElementById('adminStatReports')) document.getElementById('adminStatReports').textContent = reportsSnap.size;
+  if(document.getElementById('adminStatStories')) document.getElementById('adminStatStories').textContent = storiesSnap.size;
 
   const posts = postsSnap.docs.map(d=>({id:d.id,...d.data()}));
   const reports = reportsSnap.docs.map(d=>({id:d.id,...d.data(),time:d.data().time?.toMillis?.()||Date.now()}));
@@ -19917,7 +19925,9 @@ window.wkSubmitTrophy = async () => {
       createdAt:serverTimestamp()
     };
     const newRef = await addDoc(collection(db,'trofeosPendientes'), data);
-    // Actualizar config/lastTrophy para el login (1 lectura en vez de toda la coleccion)
+    // config/stats: incrementar totalTrophies
+    try{ await setDoc(doc(db,'config','stats'),{totalTrophies: increment(1)},{merge:true}); }catch(e){}
+    // config/lastTrophy: guardar resumen para el login (1 lectura en vez de toda la coleccion)
     try{
       await setDoc(doc(db,'config','lastTrophy'),{
         id: newRef.id,
