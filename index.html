@@ -4734,7 +4734,7 @@ async function _notifyNewTrophy(fish, weight, nick, imageUrl) {
     await addDoc(collection(db, 'pushQueue'), {
       type: 'newTrophy',
       title: '🏆 Nuevo trofeo publicado',
-      body: nick + ' atrapó ' + fish + (weight ? ' de ' + Number(weight).toFixed(3) + ' kg' : ''),
+      body: nick + ' atrapó ' + fish + (weight ? ' de ' + (Number(weight)>=1 ? Number(weight).toFixed(3)+' kg' : Math.round(Number(weight)*1000)+' g') : ''),
       imageUrl: imageUrl || '',
       createdAt: new Date()
     });
@@ -5048,7 +5048,11 @@ function loadAuthTrofeos(){
     const kg = t.weight||0;
     const map = (t.map||'').substring(0,22);
     const nick = (t.nick||'Anonimo').substring(0,20);
-    const w = kg ? (Number(kg).toFixed(3)+' kg') : '';
+    let w = '';
+    if(kg){
+      const n = Number(kg);
+      w = n >= 1 ? (n.toFixed(3)+' kg') : (Math.round(n*1000)+' g');
+    }
     el.innerHTML = `<div style="display:flex;align-items:center;gap:12px;background:rgba(255,215,0,.07);border:1px solid rgba(255,215,0,.25);border-radius:12px;padding:10px 14px;">
       ${img
         ? `<img src="${img}" style="width:72px;height:72px;object-fit:cover;border-radius:10px;flex-shrink:0;border:1.5px solid rgba(255,215,0,.3);" onerror="this.style.display='none'">`
@@ -9656,7 +9660,7 @@ function renderProfile(){
       _profPremBadge.id = '_profPremiumBadge';
       _profPremBadge.className = 'premium-badge-inline';
       _profPremBadge.style.marginTop = '6px';
-      _profPremBadge.innerHTML = '⭐ WikiPediaRF4 Premium';
+      _profPremBadge.innerHTML = '⭐ Perfil Premium';
       nameEl.insertAdjacentElement('afterend', _profPremBadge);
     }
   } else {
@@ -14871,7 +14875,7 @@ async function _loadUserProfilePage(uid, nick){
         _upPremBadge = document.createElement('span');
         _upPremBadge.id = '_upPremiumBadge';
         _upPremBadge.className = 'premium-badge-inline';
-        _upPremBadge.innerHTML = '⭐ WikiPediaRF4 Premium';
+        _upPremBadge.innerHTML = '⭐ Perfil Premium';
         nEl.insertAdjacentElement('afterend', _upPremBadge);
       }
     } else {
