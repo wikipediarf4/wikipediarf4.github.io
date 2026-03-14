@@ -241,6 +241,12 @@ img[title="Verificado"]:hover{
 /* Banner premium bajo el nombre */
 .verif-banner{display:flex;align-items:center;gap:8px;background:linear-gradient(90deg,rgba(255,215,0,.12),rgba(255,165,0,.08),rgba(255,215,0,.12));border:1px solid rgba(255,215,0,.25);border-radius:100px;padding:5px 14px;margin-top:6px;width:fit-content;}
 
+/* Nombre Premium */
+.premium-name{background:linear-gradient(90deg,#ffd700,#fff6a0,#ffb700,#ffe066,#ffd700);background-size:250%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:premiumNameShimmer 3s ease infinite;filter:drop-shadow(0 0 8px rgba(255,215,0,.55));}
+@keyframes premiumNameShimmer{0%{background-position:0%}50%{background-position:100%}100%{background-position:0%}}
+/* Badge Premium inline */
+.premium-badge-inline{display:inline-flex;align-items:center;gap:5px;padding:3px 12px;border-radius:100px;background:linear-gradient(135deg,rgba(255,215,0,.18),rgba(255,180,0,.10));border:1px solid rgba(255,215,0,.55);color:#ffd700;font-size:.72rem;font-weight:800;letter-spacing:.04em;box-shadow:0 0 10px rgba(255,215,0,.2);animation:premiumBadgePulse 2.5s ease-in-out infinite;}
+
 /* Partículas canvas */
 #verifParticles{position:absolute;inset:0;pointer-events:none;z-index:1;}
 
@@ -253,6 +259,7 @@ img[title="Verificado"]:hover{
 @keyframes verifBorderFlow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 @keyframes verifAvatarSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
 @keyframes verifBadgeBounce{0%,100%{transform:scale(1)}40%{transform:scale(1.3)}60%{transform:scale(.9)}}
+@keyframes premiumBadgePulse{0%,100%{box-shadow:0 0 8px rgba(255,215,0,.2)}50%{box-shadow:0 0 18px rgba(255,215,0,.5)}}
 @keyframes verifShine{0%{left:-100%}100%{left:200%}}
 @keyframes verifStarPop{0%{opacity:0;transform:scale(0) rotate(-30deg)}60%{opacity:1;transform:scale(1.2) rotate(5deg)}100%{opacity:1;transform:scale(1) rotate(0deg)}}
 
@@ -9632,12 +9639,29 @@ function renderProfile(){
   // ── NOMBRE dorado animado ──
   const nameEl = document.getElementById('profName');
   nameEl.textContent = window.CU.nick;
+  const isPremiumUser = window.CU.role === 'premium' || (window.CU.badges||[]).includes('premium');
   if(isVerified) nameEl.classList.add('verif-name-gold');
   else nameEl.classList.remove('verif-name-gold');
+  if(isPremiumUser){ nameEl.classList.add('premium-name'); } else { nameEl.classList.remove('premium-name'); }
 
   // ── BADGE ──
   const badge = document.getElementById('profVerifiedBadge');
   if(badge) badge.style.display = isVerified ? 'inline-flex' : 'none';
+
+  // ── BADGE PREMIUM ──
+  let _profPremBadge = document.getElementById('_profPremiumBadge');
+  if(isPremiumUser){
+    if(!_profPremBadge){
+      _profPremBadge = document.createElement('span');
+      _profPremBadge.id = '_profPremiumBadge';
+      _profPremBadge.className = 'premium-badge-inline';
+      _profPremBadge.style.marginTop = '6px';
+      _profPremBadge.innerHTML = '⭐ WikiPediaRF4 Premium';
+      nameEl.insertAdjacentElement('afterend', _profPremBadge);
+    }
+  } else {
+    if(_profPremBadge) _profPremBadge.remove();
+  }
 
   // ── BANNER PREMIUM ──
   let verifBanner = document.getElementById('verifProfileBanner');
@@ -14834,10 +14858,25 @@ async function _loadUserProfilePage(uid, nick){
     // ── NOMBRE ──
     const nEl = document.getElementById('upName');
     nEl.textContent = uNick;
+    const isPremium = u.role === 'premium' || (u.badges||[]).includes('premium');
     if(isVerified) nEl.classList.add('verif-name-gold');
     else nEl.classList.remove('verif-name-gold');
+    if(isPremium){ nEl.classList.add('premium-name'); } else { nEl.classList.remove('premium-name'); }
     document.getElementById('upVerifBadge').style.display = isVerified ? 'inline-flex' : 'none';
     document.getElementById('upVerifBanner').style.display = isVerified ? 'flex' : 'none';
+    // Badge Premium
+    let _upPremBadge = document.getElementById('_upPremiumBadge');
+    if(isPremium){
+      if(!_upPremBadge){
+        _upPremBadge = document.createElement('span');
+        _upPremBadge.id = '_upPremiumBadge';
+        _upPremBadge.className = 'premium-badge-inline';
+        _upPremBadge.innerHTML = '⭐ WikiPediaRF4 Premium';
+        nEl.insertAdjacentElement('afterend', _upPremBadge);
+      }
+    } else {
+      if(_upPremBadge) _upPremBadge.remove();
+    }
 
     // ── NIVEL ──
     const lvl = getLevel(u.xp||0);
