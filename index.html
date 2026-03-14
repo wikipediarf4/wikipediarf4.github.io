@@ -2229,51 +2229,10 @@ select.fi option{background:var(--bg3);color:var(--text);}
           <span class="fb-forgot" onclick="doForgotPassword()">¿Olvidaste tu contraseña?</span>
         </div>
         <div class="fb-divider"></div>
-        <button class="fb-btn-create" onclick="showReg()" style="margin-bottom:10px;">Crear cuenta nueva</button>
         <button onclick="doGoogleLogin()" style="width:100%;padding:12px;background:#161b22;color:#3c4043;border:1.5px solid #dadce0;border-radius:6px;font-size:1rem;font-weight:600;font-family:'Exo 2',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;transition:box-shadow .15s;" onmouseover="this.style.boxShadow='0 2px 8px #0002'" onmouseout="this.style.boxShadow='none'">
           <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:22px;height:22px;">
           Continuar con Google
         </button>
-      </div>
-
-      <!-- REGISTRO CARD -->
-      <div id="regForm" class="fb-card" style="display:none;">
-        <div style="font-family:'Orbitron',monospace;font-size:.95rem;font-weight:900;color:var(--accent);text-align:center;margin-bottom:16px;">Crear cuenta nueva</div>
-        <div id="rErr" style="color:#fa3e3e;font-size:.82rem;margin-bottom:10px;text-align:center;display:none;padding:8px;background:#fff0f0;border-radius:6px;border:1px solid #ffd0d0;"></div>
-        <input class="fb-input" type="text" id="rNick" placeholder="Nick / Nombre de usuario *" autocomplete="username">
-        <input class="fb-input" type="email" id="rEmail" placeholder="Correo electrónico *" autocomplete="email">
-        <div style="position:relative;margin-bottom:8px;">
-          <input class="fb-input" type="password" id="rPass" placeholder="Contraseña (mín. 6 caracteres) *" style="margin-bottom:0;padding-right:44px;" autocomplete="new-password">
-          <button type="button" onclick="togglePassVis('rPass',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1rem;color:#8b949e;padding:2px 4px;" title="Mostrar/ocultar contraseña">👁</button>
-        </div>
-        <select class="fb-input" id="rCountry" style="margin-bottom:8px;color:#e6edf3;background:#21262d;">
-          <option value="">— País (opcional) —</option>
-          <option value="🇦🇷 Argentina">🇦🇷 Argentina</option>
-          <option value="🇲🇽 México">🇲🇽 México</option>
-          <option value="🇪🇸 España">🇪🇸 España</option>
-          <option value="🇨🇴 Colombia">🇨🇴 Colombia</option>
-          <option value="🇨🇱 Chile">🇨🇱 Chile</option>
-          <option value="🇵🇪 Perú">🇵🇪 Perú</option>
-          <option value="🇻🇪 Venezuela">🇻🇪 Venezuela</option>
-          <option value="🇺🇾 Uruguay">🇺🇾 Uruguay</option>
-          <option value="🇧🇷 Brasil">🇧🇷 Brasil</option>
-          <option value="🇧🇴 Bolivia">🇧🇴 Bolivia</option>
-          <option value="🇵🇾 Paraguay">🇵🇾 Paraguay</option>
-          <option value="🇪🇨 Ecuador">🇪🇨 Ecuador</option>
-          <option value="🇷🇺 Rusia">🇷🇺 Rusia</option>
-          <option value="🇮🇹 Italia">🇮🇹 Italia</option>
-          <option value="🇵🇹 Portugal">🇵🇹 Portugal</option>
-          <option value="🌍 Otro">🌍 Otro</option>
-        </select>
-        <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:14px;">
-          <input type="checkbox" id="acceptTerms" style="width:15px;height:15px;accent-color:#1877f2;cursor:pointer;margin-top:2px;flex-shrink:0;">
-          <label for="acceptTerms" style="font-size:.78rem;color:#8b949e;cursor:pointer;line-height:1.4;">Acepto los <span onclick="showTerms()" style="color:var(--accent);cursor:pointer;text-decoration:underline;">Términos y Condiciones</span></label>
-        </div>
-        <button class="fb-btn-create" onclick="doReg()">Crear cuenta gratis</button>
-        <div class="fb-divider"></div>
-        <div style="text-align:center;font-size:.85rem;color:#8b949e;">
-          ¿Ya tenés cuenta? <span onclick="showLogin()" style="color:#1877f2;font-weight:700;cursor:pointer;">Iniciar sesión</span>
-        </div>
       </div>
 
       <!-- Footer WikiPediaRF4.UY -->
@@ -4750,13 +4709,12 @@ function listenStories() {
       _stories = snap.docs.filter(d => {
         const raw = d.data().time;
         const t = raw?.toMillis ? raw.toMillis() : (typeof raw === 'number' ? raw : 0);
-        const ttl = d.data().userVerified ? 172800000 : 86400000;
+        const ttl = 86400000; // 24h siempre, sin excepción
         // Si t===0 es un serverTimestamp pendiente (historia recien publicada) — incluirla
-        if(t && (now - t) > ttl){ expiredIds.push(d.id); return false; }
+        if(t && (now - t) >= ttl){ expiredIds.push(d.id); return false; }
         return true;
       }).map(d => {
         const raw = d.data().time;
-        // Si el timestamp aun no llego del servidor, usar tiempo actual para mostrarla
         const t = raw?.toMillis ? raw.toMillis() : (typeof raw === 'number' ? raw : Date.now());
         return { id: d.id, ...d.data(), time: t };
       });
@@ -4768,6 +4726,18 @@ function listenStories() {
     },
     err => { console.warn('listenStories error:', err); }
   );
+  // Intervalo cliente: eliminar historias expiradas aunque no haya nuevo snapshot
+  if(window._storiesCleanupInterval) clearInterval(window._storiesCleanupInterval);
+  window._storiesCleanupInterval = setInterval(() => {
+    const now = Date.now();
+    const ttl = 86400000;
+    const toDelete = _stories.filter(s => s.time && (now - s.time) >= ttl);
+    if(toDelete.length){
+      toDelete.forEach(s => deleteDoc(doc(db, 'stories', s.id)).catch(()=>{}));
+      _stories = _stories.filter(s => !s.time || (now - s.time) < ttl);
+      renderStories();
+    }
+  }, 60000); // revisar cada minuto
 }
 
 // ===== INIT =====
