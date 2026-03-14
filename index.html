@@ -2229,48 +2229,10 @@ select.fi option{background:var(--bg3);color:var(--text);}
           <span class="fb-forgot" onclick="doForgotPassword()">¿Olvidaste tu contraseña?</span>
         </div>
         <div class="fb-divider"></div>
-        <button class="fb-btn-create" onclick="showReg()" style="margin-bottom:10px;">Crear cuenta nueva</button>
         <button onclick="doGoogleLogin()" style="width:100%;padding:12px;background:#161b22;color:#3c4043;border:1.5px solid #dadce0;border-radius:6px;font-size:1rem;font-weight:600;font-family:'Exo 2',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;transition:box-shadow .15s;" onmouseover="this.style.boxShadow='0 2px 8px #0002'" onmouseout="this.style.boxShadow='none'">
           <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:22px;height:22px;">
           Continuar con Google
         </button>
-      </div>
-
-      <!-- REGISTRO CARD -->
-      <div id="regForm" class="fb-card" style="display:none;">
-        <div style="font-family:'Orbitron',monospace;font-size:.95rem;font-weight:900;color:var(--accent);text-align:center;margin-bottom:16px;">Crear cuenta nueva</div>
-        <div id="rErr" style="color:#fa3e3e;font-size:.82rem;margin-bottom:10px;text-align:center;display:none;padding:8px;background:#fff0f0;border-radius:6px;border:1px solid #ffd0d0;"></div>
-        <input class="fb-input" type="text" id="rNick" placeholder="Nick / Nombre de usuario *" autocomplete="username">
-        <input class="fb-input" type="email" id="rEmail" placeholder="Correo electrónico *" autocomplete="email">
-        <div style="position:relative;margin-bottom:8px;">
-          <input class="fb-input" type="password" id="rPass" placeholder="Contraseña (mín. 6 caracteres) *" style="margin-bottom:0;padding-right:44px;" autocomplete="new-password">
-          <button type="button" onclick="togglePassVis('rPass',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1rem;color:#8b949e;padding:2px 4px;">👁</button>
-        </div>
-        <select class="fb-input" id="rCountry" style="margin-bottom:8px;color:#e6edf3;background:#21262d;">
-          <option value="">— País (opcional) —</option>
-          <option value="🇦🇷 Argentina">🇦🇷 Argentina</option>
-          <option value="🇲🇽 México">🇲🇽 México</option>
-          <option value="🇪🇸 España">🇪🇸 España</option>
-          <option value="🇨🇴 Colombia">🇨🇴 Colombia</option>
-          <option value="🇨🇱 Chile">🇨🇱 Chile</option>
-          <option value="🇵🇪 Perú">🇵🇪 Perú</option>
-          <option value="🇻🇪 Venezuela">🇻🇪 Venezuela</option>
-          <option value="🇺🇾 Uruguay">🇺🇾 Uruguay</option>
-          <option value="🇧🇷 Brasil">🇧🇷 Brasil</option>
-          <option value="🇧🇴 Bolivia">🇧🇴 Bolivia</option>
-          <option value="🇵🇾 Paraguay">🇵🇾 Paraguay</option>
-          <option value="🇷🇺 Rusia">🇷🇺 Rusia</option>
-          <option value="🇮🇹 Italia">🇮🇹 Italia</option>
-          <option value="🇵🇹 Portugal">🇵🇹 Portugal</option>
-          <option value="🌍 Otro">🌍 Otro</option>
-        </select>
-        <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:14px;">
-          <input type="checkbox" id="acceptTerms" style="width:15px;height:15px;accent-color:#1877f2;cursor:pointer;margin-top:2px;flex-shrink:0;">
-          <label for="acceptTerms" style="font-size:.78rem;color:#8b949e;cursor:pointer;line-height:1.4;">Acepto los <span onclick="showTerms()" style="color:var(--accent);cursor:pointer;text-decoration:underline;">Términos y Condiciones</span></label>
-        </div>
-        <button class="fb-btn-create" onclick="doReg()">Crear cuenta gratis</button>
-        <div class="fb-divider"></div>
-        <div style="text-align:center;font-size:.85rem;color:#8b949e;">¿Ya tenés cuenta? <span onclick="showLogin()" style="color:#1877f2;font-weight:700;cursor:pointer;">Iniciar sesión</span></div>
       </div>
 
       <!-- Footer WikiPediaRF4.UY -->
@@ -4351,7 +4313,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
     </div>
     <div class="wk-fg"><label class="wk-fl">Descripción / Setup</label><textarea class="wk-fi" id="wkPDesc" placeholder="Señuelo, profundidad, condiciones del agua..." style="min-height:65px"></textarea></div>
     <div class="wk-fg">
-      <label class="wk-fl">📸 Fotos (máx. 4)</label>
+      <label class="wk-fl">📸 Fotos (máx. 5)</label>
       <div class="wk-dz" id="wkDropzone">
         <div>📁 Arrastrá o hacé clic para subir fotos</div>
         <div style="font-size:.75rem;color:var(--muted,#567890);margin-top:4px">JPG, PNG · Max 5MB c/u</div>
@@ -4785,7 +4747,7 @@ function init(){
     if(splash && splash.style.display !== 'none'){
       splash.style.display = 'none';
       document.getElementById('mAuth').style.display = 'block';
-      setTimeout(loadAuthTrofeos, 1500);
+      loadAuthTrofeos();
     }
   }, 4000);
 
@@ -4822,7 +4784,7 @@ function init(){
       window.CU = null;
       hideSplash();
       document.getElementById('mAuth').style.display = 'block';
-      setTimeout(loadAuthTrofeos, 1500);
+      loadAuthTrofeos();
     }
   });
 }
@@ -4832,17 +4794,15 @@ async function loadAuthTrofeos(){
   const el = document.getElementById('authTrofeosList');
   if(!el) return;
   try{
-    // Sin where() para no requerir índice compuesto — filtrar en cliente
-    const snap = await getDocs(query(collection(db,'trofeosPendientes'), limit(100)));
+    const snap = await getDocs(query(collection(db,'trofeosPendientes'), where('status','==','approved'), limit(50)));
     let items = snap.docs.map(d=>({id:d.id,...d.data()}))
-      .filter(t => t.status === 'approved')
       .sort((a,b)=>{
-        const ta = a.createdAt?.toMillis ? a.createdAt.toMillis() : (a.createdAt?.seconds ? a.createdAt.seconds*1000 : (typeof a.createdAt==='number'?a.createdAt:0));
-        const tb = b.createdAt?.toMillis ? b.createdAt.toMillis() : (b.createdAt?.seconds ? b.createdAt.seconds*1000 : (typeof b.createdAt==='number'?b.createdAt:0));
+        const ta = a.createdAt?.toMillis ? a.createdAt.toMillis() : (a.createdAt?.seconds ? a.createdAt.seconds*1000 : 0);
+        const tb = b.createdAt?.toMillis ? b.createdAt.toMillis() : (b.createdAt?.seconds ? b.createdAt.seconds*1000 : 0);
         return tb - ta;
       })
       .slice(0,4);
-    if(!items.length){ el.innerHTML='<div style="font-size:.75rem;color:#8b949e;text-align:center;padding:8px;">Sin trofeos aún</div>'; return; }
+    if(!items.length){ el.innerHTML='<div style="font-size:.75rem;color:#8b949e;text-align:center;">Sin trofeos aún</div>'; return; }
     el.innerHTML = items.map(t=>{
       const img = (t.images&&t.images[0])||t.imageUrl||t.img||'';
       const fish = (t.fish||t.especie||'?').substring(0,28);
@@ -4859,10 +4819,7 @@ async function loadAuthTrofeos(){
         <div style="font-size:1.1rem;flex-shrink:0;">🥇</div>
       </div>`;
     }).join('');
-  }catch(e){
-    console.error('loadAuthTrofeos error:', e);
-    el.innerHTML='<div style="font-size:.72rem;color:#8b949e;text-align:center;padding:8px;">—</div>';
-  }
+  }catch(e){ el.innerHTML=''; }
 }
 
 // ===== DEMO DATA =====
@@ -19845,7 +19802,7 @@ window.wkResetForm = () => {
 // File handling for publish form
 window.wkHFiles = (files) => {
   Array.from(files).forEach(f=>{
-    if(_wkImgs.length>=4) return;
+    if(_wkImgs.length>=5) return;
     if(!f.type.startsWith('image/')) return;
     const reader=new FileReader();
     reader.onload=e=>{ _wkImgs.push({file:f,preview:e.target.result}); wkPvRender(); };
