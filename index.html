@@ -17898,7 +17898,8 @@ function trofeoFeedCardHTML(t){
   const description = esc(t.description||t.notes||t.nota||'');
   const notes = esc(t.notes||t.nota||t.description||'');
 
-  return `<div id="trofeo_${t.id||''}" style="background:var(--bg2);border:1px solid rgba(255,215,0,.25);border-radius:var(--r);margin-bottom:18px;overflow:hidden;transition:border-color .2s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='rgba(255,215,0,.25)'">
+  const tid = t.id||'';
+  return `<div id="trofeo_${tid}" style="background:var(--bg2);border:1px solid rgba(255,215,0,.25);border-radius:var(--r);margin-bottom:18px;overflow:hidden;transition:border-color .2s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='rgba(255,215,0,.25)'">
     <!-- Header type banner -->
     <div style="background:linear-gradient(135deg,rgba(255,215,0,.12),rgba(255,215,0,.04));border-bottom:1px solid rgba(255,215,0,.15);padding:8px 14px;display:flex;align-items:center;gap:6px;">
       <span style="font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--gold);">🥇 TROFEO APROBADO</span>
@@ -17940,30 +17941,30 @@ function trofeoFeedCardHTML(t){
     ${description?`<div style="padding:4px 14px 12px;font-size:.85rem;color:var(--muted);line-height:1.5;">${description}</div>`:''}
     <!-- Reaction summary -->
     <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px;border-top:1px solid rgba(255,215,0,.08);">
-      <div class="post-rxn-summary" id="rxns_trofeo_${t.id||''}" onclick="openReactionsModal('trofeo_${t.id||''}')" style="min-height:22px;"></div>
-      <div style="font-size:.72rem;color:var(--muted);cursor:pointer;" id="trofeo_cmtcount_${t.id||''}"></div>
+      <div class="post-rxn-summary" id="rxns_trofeo_${tid}" onclick="openReactionsModal('trofeo_${tid}')" style="min-height:22px;"></div>
+      <div style="font-size:.72rem;color:var(--muted);cursor:pointer;" id="trofeo_cmtcount_${tid}"></div>
     </div>
     <!-- Action bar: Reaccionar / Comentar / Compartir -->
     <div style="display:flex;border-top:1px solid rgba(255,215,0,.12);padding:0 4px;">
       <div class="rxn-wrap" style="flex:1;">
-        <button class="act-btn" id="trofeoRxnBtn_${t.id||''}"
-          onmouseenter="showRxnPop('trofeo_${t.id||''}')"
-          onmouseleave="schedHideRxnPop('trofeo_${t.id||''}')"
-          onclick="doReact('trofeo_${t.id||''}',null,'trofeo')"
+        <button class="act-btn" id="trofeoRxnBtn_${tid}"
+          onmouseenter="showRxnPop('trofeo_${tid}')"
+          onmouseleave="schedHideRxnPop('trofeo_${tid}')"
+          onclick="doReact('trofeo_${tid}',null,'trofeo')"
           style="width:100%;justify-content:center;gap:6px;">
-          <span id="trofeoRxnIcon_${t.id||''}">👍</span> <span id="trofeoRxnLbl_${t.id||''}">Me gusta</span>
+          <span id="trofeoRxnIcon_${tid}">👍</span> <span id="trofeoRxnLbl_${tid}">Me gusta</span>
         </button>
-        <div class="rxn-popup" id="rxnp_trofeo_${t.id||''}"
-          onmouseenter="cancelHideRxnPop('trofeo_${t.id||''}')"
-          onmouseleave="schedHideRxnPop('trofeo_${t.id||''}')">
-          ${['👍','❤️','😲','😂','😢','😡'].map(e=>`<button class="rxn-btn" onclick="doReact('trofeo_${t.id||''}','${e}','trofeo');schedHideRxnPop('trofeo_${t.id||''}')" title="${e}">${e}</button>`).join('')}
+        <div class="rxn-popup" id="rxnp_trofeo_${tid}"
+          onmouseenter="cancelHideRxnPop('trofeo_${tid}')"
+          onmouseleave="schedHideRxnPop('trofeo_${tid}')">
+          ${[{e:'trofeo_normal',s:'/troff.png',l:'Trofeo'},{e:'trofeo_super',s:'/troff_super.png',l:'Super Trofeo'}].map(function(r){return '<button class="rxn-btn" onclick="doReact(\'trofeo_'+tid+'\',\''+r.e+'\',\'trofeo\');schedHideRxnPop(\'trofeo_'+tid+'\')"><img src="'+r.s+'" style="width:24px;height:24px;" title="'+r.l+'"></button>';}).join('')
         </div>
       </div>
-      <button class="act-btn" style="flex:1;justify-content:center;" onclick="toggleComments('trofeo_${t.id||''}')">💬 Comentar</button>
-      <button class="act-btn" style="flex:1;justify-content:center;" onclick="sharePost('trofeo_${t.id||''}')">↗️ Compartir</button>
+      <button class="act-btn" style="flex:1;justify-content:center;" onclick="toggleComments('trofeo_${tid}')">💬 Comentar</button>
+      <button class="act-btn" style="flex:1;justify-content:center;" onclick="sharePost('trofeo_${tid}')">↗️ Compartir</button>
     </div>
     <!-- Comments section -->
-    <div class="comments-section" id="cmts_trofeo_${t.id||''}"></div>
+    <div class="comments-section" id="cmts_trofeo_${tid}"></div>
     <!-- Footer -->
     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-top:1px solid rgba(255,215,0,.08);">
       <div style="font-size:.72rem;color:var(--muted);">Verificado en WikiPediaRF4.UY</div>
