@@ -3716,7 +3716,6 @@ select.fi option{background:var(--bg3);color:var(--text);}
         <option value="Norwegian Sea">Mar de Noruega</option>
         <option value="Kuori Lake">Kuori Lake</option>
         <option value="Copper lake">Cooper Lake</option>
-        <option value="Río Tunguska">Río Tunguska</option>
         <option value="Lower Tunguska River">Lower Tunguska River</option>
       </select>
     </div>
@@ -4134,8 +4133,9 @@ select.fi option{background:var(--bg3);color:var(--text);}
             <option>Ladoga Lake</option><option>Amber Lake</option><option>Bear Lake</option>
             <option>Mosquito Lake</option><option>Seversky Donets</option><option>Yama River</option>
             <option>Archipiélago Ladoga</option><option>Mar de Noruega</option><option>Lago Elk</option>
-            <option>Kuori</option><option>Cooper Lake</option><option>Río Tunguska</option>
+            <option>Kuori</option><option>Cooper Lake</option>
           </select>
+          <button class="btn btn-s btn-sm" onclick="document.getElementById('wkHomeMapSelect').value='';wkOnHomeMapChange()">✕ Limpiar</button>
         </div>
         <div class="map-results" id="wkHomeMapResults" style="display:none">
           <div class="map-results-header">
@@ -4170,7 +4170,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
           <option>Ladoga Lake</option><option>Amber Lake</option><option>Bear Lake</option>
           <option>Mosquito Lake</option><option>Seversky Donets</option><option>Yama River</option>
           <option>Archipiélago Ladoga</option><option>Mar de Noruega</option><option>Lago Elk</option>
-          <option>Kuori</option><option>Cooper Lake</option><option>Río Tunguska</option>
+          <option>Kuori</option><option>Cooper Lake</option>
         </select>
         <select class="wk-fi" style="width:auto" id="wkFTech" onchange="wkRenderTrophies()">
           <option value="">Todas las técnicas</option>
@@ -4280,7 +4280,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
           <option>Ladoga Lake</option><option>Amber Lake</option><option>Bear Lake</option>
           <option>Mosquito Lake</option><option>Seversky Donets</option><option>Yama River</option>
           <option>Archipiélago Ladoga</option><option>Mar de Noruega</option><option>Lago Elk</option>
-          <option>Kuori</option><option>Cooper Lake</option><option>Río Tunguska</option>
+          <option>Kuori</option><option>Cooper Lake</option>
         </select>
       </div>
       <div class="wk-fg"><label class="wk-fl">Spot</label><input class="wk-fi" id="wkPS" placeholder="Ej: Spot A, Puente Norte..."></div>
@@ -4299,7 +4299,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
     </div>
     <div class="wk-fg"><label class="wk-fl">Descripción / Setup</label><textarea class="wk-fi" id="wkPDesc" placeholder="Señuelo, profundidad, condiciones del agua..." style="min-height:65px"></textarea></div>
     <div class="wk-fg">
-      <label class="wk-fl">📸 Fotos (máx. 5)</label>
+      <label class="wk-fl">📸 Fotos (máx. 4)</label>
       <div class="wk-dz" id="wkDropzone">
         <div>📁 Arrastrá o hacé clic para subir fotos</div>
         <div style="font-size:.75rem;color:var(--muted,#567890);margin-top:4px">JPG, PNG · Max 5MB c/u</div>
@@ -17740,11 +17740,8 @@ function listenTrofeosFeed(){
       const local = snap.docs.map(d=>({id:d.id,...d.data(),_src:'local'}));
       // Solo usamos la colección local
       const ext = [];
-      _trofeosFeedData = [...local, ...ext].sort((a,b)=>{
-        const ta = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
-        const tb = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
-        return tb - ta;
-      });
+      const tsVal = x => x.createdAt?.toMillis ? x.createdAt.toMillis() : (typeof x.createdAt==="number" ? x.createdAt : (x.createdAt?.seconds ? x.createdAt.seconds*1000 : 0));
+      _trofeosFeedData = [...local, ...ext].sort((a,b) => tsVal(b) - tsVal(a));
       renderTrofeosFeed();
     },
     err => { console.warn('Trofeos local error:', err); }
@@ -19756,7 +19753,7 @@ window.wkResetForm = () => {
 // File handling for publish form
 window.wkHFiles = (files) => {
   Array.from(files).forEach(f=>{
-    if(_wkImgs.length>=5) return;
+    if(_wkImgs.length>=4) return;
     if(!f.type.startsWith('image/')) return;
     const reader=new FileReader();
     reader.onload=e=>{ _wkImgs.push({file:f,preview:e.target.result}); wkPvRender(); };
@@ -19867,6 +19864,7 @@ window.wkRenderAdmin = async () => {
       <div style="display:flex;gap:8px;margin-top:10px">
         <button class="btn btn-p btn-sm" onclick="wkApproveTrophy('${t.id}')">✅ Aprobar</button>
         <button class="btn btn-sm" style="background:#ff4466;color:#fff" onclick="wkRejectTrophy('${t.id}')">❌ Rechazar</button>
+        <button class="btn btn-sm" style="background:#1877f2;color:#fff" onclick="wkEditTrophy('${t.id}')">✏️ Editar</button>
         <button class="btn btn-sm" style="background:#333;color:#aaa" onclick="wkDeleteTrophy('${t.id}')">🗑 Borrar</button>
       </div>
     </div>`).join('');
@@ -19880,6 +19878,7 @@ window.wkRenderAdmin = async () => {
       <td style="display:flex;gap:5px">
         ${t.status!=='approved'?`<button class="btn btn-p btn-xs" onclick="wkApproveTrophy('${t.id}')">✅</button>`:''}
         ${t.status!=='rejected'?`<button class="btn btn-xs" style="background:#ff4466;color:#fff" onclick="wkRejectTrophy('${t.id}')">❌</button>`:''}
+        <button class="btn btn-xs" style="background:#1877f2;color:#fff" onclick="wkEditTrophy('${t.id}')">✏️</button>
         <button class="btn btn-xs" style="background:#333;color:#aaa" onclick="wkDeleteTrophy('${t.id}')">🗑</button>
       </td>
     </tr>`).join('')}</tbody>
@@ -19915,6 +19914,63 @@ window.wkOpenLb = (src) => {
 // Expose to window  
 window.wkLoadHome=wkLoadHome;
 window.wkUpdateBannerCounts=wkUpdateBannerCounts;
+
+
+// ── EDITAR TROFEO (Admin) ──
+window.wkEditTrophy = async (id) => {
+  const snap = await getDoc(doc(db,'trofeosPendientes',id));
+  if(!snap.exists()){ toast('Trofeo no encontrado','err'); return; }
+  const t = {id:snap.id,...snap.data()};
+  const old = document.getElementById('_wkEditModal');
+  if(old) old.remove();
+  const MAPS = ['Belaya River','Volkhov River','Akhtuba River','Winding Rivulet','Old Burg Lake','Sura River','Ladoga Lake','Amber Lake','Bear Lake','Mosquito Lake','Seversky Donets','Yama River','Archipiélago Ladoga','Mar de Noruega','Lago Elk','Kuori','Cooper Lake','Río Tunguska'];
+  const TECHS = ['Spinning','Fondo','Flote','Hielo','Jigging','Feeder','Match','Curricán','Pirking Fuerte','Movimiento en el Fondo','Fly','Collar','Pasternoster'];
+  const STATUSES = ['pending','approved','rejected'];
+  const m = document.createElement('div');
+  m.id = '_wkEditModal';
+  m.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;padding:16px;';
+  m.innerHTML =
+    '<div style="background:#161b22;border:1px solid #30363d;border-radius:14px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;padding:24px;position:relative;">' +
+    '<button onclick="document.getElementById(\'_wkEditModal\').remove()" style="position:absolute;top:12px;right:14px;background:none;border:none;color:#8b949e;font-size:1.3rem;cursor:pointer;">✕</button>' +
+    '<div style="font-family:\'Orbitron\',monospace;font-size:1rem;font-weight:800;color:#00d4ff;margin-bottom:18px;">✏️ Editar Trofeo</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+      '<div><label style="font-size:.78rem;color:#8b949e;display:block;margin-bottom:4px;">Pez *</label><input id="_weF" class="wk-fi" value="' + wkEsc(t.fish||'') + '" style="width:100%;"></div>' +
+      '<div><label style="font-size:.78rem;color:#8b949e;display:block;margin-bottom:4px;">Peso (kg) *</label><input id="_weW" class="wk-fi" type="number" step="0.001" value="' + (t.weight||'') + '" style="width:100%;"></div>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+      '<div><label style="font-size:.78rem;color:#8b949e;display:block;margin-bottom:4px;">Mapa *</label><select id="_weM" class="wk-fi" style="width:100%;">' + MAPS.map(mp=>'<option value="'+mp+'"'+(t.map===mp?' selected':'')+'>'+mp+'</option>').join('') + '</select></div>' +
+      '<div><label style="font-size:.78rem;color:#8b949e;display:block;margin-bottom:4px;">Técnica *</label><select id="_weT" class="wk-fi" style="width:100%;">' + TECHS.map(tc=>'<option value="'+tc+'"'+(t.technique===tc?' selected':'')+'>'+tc+'</option>').join('') + '</select></div>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+      '<div><label style="font-size:.78rem;color:#8b949e;display:block;margin-bottom:4px;">Spot</label><input id="_weS" class="wk-fi" value="' + wkEsc(t.spot||'') + '" style="width:100%;"></div>' +
+      '<div><label style="font-size:.78rem;color:#8b949e;display:block;margin-bottom:4px;">Estado</label><select id="_weSt" class="wk-fi" style="width:100%;">' + STATUSES.map(s=>'<option value="'+s+'"'+(t.status===s?' selected':'')+'>'+s+'</option>').join('') + '</select></div>' +
+    '</div>' +
+    '<div style="margin-bottom:10px;"><label style="font-size:.78rem;color:#8b949e;display:block;margin-bottom:4px;">Descripción</label><textarea id="_weD" class="wk-fi" style="width:100%;min-height:70px;">' + wkEsc(t.description||t.notes||'') + '</textarea></div>' +
+    '<div id="_weErr" style="color:#ff4466;font-size:.8rem;margin-bottom:8px;"></div>' +
+    '<button onclick="wkSaveEdit(\'' + t.id + '\')" style="width:100%;background:#1877f2;color:#fff;border:none;border-radius:8px;padding:11px;font-weight:700;cursor:pointer;font-family:\'Exo 2\',sans-serif;font-size:.9rem;">💾 Guardar cambios</button>' +
+    '</div>';
+  m.addEventListener('click', e=>{ if(e.target===m) m.remove(); });
+  document.body.appendChild(m);
+};
+
+window.wkSaveEdit = async (id) => {
+  const fish = document.getElementById('_weF')?.value.trim();
+  const weight = parseFloat(document.getElementById('_weW')?.value);
+  const map = document.getElementById('_weM')?.value;
+  const technique = document.getElementById('_weT')?.value;
+  const spot = document.getElementById('_weS')?.value.trim();
+  const status = document.getElementById('_weSt')?.value;
+  const description = document.getElementById('_weD')?.value.trim();
+  const err = document.getElementById('_weErr');
+  if(!fish||!map||!technique||isNaN(weight)||weight<=0){ if(err) err.textContent='Completá los campos obligatorios'; return; }
+  try{
+    await updateDoc(doc(db,'trofeosPendientes',id),{fish,weight,map,technique,spot,description,status});
+    document.getElementById('_wkEditModal')?.remove();
+    toast('✅ Trofeo actualizado','ok');
+    _wkLoaded=false; wkRenderAdmin();
+  }catch(e){ if(err) err.textContent='Error: '+e.message; }
+};
+
 
 // ============================================================
 // FIN WIKI TROFEOS JS
