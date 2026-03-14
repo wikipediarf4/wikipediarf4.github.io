@@ -4709,12 +4709,13 @@ function listenStories() {
       _stories = snap.docs.filter(d => {
         const raw = d.data().time;
         const t = raw?.toMillis ? raw.toMillis() : (typeof raw === 'number' ? raw : 0);
-        const ttl = 86400000; // 24h siempre, sin excepción
+        const ttl = d.data().userVerified ? 172800000 : 86400000;
         // Si t===0 es un serverTimestamp pendiente (historia recien publicada) — incluirla
-        if(t && (now - t) >= ttl){ expiredIds.push(d.id); return false; }
+        if(t && (now - t) > ttl){ expiredIds.push(d.id); return false; }
         return true;
       }).map(d => {
         const raw = d.data().time;
+        // Si el timestamp aun no llego del servidor, usar tiempo actual para mostrarla
         const t = raw?.toMillis ? raw.toMillis() : (typeof raw === 'number' ? raw : Date.now());
         return { id: d.id, ...d.data(), time: t };
       });
@@ -4726,18 +4727,6 @@ function listenStories() {
     },
     err => { console.warn('listenStories error:', err); }
   );
-  // Intervalo cliente: eliminar historias expiradas aunque no haya nuevo snapshot
-  if(window._storiesCleanupInterval) clearInterval(window._storiesCleanupInterval);
-  window._storiesCleanupInterval = setInterval(() => {
-    const now = Date.now();
-    const ttl = 86400000;
-    const toDelete = _stories.filter(s => s.time && (now - s.time) >= ttl);
-    if(toDelete.length){
-      toDelete.forEach(s => deleteDoc(doc(db, 'stories', s.id)).catch(()=>{}));
-      _stories = _stories.filter(s => !s.time || (now - s.time) < ttl);
-      renderStories();
-    }
-  }, 60000); // revisar cada minuto
 }
 
 // ===== INIT =====
@@ -4758,7 +4747,7 @@ function init(){
     if(splash && splash.style.display !== 'none'){
       splash.style.display = 'none';
       document.getElementById('mAuth').style.display = 'block';
-      loadAuthTrofeos();
+      setTimeout(()=>loadAuthTrofeos(), 800);
     }
   }, 4000);
 
@@ -4795,15 +4784,20 @@ function init(){
       window.CU = null;
       hideSplash();
       document.getElementById('mAuth').style.display = 'block';
-      loadAuthTrofeos();
+      setTimeout(()=>loadAuthTrofeos(), 800);
     }
   });
 }
 
 // ===== CARGA TROFEOS EN PANTALLA DE LOGIN =====
-async function loadAuthTrofeos(){
+async function loadAuthTrofeos(retry=0){
   const el = document.getElementById('authTrofeosList');
   if(!el) return;
+  // Esperar a que db esté listo
+  if(typeof db === 'undefined' || !db){
+    if(retry < 10) setTimeout(()=>loadAuthTrofeos(retry+1), 500);
+    return;
+  }
   try{
     const snap = await getDocs(query(collection(db,'trofeosPendientes'), where('status','==','approved'), limit(50)));
     let items = snap.docs.map(d=>({id:d.id,...d.data()}))
@@ -4830,7 +4824,10 @@ async function loadAuthTrofeos(){
         <div style="font-size:1.1rem;flex-shrink:0;">🥇</div>
       </div>`;
     }).join('');
-  }catch(e){ el.innerHTML=''; }
+  }catch(e){
+    console.warn('loadAuthTrofeos error:', e);
+    if(retry < 5) setTimeout(()=>loadAuthTrofeos(retry+1), 1500);
+  }
 }
 
 // ===== DEMO DATA =====
