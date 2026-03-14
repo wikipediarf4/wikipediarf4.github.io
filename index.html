@@ -17926,7 +17926,21 @@ async function _reelsHandleClick(e){
     } catch(err){ console.warn('reel fetch err',err); }
   }
 
-  if(action==='like'){ doReact(pid,'❤️'); }
+  if(action==='like'){
+    await doReact(pid,'❤️');
+    // Update reel like button visually
+    const p = (_posts||[]).find(p=>p.id===pid);
+    if(p){
+      const likeBtn = document.querySelector('[data-reel-pid="'+pid+'"] [data-action="like"]');
+      if(likeBtn){
+        const fmtN = n=>n>999?(n/1000).toFixed(1)+'K':(n||'0');
+        const total = Object.values(p.reactionCounts||{}).reduce((a,b)=>a+(b||0),0);
+        const myRxn = p.reactions?.[window.CU?.id];
+        likeBtn.innerHTML = (myRxn||'❤️') + ' ' + fmtN(total||p.likes||0);
+        likeBtn.style.color = myRxn ? '#f85149' : '';
+      }
+    }
+  }
   if(action==='comment'){ toggleComments(pid); }
 }
 
