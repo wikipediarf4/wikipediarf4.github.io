@@ -12001,9 +12001,9 @@ async function loadAdminData(){
 
   // Reports y posts siguen leyendose para mostrar la lista (necesario)
   const [postsSnap, reportsSnap, storiesSnap] = await Promise.all([
-    getDocs(collection(db,'posts')),
+    getDocs(query(collection(db,'posts'), orderBy('time','desc'), limit(100))),
     getDocs(collection(db,'reports')),
-    getDocs(collection(db,'stories')),
+    getDocs(query(collection(db,'stories'), limit(50))),
   ]);
   if(document.getElementById('adminStatReports')) document.getElementById('adminStatReports').textContent = reportsSnap.size;
   if(document.getElementById('adminStatStories')) document.getElementById('adminStatStories').textContent = storiesSnap.size;
@@ -17678,7 +17678,7 @@ async function loadReelsPage(){
   _reelsData = [];
 
   try {
-    const snap = await getDocs(query(collection(db,'posts'), orderBy('time','desc'), limit(300)));
+    const snap = await getDocs(query(collection(db,'posts'), orderBy('time','desc'), limit(50)));
     const isVideoPost = p => {
       if(!p.video) return false;
       return extractYtId(p.video) || isTikTok(p.video) || /\.(mp4|webm|mov)/i.test(p.video);
@@ -19394,10 +19394,11 @@ window.wkInit = () => {
 // Update banner counters
 async function wkUpdateBannerCounts() {
   try {
-    const snap = await getDocs(query(collection(db,'trofeosPendientes'), where('status','==','approved')));
-    const total = snap.size;
+    // Leer config/stats en vez de toda la coleccion (1 lectura en vez de N)
+    const statsSnap = await getDoc(doc(db,'config','stats'));
+    const total = statsSnap.exists() ? (statsSnap.data().totalTrophies||0) : 0;
     const el = document.getElementById('wkTotalTrophy');
-    if(el) el.textContent = total;
+    if(el) el.textContent = total||'—';
     // Online count from presence (charlasrf4)
     const presSnap = await getDocs(collection(db,'presence'));
     const online = presSnap.docs.filter(d => {
@@ -19487,8 +19488,8 @@ window.wkOnHomeMapChange = async () => {
   grid.innerHTML = '<div class="wk-ld"><div class="wk-sp"></div></div>';
   empty.style.display='none';
   try {
-    const snap = await getDocs(query(collection(db,'trofeosPendientes'), where('map','==',map)));
-    const items = snap.docs.map(d=>({id:d.id,...d.data()})).filter(t=>t.status==='approved');
+    const snap = await getDocs(query(collection(db,'trofeosPendientes'), where('status','==','approved'), where('map','==',map), limit(100)));
+    const items = snap.docs.map(d=>({id:d.id,...d.data()}));
     count.textContent = items.length + ' trofeos';
     if(!items.length){ grid.innerHTML=''; empty.style.display='block'; return; }
     grid.innerHTML = items.map(t=>wkCard(t)).join('');
@@ -19502,7 +19503,7 @@ window.wkRenderTrophies = async () => {
   if(!grid) return;
   grid.innerHTML = '<div class="wk-ld"><div class="wk-sp"></div></div>';
   try {
-    const snap = await getDocs(query(collection(db,'trofeosPendientes'), where('status','==','approved')));
+    const snap = await getDocs(query(collection(db,'trofeosPendientes'), where('status','==','approved'), limit(100)));
     let items = snap.docs.map(d=>({id:d.id,...d.data()}));
     // Apply filters
     const fMap = document.getElementById('wkFMap')?.value||'';
@@ -19520,7 +19521,7 @@ window.wkRenderTrophies = async () => {
   } catch(e){
     // fallback without orderBy
     try {
-      const snap2 = await getDocs(query(collection(db,'trofeosPendientes'), where('status','==','approved')));
+      const snap2 = await getDocs(query(collection(db,'trofeosPendientes'), where('status','==','approved'), limit(100)));
       let items2 = snap2.docs.map(d=>({id:d.id,...d.data()}));
       const fMap = document.getElementById('wkFMap')?.value||'';
       const fTech = document.getElementById('wkFTech')?.value||'';
@@ -19551,7 +19552,7 @@ window.wkRenderRanking = async () => {
   if(loader) loader.style.display='flex';
   podium.innerHTML=''; list.innerHTML='';
   try {
-    const tS = await getDocs(query(collection(db,'trofeosPendientes'), where('status','==','approved')));
+    const tS = await getDocs(query(collection(db,'trofeosPendientes'), where('status','==','approved'), limit(200)));
     const trs = tS.docs.map(d=>({id:d.id,...d.data()}));
     // Build user stats from trophies
     const byUser = {};
@@ -19607,7 +19608,7 @@ window.wkRenderRecords = async () => {
   if(!el) return;
   el.innerHTML = '<div class="wk-ld"><div class="wk-sp"></div></div>';
   try {
-    const snap = await getDocs(query(collection(db,'trofeosPendientes'), where('status','==','approved')));
+    const snap = await getDocs(query(collection(db,'trofeosPendientes'), where('status','==','approved'), limit(200)));
     const trs = snap.docs.map(d=>({id:d.id,...d.data()}));
     // Group by fish species, find heaviest
     const byFish = {};
@@ -19668,7 +19669,7 @@ window.wkRenderSheet = async () => {
   if(!el) return;
   el.innerHTML = '<div class="wk-ld"><div class="wk-sp"></div></div>';
   try {
-    const snap = await getDocs(query(collection(db,'trofeosPendientes'), where('status','==','approved')));
+    const snap = await getDocs(query(collection(db,'trofeosPendientes'), where('status','==','approved'), limit(200)));
     _wkSheetAll = snap.docs.map(d=>({id:d.id,...d.data()}));
     wkBuildSheetTable(_wkSheetAll);
   } catch(e) {
@@ -19951,7 +19952,7 @@ window.wkSubmitTrophy = async () => {
 // Admin panel
 window.wkRenderAdmin = async () => {
   if(!window.CU||(window.CU.nick!==WK_ADMIN&&window.CU.role!=='admin')){ toast('Acceso denegado','err'); return; }
-  const tS=await getDocs(collection(db,'trofeosPendientes'));
+  const tS=await getDocs(query(collection(db,'trofeosPendientes'), limit(200)));
   const all=tS.docs.map(d=>({id:d.id,...d.data()}));
   const pend=all.filter(t=>t.status==='pending');
   const appr=all.filter(t=>t.status==='approved');
