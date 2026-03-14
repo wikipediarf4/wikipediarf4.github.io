@@ -4516,21 +4516,14 @@ let _rxnTimers = {};
 let _unsubPosts = null;
 let _unsubStories = null;
 
-const TROFF_IMG = 'data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAAhABQDASIAAhEBAxEB/8QAGwABAAICAwAAAAAAAAAAAAAAAAYHAQgDBAX/xAAtEAABAgUBBgQHAAAAAAAAAAABAgMABAURIQYHEhMxQVEIdYHwIjY3QnGxs//EABkBAAIDAQAAAAAAAAAAAAAAAAMFAAIHBP/EACERAAICAgIBBQAAAAAAAAAAAAECAAMEERIxIQUGUWHh/9oADAMBAAIRAxEAPwC5FRyuy77BRxkFBWneTfkU9I9HS6mTVm2X5REwl1VviF921sxKtUzEgaS482yxNraVwwQQeGTj0jHqvRVyqbclrSCCfG/2P2yjWyoFkBSffpCCF2HM/gchCGWKSKVGz1A2EcjMXIWbEgEEHd646xkFYultVgcERWW3Ha3SNntPVKtBqf1A+i8vJ3wgG9nHSMpT2TzV0sMigtl237UtD1I+7quZfrNLnni5MJNuJLqPNTQwAm32YGMWMBT2nnZFVlnLjsnQ+YU59SFV1v7m5jJ3k3t7tCOlpms0mv0ZirUefam5KYG8060q4I7dwRyIOQcGEMMbAyK6VRl8gTne1SxImiviJ+uOsfNHf3EBhCNEXoRTNi/DN8hTnmbn8moQhFD3JP/Z';
-const TROFF_SUPER_IMG = 'data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAAhABQDASIAAhEBAxEB/8QAGwAAAQUBAQAAAAAAAAAAAAAAAAMEBgcIAQL/xAAvEAABAwMCBAQEBwAAAAAAAAABAgMEAAUREiEGEyIxBwgUkTdBYXEyQlFidbO0/8QAGAEBAAMBAAAAAAAAAAAAAAAABAMGBwL/xAAkEQACAQMDAwUAAAAAAAAAAAABAwIABBEFITIGEhNBUWFx8P/aAAwDAQACEQMRAD8AcTFyTIUQX+okJIyNWO9LXGFdbaWfVh9HPaS80dRwpKs4+247GpX4dvWt6+y7XeYbsuA61zdLTDrziHELGnAbBUAQpWT9BVi8azuGXLUq5ptdydm26K4qFzLbLbbCtOQFHQEkbD8Xb5YyavDtWjbtirxDG1ZUrQjdLm/zEHJ9fmqXt7r/ACCHFkEKIGrOcUV2CpSmNSl9alEq6xufff2FFcvVCTJHFT2smhMR3E7U0bly4F0dlQZT0Z7dBW04UKKSQSMjfGw9qWl3++SmFRpF6uDrK0lC0qlLIWCMHIzg1CvFDjO2cGx1rkaZNwkpKokRC8FQyRrXt0t5BGe5IIHZRTVXBHi7cWL48OKF+ot8tzVqabAVEP7QO7f6p7/mG+QpjNY09TIQnHJwMn2oKem9UuFNZA9oycAnGd/33WjbOSIhAJACjgDt8qK8cNyY020MzIUhiTHeyptxDmyh9Djeih3NwmTpGMts0+ztnqRCEgQQKy/5hvjFffux/nbqAUUVS58jWlw4itQeVT4cS/5R3+tqiiip4cRRWcjX/9k=';
 const REACTIONS = [
-  {emoji:'🏆', label:'Trofeo', color:'#ffd700', img:TROFF_IMG},
-  {emoji:'👑', label:'Super Trofeo', color:'#00cfff', img:TROFF_SUPER_IMG},
+  {emoji:'👍', label:'Me gusta', color:'#2078f4'},
+  {emoji:'❤️', label:'Me encanta', color:'#f33e58'},
+  {emoji:'😂', label:'Me divierte', color:'#f7b125'},
+  {emoji:'😮', label:'Me asombra', color:'#f7b125'},
+  {emoji:'😢', label:'Me entristece', color:'#f7b125'},
+  {emoji:'😡', label:'Me enoja', color:'#e9710f'},
 ];
-// Helper to render reaction emoji (image if available, else text)
-function rxnEmoji(r){
-  if(r && r.img) return `<img src="${r.img}" style="width:22px;height:22px;object-fit:contain;vertical-align:middle;display:inline-block;">`;
-  return r ? r.emoji : '';
-}
-function rxnEmojiByKey(emojiKey){
-  const r = REACTIONS.find(x=>x.emoji===emojiKey);
-  return r && r.img ? `<img src="${r.img}" style="width:18px;height:18px;object-fit:contain;vertical-align:middle;display:inline-block;">` : (emojiKey||'');
-}
 const REACTION_EMOJIS = REACTIONS.map(r=>r.emoji);
 const FISH_EMOJIS = {'Pike':'🐟','Catfish':'🦈','Bream':'🐡','Perch':'🐠','Carp':'🐟','Trout':'🐟','Salmon':'🐟','Burbot':'🐟','Ruffe':'🐟','Tench':'🐟'};
 
@@ -7564,8 +7557,8 @@ function _renderProfileFeedHTML(el, mine){
 function postHTML(p){
   const myRxn = window.CU ? (p.reactions?.[window.CU.id]||null) : null;
   const totalRxn = Object.values(p.reactionCounts||{}).reduce((a,b)=>a+b,0);
-  const topRxn = Object.entries(p.reactionCounts||{}).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([e])=>rxnEmojiByKey(e)).join('');
-  const rxnBtns = REACTIONS.map(r=>`<button class="rxn-btn" onclick="doReact('${p.id}','${r.emoji}')" title="${r.label}" style="position:relative;">${rxnEmoji(r)}<span style="position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;font-size:.58rem;white-space:nowrap;padding:2px 6px;border-radius:4px;pointer-events:none;opacity:0;transition:opacity .15s;" class="rxn-tooltip">${r.label}</span></button>`).join('');
+  const topRxn = Object.entries(p.reactionCounts||{}).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([e])=>e).join('');
+  const rxnBtns = REACTIONS.map(r=>`<button class="rxn-btn" onclick="doReact('${p.id}','${r.emoji}')" title="${r.label}" style="position:relative;">${r.emoji}<span style="position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;font-size:.58rem;white-space:nowrap;padding:2px 6px;border-radius:4px;pointer-events:none;opacity:0;transition:opacity .15s;" class="rxn-tooltip">${r.label}</span></button>`).join('');
   const fishTag = p.fish ? `<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(0,198,255,.08);border:1px solid rgba(0,198,255,.2);border-radius:100px;padding:4px 12px;font-size:.78rem;margin-bottom:10px;margin-left:14px"><span>🎣</span><strong>${p.fish}</strong>${p.weight?` · ${fmtKg(p.weight)}`:''} ${p.map?`· ${p.map}`:''} ${p.tech?`· ${p.tech}`:''}</div>` : '';
   // Store images globally for lightbox
   window._postImgsMap = window._postImgsMap || {};
@@ -8477,18 +8470,14 @@ async function doReact(pid, emoji){
   // Update reaction button — trofeo cards
   const trofeoRxnIcon = document.getElementById('trofeoRxnIcon_'+realId);
   const trofeoRxnLbl = document.getElementById('trofeoRxnLbl_'+realId);
-  if(trofeoRxnIcon) {
-    if(myNewRxn==='🏆') trofeoRxnIcon.innerHTML = '<img src="'+TROFF_IMG+'" style="width:20px;height:20px;object-fit:contain;vertical-align:middle;">';
-    else if(myNewRxn==='👑') trofeoRxnIcon.innerHTML = '<img src="'+TROFF_SUPER_IMG+'" style="width:20px;height:20px;object-fit:contain;vertical-align:middle;">';
-    else trofeoRxnIcon.innerHTML = myNewRxn||'<img src="'+TROFF_IMG+'" style="width:20px;height:20px;object-fit:contain;vertical-align:middle;">';
-  }
+  if(trofeoRxnIcon) trofeoRxnIcon.textContent = myNewRxn||'👍';
   if(trofeoRxnLbl){ trofeoRxnLbl.textContent = rxnDef?.label||'Me gusta'; trofeoRxnLbl.closest('button').style.color = myNewRxn ? (rxnDef?.color||'var(--accent)') : ''; }
 
   // Update reaction summary
   const rxnSummary = document.getElementById('rxns_'+pid);
   if(rxnSummary){
     const total = Object.values(p.reactionCounts).reduce((a,b)=>a+(b||0),0);
-    const top = Object.entries(p.reactionCounts).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([e])=>rxnEmojiByKey(e)).join('');
+    const top = Object.entries(p.reactionCounts).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([e])=>e).join('');
     rxnSummary.innerHTML = total>0 ? `<span style="background:var(--bg3);border-radius:100px;padding:2px 8px;font-size:.82rem;">${top}</span><span style="font-size:.78rem;color:var(--muted);"> ${total}</span>` : '';
   }
   // Update modal reaction button if open
@@ -8641,7 +8630,7 @@ async function toggleComments(pid){
 
   const avHtml = window.CU ? `<img src="${window.CU.av||getDefaultAv(window.CU.gender||'')}" style="width:100%;height:100%;object-fit:cover;">` : '';
   const rxnCounts = post.reactionCounts||{};
-  const topRxns = Object.entries(rxnCounts).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([e])=>rxnEmojiByKey(e)).join('');
+  const topRxns = Object.entries(rxnCounts).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([e])=>e).join('');
   const totalRxns = Object.values(rxnCounts).reduce((a,b)=>a+(b||0),0);
   const cmts = post.comments||[];
 
@@ -11432,7 +11421,7 @@ function igRenderReactions(reactions, counts){
   if(myIcon) myIcon.textContent = myRxn||'👍';
   if(myLabel) myLabel.textContent = myRxn ? 'Me gusta' : 'Me gusta';
   if(myBtn) myBtn.style.color = myRxn ? 'var(--accent)' : '#8b949e';
-  const topRxns = Object.entries(counts||{}).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([e])=>rxnEmojiByKey(e)).join('');
+  const topRxns = Object.entries(counts||{}).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([e])=>e).join('');
   const summary = document.getElementById('_igRxnSummary');
   if(summary) summary.innerHTML = total>0 ? `<span style="font-size:1rem;">${topRxns}</span> <span>${total}</span>` : '';
 }
@@ -17957,18 +17946,17 @@ function trofeoFeedCardHTML(t){
     <!-- Action bar: Reaccionar / Comentar / Compartir -->
     <div style="display:flex;border-top:1px solid rgba(255,215,0,.12);padding:0 4px;">
       <div class="rxn-wrap" style="flex:1;">
-        <button class="act-btn" id="trofeoRxnBtn_${t.id||\'\'}"
-          onmouseenter="showRxnPop(\'trofeo_${t.id||\'\'}\')"
-          onmouseleave="schedHideRxnPop(\'trofeo_${t.id||\'\'}\')"
-          onclick="doReact(\'trofeo_${t.id||\'\'}\',null,\'trofeo\')"
+        <button class="act-btn" id="trofeoRxnBtn_${t.id||''}"
+          onmouseenter="showRxnPop('trofeo_${t.id||''}')"
+          onmouseleave="schedHideRxnPop('trofeo_${t.id||''}')"
+          onclick="doReact('trofeo_${t.id||''}',null,'trofeo')"
           style="width:100%;justify-content:center;gap:6px;">
-          <img src="/troff.png" style="width:20px;height:20px;"> <span id="trofeoRxnLbl_${t.id||\'\'}">Trofeo</span>
+          <span id="trofeoRxnIcon_${t.id||''}">👍</span> <span id="trofeoRxnLbl_${t.id||''}">Me gusta</span>
         </button>
-        <div class="rxn-popup" id="rxnp_trofeo_${t.id||\'\'}"
-          onmouseenter="cancelHideRxnPop(\'trofeo_${t.id||\'\'}\')"
-          onmouseleave="schedHideRxnPop(\'trofeo_${t.id||\'\'}\')" >
-          <button class="rxn-btn" onclick="doReact(\'trofeo_${t.id||\'\'}\',\'trofeo_normal\',\'trofeo\');schedHideRxnPop(\'trofeo_${t.id||\'\'}\')"><img src="/troff.png" style="width:24px;height:24px;" title="Trofeo"></button>
-          <button class="rxn-btn" onclick="doReact(\'trofeo_${t.id||\'\'}\',\'trofeo_super\',\'trofeo\');schedHideRxnPop(\'trofeo_${t.id||\'\'}\')"><img src="/troff_super.png" style="width:24px;height:24px;" title="Super Trofeo"></button>
+        <div class="rxn-popup" id="rxnp_trofeo_${t.id||''}"
+          onmouseenter="cancelHideRxnPop('trofeo_${t.id||''}')"
+          onmouseleave="schedHideRxnPop('trofeo_${t.id||''}')">
+          ${['👍','❤️','😲','😂','😢','😡'].map(e=>`<button class="rxn-btn" onclick="doReact('trofeo_${t.id||''}','${e}','trofeo');schedHideRxnPop('trofeo_${t.id||''}')" title="${e}">${e}</button>`).join('')}
         </div>
       </div>
       <button class="act-btn" style="flex:1;justify-content:center;" onclick="toggleComments('trofeo_${t.id||''}')">💬 Comentar</button>
