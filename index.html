@@ -2196,8 +2196,8 @@ select.fi option{background:var(--bg3);color:var(--text);}
       <!-- ÚLTIMOS TROFEOS (preview pública) -->
       <div id="authTrofeosWrap" style="margin-top:28px;width:100%;max-width:460px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-          <span style="font-family:'Orbitron',monospace;font-size:.78rem;font-weight:900;color:var(--gold,#d4a017);">🏆 Últimos Trofeos</span>
-          <span style="font-size:.7rem;color:#8b949e;">Registrate para ver todos →</span>
+          <span style="font-family:'Orbitron',monospace;font-size:.78rem;font-weight:900;color:var(--gold,#d4a017);">🏆 Último Trofeo Agregado</span>
+          <span style="font-size:.7rem;color:#8b949e;">Registrate para ver más →</span>
         </div>
         <div id="authTrofeosList" style="display:flex;flex-direction:column;gap:8px;">
           <div style="font-size:.78rem;color:#8b949e;text-align:center;padding:12px;">Cargando trofeos...</div>
@@ -4831,7 +4831,6 @@ function init(){
 function loadAuthTrofeos(){
   const el = document.getElementById('authTrofeosList');
   if(!el) return;
-  // Usar getDocs sin filtros — compatibilidad con cualquier índice de Firestore
   getDocs(collection(db,'trofeosPendientes')).then(snap => {
     const items = snap.docs
       .map(d=>({id:d.id,...d.data()}))
@@ -4854,8 +4853,8 @@ function loadAuthTrofeos(){
     const w = kg ? (Number(kg).toFixed(3)+' kg') : '';
     el.innerHTML = `<div style="display:flex;align-items:center;gap:12px;background:rgba(255,215,0,.07);border:1px solid rgba(255,215,0,.25);border-radius:12px;padding:10px 14px;">
       ${img
-        ? `<img src="${img}" style="width:64px;height:64px;object-fit:cover;border-radius:10px;flex-shrink:0;border:1.5px solid rgba(255,215,0,.3);">`
-        : `<div style="width:64px;height:64px;border-radius:10px;background:rgba(255,215,0,.1);display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;">🐟</div>`}
+        ? `<img src="${img}" style="width:72px;height:72px;object-fit:cover;border-radius:10px;flex-shrink:0;border:1.5px solid rgba(255,215,0,.3);" onerror="this.style.display='none'">`
+        : `<div style="width:72px;height:72px;border-radius:10px;background:rgba(255,215,0,.1);display:flex;align-items:center;justify-content:center;font-size:2.2rem;flex-shrink:0;">🐟</div>`}
       <div style="min-width:0;flex:1;">
         <div style="font-family:'Orbitron',monospace;font-size:.82rem;font-weight:900;color:var(--gold,#d4a017);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">🥇 ${fish}</div>
         ${w?`<div style="font-size:1rem;font-weight:800;color:#e6edf3;margin-top:2px;">${w}</div>`:''}
