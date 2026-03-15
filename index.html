@@ -4299,24 +4299,6 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(window.loadAdsI
 
   <!-- Banner online fishing -->
   <div id="wkOnlineBanner" style="width:100%;background:linear-gradient(90deg,rgba(0,15,28,.97),rgba(0,30,50,.95),rgba(0,15,28,.97));border-bottom:1px solid rgba(0,212,255,.18);padding:10px 20px;display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap;position:sticky;top:62px;z-index:900;backdrop-filter:blur(12px);">
-    <div style="display:flex;align-items:center;gap:6px">
-      <div style="width:7px;height:7px;border-radius:50%;background:#00ff88;box-shadow:0 0 8px #00ff88;animation:pulse 2s infinite;flex-shrink:0"></div>
-      <span style="font-family:'Orbitron',monospace;font-size:.58rem;font-weight:700;color:#00ff88;letter-spacing:2px;text-transform:uppercase">En Vivo</span>
-    </div>
-    <div style="width:1px;height:22px;background:rgba(0,212,255,.2)"></div>
-    <div style="display:flex;align-items:center;gap:10px">
-      <span style="font-family:'Orbitron',monospace;font-size:.78rem;font-weight:800;color:#ffd700;letter-spacing:2px;text-transform:uppercase;text-shadow:0 0 10px rgba(255,215,0,.5)">🔍 Buscando Trofeos</span>
-      <div style="display:flex;align-items:baseline;gap:7px">
-        <div style="position:relative;padding:3px 10px;border-radius:8px;animation:borderBlink 1.4s linear infinite;">
-          <span id="wkOnlineCount" style="font-family:'Orbitron',monospace;font-size:1.65rem;font-weight:900;color:#ff4dff;text-shadow:0 0 18px rgba(255,77,255,.8);line-height:1;transition:all .35s ease">—</span>
-        </div>
-        <div style="display:flex;flex-direction:column;line-height:1.2">
-          <span style="font-family:'Orbitron',monospace;font-size:.56rem;font-weight:800;color:#ff9900;letter-spacing:1.5px">PESCADORES</span>
-          <span style="font-family:'Orbitron',monospace;font-size:.56rem;font-weight:800;color:#ff9900;letter-spacing:1.5px">ONLINE</span>
-        </div>
-      </div>
-    </div>
-    <div style="width:1px;height:22px;background:rgba(0,212,255,.2)"></div>
     <div style="display:flex;align-items:center;gap:10px">
       <span style="font-size:1.1rem;">🏆</span>
       <div style="display:flex;align-items:baseline;gap:7px">
@@ -4333,9 +4315,6 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(window.loadAdsI
   <div class="wk-nav">
     <button class="wk-nb on" id="wkNbInicio" onclick="wkGp('wk-inicio',this)">🏠 Inicio</button>
     <button class="wk-nb" id="wkNbTrophies" onclick="wkGp('wk-trophies',this)">🏆 Trofeos</button>
-    <button class="wk-nb" id="wkNbRanking" onclick="wkGp('wk-ranking',this)">🥇 Ranking</button>
-    <button class="wk-nb" id="wkNbRecords" onclick="wkGp('wk-records',this)">📊 Records</button>
-    <button class="wk-nb" id="wkNbSheet" onclick="wkGp('wk-sheet',this)">📋 Tabla</button>
     <button class="wk-nb cta" id="wkNbPublish" style="display:none" onclick="wkOpenPublish()">+ Publicar Trofeo</button>
     <button class="wk-nb" id="wkNbAdmin" style="display:none" onclick="wkGp('wk-admin',this)">⚙ Admin</button>
   </div>
