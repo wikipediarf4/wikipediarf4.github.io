@@ -3724,9 +3724,9 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(window.loadAdsI
 
     <!-- Contenedor del mapa -->
     <div style="position:relative;border:2px solid var(--border);border-radius:var(--r);overflow:hidden;background:#1a2030;" id="admMapContainer">
-      <div id="admMapInner" style="position:relative;width:100%;padding-top:75%;overflow:hidden;">
+      <div id="admMapInner" style="position:relative;width:100%;padding-top:101%;overflow:hidden;">
         <img id="admMapImg" src="" alt="Mapa RF4"
-          style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;cursor:crosshair;"
+          style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:fill;cursor:crosshair;"
           onclick="admMapClick(event)"
           draggable="false">
         <!-- Pin del jugador -->
@@ -20403,7 +20403,7 @@ const RF4_MAPS = {
   // Elk Lake: imagen 693x700, grilla col 27→664, fila 13→669
   elk_lake:       { name:'Elk Lake',        img:'/lago-elk.png',
                     xMin:43,  xMax:157, yMin:43,  yMax:157,
-                    pxLeft:0.039, pxRight:0.958, pyTop:0.019, pyBot:0.956 },
+                    pxLeft:0.03896, pxRight:0.95815, pyTop:0.01857, pyBot:0.95571 },
   norwegian_sea:  { name:'Norwegian Sea',   img:'https://en.rf4h.ru/templates/rf4m/maps/img/sea_83.webp',
                     xMin:2,   xMax:993, yMin:2,   yMax:993 },
   mosquito_lake:  { name:'Mosquito Lake',   img:'https://en.rf4h.ru/templates/rf4m/maps/img/mosquito_83.webp',
