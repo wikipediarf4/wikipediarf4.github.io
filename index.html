@@ -5729,7 +5729,10 @@ window.gp = (id, pushState = true) => {
   if(pvBtn) pvBtn.style.display = window.CU?.verified ? 'flex' : 'none';
   if(id==='spots'){ loadSpots(); loadFriendSpots(); }
   if(id==='casitrofeo') renderMapPosts();
-  if(id==='trofeos-feed') { listenTrofeosFeed(); document.getElementById('trofeoFeedBadge').style.display='inline-flex'; }
+  if(id==='trofeos-feed') {
+    listenTrofeosFeed();
+    document.getElementById('trofeoFeedBadge').style.display='inline-flex';
+  }
   if(id==='reels') {
     const prevPg = document.querySelector('.page.active');
     window._reelsPrevPage = prevPg && prevPg.id !== 'page-reels' ? prevPg.id.replace('page-','') : 'home';
@@ -18096,26 +18099,67 @@ function closeReelsOverlay(){
 }
 window.closeReelsOverlay = closeReelsOverlay;
 
-let _unsubTrofeos = null;
+window._unsubTrofeos = window._unsubTrofeos || null;
+let _unsubTrofeos = window._unsubTrofeos;
 let _trofeosFeedData = [];
 let _trofeoFeedFilter = 'all';
 
 function listenTrofeosFeed(){
   if(_unsubTrofeos) return;
-  // Escuchar trofeos locales aprobados (db charlasrf4)
-  const unsubLocal = onSnapshot(
-    query(collection(db,'trofeosPendientes'), where('status','==','approved'), orderBy('createdAt','desc')),
-    snap => {
-      const local = snap.docs.map(d=>({id:d.id,...d.data(),_src:'local'}));
-      // Solo usamos la colección local
-      const ext = [];
-      const tsVal = x => x.createdAt?.toMillis ? x.createdAt.toMillis() : (typeof x.createdAt==="number" ? x.createdAt : (x.createdAt?.seconds ? x.createdAt.seconds*1000 : 0));
-      _trofeosFeedData = [...local, ...ext].sort((a,b) => tsVal(b) - tsVal(a));
-      renderTrofeosFeed();
-    },
-    err => { console.warn('Trofeos local error:', err); }
-  );
-  _unsubTrofeos = unsubLocal;
+  // Mostrar loader mientras carga
+  const feedEl = document.getElementById('trofeosFeed');
+  if(feedEl && !_trofeosFeedData.length){
+    feedEl.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);">
+      <div style="font-size:2rem;margin-bottom:8px;">🏆</div>
+      <div>Cargando trofeos aprobados...</div>
+    </div>`;
+  }
+  // Esperar a que db esté lista
+  if(!window.db){ setTimeout(()=>{ _unsubTrofeos=null; listenTrofeosFeed(); }, 800); return; }
+  try {
+    // Escuchar trofeos locales aprobados (db charlasrf4)
+    const unsubLocal = onSnapshot(
+      query(collection(db,'trofeosPendientes'), where('status','==','approved'), orderBy('createdAt','desc')),
+      snap => {
+        const local = snap.docs.map(d=>({id:d.id,...d.data(),_src:'local'}));
+        const ext = [];
+        const tsVal = x => x.createdAt?.toMillis ? x.createdAt.toMillis() : (typeof x.createdAt==="number" ? x.createdAt : (x.createdAt?.seconds ? x.createdAt.seconds*1000 : 0));
+        _trofeosFeedData = [...local, ...ext].sort((a,b) => tsVal(b) - tsVal(a));
+        renderTrofeosFeed();
+      },
+      err => {
+        console.warn('Trofeos local error:', err);
+        _unsubTrofeos = null; // permitir reintento
+        // Si falla por índice, intentar sin orderBy
+        try {
+          const unsubFallback = onSnapshot(
+            query(collection(db,'trofeosPendientes'), where('status','==','approved')),
+            snap => {
+              const tsVal = x => x.createdAt?.toMillis ? x.createdAt.toMillis() : (typeof x.createdAt==="number" ? x.createdAt : (x.createdAt?.seconds ? x.createdAt.seconds*1000 : 0));
+              _trofeosFeedData = snap.docs.map(d=>({id:d.id,...d.data(),_src:'local'})).sort((a,b)=>tsVal(b)-tsVal(a));
+              renderTrofeosFeed();
+            },
+            err2 => {
+              console.warn('Trofeos fallback error:', err2);
+              _unsubTrofeos = null;
+              const el = document.getElementById('trofeosFeed');
+              if(el) el.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--muted);">
+                <div style="font-size:3rem;margin-bottom:12px;">🏆</div>
+                <div style="font-size:.95rem;font-weight:700;margin-bottom:6px;">No se pudieron cargar los trofeos</div>
+                <div style="font-size:.8rem;margin-bottom:16px;">Verificá tu conexión e intentá de nuevo.</div>
+                <button class="btn" onclick="_unsubTrofeos=null;listenTrofeosFeed();" style="background:var(--gold);color:#000;font-weight:700;">🔄 Reintentar</button>
+              </div>`;
+            }
+          );
+          _unsubTrofeos = unsubFallback;
+        } catch(e2) { console.warn('Trofeos fallback setup error:', e2); }
+      }
+    );
+    _unsubTrofeos = unsubLocal;
+  } catch(e) {
+    console.warn('listenTrofeosFeed setup error:', e);
+    _unsubTrofeos = null;
+  }
 }
 
 function listenTrofeosSidebar(){
