@@ -3337,6 +3337,7 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(window.loadAdsI
 
   <!-- Admin Tabs -->
   <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:8px;">
+    <button class="adm-tab" onclick="swAdminTab(this,'admt-dashboard');loadAdminDashboard();" style="background:rgba(46,196,182,.08);border-color:rgba(46,196,182,.3);color:var(--accent);">📊 Dashboard</button>
     <button class="adm-tab adm-on" onclick="swAdminTab(this,'admt-reports')">⚠️ Reportes</button>
     <button class="adm-tab" onclick="swAdminTab(this,'admt-posts')">📝 Posts</button>
     <button class="adm-tab" onclick="swAdminTab(this,'admt-users')">👥 Usuarios</button>
@@ -3356,6 +3357,34 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(window.loadAdsI
   </div>
 
   <!-- TAB: Reportes -->
+  <!-- TAB: DASHBOARD DE ESTADÍSTICAS -->
+  <div id="admt-dashboard" style="display:none;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:18px;" id="dash-metrics"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;">
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px;">
+        <div style="font-size:.72rem;font-weight:800;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">Posts por día (últimos 7 días)</div>
+        <canvas id="dashChartPosts" height="120"></canvas>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px;">
+        <div style="font-size:.72rem;font-weight:800;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">Trofeos por día (últimos 7 días)</div>
+        <canvas id="dashChartTrofeos" height="120"></canvas>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px;">
+        <div style="font-size:.72rem;font-weight:800;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">Top 5 usuarios más activos</div>
+        <div id="dashTopUsers" style="display:flex;flex-direction:column;gap:6px;"></div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px;">
+        <div style="font-size:.72rem;font-weight:800;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">Últimos registros</div>
+        <div id="dashLastUsers" style="display:flex;flex-direction:column;gap:6px;"></div>
+      </div>
+    </div>
+    <div style="text-align:right;margin-top:10px;">
+      <button onclick="loadAdminDashboard()" style="background:var(--bg4);border:1px solid var(--border);color:var(--muted);padding:5px 14px;border-radius:var(--rs);font-size:.75rem;cursor:pointer;font-family:'Exo 2',sans-serif;">🔄 Actualizar</button>
+    </div>
+  </div>
+
   <div id="admt-reports">
     <div id="adminReportsList"><div style="text-align:center;padding:30px;color:var(--muted);">Cargando reportes...</div></div>
   </div>
@@ -12191,10 +12220,11 @@ async function submitReport(){
 function swAdminTab(el, tabId){
   document.querySelectorAll('.adm-tab').forEach(t=>t.classList.remove('adm-on'));
   el.classList.add('adm-on');
-  ['admt-reports','admt-posts','admt-users','admt-verif','admt-site','admt-parches','admt-torneos','admt-grupos','admt-ads','admt-live','admt-pezdelsemana','admt-xplevels','admt-insignias','admt-soporte']
+  ['admt-dashboard','admt-reports','admt-posts','admt-users','admt-verif','admt-site','admt-parches','admt-torneos','admt-grupos','admt-ads','admt-live','admt-pezdelsemana','admt-xplevels','admt-insignias','admt-soporte']
     .forEach(id=>{ const e=document.getElementById(id); if(e) e.style.display='none'; });
   const tab = document.getElementById(tabId);
   if(tab) tab.style.display='block';
+  if(tabId==='admt-dashboard') loadAdminDashboard();
   if(tabId==='admt-parches') loadAdminPatches();
   if(tabId==='admt-torneos') loadAdminTorneos();
   if(tabId==='admt-grupos') loadAdminGrupos();
@@ -21847,6 +21877,162 @@ function updatePremiumBtn() {
 document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBtn, 2500); });
 </script>
 <!-- ===== FIN MODAL PREMIUM ===== -->
+
+<!-- ===== DASHBOARD ADMIN ===== -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+window.loadAdminDashboard = async function(){
+  const metricsEl = document.getElementById('dash-metrics');
+  const topEl = document.getElementById('dashTopUsers');
+  const lastEl = document.getElementById('dashLastUsers');
+  if(!metricsEl) return;
+
+  const loading = (el) => { if(el) el.innerHTML = '<div style="text-align:center;padding:16px;color:var(--muted);font-size:.78rem;">Cargando...</div>'; };
+  loading(metricsEl); loading(topEl); loading(lastEl);
+
+  try {
+    const { collection, getDocs, query, orderBy, limit, where, Timestamp } = window._fbFns || {};
+    if(!getDocs) { metricsEl.innerHTML='<div style="color:var(--muted);font-size:.78rem;">Firebase no disponible</div>'; return; }
+
+    // --- Fechas ---
+    const now = new Date();
+    const hace7 = new Date(now); hace7.setDate(now.getDate()-6); hace7.setHours(0,0,0,0);
+    const hace30 = new Date(now); hace30.setDate(now.getDate()-29);
+
+    // --- Queries en paralelo ---
+    const [snapUsers, snapPosts, snapTrofeos] = await Promise.all([
+      getDocs(collection(db,'users')),
+      getDocs(query(collection(db,'posts'), orderBy('createdAt','desc'), limit(500))),
+      getDocs(query(collection(db,'trofeos'), orderBy('createdAt','desc'), limit(500))),
+    ]);
+
+    const totalUsuarios = snapUsers.size;
+    const usuarios = snapUsers.docs.map(d=>({id:d.id,...d.data()}));
+
+    // Usuarios nuevos últimos 30 días
+    const nuevos30 = usuarios.filter(u=>{
+      const t = u.createdAt?.toDate ? u.createdAt.toDate() : (u.createdAt ? new Date(u.createdAt) : null);
+      return t && t >= hace30;
+    }).length;
+
+    const posts = snapPosts.docs.map(d=>({id:d.id,...d.data()}));
+    const trofeos = snapTrofeos.docs.map(d=>({id:d.id,...d.data()}));
+
+    const totalPosts = posts.length;
+    const totalTrofeos = trofeos.length;
+
+    // Posts / trofeos últimas 24h
+    const hace24h = new Date(now.getTime() - 24*60*60*1000);
+    const posts24h = posts.filter(p=>{ const t=p.createdAt?.toDate?p.createdAt.toDate():new Date(p.createdAt||0); return t>=hace24h; }).length;
+    const trofeos24h = trofeos.filter(p=>{ const t=p.createdAt?.toDate?p.createdAt.toDate():new Date(p.createdAt||0); return t>=hace24h; }).length;
+
+    // --- Métricas principales ---
+    const metrics = [
+      { label:'Usuarios totales', val:totalUsuarios, icon:'👥', color:'#2ec4b6' },
+      { label:'Nuevos (30d)',     val:nuevos30,       icon:'🆕', color:'#3fb950' },
+      { label:'Posts totales',   val:totalPosts,     icon:'📝', color:'#d4a017' },
+      { label:'Posts hoy',       val:posts24h,       icon:'🔥', color:'#f85149' },
+      { label:'Trofeos totales', val:totalTrofeos,   icon:'🏆', color:'#d4a017' },
+      { label:'Trofeos hoy',     val:trofeos24h,     icon:'🥇', color:'#2ec4b6' },
+    ];
+    metricsEl.innerHTML = metrics.map(m=>`
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:12px 14px;">
+        <div style="font-size:1.3rem;margin-bottom:4px;">${m.icon}</div>
+        <div style="font-size:1.4rem;font-weight:800;color:${m.color};">${m.val.toLocaleString()}</div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:2px;">${m.label}</div>
+      </div>`).join('');
+
+    // --- Gráficas por día (últimos 7 días) ---
+    const days = [];
+    const dayLabels = [];
+    for(let i=6;i>=0;i--){
+      const d = new Date(now); d.setDate(now.getDate()-i); d.setHours(0,0,0,0);
+      days.push(d);
+      dayLabels.push(d.toLocaleDateString('es',{weekday:'short',day:'numeric'}));
+    }
+    function countByDay(items){
+      return days.map(d=>{
+        const next = new Date(d); next.setDate(d.getDate()+1);
+        return items.filter(p=>{ const t=p.createdAt?.toDate?p.createdAt.toDate():new Date(p.createdAt||0); return t>=d&&t<next; }).length;
+      });
+    }
+    const postsByDay = countByDay(posts);
+    const trofeosByDay = countByDay(trofeos);
+
+    function makeChart(canvasId, data, color, label){
+      const canvas = document.getElementById(canvasId);
+      if(!canvas) return;
+      if(canvas._chart) canvas._chart.destroy();
+      canvas._chart = new Chart(canvas, {
+        type:'bar',
+        data:{
+          labels: dayLabels,
+          datasets:[{ label, data, backgroundColor: color+'99', borderColor: color, borderWidth:1, borderRadius:4 }]
+        },
+        options:{
+          responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{display:false} },
+          scales:{
+            x:{ ticks:{color:'#8b949e',font:{size:10}}, grid:{color:'#21262d'} },
+            y:{ ticks:{color:'#8b949e',font:{size:10},stepSize:1}, grid:{color:'#21262d'}, beginAtZero:true }
+          }
+        }
+      });
+    }
+    makeChart('dashChartPosts',   postsByDay,   '#2ec4b6', 'Posts');
+    makeChart('dashChartTrofeos', trofeosByDay, '#d4a017', 'Trofeos');
+
+    // --- Top 5 usuarios más activos (por cantidad de posts) ---
+    const postCount = {};
+    posts.forEach(p=>{ if(p.uid||p.userId){ const k=p.uid||p.userId; postCount[k]=(postCount[k]||0)+1; } });
+    const top5 = Object.entries(postCount).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    const maxPosts = top5[0]?.[1]||1;
+    topEl.innerHTML = top5.length ? top5.map(([uid,cnt],i)=>{
+      const u = usuarios.find(u=>u.id===uid);
+      const nick = u?.nick||u?.displayName||uid.slice(0,8);
+      const pct = Math.round(cnt/maxPosts*100);
+      return `<div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:.7rem;font-weight:800;color:var(--muted);width:14px;">${i+1}</span>
+        <div style="flex:1;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+            <span style="font-size:.78rem;font-weight:700;color:var(--text);">${nick}</span>
+            <span style="font-size:.72rem;color:var(--accent);">${cnt} posts</span>
+          </div>
+          <div style="background:var(--bg4);border-radius:3px;height:4px;">
+            <div style="width:${pct}%;background:var(--accent);height:4px;border-radius:3px;"></div>
+          </div>
+        </div>
+      </div>`;
+    }).join('') : '<div style="color:var(--muted);font-size:.78rem;">Sin datos</div>';
+
+    // --- Últimos 5 registros ---
+    const sorted = [...usuarios].sort((a,b)=>{
+      const ta = a.createdAt?.toDate?a.createdAt.toDate():new Date(a.createdAt||0);
+      const tb = b.createdAt?.toDate?b.createdAt.toDate():new Date(b.createdAt||0);
+      return tb-ta;
+    }).slice(0,5);
+    lastEl.innerHTML = sorted.length ? sorted.map(u=>{
+      const t = u.createdAt?.toDate?u.createdAt.toDate():new Date(u.createdAt||0);
+      const fecha = t.toLocaleDateString('es',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+      return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid var(--border);">
+        <div style="width:28px;height:28px;border-radius:50%;background:var(--bg4);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;color:var(--accent);">
+          ${(u.nick||u.displayName||'?')[0].toUpperCase()}
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:.78rem;font-weight:700;color:var(--text);">${u.nick||u.displayName||'Usuario'}</div>
+          <div style="font-size:.68rem;color:var(--muted);">${fecha}</div>
+        </div>
+      </div>`;
+    }).join('') : '<div style="color:var(--muted);font-size:.78rem;">Sin datos</div>';
+
+  } catch(e) {
+    console.error('Dashboard error:',e);
+    if(metricsEl) metricsEl.innerHTML = `<div style="color:var(--red);font-size:.78rem;">Error cargando datos: ${e.message}</div>`;
+  }
+};
+window.loadAdminDashboard = window.loadAdminDashboard;
+</script>
+<!-- ===== FIN DASHBOARD ADMIN ===== -->
 
 </body>
 </html>
