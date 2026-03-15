@@ -3800,7 +3800,7 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(window.loadAdsI
   <div id="rankList" style="display:flex;flex-direction:column;gap:8px;"></div>
 
   <div style="margin-top:18px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;font-size:.72rem;color:var(--muted);line-height:1.6;">
-    🗓️ El ranking se resetea cada lunes a las 00:00 UY. Solo cuenta la actividad de la semana en curso.
+    🗓️ El ranking se resetea cada domingo a las 16:00 hs Uruguay. Solo cuenta la actividad de la semana en curso.
   </div>
 </div>
 <!-- ===== FIN RANKING SEMANAL ===== -->
@@ -18751,20 +18751,40 @@ const _expose = {
 
 // ===== RANKING SEMANAL =====
 const EXCLUDED_FROM_RANKING = ['ruizgustavo12'];
+const EXCLUDED_EMAILS_RANKING = ['synxyes@gmail.com'];
 
 function getRankWeekRange(){
+  // Reset: domingo a las 16:00 hora Uruguay (UTC-3 = 19:00 UTC)
+  // La semana va desde el domingo anterior 16:00 UY hasta el próximo domingo 15:59:59 UY
   const now = new Date();
-  const day = now.getDay();
-  const diffToMon = (day === 0 ? -6 : 1 - day);
-  const mon = new Date(now); mon.setDate(now.getDate() + diffToMon); mon.setHours(0,0,0,0);
-  const sun = new Date(mon); sun.setDate(mon.getDate() + 6); sun.setHours(23,59,59,999);
-  return { mon, sun };
+  // Convertir "ahora" a hora UY (UTC-3)
+  const nowUY = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+  const dayUY = nowUY.getUTCDay(); // 0=dom, 1=lun ... 6=sab
+  const hourUY = nowUY.getUTCHours();
+  // Calcular cuántos días atrás fue el último domingo 16:00 UY
+  let daysBack;
+  if(dayUY === 0 && hourUY >= 16){
+    daysBack = 0; // hoy domingo después de las 16h → semana nueva
+  } else if(dayUY === 0){
+    daysBack = 7; // hoy domingo antes de las 16h → semana anterior
+  } else {
+    daysBack = dayUY; // lunes=1...sábado=6 días atrás hasta el domingo
+  }
+  // Inicio de semana: último domingo a las 16:00 UY = 19:00 UTC
+  const start = new Date(now);
+  start.setUTCDate(now.getUTCDate() - daysBack);
+  start.setUTCHours(19, 0, 0, 0); // 16:00 UY = 19:00 UTC
+  // Fin de semana: próximo domingo a las 15:59:59 UY = 18:59:59 UTC
+  const end = new Date(start);
+  end.setUTCDate(start.getUTCDate() + 7);
+  end.setUTCMilliseconds(end.getUTCMilliseconds() - 1);
+  return { mon: start, sun: end };
 }
 
 async function loadRankingSemanal(){
   const { mon, sun } = getRankWeekRange();
   const label = document.getElementById('rankWeekLabel');
-  if(label) label.textContent = `Semana ${mon.toLocaleDateString('es',{day:'numeric',month:'short'})} — ${sun.toLocaleDateString('es',{day:'numeric',month:'short',year:'numeric'})}`;
+  if(label) label.textContent = `Semana ${mon.toLocaleDateString('es',{day:'numeric',month:'short',timeZone:'America/Montevideo'})} — ${sun.toLocaleDateString('es',{day:'numeric',month:'short',year:'numeric',timeZone:'America/Montevideo'})}`;
   const activeTab = document.querySelector('.rank-tab.rank-on');
   const mode = activeTab ? (activeTab.getAttribute('data-mode')||'trofeos') : 'trofeos';
   renderRanking(mode, mon, sun);
@@ -18782,17 +18802,24 @@ async function renderRanking(mode, mon, sun){
     usersSnap.docs.forEach(d=>{ users[d.id]=d.data(); });
     const isExcluded = uid => {
       const u=users[uid]; if(!u) return false;
-      return EXCLUDED_FROM_RANKING.includes(u.nick)||EXCLUDED_FROM_RANKING.includes(u.nickLower);
+      return EXCLUDED_FROM_RANKING.includes(u.nick)
+          || EXCLUDED_FROM_RANKING.includes(u.nickLower)
+          || EXCLUDED_EMAILS_RANKING.includes(u.email)
+          || u.role==='admin';
     };
-    const getT = x => x?.toDate?x.toDate():new Date(x||0);
+    const getT = x => x?.toDate ? x.toDate() : (x?.toMillis ? new Date(x.toMillis()) : new Date(x||0));
     const inWeek = t => t>=mon && t<=sun;
     let ranking=[];
     if(mode==='trofeos'||mode==='peso'){
-      const snap=await getDocs(query(collection(db,'trofeos'),orderBy('createdAt','desc'),limit(500)));
+      // Leer de trofeosPendientes con status approved
+      const snap=await getDocs(query(collection(db,'trofeosPendientes'), where('status','==','approved'), orderBy('createdAt','desc'), limit(500)));
       const counts={}, weights={};
       snap.docs.forEach(d=>{
-        const data=d.data(); const uid=data.uid||data.userId;
-        if(!uid||isExcluded(uid)||!inWeek(getT(data.createdAt))) return;
+        const data=d.data();
+        const uid=data.userId||data.uid;
+        if(!uid||isExcluded(uid)) return;
+        const t=getT(data.createdAt);
+        if(!inWeek(t)) return;
         counts[uid]=(counts[uid]||0)+1;
         weights[uid]=(weights[uid]||0)+parseFloat(data.weight||data.peso||0);
       });
@@ -18822,7 +18849,7 @@ async function renderRanking(mode, mon, sun){
         if(!top3[i]) return '';
         const u=users[top3[i].uid]||{};
         const nick=esc(u.nick||u.displayName||'?');
-        const av=u.photoURL||u.avatar||'';
+        const av=u.photoURL||u.avatar||u.av||'';
         const isFirst=i===0;
         return `<div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;max-width:160px;">
           <div style="font-size:${isFirst?'1.6rem':'1.2rem'};">${medals[i]}</div>
@@ -18837,7 +18864,7 @@ async function renderRanking(mode, mon, sun){
     listEl.innerHTML=ranking.map((r,i)=>{
       const u=users[r.uid]||{};
       const nick=esc(u.nick||u.displayName||'?');
-      const av=u.photoURL||u.avatar||'';
+      const av=u.photoURL||u.avatar||u.av||'';
       const isTop=i<3;
       return `<div onclick="openUserProfile('${r.uid}')" style="display:flex;align-items:center;gap:12px;background:${isTop?'rgba(46,196,182,.06)':'var(--bg3)'};border:1px solid ${isTop?'rgba(46,196,182,.2)':'var(--border)'};border-radius:var(--r);padding:10px 14px;cursor:pointer;transition:background .15s;">
         <span style="font-size:1rem;font-weight:800;color:${i<3?'var(--gold)':'var(--muted)'};min-width:28px;text-align:center;">${i<3?medals[i]:i+1}</span>
@@ -18850,7 +18877,7 @@ async function renderRanking(mode, mon, sun){
     }).join('');
   }catch(e){
     console.error('Ranking error:',e);
-    podiumEl.innerHTML=`<div style="color:var(--red);font-size:.78rem;padding:20px;">Error: ${e.message}</div>`;
+    podiumEl.innerHTML=`<div style="color:var(--red);font-size:.78rem;padding:20px;">Error al cargar ranking: ${e.message}</div>`;
   }
 }
 window.loadRankingSemanal=loadRankingSemanal;
