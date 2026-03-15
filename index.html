@@ -5710,7 +5710,11 @@ window.gp = (id, pushState = true) => {
   if(id==='spots'){ loadSpots(); loadFriendSpots(); }
   if(id==='casitrofeo') renderMapPosts();
   if(id==='trofeos-feed') {
-    listenTrofeosFeed();
+    // Si ya hay datos cargados, renderizar de inmediato
+    if(window._trofeosFeedData && window._trofeosFeedData.length) renderTrofeosFeed();
+    // Si no hay suscripción activa, iniciar
+    if(!window._unsubTrofeos) listenTrofeosFeed();
+    else if(!window._trofeosFeedData.length) { window._unsubTrofeos=null; listenTrofeosFeed(); }
     document.getElementById('trofeoFeedBadge').style.display='inline-flex';
   }
   if(id==='reels') {
@@ -18080,22 +18084,22 @@ function closeReelsOverlay(){
 window.closeReelsOverlay = closeReelsOverlay;
 
 window._unsubTrofeos = window._unsubTrofeos || null;
-let _unsubTrofeos = window._unsubTrofeos;
-let _trofeosFeedData = [];
+window._trofeosFeedData = window._trofeosFeedData || [];
+let _trofeosFeedData = window._trofeosFeedData;
 let _trofeoFeedFilter = 'all';
 
 function listenTrofeosFeed(){
-  if(_unsubTrofeos) return;
+  if(window._unsubTrofeos) return;
   // Mostrar loader mientras carga
   const feedEl = document.getElementById('trofeosFeed');
-  if(feedEl && !_trofeosFeedData.length){
+  if(feedEl && !window._trofeosFeedData.length){
     feedEl.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);">
       <div style="font-size:2rem;margin-bottom:8px;">🏆</div>
       <div>Cargando trofeos aprobados...</div>
     </div>`;
   }
   // Esperar a que db esté lista
-  if(!window.db){ setTimeout(()=>{ _unsubTrofeos=null; listenTrofeosFeed(); }, 800); return; }
+  if(!window.db){ setTimeout(()=>{ window._unsubTrofeos=null; listenTrofeosFeed(); }, 800); return; }
   try {
     // Sin orderBy para evitar necesidad de índice compuesto en Firestore
     const unsubLocal = onSnapshot(
@@ -18105,25 +18109,26 @@ function listenTrofeosFeed(){
         const local = snap.docs
           .map(d=>({id:d.id,...d.data(),_src:'local'}))
           .sort((a,b) => tsVal(b.createdAt) - tsVal(a.createdAt));
+        window._trofeosFeedData = local;
         _trofeosFeedData = local;
         renderTrofeosFeed();
       },
       err => {
         console.warn('Trofeos error:', err);
-        _unsubTrofeos = null;
+        window._unsubTrofeos = null;
         const el = document.getElementById('trofeosFeed');
         if(el) el.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--muted);">
           <div style="font-size:3rem;margin-bottom:12px;">🏆</div>
           <div style="font-size:.95rem;font-weight:700;margin-bottom:6px;">No se pudieron cargar los trofeos</div>
           <div style="font-size:.8rem;margin-bottom:16px;">Error: ${err.code||err.message||'desconocido'}</div>
-          <button class="btn" onclick="_unsubTrofeos=null;listenTrofeosFeed();" style="background:var(--gold);color:#000;font-weight:700;">🔄 Reintentar</button>
+          <button class="btn" onclick="window._unsubTrofeos=null;listenTrofeosFeed();" style="background:var(--gold);color:#000;font-weight:700;">🔄 Reintentar</button>
         </div>`;
       }
     );
-    _unsubTrofeos = unsubLocal;
+    window._unsubTrofeos = unsubLocal;
   } catch(e) {
     console.warn('listenTrofeosFeed setup error:', e);
-    _unsubTrofeos = null;
+    window._unsubTrofeos = null;
   }
 }
 
@@ -18216,7 +18221,7 @@ window.startBannerAnim = startBannerAnim;
 function renderTrofeosFeed(){
   const el = document.getElementById('trofeosFeed');
   if(!el) return;
-  let data = _trofeosFeedData;
+  let data = window._trofeosFeedData || [];
   if(_trofeoFeedFilter === 'mine' && window.CU){
     data = data.filter(t=>t.userId===window.CU.id || (t.userNick||'').toLowerCase()===(window.CU.nick||'').toLowerCase() || (t.submittedBy||'').toLowerCase()===(window.CU.nick||'').toLowerCase());
   }
