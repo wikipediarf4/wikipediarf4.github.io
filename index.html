@@ -15484,18 +15484,39 @@ function togglePostMenu(pid, e, ownerId){
 }
 
 function _openEditPostSafe(pid){
-  // Fetch text directly from cached posts to avoid quote-escaping issues in onclick
   const post = (window._posts||[]).find(p=>p.id===pid)
              || (window._trofeosPosts||[]).find(p=>p.id===pid);
   const text = post ? (post.text||'') : '';
   openEditPost(pid, text);
 }
+window._openEditPostSafe = _openEditPostSafe;
+
+window._savePostToFav = function(pid){
+  try {
+    const saved = JSON.parse(localStorage.getItem('_savedPosts')||'[]');
+    if(saved.includes(pid)){ toast('Ya guardaste esta publicación 🔖','ok'); return; }
+    saved.unshift(pid);
+    localStorage.setItem('_savedPosts', JSON.stringify(saved.slice(0,50)));
+    toast('✅ Publicación guardada en tus elementos','ok');
+  } catch(e){ toast('No se pudo guardar','err'); }
+};
+
+window._mutePostNotifs = function(pid){
+  try {
+    const muted = JSON.parse(localStorage.getItem('_mutedPosts')||'[]');
+    if(muted.includes(pid)){ toast('Ya tenías las notificaciones desactivadas 🔕','ok'); return; }
+    muted.push(pid);
+    localStorage.setItem('_mutedPosts', JSON.stringify(muted));
+    toast('🔕 Notificaciones desactivadas para esta publicación','ok');
+  } catch(e){ toast('No se pudo desactivar','err'); }
+};
 
 function openEditPost(pid, text){
   document.getElementById('editPostId').value = pid;
   document.getElementById('editPostText').value = text;
   om('mEditPost');
 }
+window.openEditPost = openEditPost;
 
 async function saveEditPost(){
   const pid = document.getElementById('editPostId').value;
