@@ -3213,32 +3213,57 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(window.loadAdsI
     <div id="messengerList" style="padding:6px;"></div>
     <div id="chatWindow" style="display:none;flex-direction:column;height:100%;"></div>
   </div>
-  <!-- Input row -->
-  <div id="chatInputRow" style="display:none;padding:8px;border-top:1px solid var(--border);flex-shrink:0;gap:6px;align-items:center;">
-    <button onclick="openEmojiPicker(event,'chatInput')" style="background:none;border:none;font-size:1.2rem;cursor:pointer;padding:4px 6px;color:var(--muted);flex-shrink:0;" title="Emoji">😊</button>
-    <div style="position:relative;flex-shrink:0;">
-      <button onclick="toggleGifPicker('chatGifPicker','chatInput')" style="background:none;border:none;font-size:.7rem;font-weight:900;cursor:pointer;padding:4px 6px;color:var(--accent);border:1px solid var(--accent);border-radius:4px;line-height:1;" title="GIF">GIF</button>
-      <div class="gif-picker" id="chatGifPicker" style="bottom:calc(100% + 8px);top:auto;">
-        <div class="gif-search">
-          <input type="text" placeholder="Buscar GIF..." oninput="searchGifs(this.value,'chatGifPicker','chatInput')" id="chatGifSearch">
-          <button onclick="closeGifPicker('chatGifPicker')" style="background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;">✕</button>
+  <!-- Input row estilo Facebook Messenger -->
+  <div id="chatInputRow" style="display:none;padding:8px 10px;border-top:1px solid var(--border);flex-shrink:0;gap:6px;align-items:flex-end;background:var(--bg2);">
+    <!-- Botones izquierda -->
+    <div style="display:flex;gap:2px;align-items:center;flex-shrink:0;">
+      <!-- Emoji -->
+      <button onclick="openEmojiPicker(event,'chatInput')" title="Emoji" style="background:none;border:none;font-size:1.3rem;cursor:pointer;padding:4px;color:#0084ff;transition:transform .15s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">😊</button>
+      <!-- Stickers -->
+      <div style="position:relative;">
+        <button onclick="toggleChatStickerPicker()" title="Stickers" style="background:none;border:none;font-size:1.3rem;cursor:pointer;padding:4px;color:#0084ff;transition:transform .15s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">🎭</button>
+        <div id="chatStickerPicker" style="display:none;position:absolute;bottom:calc(100% + 8px);left:0;width:280px;background:#161b22;border:1px solid #30363d;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.6);z-index:9999;overflow:hidden;flex-direction:column;">
+          <div style="padding:8px 10px;border-bottom:1px solid #30363d;display:flex;align-items:center;gap:6px;">
+            <input type="text" placeholder="🔍 Buscar sticker..." id="chatStickerSearch" oninput="searchChatStickers(this.value)" style="flex:1;background:#21262d;border:none;border-radius:8px;padding:5px 10px;color:#e6edf3;font-size:.8rem;outline:none;">
+            <button onclick="document.getElementById('chatStickerPicker').style.display='none'" style="background:none;border:none;color:#8b949e;cursor:pointer;font-size:1rem;">✕</button>
+          </div>
+          <div id="chatStickerGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:8px;max-height:200px;overflow-y:auto;"></div>
         </div>
-        <div class="gif-grid" id="chatGifGrid"></div>
-        <div class="gif-powered">Powered by GIPHY</div>
       </div>
+      <!-- GIF -->
+      <div style="position:relative;flex-shrink:0;">
+        <button onclick="toggleGifPicker('chatGifPicker','chatInput')" style="background:none;border:none;font-size:.65rem;font-weight:900;cursor:pointer;padding:3px 6px;color:#0084ff;border:1.5px solid #0084ff;border-radius:5px;line-height:1.4;transition:background .15s;" onmouseover="this.style.background='rgba(0,132,255,.1)'" onmouseout="this.style.background='none'" title="GIF">GIF</button>
+        <div class="gif-picker" id="chatGifPicker" style="bottom:calc(100% + 8px);top:auto;">
+          <div class="gif-search">
+            <input type="text" placeholder="Buscar GIF..." oninput="searchGifs(this.value,'chatGifPicker','chatInput')" id="chatGifSearch">
+            <button onclick="closeGifPicker('chatGifPicker')" style="background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;">✕</button>
+          </div>
+          <div class="gif-grid" id="chatGifGrid"></div>
+          <div class="gif-powered">Powered by GIPHY</div>
+        </div>
+      </div>
+      <!-- Foto (1 sola) -->
+      <button onclick="document.getElementById('chatPhotoInput').click()" title="Enviar foto" style="background:none;border:none;font-size:1.3rem;cursor:pointer;padding:4px;color:#0084ff;transition:transform .15s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">📷</button>
+      <input type="file" id="chatPhotoInput" accept="image/*" style="display:none;" onchange="sendChatPhoto(this)">
     </div>
-    <input id="chatInput" class="fi" placeholder="Escribe un mensaje..." style="flex:1;font-size:.82rem;" onkeypress="if(event.key==='Enter')sendChatMsg()" oninput="setChatTyping();toggleVoiceBtn()">
-    <button id="voiceMsgBtn" onclick="toggleVoiceRecord()" title="Mensaje de voz" style="background:none;border:none;font-size:1.2rem;cursor:pointer;padding:2px 5px;color:var(--muted);flex-shrink:0;transition:color .2s;">🎤</button>
-    <button id="chatSendBtn" onclick="sendChatMsg()" style="background:var(--accent);border:none;color:#000;width:34px;height:34px;border-radius:50%;font-size:.9rem;cursor:pointer;flex-shrink:0;display:none;">➤</button>
-    <!-- Recording indicator -->
+    <!-- Input texto -->
+    <div style="flex:1;background:#21262d;border-radius:20px;padding:6px 14px;display:flex;align-items:center;min-height:36px;">
+      <input id="chatInput" placeholder="Aa" style="flex:1;background:none;border:none;outline:none;color:#e6edf3;font-family:'Exo 2',sans-serif;font-size:.88rem;" onkeypress="if(event.key==='Enter'&&!event.shiftKey){sendChatMsg();event.preventDefault();}" oninput="setChatTyping();toggleVoiceBtn()">
+    </div>
+    <!-- Botón enviar / micrófono -->
+    <div style="flex-shrink:0;display:flex;align-items:center;">
+      <button id="voiceMsgBtn" onclick="toggleVoiceRecord()" title="Mensaje de voz" style="background:none;border:none;font-size:1.3rem;cursor:pointer;padding:4px;color:#0084ff;transition:transform .15s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">🎤</button>
+      <button id="chatSendBtn" onclick="sendChatMsg()" style="display:none;background:#0084ff;border:none;color:#fff;width:34px;height:34px;border-radius:50%;font-size:.9rem;cursor:pointer;align-items:center;justify-content:center;transition:background .15s;" onmouseover="this.style.background='#0070d8'" onmouseout="this.style.background='#0084ff'">➤</button>
+    </div>
+    <!-- Recording bar -->
     <div id="voiceRecordingBar" style="display:none;align-items:center;gap:8px;flex:1;">
       <div style="width:10px;height:10px;border-radius:50%;background:var(--red);animation:voicePulse 1s infinite;flex-shrink:0;"></div>
       <span id="voiceTimer" style="font-size:.82rem;color:var(--text);font-variant-numeric:tabular-nums;min-width:36px;">0:00</span>
       <div style="flex:1;height:3px;background:var(--bg4);border-radius:2px;overflow:hidden;">
         <div id="voiceWave" style="height:100%;width:0%;background:var(--red);border-radius:2px;transition:width .1s;"></div>
       </div>
-      <button onclick="cancelVoiceRecord()" style="background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;padding:2px 4px;" title="Cancelar">✕</button>
-      <button onclick="stopAndSendVoice()" style="background:var(--red);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:.9rem;cursor:pointer;flex-shrink:0;" title="Enviar">➤</button>
+      <button onclick="cancelVoiceRecord()" style="background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;padding:2px 4px;">✕</button>
+      <button onclick="stopAndSendVoice()" style="background:var(--red);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:.9rem;cursor:pointer;flex-shrink:0;">➤</button>
     </div>
   </div>
 </div>
@@ -16390,15 +16415,21 @@ function openChatWith(uid, nick){
     ? `<img src="${chatAv}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);flex-shrink:0;cursor:pointer;" onclick="cm('mMessenger');openUserProfile('${uid}','${esc(nick)}')">`
     : `<div style="width:36px;height:36px;border-radius:50%;background:var(--accent);color:#000;font-weight:700;font-size:.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;" onclick="cm('mMessenger');openUserProfile('${uid}','${esc(nick)}')">${(nick||'?')[0].toUpperCase()}</div>`;
   chatWin.innerHTML = `
-      <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--bg3);">
-        <button onclick="backToMessengerList()" style="background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;padding:0 4px;">‹</button>
-        ${avHtml}
-        <div>
-          <div style="font-size:.88rem;font-weight:700;cursor:pointer;" onclick="cm('mMessenger');openUserProfile('${uid}','${esc(nick)}')">${esc(nick)}</div>
-          <div style="font-size:.68rem;color:var(--green);" id="chatOnlineStatus">•</div>
+      <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:#161b22;flex-shrink:0;">
+        <button onclick="backToMessengerList()" style="background:none;border:none;color:#0084ff;font-size:1.3rem;cursor:pointer;padding:0 4px;line-height:1;">‹</button>
+        <div style="position:relative;flex-shrink:0;">
+          ${avHtml}
+          <div id="chatAvOnlineDot" style="position:absolute;bottom:0;right:0;width:10px;height:10px;border-radius:50%;background:#31a24c;border:2px solid #161b22;display:none;"></div>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:.9rem;font-weight:700;color:#e6edf3;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" onclick="cm('mMessenger');openUserProfile('${uid}','${esc(nick)}')">${esc(nick)}</div>
+          <div style="font-size:.7rem;" id="chatOnlineStatus">•</div>
+        </div>
+        <div style="display:flex;gap:4px;">
+          <button title="Ver perfil" onclick="cm('mMessenger');openUserProfile('${uid}','${esc(nick)}')" style="background:none;border:none;color:#0084ff;font-size:1.1rem;cursor:pointer;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background .15s;" onmouseover="this.style.background='#21262d'" onmouseout="this.style.background='none'">ⓘ</button>
         </div>
       </div>
-      <div id="chatMessages" style="flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:6px;min-height:0;"></div>`;
+      <div id="chatMessages" style="flex:1;overflow-y:auto;padding:12px 10px;display:flex;flex-direction:column;gap:2px;min-height:0;background:#0d1117;"></div>`;
   }
   const inputRow = document.getElementById('chatInputRow');
   if(inputRow) inputRow.style.display='flex';
@@ -16524,11 +16555,18 @@ function openChatWith(uid, nick){
                 ${msgContent}
                 ${msgRxnTotal>0?`<div onclick="reactChatMsg('${chatId}','${m.id}','')" style="position:absolute;${mine?'left:-8px':'right:-8px'};bottom:-12px;background:#161b22;border:1px solid #30363d;border-radius:100px;padding:1px 7px;font-size:.75rem;cursor:pointer;white-space:nowrap;">${msgTopRxns} ${msgRxnTotal}</div>`:''}
               </div>` : '';
-            return `<div style="display:flex;flex-direction:column;align-items:${mine?'flex-end':'flex-start'};gap:2px;margin-bottom:${msgRxnTotal>0?'12px':'4px'};" onclick="toggleMsgTime('msgtime_${m.id}')">
-              ${storyCard}
-              ${normalBubble}
-              <div id="msgtime_${m.id}" style="display:none;flex-direction:column;align-items:${mine?'flex-end':'flex-start'};gap:1px;padding:0 4px;">
-                <span style="font-size:.65rem;color:var(--muted);">${exactTime}</span>
+            return `<div style="display:flex;flex-direction:column;align-items:${mine?'flex-end':'flex-start'};gap:1px;margin-bottom:${msgRxnTotal>0?'14px':'2px'};" onclick="toggleMsgTime('msgtime_${m.id}')">
+              ${!mine ? `<div style="display:flex;align-items:flex-end;gap:6px;">
+                <div style="width:24px;height:24px;border-radius:50%;overflow:hidden;background:#21262d;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:#0084ff;">
+                  ${m.av ? `<img src="${m.av}" style="width:100%;height:100%;object-fit:cover;">` : (m.nick||'?')[0].toUpperCase()}
+                </div>
+                <div>
+                  ${storyCard}
+                  ${normalBubble}
+                </div>
+              </div>` : `<div>${storyCard}${normalBubble}</div>`}
+              <div id="msgtime_${m.id}" style="display:none;flex-direction:column;align-items:${mine?'flex-end':'flex-start'};gap:1px;padding:0 ${mine?'4px':'34px'};">
+                <span style="font-size:.65rem;color:#8b949e;">${exactTime}</span>
                 ${readLabel}
               </div>
             </div>`;
@@ -16766,6 +16804,95 @@ async function reactChatMsg(chatId, msgId, emoji){
 }
 
 let _typingTimer = null;
+
+// ── Chat Stickers ──
+window.toggleChatStickerPicker = function(){
+  const p = document.getElementById('chatStickerPicker');
+  if(!p) return;
+  const isOpen = p.style.display === 'flex';
+  p.style.display = isOpen ? 'none' : 'flex';
+  if(!isOpen) loadChatStickers('fishing');
+};
+
+async function loadChatStickers(q){
+  const grid = document.getElementById('chatStickerGrid');
+  if(!grid) return;
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:16px;color:#8b949e;font-size:.75rem;">Cargando...</div>';
+  try {
+    const res = await fetch(`https://api.giphy.com/v1/stickers/search?api_key=${STK_API_KEY}&limit=16&rating=g&q=${encodeURIComponent(q||'fishing')}`);
+    const data = await res.json();
+    renderChatStickers(data.data || []);
+  } catch(e) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:12px;color:#f85149;font-size:.75rem;">Error al cargar</div>';
+  }
+}
+
+function renderChatStickers(stickers){
+  const grid = document.getElementById('chatStickerGrid');
+  if(!grid) return;
+  if(!stickers.length){ grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:12px;color:#8b949e;font-size:.75rem;">Sin resultados</div>'; return; }
+  grid.innerHTML = '';
+  stickers.forEach(s => {
+    const url = s.images?.fixed_height_small?.url || s.images?.fixed_height?.url || '';
+    if(!url) return;
+    const img = document.createElement('img');
+    img.src = url; img.loading = 'lazy';
+    img.style.cssText = 'width:100%;aspect-ratio:1;object-fit:contain;cursor:pointer;border-radius:8px;padding:2px;transition:background .15s;';
+    img.onmouseover = () => img.style.background = '#21262d';
+    img.onmouseout = () => img.style.background = 'none';
+    img.onclick = () => {
+      document.getElementById('chatStickerPicker').style.display = 'none';
+      sendChatSticker(url);
+    };
+    grid.appendChild(img);
+  });
+}
+
+window.searchChatStickers = function(q){
+  clearTimeout(window._chatStkTimer);
+  window._chatStkTimer = setTimeout(() => loadChatStickers(q||'fishing'), 400);
+};
+
+async function sendChatSticker(gifUrl){
+  if(!window.CU || !_chatUserId) return;
+  const chatId = [window.CU.id, _chatUserId].sort().join('_');
+  try {
+    await addDoc(collection(db,'chats',chatId,'messages'),{
+      uid: window.CU.id, nick: window.CU.nick, av: window.CU.av||'',
+      gif: gifUrl, sticker: true, text: '', time: serverTimestamp()
+    });
+    sendNotifToUser(_chatUserId, `💬 ${window.CU.nick}: 🎭 Sticker`).catch(()=>{});
+  } catch(e){ toast('Error al enviar sticker','err'); }
+}
+
+// ── Chat Foto (1 sola) ──
+window.sendChatPhoto = async function(input){
+  const file = input.files[0];
+  input.value = '';
+  if(!file) return;
+  if(!file.type.startsWith('image/')){ toast('Solo se permiten imágenes','err'); return; }
+  if(file.size > 5*1024*1024){ toast('La imagen no puede superar 5MB','err'); return; }
+  if(!window.CU || !_chatUserId){ toast('Error: no hay conversación activa','err'); return; }
+  toast('📷 Subiendo imagen...','ok');
+  try {
+    // Subir a Cloudinary igual que el resto del sitio
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', CLOUDINARY_PRESET);
+    fd.append('folder', 'chat');
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method:'POST', body:fd });
+    const data = await res.json();
+    const imgUrl = data.secure_url;
+    if(!imgUrl) throw new Error('Sin URL');
+    const chatId = [window.CU.id, _chatUserId].sort().join('_');
+    await addDoc(collection(db,'chats',chatId,'messages'),{
+      uid: window.CU.id, nick: window.CU.nick, av: window.CU.av||'',
+      gif: imgUrl, text: '', time: serverTimestamp()
+    });
+    sendNotifToUser(_chatUserId, `💬 ${window.CU.nick}: 📷 Foto`).catch(()=>{});
+  } catch(e){ toast('Error al enviar la foto: '+e.message,'err'); }
+};
+
 function setChatTyping(){
   if(!window.CU || !_chatUserId) return;
   clearTimeout(_typingTimer);
@@ -18765,7 +18892,7 @@ const _expose = {
   submitPatch, submitTorneo, submitAdminGroup, submitAd, toggleAd,
   banUser, deleteAdminContent, deleteAdminPost, resolveReport,
   openUserProfile, sendFriendRequest, togglePostMenu, renderProfileFriendsList, openEditPost, saveEditPost, deleteMyPost, removeFriend,
-  toggleMessenger, sendChatMsg, openChatWith, backToMessengerList, closeMessenger, minimizeMessenger, maximizeMessenger, toggleVoiceRecord, cancelVoiceRecord, stopAndSendVoice, toggleVoicePlay, toggleVoiceBtn, openPostWithYt, reactChatMsg, showMsgRxnBar, hideMsgRxnBar, keepMsgRxnBar, showCmtMenu, hideCmtMenu, setChatTyping, toggleGifPicker, closeGifPicker, searchGifs, sendGif, toggleMsgTime,
+  toggleMessenger, sendChatMsg, openChatWith, backToMessengerList, closeMessenger, minimizeMessenger, maximizeMessenger, toggleVoiceRecord, cancelVoiceRecord, stopAndSendVoice, toggleVoicePlay, toggleVoiceBtn, openPostWithYt, reactChatMsg, showMsgRxnBar, hideMsgRxnBar, keepMsgRxnBar, showCmtMenu, hideCmtMenu, setChatTyping, toggleGifPicker, closeGifPicker, searchGifs, sendGif, toggleMsgTime, sendChatSticker, searchChatStickers,
   joinGroup, leaveGroup, openGroupPost, showGroupWelcome, previewGroupPostImg, removeGroupPostImg, submitGroupPost,
   acceptFriendRequest, rejectFriendRequest, dismissFriendRequest, sendFriendRequestFromProfile, loadRealFriends, updateNotifBadge, updateMsgBadge,
   previewSpotImg, removeSpotImg, submitSpot, loadSpots, loadFriendSpots, renderFriendSpotsInHome, openEditSpot, saveEditSpot, deleteSpot, scrollToPost, loadVideos, filterVideos,
