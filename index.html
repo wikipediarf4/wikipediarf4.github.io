@@ -18149,8 +18149,9 @@ let _trofeosFeedData = window._trofeosFeedData;
 let _trofeoFeedFilter = 'all';
 
 async function listenTrofeosFeed(){
-  // No recargar si ya hay datos frescos (menos de 2 minutos)
-  if(window._trofeosFeedLastLoad && (Date.now() - window._trofeosFeedLastLoad) < 120000 && window._trofeosFeedData.length){
+  // No recargar si ya hay datos frescos (menos de 2 minutos) — pero admin siempre recarga
+  const isAdmin = window.CU?.nick === 'ruizgustavo12' || window.CU?.email === 'synxyes@gmail.com' || window.CU?.role === 'admin';
+  if(!isAdmin && window._trofeosFeedLastLoad && (Date.now() - window._trofeosFeedLastLoad) < 120000 && window._trofeosFeedData.length){
     renderTrofeosFeed(); return;
   }
   const feedEl = document.getElementById('trofeosFeed');
@@ -18158,25 +18159,26 @@ async function listenTrofeosFeed(){
     <div style="font-size:2rem;margin-bottom:8px;">🏆</div>
     <div>Cargando trofeos aprobados...</div>
   </div>`;
-  // Esperar que Firebase esté listo
   if(!window.db){
     setTimeout(()=>listenTrofeosFeed(), 1000); return;
   }
   try {
-    // Primero intentar sin where para ver si hay documentos
+    console.log('[Trofeos] Iniciando carga desde Firestore...');
     const snap = await getDocs(query(collection(db,'trofeosPendientes'), limit(100)));
+    console.log('[Trofeos] Documentos recibidos:', snap.docs.length);
     const tsVal = x => x?.toMillis ? x.toMillis() : (typeof x==="number" ? x : (x?.seconds ? x.seconds*1000 : 0));
     const all = snap.docs.map(d=>({id:d.id,...d.data(),_src:'local'}));
-    // Filtrar aprobados en cliente (evita necesidad de índice en Firestore)
+    console.log('[Trofeos] Status de cada doc:', all.map(d=>d.status));
     const local = all
       .filter(d => !d.status || d.status === 'approved')
       .sort((a,b) => tsVal(b.createdAt) - tsVal(a.createdAt));
+    console.log('[Trofeos] Aprobados:', local.length);
     window._trofeosFeedData = local;
     _trofeosFeedData = local;
     window._trofeosFeedLastLoad = Date.now();
     renderTrofeosFeed();
   } catch(e) {
-    console.error('Trofeos error:', e);
+    console.error('[Trofeos] Error:', e.code, e.message);
     const el = document.getElementById('trofeosFeed');
     if(el) el.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--muted);">
       <div style="font-size:3rem;margin-bottom:12px;">🏆</div>
