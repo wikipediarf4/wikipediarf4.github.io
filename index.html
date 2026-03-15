@@ -4968,9 +4968,8 @@ function listenPosts() {
 let _storiesUnsub = null;
 function listenStories() {
   if(_storiesUnsub){ _storiesUnsub(); _storiesUnsub = null; }
-  const since = new Date(Date.now() - 172800000); // últimas 48h max
   _storiesUnsub = onSnapshot(
-    query(collection(db, 'stories'), orderBy('time', 'desc'), limit(50)),
+    query(collection(db, 'stories'), orderBy('time', 'desc'), limit(80)),
     { includeMetadataChanges: false },
     snap => {
       const now = Date.now();
@@ -4978,19 +4977,21 @@ function listenStories() {
       _stories = snap.docs.filter(d => {
         const raw = d.data().time;
         const t = raw?.toMillis ? raw.toMillis() : (typeof raw === 'number' ? raw : 0);
-        const ttl = d.data().userVerified ? 172800000 : 86400000;
-        // Si t===0 es un serverTimestamp pendiente (historia recien publicada) — incluirla
-        if(t && (now - t) > ttl){ expiredIds.push(d.id); return false; }
+        const ttl = d.data().userVerified ? 172800000 : 86400000; // 48h verificados, 24h el resto
+        // t===0 = serverTimestamp pendiente (historia recién publicada) — incluir siempre
+        if(t === 0) return true;
+        if((now - t) > ttl){ expiredIds.push(d.id); return false; }
         return true;
       }).map(d => {
         const raw = d.data().time;
-        // Si el timestamp aun no llego del servidor, usar tiempo actual para mostrarla
         const t = raw?.toMillis ? raw.toMillis() : (typeof raw === 'number' ? raw : Date.now());
         return { id: d.id, ...d.data(), time: t };
       });
-      // Solo borrar expiradas en snapshots del servidor (no pendientes)
+      // Intentar borrar las expiradas (solo funciona si el usuario es el dueño o admin)
       if(!snap.metadata.hasPendingWrites){
-        expiredIds.forEach(id => deleteDoc(doc(db, 'stories', id)).catch(()=>{}));
+        expiredIds.forEach(id => {
+          deleteDoc(doc(db, 'stories', id)).catch(()=>{}); // silencioso si no hay permisos
+        });
       }
       renderStories();
     },
@@ -5368,6 +5369,20 @@ function onLogin(){
   }, 2000);
   updateNavUI();
   listenVerifiedUsers().then(()=>{ listenPosts(); listenStories(); }).catch(()=>{ listenPosts(); listenStories(); });
+  // Borrar historias propias vencidas al iniciar sesión
+  setTimeout(async ()=>{
+    if(!window.CU?.id) return;
+    try {
+      const snap = await getDocs(query(collection(db,'stories'), where('userId','==',window.CU.id)));
+      const now = Date.now();
+      snap.docs.forEach(d => {
+        const raw = d.data().time;
+        const t = raw?.toMillis ? raw.toMillis() : (typeof raw === 'number' ? raw : 0);
+        const ttl = d.data().userVerified ? 172800000 : 86400000;
+        if(t && (now - t) > ttl) deleteDoc(doc(db,'stories',d.id)).catch(()=>{});
+      });
+    } catch(e){}
+  }, 3000);
   startPresence().then(()=>{ if(typeof updatePresenceActivity==='function') updatePresenceActivity('home'); });
   listenNotifs();
   listenTrofeosSidebar();
@@ -8179,51 +8194,11 @@ function postHTML(p){
       </div>
       <div style="position:relative;">
         <button class="post-menu" onclick="togglePostMenu('${p.id}', event, '${p.userId}')" style="font-size:1.3rem;line-height:1;">⋯</button>
-        <div id="pmenu_${p.id}" data-owner="${p.userId}" style="display:none;position:absolute;right:0;top:100%;background:var(--bg2);border:1px solid var(--border);border-radius:12px;min-width:260px;z-index:999;box-shadow:0 8px 32px rgba(0,0,0,.6);overflow:hidden;padding:6px 0;">
-
-          ${/* ── OPCIONES DEL DUEÑO ── */'' }
-          ${window.CU?.verified&&p.userId===window.CU?.id ? `
-          <button onclick="togglePostMenu('${p.id}',event);${p.id===window.CU?.pinnedPostId?'unpinPost()':"pinPost('${p.id}')"}" data-owner-only="true" style="display:flex;align-items:center;gap:12px;width:100%;background:none;border:none;color:var(--text);padding:10px 16px;cursor:pointer;font-size:.88rem;text-align:left;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">
-            <span style="width:32px;height:32px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">📌</span>
-            <div><div style="font-weight:700;">${p.id===window.CU?.pinnedPostId?'Desfijar publicación':'Fijar publicación'}</div><div style="font-size:.72rem;color:var(--muted);">${p.id===window.CU?.pinnedPostId?'Quitar del inicio de tu perfil':'Mostrar al inicio de tu perfil'}</div></div>
-          </button>` : ''}
-
-          <button onclick="togglePostMenu('${p.id}',event);_savePostToFav('${p.id}')" style="display:flex;align-items:center;gap:12px;width:100%;background:none;border:none;color:var(--text);padding:10px 16px;cursor:pointer;font-size:.88rem;text-align:left;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">
-            <span style="width:32px;height:32px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">🔖</span>
-            <div><div style="font-weight:700;">Guardar publicación</div><div style="font-size:.72rem;color:var(--muted);">Agregar a tus elementos guardados</div></div>
-          </button>
-
-          <button onclick="togglePostMenu('${p.id}',event);navigator.clipboard.writeText(location.origin+'/#post_${p.id}').then(()=>toast('¡Enlace copiado!','ok'))" style="display:flex;align-items:center;gap:12px;width:100%;background:none;border:none;color:var(--text);padding:10px 16px;cursor:pointer;font-size:.88rem;text-align:left;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">
-            <span style="width:32px;height:32px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">🔗</span>
-            <div><div style="font-weight:700;">Copiar enlace</div></div>
-          </button>
-
-          <div data-owner-only="true" style="height:1px;background:var(--border);margin:4px 0;"></div>
-
-          ${!p.sharedFrom ? `
-          <button onclick="togglePostMenu('${p.id}', event); _openEditPostSafe('${p.id}')" data-owner-only="true" data-edit-pid="${p.id}" style="display:flex;align-items:center;gap:12px;width:100%;background:none;border:none;color:var(--text);padding:10px 16px;cursor:pointer;font-size:.88rem;text-align:left;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">
-            <span style="width:32px;height:32px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">✏️</span>
-            <div><div style="font-weight:700;">Editar publicación</div></div>
-          </button>` : ''}
-
-          <button onclick="togglePostMenu('${p.id}',event);_mutePostNotifs('${p.id}')" data-owner-only="true" style="display:flex;align-items:center;gap:12px;width:100%;background:none;border:none;color:var(--text);padding:10px 16px;cursor:pointer;font-size:.88rem;text-align:left;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">
-            <span style="width:32px;height:32px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">🔕</span>
-            <div><div style="font-weight:700;">Desactivar notificaciones</div><div style="font-size:.72rem;color:var(--muted);">Dejar de recibir notif. de esta publicación</div></div>
-          </button>
-
-          <div data-owner-only="true" style="height:1px;background:var(--border);margin:4px 0;"></div>
-
-          <button onclick="togglePostMenu('${p.id}', event); deleteMyPost('${p.id}')" data-owner-only="true" style="display:flex;align-items:center;gap:12px;width:100%;background:none;border:none;color:var(--red);padding:10px 16px;cursor:pointer;font-size:.88rem;text-align:left;transition:background .15s;" onmouseover="this.style.background='rgba(248,81,73,.08)'" onmouseout="this.style.background='none'">
-            <span style="width:32px;height:32px;border-radius:50%;background:rgba(248,81,73,.12);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">🗑️</span>
-            <div><div style="font-weight:700;">Mover a la papelera</div><div style="font-size:.72rem;color:var(--muted);">Eliminar esta publicación permanentemente</div></div>
-          </button>
-
-          ${/* ── OPCIONES PARA OTROS ── */'' }
-          <button onclick="togglePostMenu('${p.id}', event); reportPost('${p.id}','${esc(p.userNick)}')" data-other-only="true" style="display:flex;align-items:center;gap:12px;width:100%;background:none;border:none;color:var(--warn);padding:10px 16px;cursor:pointer;font-size:.88rem;text-align:left;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">
-            <span style="width:32px;height:32px;border-radius:50%;background:rgba(210,153,34,.1);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">⚠️</span>
-            <div><div style="font-weight:700;">Reportar publicación</div><div style="font-size:.72rem;color:var(--muted);">Denunciar contenido inapropiado</div></div>
-          </button>
-
+        <div id="pmenu_${p.id}" data-owner="${p.userId}" style="display:none;position:absolute;right:0;top:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);min-width:150px;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,.5);overflow:hidden;">
+          ${!p.sharedFrom ? `<button onclick="togglePostMenu('${p.id}', event); _openEditPostSafe('${p.id}')" data-owner-only="true" data-edit-pid="${p.id}" style="display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;color:var(--text);padding:12px 16px;cursor:pointer;font-size:.88rem;text-align:left;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">✏️ Editar</button>` : ''}
+          ${window.CU?.verified&&p.userId===window.CU?.id?`<button onclick="togglePostMenu('${p.id}',event);${p.id===window.CU?.pinnedPostId?'unpinPost()':"pinPost('${p.id}')"};" style="display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;color:gold;padding:12px 16px;cursor:pointer;font-size:.88rem;text-align:left;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">${p.id===window.CU?.pinnedPostId?'📌 Desfijar':'📌 Fijar en perfil'}</button>`:''}
+          <button onclick="togglePostMenu('${p.id}', event); deleteMyPost('${p.id}')" data-owner-only="true" style="display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;color:var(--red);padding:12px 16px;cursor:pointer;font-size:.88rem;text-align:left;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">🗑 Eliminar</button>
+          <button onclick="togglePostMenu('${p.id}', event); reportPost('${p.id}','${esc(p.userNick)}')" data-other-only="true" style="display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;color:var(--warn);padding:12px 16px;cursor:pointer;font-size:.88rem;text-align:left;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">⚠️ Reportar</button>
         </div>
       </div>
     </div>
@@ -15516,22 +15491,6 @@ function _openEditPostSafe(pid){
   openEditPost(pid, text);
 }
 
-function _savePostToFav(pid){
-  const saved = JSON.parse(localStorage.getItem('_savedPosts')||'[]');
-  if(saved.includes(pid)){ toast('Ya guardaste esta publicación 🔖','ok'); return; }
-  saved.unshift(pid);
-  localStorage.setItem('_savedPosts', JSON.stringify(saved.slice(0,50)));
-  toast('✅ Publicación guardada en tus elementos','ok');
-}
-
-function _mutePostNotifs(pid){
-  const muted = JSON.parse(localStorage.getItem('_mutedPosts')||'[]');
-  if(muted.includes(pid)){ toast('Ya tenías las notificaciones desactivadas','ok'); return; }
-  muted.push(pid);
-  localStorage.setItem('_mutedPosts', JSON.stringify(muted));
-  toast('🔕 Notificaciones desactivadas para esta publicación','ok');
-}
-
 function openEditPost(pid, text){
   document.getElementById('editPostId').value = pid;
   document.getElementById('editPostText').value = text;
@@ -18177,23 +18136,30 @@ async function listenTrofeosFeed(){
     <div style="font-size:2rem;margin-bottom:8px;">🏆</div>
     <div>Cargando trofeos aprobados...</div>
   </div>`;
-  if(!window.db){ setTimeout(()=>listenTrofeosFeed(), 800); return; }
+  // Esperar que Firebase esté listo
+  if(!window.db){
+    setTimeout(()=>listenTrofeosFeed(), 1000); return;
+  }
   try {
-    const snap = await getDocs(query(collection(db,'trofeosPendientes'), where('status','==','approved'), limit(100)));
+    // Primero intentar sin where para ver si hay documentos
+    const snap = await getDocs(query(collection(db,'trofeosPendientes'), limit(100)));
     const tsVal = x => x?.toMillis ? x.toMillis() : (typeof x==="number" ? x : (x?.seconds ? x.seconds*1000 : 0));
-    const local = snap.docs
-      .map(d=>({id:d.id,...d.data(),_src:'local'}))
+    const all = snap.docs.map(d=>({id:d.id,...d.data(),_src:'local'}));
+    // Filtrar aprobados en cliente (evita necesidad de índice en Firestore)
+    const local = all
+      .filter(d => !d.status || d.status === 'approved')
       .sort((a,b) => tsVal(b.createdAt) - tsVal(a.createdAt));
     window._trofeosFeedData = local;
     _trofeosFeedData = local;
     window._trofeosFeedLastLoad = Date.now();
     renderTrofeosFeed();
   } catch(e) {
-    console.warn('Trofeos error:', e);
-    if(feedEl) feedEl.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--muted);">
+    console.error('Trofeos error:', e);
+    const el = document.getElementById('trofeosFeed');
+    if(el) el.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--muted);">
       <div style="font-size:3rem;margin-bottom:12px;">🏆</div>
       <div style="font-size:.95rem;font-weight:700;margin-bottom:6px;">No se pudieron cargar los trofeos</div>
-      <div style="font-size:.8rem;margin-bottom:16px;">Error: ${e.code||e.message||'desconocido'}</div>
+      <div style="font-size:.8rem;margin-bottom:16px;color:var(--red);">${e.code||e.message||'Error desconocido'}</div>
       <button class="btn" onclick="window._trofeosFeedLastLoad=0;listenTrofeosFeed();" style="background:var(--gold);color:#000;font-weight:700;">🔄 Reintentar</button>
     </div>`;
   }
