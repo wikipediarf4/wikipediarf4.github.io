@@ -1500,7 +1500,7 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(window.loadAdsI
     <button class="tb-nav-btn on" onclick="gp('home');setNav(this)" title="Inicio">🏠</button>
     <button class="tb-nav-btn" onclick="gp('amigos');setNav(this);renderAmigosPage();" title="Amigos">👥</button>
     
-    <button class="tb-nav-btn" onclick="gp('ranking-semanal');setNav(this)" title="Ranking Semanal" style="font-size:.75rem;font-weight:700;">🏅 Ranking</button>
+    <button class="tb-nav-btn" onclick="gp('muro-fama');setNav(this)" title="Muro de la Fama" style="font-size:.75rem;font-weight:700;">🏛️ Muro de la Fama</button>
     <button class="tb-nav-btn" onclick="gp('trofeos-feed');setNav(this)" title="Trofeos Recientes" style="font-size:.75rem;font-weight:700;">🥇 Trofeos Recientes</button>
     <button class="tb-nav-btn" onclick="gp('reels');setNav(this)" title="Reels" style="font-size:.75rem;font-weight:700;">🎬 Reels</button>
     <button class="tb-nav-btn" onclick="openPremiumModal()" title="Premium" style="font-size:.75rem;font-weight:800;background:linear-gradient(135deg,rgba(255,215,0,.15),rgba(255,165,0,.08));border-bottom:2px solid #ffd700;color:#ffd700;">⭐ Premium</button>
@@ -1598,7 +1598,7 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(window.loadAdsI
       </div>
       <!-- FIN BOTÓN PREMIUM -->
 
-      <div class="sl-item" onclick="gp('ranking-semanal')"><span class="sl-item-icon">🏅</span> Ranking Semanal</div>
+      <div class="sl-item" onclick="gp('muro-fama')"><span class="sl-item-icon">🏛️</span> Muro de la Fama</div>
       <div class="sl-item" onclick="gp('torneos')"><span class="sl-item-icon">🏆</span> Torneos</div>
       <div class="sl-item" onclick="gp('casitrofeo')"><span class="sl-item-icon">🏅</span> Casi Trofeo</div>
       <div class="sl-item" onclick="gp('trofeos-feed');setNav(document.querySelector('.tb-nav-btn'))"><span class="sl-item-icon">🥇</span> Trofeos Recientes</div>
@@ -3773,37 +3773,41 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(window.loadAdsI
   <div id="shopItemsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;"></div>
 </div>
 
-<!-- ===== RANKING SEMANAL ===== -->
-<div class="page" id="page-ranking-semanal" style="max-width:760px;margin:0 auto;padding:24px 16px 80px;">
-  <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
-    <span style="font-size:2rem;">🏅</span>
-    <div>
-      <div style="font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:900;color:var(--accent);">Ranking Semanal</div>
-      <div style="font-size:.72rem;color:var(--muted);" id="rankWeekLabel">Cargando semana...</div>
-    </div>
-    <button onclick="loadRankingSemanal()" style="margin-left:auto;background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:var(--rs);font-size:.75rem;cursor:pointer;font-family:'Exo 2',sans-serif;">🔄 Actualizar</button>
+<!-- ===== MURO DE LA FAMA ===== -->
+<div class="page" id="page-muro-fama" style="max-width:900px;margin:0 auto;padding:24px 16px 80px;">
+
+  <!-- Header -->
+  <div style="text-align:center;margin-bottom:24px;">
+    <div style="font-size:2.8rem;margin-bottom:8px;">🏛️</div>
+    <div style="font-family:'Orbitron',monospace;font-size:1.4rem;font-weight:900;color:var(--gold);">Muro de la Fama</div>
+    <div style="font-size:.8rem;color:var(--muted);margin-top:4px;">Los trofeos más grandes de toda la historia de WikiPediaRF4.UY</div>
   </div>
 
-  <!-- Tabs -->
-  <div style="display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:8px;">
-    <button class="rank-tab rank-on" onclick="switchRankTab(this,'trofeos')" style="background:rgba(46,196,182,.1);border:1px solid rgba(46,196,182,.3);color:var(--accent);padding:6px 14px;border-radius:var(--rs);font-size:.78rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">🏆 Trofeos</button>
-    <button class="rank-tab" onclick="switchRankTab(this,'posts')" style="background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:var(--rs);font-size:.78rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">📝 Posts</button>
-    <button class="rank-tab" onclick="switchRankTab(this,'peso')" style="background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:var(--rs);font-size:.78rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">⚖️ Peso total</button>
+  <!-- Filtros -->
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:18px;">
+    <select id="famaSpeciesFilter" onchange="loadMuroFama()" style="flex:1;min-width:160px;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:var(--rs);font-family:'Exo 2',sans-serif;font-size:.82rem;cursor:pointer;">
+      <option value="">🐟 Todas las especies</option>
+    </select>
+    <select id="famaMapFilter" onchange="loadMuroFama()" style="flex:1;min-width:160px;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:var(--rs);font-family:'Exo 2',sans-serif;font-size:.82rem;cursor:pointer;">
+      <option value="">🗺️ Todos los mapas</option>
+    </select>
+    <select id="famaLimitFilter" onchange="loadMuroFama()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:var(--rs);font-family:'Exo 2',sans-serif;font-size:.82rem;cursor:pointer;">
+      <option value="10">Top 10</option>
+      <option value="25">Top 25</option>
+      <option value="50">Top 50</option>
+    </select>
+    <button onclick="loadMuroFama()" style="background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:var(--rs);font-size:.78rem;cursor:pointer;font-family:'Exo 2',sans-serif;">🔄</button>
   </div>
 
-  <!-- Podio top 3 -->
-  <div id="rankPodium" style="display:flex;align-items:flex-end;justify-content:center;gap:12px;margin-bottom:24px;min-height:140px;">
-    <div style="text-align:center;color:var(--muted);font-size:.82rem;padding:40px 0;">Cargando ranking...</div>
-  </div>
+  <!-- Stats rápidas -->
+  <div id="famaStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:20px;"></div>
 
-  <!-- Lista completa -->
-  <div id="rankList" style="display:flex;flex-direction:column;gap:8px;"></div>
-
-  <div style="margin-top:18px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;font-size:.72rem;color:var(--muted);line-height:1.6;">
-    🗓️ El ranking se resetea cada lunes a las 00:00 UY. Solo cuenta la actividad de la semana en curso.
+  <!-- Lista -->
+  <div id="famaList" style="display:flex;flex-direction:column;gap:10px;">
+    <div style="text-align:center;padding:40px;color:var(--muted);font-size:.82rem;">Cargando el muro de la fama...</div>
   </div>
 </div>
-<!-- ===== FIN RANKING SEMANAL ===== -->
+<!-- ===== FIN MURO DE LA FAMA ===== -->
 
 <div class="page" id="page-spots" style="max-width:680px;margin:0 auto;padding:24px 16px 80px;">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
@@ -5569,7 +5573,7 @@ const ROUTES = {
   '/skill': 'skill',
   '/spots': 'spots',
   '/torneos': 'torneos',
-  '/ranking-semanal': 'ranking-semanal',
+  '/muro-fama': 'muro-fama',
   '/perfil': 'profile',
   '/peso-del-trofeo': 'peso-del-trofeo',
 
@@ -5594,7 +5598,7 @@ const PAGE_TO_URL = {
   'skill':         '/skill',
   'spots':         '/spots',
   'torneos':       '/torneos',
-  'ranking-semanal': '/ranking-semanal',
+  'muro-fama':     '/muro-fama',
   'profile':       '/perfil',
   'peso-del-trofeo': '/peso-del-trofeo',
 
@@ -5754,7 +5758,7 @@ window.gp = (id, pushState = true) => {
   if(id==='parches') loadParches();
   if(id==='soporte') initSoportePage();
   if(id==='torneos') loadTorneos();
-  if(id==='ranking-semanal') loadRankingSemanal();
+  if(id==='muro-fama') loadMuroFama();
   if(id==='userprofile') {} // cargado desde _loadUserProfilePage
   if(id==='wiki-trofeos') {
     // Cargar wiki de trofeos al entrar
@@ -18705,123 +18709,157 @@ const _expose = {
   listenTrofeosFeed, filterTrofeoFeed, renderTrofeosFeed, trofeoFeedCardHTML, renderTrofeoSidebar
 };
 
-// ===== RANKING SEMANAL =====
-const EXCLUDED_FROM_RANKING = ['ruizgustavo12'];
+// ===== MURO DE LA FAMA =====
+const FAMA_EXCLUDED = ['ruizgustavo12','synxyes@gmail.com'];
 
-function getRankWeekRange(){
-  const now = new Date();
-  const day = now.getDay();
-  const diffToMon = (day === 0 ? -6 : 1 - day);
-  const mon = new Date(now); mon.setDate(now.getDate() + diffToMon); mon.setHours(0,0,0,0);
-  const sun = new Date(mon); sun.setDate(mon.getDate() + 6); sun.setHours(23,59,59,999);
-  return { mon, sun };
-}
+async function loadMuroFama(){
+  const listEl  = document.getElementById('famaList');
+  const statsEl = document.getElementById('famaStats');
+  if(!listEl) return;
+  listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:.82rem;">Cargando...</div>';
+  if(statsEl) statsEl.innerHTML = '';
 
-async function loadRankingSemanal(){
-  const { mon, sun } = getRankWeekRange();
-  const label = document.getElementById('rankWeekLabel');
-  if(label) label.textContent = `Semana ${mon.toLocaleDateString('es',{day:'numeric',month:'short'})} — ${sun.toLocaleDateString('es',{day:'numeric',month:'short',year:'numeric'})}`;
-  const activeTab = document.querySelector('.rank-tab.rank-on');
-  const mode = activeTab ? (activeTab.getAttribute('data-mode')||'trofeos') : 'trofeos';
-  renderRanking(mode, mon, sun);
-}
+  const speciesFilter = document.getElementById('famaSpeciesFilter')?.value || '';
+  const mapFilter     = document.getElementById('famaMapFilter')?.value    || '';
+  const topLimit      = parseInt(document.getElementById('famaLimitFilter')?.value || '10');
 
-async function renderRanking(mode, mon, sun){
-  const podiumEl = document.getElementById('rankPodium');
-  const listEl   = document.getElementById('rankList');
-  if(!podiumEl||!listEl) return;
-  podiumEl.innerHTML='<div style="text-align:center;color:var(--muted);font-size:.82rem;padding:40px 0;">Cargando...</div>';
-  listEl.innerHTML='';
-  try{
+  try {
+    // Cargar usuarios para exclusión y datos
     const usersSnap = await getDocs(collection(db,'users'));
     const users = {};
-    usersSnap.docs.forEach(d=>{ users[d.id]=d.data(); });
+    usersSnap.docs.forEach(d => { users[d.id] = d.data(); });
+
     const isExcluded = uid => {
-      const u=users[uid]; if(!u) return false;
-      return EXCLUDED_FROM_RANKING.includes(u.nick)||EXCLUDED_FROM_RANKING.includes(u.nickLower);
+      const u = users[uid];
+      if(!u) return false;
+      return FAMA_EXCLUDED.includes(u.nick) || FAMA_EXCLUDED.includes(u.nickLower) || FAMA_EXCLUDED.includes(u.email);
     };
-    const getT = x => x?.toDate?x.toDate():new Date(x||0);
-    const inWeek = t => t>=mon && t<=sun;
-    let ranking=[];
-    if(mode==='trofeos'||mode==='peso'){
-      const snap=await getDocs(query(collection(db,'trofeos'),orderBy('createdAt','desc'),limit(500)));
-      const counts={}, weights={};
-      snap.docs.forEach(d=>{
-        const data=d.data(); const uid=data.uid||data.userId;
-        if(!uid||isExcluded(uid)||!inWeek(getT(data.createdAt))) return;
-        counts[uid]=(counts[uid]||0)+1;
-        weights[uid]=(weights[uid]||0)+parseFloat(data.weight||data.peso||0);
-      });
-      if(mode==='trofeos') ranking=Object.entries(counts).map(([uid,val])=>({uid,val,label:`${val} trofeo${val!==1?'s':''}`}));
-      else ranking=Object.entries(weights).map(([uid,val])=>({uid,val,label:`${val.toFixed(3)} kg`}));
-    } else {
-      const snap=await getDocs(query(collection(db,'posts'),orderBy('createdAt','desc'),limit(500)));
-      const counts={};
-      snap.docs.forEach(d=>{
-        const data=d.data(); const uid=data.uid||data.userId;
-        if(!uid||isExcluded(uid)||!inWeek(getT(data.createdAt))) return;
-        counts[uid]=(counts[uid]||0)+1;
-      });
-      ranking=Object.entries(counts).map(([uid,val])=>({uid,val,label:`${val} post${val!==1?'s':''}`}));
+
+    // Cargar todos los trofeos aprobados
+    let q = query(collection(db,'trofeos'), orderBy('weight','desc'), limit(300));
+    // Si no hay campo weight, intentar con peso
+    let snap;
+    try { snap = await getDocs(q); }
+    catch(e) {
+      q = query(collection(db,'trofeos'), limit(300));
+      snap = await getDocs(q);
     }
-    ranking.sort((a,b)=>b.val-a.val);
-    if(!ranking.length){
-      podiumEl.innerHTML='<div style="text-align:center;color:var(--muted);font-size:.82rem;padding:40px 0;">Sin actividad esta semana. ¡Sé el primero! 🎣</div>';
+
+    let trofeos = snap.docs.map(d => ({id:d.id, ...d.data()}))
+      .filter(t => {
+        const uid = t.uid || t.userId;
+        if(isExcluded(uid)) return false;
+        if(t.status && t.status !== 'approved' && t.status !== 'aprobado') return false;
+        return true;
+      });
+
+    // Ordenar por peso
+    trofeos.sort((a,b) => {
+      const wa = parseFloat(a.weight||a.peso||0);
+      const wb = parseFloat(b.weight||b.peso||0);
+      return wb - wa;
+    });
+
+    // Poblar filtros de especie y mapa (solo primera vez)
+    const speciesSel = document.getElementById('famaSpeciesFilter');
+    const mapSel     = document.getElementById('famaMapFilter');
+    if(speciesSel && speciesSel.options.length <= 1){
+      const species = [...new Set(trofeos.map(t => t.fish||t.especie||'').filter(Boolean))].sort();
+      species.forEach(s => {
+        const opt = document.createElement('option'); opt.value = s; opt.textContent = '🐟 '+s;
+        speciesSel.appendChild(opt);
+      });
+    }
+    if(mapSel && mapSel.options.length <= 1){
+      const maps = [...new Set(trofeos.map(t => t.map||t.mapa||'').filter(Boolean))].sort();
+      maps.forEach(m => {
+        const opt = document.createElement('option'); opt.value = m; opt.textContent = '🗺️ '+m;
+        mapSel.appendChild(opt);
+      });
+    }
+
+    // Aplicar filtros
+    if(speciesFilter) trofeos = trofeos.filter(t => (t.fish||t.especie||'') === speciesFilter);
+    if(mapFilter)     trofeos = trofeos.filter(t => (t.map||t.mapa||'') === mapFilter);
+
+    const top = trofeos.slice(0, topLimit);
+
+    // Stats rápidas
+    if(statsEl && trofeos.length){
+      const totalPeso = trofeos.reduce((s,t) => s + parseFloat(t.weight||t.peso||0), 0);
+      const uniqueFishers = new Set(trofeos.map(t => t.uid||t.userId)).size;
+      const stats = [
+        {icon:'🏆', val: trofeos.length, label:'Trofeos totales'},
+        {icon:'👤', val: uniqueFishers,   label:'Pescadores'},
+        {icon:'⚖️', val: totalPeso.toFixed(1)+' kg', label:'Peso acumulado'},
+        {icon:'🐟', val: new Set(trofeos.map(t=>t.fish||t.especie||'')).size, label:'Especies'},
+      ];
+      statsEl.innerHTML = stats.map(s => `
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;text-align:center;">
+          <div style="font-size:1.2rem;">${s.icon}</div>
+          <div style="font-size:1.1rem;font-weight:800;color:var(--accent);margin:2px 0;">${s.val}</div>
+          <div style="font-size:.68rem;color:var(--muted);">${s.label}</div>
+        </div>`).join('');
+    }
+
+    if(!top.length){
+      listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:.82rem;">Sin trofeos que mostrar para este filtro.</div>';
       return;
     }
-    const medals=['🥇','🥈','🥉'];
-    const heights=['110px','85px','65px'];
-    const top3=ranking.slice(0,3);
-    const podiumOrder=[1,0,2];
-    podiumEl.innerHTML=`<div style="display:flex;align-items:flex-end;justify-content:center;gap:8px;width:100%;">`+
-      podiumOrder.map(i=>{
-        if(!top3[i]) return '';
-        const u=users[top3[i].uid]||{};
-        const nick=esc(u.nick||u.displayName||'?');
-        const av=u.photoURL||u.avatar||'';
-        const isFirst=i===0;
-        return `<div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;max-width:160px;">
-          <div style="font-size:${isFirst?'1.6rem':'1.2rem'};">${medals[i]}</div>
-          <div onclick="openUserProfile('${top3[i].uid}')" style="cursor:pointer;width:${isFirst?'52px':'42px'};height:${isFirst?'52px':'42px'};border-radius:50%;border:2px solid ${isFirst?'var(--gold)':'var(--border)'};overflow:hidden;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:${isFirst?'1.1rem':'.9rem'};color:var(--accent);">
-            ${av?`<img src="${av}" style="width:100%;height:100%;object-fit:cover;">`:(nick[0]||'?').toUpperCase()}
-          </div>
-          <div style="font-size:${isFirst?'.82rem':'.75rem'};font-weight:700;color:var(--text);text-align:center;word-break:break-word;">${nick}</div>
-          <div style="font-size:.7rem;color:var(--accent);font-weight:700;">${top3[i].label}</div>
-          <div style="width:100%;height:${heights[i]};background:${isFirst?'rgba(212,160,23,.2)':'rgba(46,196,182,.1)'};border:1px solid ${isFirst?'rgba(212,160,23,.35)':'var(--border)'};border-bottom:none;border-radius:var(--rs) var(--rs) 0 0;"></div>
-        </div>`;
-      }).join('')+`</div>`;
-    listEl.innerHTML=ranking.map((r,i)=>{
-      const u=users[r.uid]||{};
-      const nick=esc(u.nick||u.displayName||'?');
-      const av=u.photoURL||u.avatar||'';
-      const isTop=i<3;
-      return `<div onclick="openUserProfile('${r.uid}')" style="display:flex;align-items:center;gap:12px;background:${isTop?'rgba(46,196,182,.06)':'var(--bg3)'};border:1px solid ${isTop?'rgba(46,196,182,.2)':'var(--border)'};border-radius:var(--r);padding:10px 14px;cursor:pointer;transition:background .15s;">
-        <span style="font-size:1rem;font-weight:800;color:${i<3?'var(--gold)':'var(--muted)'};min-width:28px;text-align:center;">${i<3?medals[i]:i+1}</span>
-        <div style="width:36px;height:36px;border-radius:50%;overflow:hidden;background:var(--bg4);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:var(--accent);flex-shrink:0;">
-          ${av?`<img src="${av}" style="width:100%;height:100%;object-fit:cover;">`:(nick[0]||'?').toUpperCase()}
+
+    const medals = {1:'🥇',2:'🥈',3:'🥉'};
+
+    listEl.innerHTML = top.map((t, i) => {
+      const pos     = i + 1;
+      const uid     = t.uid || t.userId || '';
+      const u       = users[uid] || {};
+      const nick    = esc(t.userNick || u.nick || u.displayName || '?');
+      const fish    = esc(t.fish || t.especie || '?');
+      const map     = esc(t.map || t.mapa || '');
+      const peso    = parseFloat(t.weight || t.peso || 0);
+      const imgUrl  = (t.images||[])[0] || t.imageUrl || t.img || t.imagen || '';
+      const fecha   = t.createdAt?.toDate ? t.createdAt.toDate().toLocaleDateString('es',{day:'numeric',month:'short',year:'numeric'}) : '—';
+      const av      = u.photoURL || u.avatar || '';
+      const isTop3  = pos <= 3;
+      const medal   = medals[pos] || '';
+
+      return `<div style="display:flex;gap:12px;background:${isTop3?'linear-gradient(135deg,rgba(212,160,23,.08),rgba(212,160,23,.03))':'var(--bg3)'};border:1px solid ${isTop3?'rgba(212,160,23,.35)':'var(--border)'};border-radius:var(--r);overflow:hidden;transition:border-color .2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='${isTop3?'rgba(212,160,23,.35)':'var(--border)'}'">
+
+        <!-- Posición -->
+        <div style="display:flex;align-items:center;justify-content:center;min-width:52px;background:${isTop3?'rgba(212,160,23,.12)':'var(--bg4)'};font-size:${isTop3?'1.6rem':'1rem'};font-weight:800;color:${isTop3?'var(--gold)':'var(--muted)'};">
+          ${medal || pos}
         </div>
-        <div style="flex:1;"><div style="font-size:.85rem;font-weight:700;color:var(--text);">${nick}</div></div>
-        <div style="font-size:.82rem;font-weight:800;color:var(--accent);">${r.label}</div>
+
+        <!-- Foto trofeo -->
+        ${imgUrl ? `<div style="width:80px;min-width:80px;overflow:hidden;"><img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.style.display='none'"></div>` : ''}
+
+        <!-- Info -->
+        <div style="flex:1;padding:12px 8px 12px 0;min-width:0;">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
+            <span style="font-size:.95rem;font-weight:800;color:${isTop3?'var(--gold)':'var(--text)'};">${fish}</span>
+            <span style="font-size:1rem;font-weight:900;color:var(--accent);">${peso.toFixed(3)} kg</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+            <div style="width:24px;height:24px;border-radius:50%;overflow:hidden;background:var(--bg4);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;color:var(--accent);flex-shrink:0;">
+              ${av ? `<img src="${av}" style="width:100%;height:100%;object-fit:cover;">` : (nick[0]||'?').toUpperCase()}
+            </div>
+            <span style="font-size:.78rem;font-weight:700;color:var(--text);cursor:pointer;" onclick="openUserProfile('${uid}')">${nick}</span>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            ${map ? `<span style="font-size:.7rem;color:var(--muted);">🗺️ ${map}</span>` : ''}
+            <span style="font-size:.7rem;color:var(--muted);">📅 ${fecha}</span>
+          </div>
+        </div>
       </div>`;
     }).join('');
-  }catch(e){
-    console.error('Ranking error:',e);
-    podiumEl.innerHTML=`<div style="color:var(--red);font-size:.78rem;padding:20px;">Error: ${e.message}</div>`;
+
+  } catch(e) {
+    console.error('MuroFama error:', e);
+    if(listEl) listEl.innerHTML = `<div style="color:var(--red);font-size:.78rem;padding:20px;">Error: ${e.message}</div>`;
   }
 }
-window.loadRankingSemanal=loadRankingSemanal;
-window.switchRankTab=function(btn,mode){
-  document.querySelectorAll('.rank-tab').forEach(b=>{
-    b.classList.remove('rank-on');
-    b.style.background='var(--bg3)'; b.style.borderColor='var(--border)'; b.style.color='var(--muted)';
-  });
-  btn.classList.add('rank-on');
-  btn.style.background='rgba(46,196,182,.1)'; btn.style.borderColor='rgba(46,196,182,.3)'; btn.style.color='var(--accent)';
-  btn.setAttribute('data-mode',mode);
-  const {mon,sun}=getRankWeekRange();
-  renderRanking(mode,mon,sun);
-};
-// ===== FIN RANKING SEMANAL =====
+window.loadMuroFama = loadMuroFama;
+// ===== FIN MURO DE LA FAMA =====
 
 // ╔══════════════════════════════════════════╗
 // ║   EXCLUSIVOS VERIFICADOS — RF4 LATAM     ║
