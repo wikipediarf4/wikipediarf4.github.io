@@ -60,7 +60,6 @@
   <!-- manifest removed -->
   <!-- service worker removed -->
   <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root{
   --bg:#0d1117;--bg2:#161b22;--bg3:#1c2128;--bg4:#21262d;
@@ -3352,39 +3351,11 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(window.loadAdsI
     <button class="adm-tab" onclick="swAdminTab(this,'admt-xplevels');renderXPLevelsAdmin();" style="background:rgba(255,215,0,.08);border-color:rgba(255,215,0,.3);color:var(--gold);">⚡ Niveles XP</button>
     <button class="adm-tab" onclick="swAdminTab(this,'admt-insignias');loadInsigniasPanel();" style="background:rgba(46,196,182,.08);border-color:rgba(46,196,182,.3);color:var(--accent);">🎣 Insignias & Roles</button>
     <button class="adm-tab" onclick="swAdminTab(this,'admt-soporte');loadSoporteTickets();" style="background:rgba(255,107,53,.1);border-color:rgba(255,107,53,.35);color:#ff6b35;" id="admTabSoporte">🆘 Soporte <span id="admSoporteBadge" style="display:none;background:#ff6b35;color:#fff;border-radius:100px;padding:1px 6px;font-size:.65rem;font-weight:800;margin-left:3px;">0</span></button>
-    <button class="adm-tab" onclick="swAdminTab(this,'admt-dashboard');loadAdminDashboard();" style="background:rgba(46,196,182,.08);border-color:rgba(46,196,182,.3);color:var(--accent);">📊 Dashboard</button>
     <button class="adm-tab" onclick="swAdminTab(this,'admt-sidebar');initSidebarAdmin();" style="background:rgba(46,196,182,.08);border-color:rgba(46,196,182,.3);color:var(--accent);">🗂️ Sidebar</button>
 
   </div>
 
   <!-- TAB: Reportes -->
-  <!-- TAB: DASHBOARD DE ESTADÍSTICAS -->
-  <div id="admt-dashboard" style="display:none;">
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:18px;" id="dash-metrics"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;">
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px;">
-        <div style="font-size:.72rem;font-weight:800;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">Posts por día (últimos 7 días)</div>
-        <canvas id="dashChartPosts" height="120"></canvas>
-      </div>
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px;">
-        <div style="font-size:.72rem;font-weight:800;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">Trofeos por día (últimos 7 días)</div>
-        <canvas id="dashChartTrofeos" height="120"></canvas>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px;">
-        <div style="font-size:.72rem;font-weight:800;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">Top 5 usuarios más activos</div>
-        <div id="dashTopUsers" style="display:flex;flex-direction:column;gap:6px;"></div>
-      </div>
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px;">
-        <div style="font-size:.72rem;font-weight:800;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">Últimos registros</div>
-        <div id="dashLastUsers" style="display:flex;flex-direction:column;gap:6px;"></div>
-      </div>
-    </div>
-    <div style="text-align:right;margin-top:10px;">
-      <button onclick="loadAdminDashboard()" style="background:var(--bg4);border:1px solid var(--border);color:var(--muted);padding:5px 14px;border-radius:var(--rs);font-size:.75rem;cursor:pointer;font-family:'Exo 2',sans-serif;">🔄 Actualizar</button>
-    </div>
-  </div>
 
   <div id="admt-reports">
     <div id="adminReportsList"><div style="text-align:center;padding:30px;color:var(--muted);">Cargando reportes...</div></div>
@@ -12221,11 +12192,10 @@ async function submitReport(){
 function swAdminTab(el, tabId){
   document.querySelectorAll('.adm-tab').forEach(t=>t.classList.remove('adm-on'));
   el.classList.add('adm-on');
-  ['admt-dashboard','admt-reports','admt-posts','admt-users','admt-verif','admt-site','admt-parches','admt-torneos','admt-grupos','admt-ads','admt-live','admt-pezdelsemana','admt-xplevels','admt-insignias','admt-soporte']
+  ['admt-reports','admt-posts','admt-users','admt-verif','admt-site','admt-parches','admt-torneos','admt-grupos','admt-ads','admt-live','admt-pezdelsemana','admt-xplevels','admt-insignias','admt-soporte']
     .forEach(id=>{ const e=document.getElementById(id); if(e) e.style.display='none'; });
   const tab = document.getElementById(tabId);
   if(tab) tab.style.display='block';
-  if(tabId==='admt-dashboard') loadAdminDashboard();
   if(tabId==='admt-parches') loadAdminPatches();
   if(tabId==='admt-torneos') loadAdminTorneos();
   if(tabId==='admt-grupos') loadAdminGrupos();
@@ -18697,76 +18667,6 @@ const _expose = {
   loadXPLevels, saveXPLevels, addXPLevelRow, renderXPLevelsAdmin,
   listenTrofeosFeed, filterTrofeoFeed, renderTrofeosFeed, trofeoFeedCardHTML, renderTrofeoSidebar
 };
-
-// ===== DASHBOARD ADMIN =====
-async function loadAdminDashboard(){
-  const metricsEl = document.getElementById('dash-metrics');
-  const topEl     = document.getElementById('dashTopUsers');
-  const lastEl    = document.getElementById('dashLastUsers');
-  if(!metricsEl) return;
-  const spin = '<div style="text-align:center;padding:16px;color:var(--muted);font-size:.78rem;">Cargando...</div>';
-  metricsEl.innerHTML = spin; if(topEl) topEl.innerHTML = spin; if(lastEl) lastEl.innerHTML = spin;
-  try {
-    const now    = new Date();
-    const hace30 = new Date(now); hace30.setDate(now.getDate()-29);
-    const hace24 = new Date(now.getTime() - 24*60*60*1000);
-    const [snapUsers, snapPosts, snapTrofeos] = await Promise.all([
-      getDocs(collection(db,'users')),
-      getDocs(query(collection(db,'posts'),   orderBy('createdAt','desc'), limit(500))),
-      getDocs(query(collection(db,'trofeos'), orderBy('createdAt','desc'), limit(500))),
-    ]);
-    const usuarios = snapUsers.docs.map(d=>({id:d.id,...d.data()}));
-    const posts    = snapPosts.docs.map(d=>({id:d.id,...d.data()}));
-    const trofeos  = snapTrofeos.docs.map(d=>({id:d.id,...d.data()}));
-    const getT = x => x?.toDate ? x.toDate() : new Date(x||0);
-    const nuevos30   = usuarios.filter(u=> getT(u.createdAt) >= hace30).length;
-    const posts24h   = posts.filter(p=>   getT(p.createdAt) >= hace24).length;
-    const trofeos24h = trofeos.filter(p=> getT(p.createdAt) >= hace24).length;
-    const metrics = [
-      {label:'Usuarios totales', val:usuarios.length, icon:'👥', color:'#2ec4b6'},
-      {label:'Nuevos (30d)',     val:nuevos30,         icon:'🆕', color:'#3fb950'},
-      {label:'Posts totales',   val:posts.length,     icon:'📝', color:'#d4a017'},
-      {label:'Posts hoy',       val:posts24h,         icon:'🔥', color:'#f85149'},
-      {label:'Trofeos totales', val:trofeos.length,   icon:'🏆', color:'#d4a017'},
-      {label:'Trofeos hoy',     val:trofeos24h,       icon:'🥇', color:'#2ec4b6'},
-    ];
-    metricsEl.innerHTML = metrics.map(m=>`
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:12px 14px;">
-        <div style="font-size:1.3rem;margin-bottom:4px;">${m.icon}</div>
-        <div style="font-size:1.4rem;font-weight:800;color:${m.color};">${m.val.toLocaleString()}</div>
-        <div style="font-size:.7rem;color:var(--muted);margin-top:2px;">${m.label}</div>
-      </div>`).join('');
-    const days=[],dayLabels=[];
-    for(let i=6;i>=0;i--){const d=new Date(now);d.setDate(now.getDate()-i);d.setHours(0,0,0,0);days.push(d);dayLabels.push(d.toLocaleDateString('es',{weekday:'short',day:'numeric'}));}
-    const countByDay=items=>days.map(d=>{const nx=new Date(d);nx.setDate(d.getDate()+1);return items.filter(p=>{const t=getT(p.createdAt);return t>=d&&t<nx;}).length;});
-    const postsByDay=countByDay(posts),trofeosByDay=countByDay(trofeos);
-    const makeChart=(canvasId,data,color,label)=>{
-      const cv=document.getElementById(canvasId);if(!cv||typeof Chart==='undefined')return;
-      if(cv._chart)cv._chart.destroy();
-      cv._chart=new Chart(cv,{type:'bar',data:{labels:dayLabels,datasets:[{label,data,backgroundColor:color+'99',borderColor:color,borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8b949e',font:{size:10}},grid:{color:'#21262d'}},y:{ticks:{color:'#8b949e',font:{size:10},stepSize:1},grid:{color:'#21262d'},beginAtZero:true}}}});
-    };
-    setTimeout(()=>{makeChart('dashChartPosts',postsByDay,'#2ec4b6','Posts');makeChart('dashChartTrofeos',trofeosByDay,'#d4a017','Trofeos');},150);
-    const postCount={};
-    posts.forEach(p=>{const k=p.uid||p.userId;if(k)postCount[k]=(postCount[k]||0)+1;});
-    const top5=Object.entries(postCount).sort((a,b)=>b[1]-a[1]).slice(0,5);
-    const maxP=top5[0]?.[1]||1;
-    if(topEl) topEl.innerHTML=top5.length?top5.map(([uid,cnt],i)=>{
-      const u=usuarios.find(u=>u.id===uid);
-      const nick=esc(u?.nick||u?.displayName||uid.slice(0,8));
-      return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="font-size:.7rem;font-weight:800;color:var(--muted);width:14px;">${i+1}</span><div style="flex:1;"><div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span style="font-size:.78rem;font-weight:700;color:var(--text);">${nick}</span><span style="font-size:.72rem;color:var(--accent);">${cnt} posts</span></div><div style="background:var(--bg4);border-radius:3px;height:4px;"><div style="width:${Math.round(cnt/maxP*100)}%;background:var(--accent);height:4px;border-radius:3px;"></div></div></div></div>`;
-    }).join(''):'<div style="color:var(--muted);font-size:.78rem;">Sin datos</div>';
-    const sorted=[...usuarios].sort((a,b)=>getT(b.createdAt)-getT(a.createdAt)).slice(0,5);
-    if(lastEl) lastEl.innerHTML=sorted.length?sorted.map(u=>{
-      const t=getT(u.createdAt);
-      const fecha=t.toLocaleDateString('es',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-      return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid var(--border);"><div style="width:28px;height:28px;border-radius:50%;background:var(--bg4);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;color:var(--accent);">${(u.nick||u.displayName||'?')[0].toUpperCase()}</div><div style="flex:1;"><div style="font-size:.78rem;font-weight:700;color:var(--text);">${esc(u.nick||u.displayName||'Usuario')}</div><div style="font-size:.68rem;color:var(--muted);">${fecha}</div></div></div>`;
-    }).join(''):'<div style="color:var(--muted);font-size:.78rem;">Sin datos</div>';
-  } catch(e){
-    console.error('Dashboard error:',e);
-    if(metricsEl) metricsEl.innerHTML=`<div style="color:var(--red);font-size:.78rem;padding:10px;">Error: ${e.message}</div>`;
-  }
-}
-window.loadAdminDashboard = loadAdminDashboard;
 
 // ╔══════════════════════════════════════════╗
 // ║   EXCLUSIVOS VERIFICADOS — RF4 LATAM     ║
