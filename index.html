@@ -1749,7 +1749,7 @@ input:focus, textarea:focus {
   background: linear-gradient(90deg, #ffd700, #ffec6e, #ffa500, #ff6f00, #ffd700) !important;
 }
 /* Ocultar ads vacíos */
-.adsense-unit { min-height:0 !important; }
+.adsense-unit { min-height:0 !important; overflow:visible !important; }
 .adsbygoogle[data-ad-status="unfilled"] { display:none !important; height:0 !important; }
 /* Página café sin padding-top */
 #page-cafe { padding-top:0 !important; }
@@ -1764,13 +1764,22 @@ window.loadAdsIfNeeded = function() {
     return;
   }
   document.querySelectorAll('.adsense-unit').forEach(el => el.style.display = 'block');
-  // Inicializar unidades que aún no se cargaron
+  // Inicializar unidades que aún no se cargaron (sin data-adsbygoogle-status = nunca inicializadas)
   try {
-    document.querySelectorAll('.adsbygoogle[data-adsbygoogle-status=""]').forEach(function(){
-      (adsbygoogle = window.adsbygoogle || []).push({});
+    document.querySelectorAll('.adsbygoogle:not([data-adsbygoogle-status])').forEach(function(ins){
+      (window.adsbygoogle = window.adsbygoogle || []).push({});
     });
   } catch(e) {}
 };
+
+// Llamar automáticamente cuando el usuario NO es premium (sin login también)
+document.addEventListener('DOMContentLoaded', function(){
+  setTimeout(function(){
+    if(!window.CU || window.CU.role !== 'premium'){
+      window.loadAdsIfNeeded && window.loadAdsIfNeeded();
+    }
+  }, 2000);
+});
 </script>
 </head>
 <body>
@@ -1990,14 +1999,13 @@ window.loadAdsIfNeeded = function() {
              data-ad-format="auto"
              data-full-width-responsive="true"></ins>
         <script>
-          (adsbygoogle = window.adsbygoogle || []).push({});
-          // Ocultar si no carga anuncio
+          (window.adsbygoogle = window.adsbygoogle || []).push({});
           setTimeout(function(){
             var ins = document.querySelector('#adFeedTop ins');
-            if(ins && (ins.getAttribute('data-ad-status') === 'unfilled' || !ins.style.height || ins.style.height === '0px')){
+            if(ins && ins.getAttribute('data-ad-status') === 'unfilled'){
               document.getElementById('adFeedTop').style.display = 'none';
             }
-          }, 3000);
+          }, 8000);
         </script>
       </div>
 
@@ -2042,13 +2050,13 @@ window.loadAdsIfNeeded = function() {
              data-ad-format="auto"
              data-full-width-responsive="true"></ins>
         <script>
-          (adsbygoogle = window.adsbygoogle || []).push({});
+          (window.adsbygoogle = window.adsbygoogle || []).push({});
           setTimeout(function(){
             var ins = document.querySelector('#adSidebar ins');
-            if(ins && (ins.getAttribute('data-ad-status') === 'unfilled' || !ins.style.height || ins.style.height === '0px')){
+            if(ins && ins.getAttribute('data-ad-status') === 'unfilled'){
               document.getElementById('adSidebar').style.display = 'none';
             }
-          }, 3000);
+          }, 8000);
         </script>
       </div>
 
@@ -5922,6 +5930,8 @@ function onLogin(){
   listenNotifs();
   listenTrofeosSidebar();
   loadAds();
+  // Inicializar anuncios AdSense para usuarios no-premium
+  setTimeout(function(){ window.loadAdsIfNeeded && window.loadAdsIfNeeded(); }, 1500);
   loadPezSemana();
   loadXPLevels();
   loadShopEquipped();
