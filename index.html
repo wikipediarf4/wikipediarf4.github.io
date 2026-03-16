@@ -1748,6 +1748,9 @@ input:focus, textarea:focus {
 .post-verified::before {
   background: linear-gradient(90deg, #ffd700, #ffec6e, #ffa500, #ff6f00, #ffd700) !important;
 }
+/* Ocultar ads vacíos */
+.adsense-unit { min-height:0 !important; }
+.adsbygoogle[data-ad-status="unfilled"] { display:none !important; height:0 !important; }
 </style>
 <script>
 // AdSense: cargado directamente en el <head> para usuarios no premium
@@ -1988,14 +1991,23 @@ window.loadAdsIfNeeded = function() {
       <div id="memoriesWidget" style="display:none;"></div>
 
       <!-- AD: Banner encima del feed -->
-      <div class="adsense-unit" style="margin:8px 0 14px;text-align:center;">
+      <div class="adsense-unit" id="adFeedTop" style="margin:8px 0 14px;text-align:center;min-height:0;">
         <ins class="adsbygoogle"
              style="display:block"
              data-ad-client="ca-pub-6245611726363291"
              data-ad-slot="9540804161"
              data-ad-format="auto"
              data-full-width-responsive="true"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        <script>
+          (adsbygoogle = window.adsbygoogle || []).push({});
+          // Ocultar si no carga anuncio
+          setTimeout(function(){
+            var ins = document.querySelector('#adFeedTop ins');
+            if(ins && (ins.getAttribute('data-ad-status') === 'unfilled' || !ins.style.height || ins.style.height === '0px')){
+              document.getElementById('adFeedTop').style.display = 'none';
+            }
+          }, 3000);
+        </script>
       </div>
 
       <!-- Posts -->
@@ -2031,14 +2043,22 @@ window.loadAdsIfNeeded = function() {
       </div>
 
       <!-- AD: Sidebar derecho -->
-      <div class="adsense-unit" style="margin:10px 0;text-align:center;">
+      <div class="adsense-unit" id="adSidebar" style="margin:10px 0;text-align:center;min-height:0;">
         <ins class="adsbygoogle"
              style="display:block"
              data-ad-client="ca-pub-6245611726363291"
              data-ad-slot="5279324636"
              data-ad-format="auto"
              data-full-width-responsive="true"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        <script>
+          (adsbygoogle = window.adsbygoogle || []).push({});
+          setTimeout(function(){
+            var ins = document.querySelector('#adSidebar ins');
+            if(ins && (ins.getAttribute('data-ad-status') === 'unfilled' || !ins.style.height || ins.style.height === '0px')){
+              document.getElementById('adSidebar').style.display = 'none';
+            }
+          }, 3000);
+        </script>
       </div>
 
     </div>
@@ -8227,7 +8247,7 @@ function renderFeed(){
       return;
     }
     const isPremium = window.CU && window.CU.role === 'premium';
-    const adHTML = isPremium ? '' : `<div class="adsense-unit" style="margin:12px 0;text-align:center;">
+    const adHTML = isPremium ? '' : `<div class="adsense-unit ad-between-posts" style="margin:12px 0;text-align:center;min-height:0;">
       <ins class="adsbygoogle" style="display:block"
            data-ad-client="ca-pub-6245611726363291"
            data-ad-slot="8227722498"
