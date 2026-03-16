@@ -4600,9 +4600,22 @@ window.loadAdsIfNeeded = function() {
     <span style="font-size:.75rem;color:var(--muted);margin-left:auto;">⏱️ Actualización cada 60 seg.</span>
   </div>
 
-  <!-- Iframe traducido al español via Google Translate -->
+  <!-- Iframe normal + botón para abrir traducido en nueva pestaña -->
+  <div style="background:var(--bg3);padding:6px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;border-bottom:1px solid var(--border);">
+    <span style="font-size:.78rem;color:var(--muted);">⚠️ El sitio está en ruso.</span>
+    <button onclick="document.getElementById('cafeIframe').src='https://translate.google.com/translate?sl=ru&tl=es&u='+encodeURIComponent(document.getElementById('cafeIframe').getAttribute('data-url'))"
+      style="background:var(--accent);border:none;color:#fff;border-radius:var(--rs);padding:4px 12px;font-family:'Exo 2',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;">
+      🌐 Ver en Español
+    </button>
+    <button onclick="document.getElementById('cafeIframe').src=document.getElementById('cafeIframe').getAttribute('data-url')"
+      style="background:var(--bg4);border:1px solid var(--border);color:var(--text);border-radius:var(--rs);padding:4px 12px;font-family:'Exo 2',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;">
+      🇷🇺 Ver en Ruso
+    </button>
+  </div>
+
   <iframe id="cafeIframe"
-    src="https://rf4-cafe-ru.translate.goog/komarinoe?_x_tr_sl=ru&_x_tr_tl=es&_x_tr_hl=es"
+    src="https://rf4-cafe.ru/komarinoe"
+    data-url="https://rf4-cafe.ru/komarinoe"
     style="flex:1;width:100%;border:none;background:#1a1a2e;display:block;"
     allowfullscreen>
   </iframe>
@@ -6247,7 +6260,10 @@ window.navigateTo = navigateTo;
 
 window.loadCafeMap = function(water) {
   const iframe = document.getElementById('cafeIframe');
-  if(iframe) iframe.src = 'https://rf4-cafe-ru.translate.goog/' + water + '?_x_tr_sl=ru&_x_tr_tl=es&_x_tr_hl=es';
+  if(!iframe) return;
+  const url = 'https://rf4-cafe.ru/' + water;
+  iframe.setAttribute('data-url', url);
+  iframe.src = url;
 };
 
 window.gp = (id, pushState = true) => {
