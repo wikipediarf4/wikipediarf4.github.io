@@ -2000,15 +2000,6 @@ window.loadAdsIfNeeded = function() {}; // ya no necesario
 
     </div>
 
-      <!-- ÚLTIMOS TROFEOS WIDGET -->
-      <div id="trofeoSidebarWidget" style="margin-bottom:14px;">
-        <div class="sr-title" style="display:flex;align-items:center;justify-content:space-between;">
-          <span>🥇 Últimos Trofeos</span>
-          <span style="font-size:.72rem;color:var(--accent);cursor:pointer;font-weight:600;" onclick="gp('trofeos-feed')">Ver todos</span>
-        </div>
-        <div id="trofeoSidebarList"><div style="font-size:.75rem;color:var(--muted);padding:6px 4px;">Cargando...</div></div>
-      </div>
-
     </div>
 </div>
 
@@ -18872,9 +18863,12 @@ async function listenTrofeosFeed(){
 }
 
 function listenTrofeosSidebar(){
-  getDocs(query(collection(db,'trofeosPendientes'), where('status','==','approved'), orderBy('createdAt','desc'), limit(5)))
+  // Trae los últimos 20 y filtra aprobados en JS para evitar índice compuesto
+  getDocs(query(collection(db,'trofeosPendientes'), orderBy('createdAt','desc'), limit(20)))
     .then(snap => {
-      const items = snap.docs.map(d=>({id:d.id,...d.data()}));
+      const items = snap.docs.map(d=>({id:d.id,...d.data()}))
+        .filter(d => !d.status || d.status === 'approved')
+        .slice(0,5);
       renderTrofeoSidebar(items);
       renderHomeTrophyWidget(items[0]||null);
     }).catch(e=>console.warn('trofeosSidebar error:',e));
@@ -19092,13 +19086,14 @@ function trofeoFeedCardHTML(t){
 }
 
 function renderTrofeoSidebar(items){
+  const els = document.querySelectorAll('#trofeoSidebarList, [id="trofeoSidebarList"]');
   const el = document.getElementById('trofeoSidebarList');
   if(!el) return;
   if(!items||!items.length){
     el.innerHTML='<div style="font-size:.75rem;color:var(--muted);padding:4px;">Sin trofeos aún</div>';
     return;
   }
-  el.innerHTML = items.slice(0,5).map(t=>{
+  const html = items.slice(0,5).map(t=>{
     const fish = esc(t.fish||t.especie||'?');
     const weight = t.weight||t.peso||0;
     const nick = esc(t.userNick||t.submittedBy||t.nick||'?');
@@ -19114,6 +19109,7 @@ function renderTrofeoSidebar(items){
       </div>
     </div>`;
   }).join('');
+  document.querySelectorAll('[id="trofeoSidebarList"]').forEach(e => e.innerHTML = html);
 }
 
 // ===== VER/OCULTAR CONTRASEÑA =====
