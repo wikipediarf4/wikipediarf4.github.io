@@ -4600,9 +4600,9 @@ window.loadAdsIfNeeded = function() {
     <span style="font-size:.75rem;color:var(--muted);margin-left:auto;">⏱️ Actualización cada 60 seg.</span>
   </div>
 
-  <!-- Iframe que ocupa todo el espacio restante -->
+  <!-- Iframe traducido al español via Google Translate -->
   <iframe id="cafeIframe"
-    src="https://rf4-cafe.ru/komarinoe"
+    src="https://rf4-cafe-ru.translate.goog/komarinoe?_x_tr_sl=ru&_x_tr_tl=es&_x_tr_hl=es"
     style="flex:1;width:100%;border:none;background:#1a1a2e;display:block;"
     allowfullscreen>
   </iframe>
@@ -6247,7 +6247,7 @@ window.navigateTo = navigateTo;
 
 window.loadCafeMap = function(water) {
   const iframe = document.getElementById('cafeIframe');
-  if(iframe) iframe.src = 'https://rf4-cafe.ru/' + water;
+  if(iframe) iframe.src = 'https://rf4-cafe-ru.translate.goog/' + water + '?_x_tr_sl=ru&_x_tr_tl=es&_x_tr_hl=es';
 };
 
 window.gp = (id, pushState = true) => {
