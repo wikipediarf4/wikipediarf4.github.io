@@ -12044,6 +12044,121 @@ function openImgLightbox(src, allImgs, postId){
 
   document.body.appendChild(modal);
 
+  // ── ZOOM con scroll + pinch (touch) ──
+  (function(){
+    var imgEl = document.getElementById('_igImg');
+    var imgCol = document.getElementById('_igImgCol');
+    if(!imgEl || !imgCol) return;
+
+    var scale = 1, posX = 0, posY = 0;
+    var isDragging = false, dragStartX = 0, dragStartY = 0, dragOriginX = 0, dragOriginY = 0;
+
+    function applyTransform(){
+      imgEl.style.transform = 'translate('+posX+'px,'+posY+'px) scale('+scale+')';
+      imgEl.style.cursor = scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default';
+    }
+
+    function clampPos(){
+      if(scale <= 1){ posX = 0; posY = 0; return; }
+      var cw = imgCol.clientWidth, ch = imgCol.clientHeight;
+      var iw = imgEl.naturalWidth || imgEl.clientWidth;
+      var ih = imgEl.naturalHeight || imgEl.clientHeight;
+      // Calcular tamaño renderizado de la imagen
+      var rendW = Math.min(iw, cw), rendH = Math.min(ih, ch);
+      var maxX = Math.max(0, (rendW * scale - cw) / 2);
+      var maxY = Math.max(0, (rendH * scale - ch) / 2);
+      posX = Math.max(-maxX, Math.min(maxX, posX));
+      posY = Math.max(-maxY, Math.min(maxY, posY));
+    }
+
+    // Zoom con rueda del mouse
+    imgCol.addEventListener('wheel', function(e){
+      e.preventDefault();
+      var delta = e.deltaY < 0 ? 0.15 : -0.15;
+      scale = Math.min(5, Math.max(1, scale + delta));
+      if(scale === 1){ posX = 0; posY = 0; }
+      clampPos();
+      applyTransform();
+    }, { passive: false });
+
+    // Drag para mover imagen con zoom
+    imgEl.addEventListener('mousedown', function(e){
+      if(scale <= 1) return;
+      e.preventDefault();
+      isDragging = true;
+      dragStartX = e.clientX; dragStartY = e.clientY;
+      dragOriginX = posX; dragOriginY = posY;
+      applyTransform();
+    });
+    document.addEventListener('mousemove', function(e){
+      if(!isDragging) return;
+      posX = dragOriginX + (e.clientX - dragStartX);
+      posY = dragOriginY + (e.clientY - dragStartY);
+      clampPos();
+      applyTransform();
+    });
+    document.addEventListener('mouseup', function(){
+      if(isDragging){ isDragging = false; applyTransform(); }
+    });
+
+    // Doble clic para toggle zoom
+    imgEl.addEventListener('dblclick', function(e){
+      if(scale > 1){ scale = 1; posX = 0; posY = 0; }
+      else { scale = 2.5; }
+      applyTransform();
+    });
+
+    // Pinch zoom en mobile
+    var _pinchDist = null;
+    var _pinchScale = 1;
+    imgCol.addEventListener('touchstart', function(e){
+      if(e.touches.length === 2){
+        var dx = e.touches[0].clientX - e.touches[1].clientX;
+        var dy = e.touches[0].clientY - e.touches[1].clientY;
+        _pinchDist = Math.sqrt(dx*dx + dy*dy);
+        _pinchScale = scale;
+        e.preventDefault();
+      }
+    }, { passive: false });
+    imgCol.addEventListener('touchmove', function(e){
+      if(e.touches.length === 2 && _pinchDist){
+        var dx = e.touches[0].clientX - e.touches[1].clientX;
+        var dy = e.touches[0].clientY - e.touches[1].clientY;
+        var newDist = Math.sqrt(dx*dx + dy*dy);
+        scale = Math.min(5, Math.max(1, _pinchScale * (newDist / _pinchDist)));
+        if(scale === 1){ posX = 0; posY = 0; }
+        clampPos();
+        applyTransform();
+        e.preventDefault();
+      }
+    }, { passive: false });
+    imgCol.addEventListener('touchend', function(e){
+      if(e.touches.length < 2) _pinchDist = null;
+    });
+
+    // Reset zoom al cambiar de imagen
+    var origNavTo = window.igNavTo;
+    window.igNavTo = function(i){
+      scale = 1; posX = 0; posY = 0;
+      if(origNavTo) origNavTo(i);
+      setTimeout(function(){
+        imgEl = document.getElementById('_igImg');
+        if(imgEl){ imgEl.style.transform = ''; imgEl.style.cursor = 'default'; }
+      }, 80);
+    };
+
+    // Mostrar hint de zoom
+    var hint = document.createElement('div');
+    hint.style.cssText = 'position:absolute;bottom:54px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);color:#fff;font-size:.7rem;padding:4px 12px;border-radius:100px;pointer-events:none;opacity:1;transition:opacity 1s;z-index:10;white-space:nowrap;';
+    hint.textContent = '🔍 Scroll o pellizca para hacer zoom · Doble clic para zoom rápido';
+    imgCol.appendChild(hint);
+    setTimeout(function(){ hint.style.opacity = '0'; }, 2800);
+    setTimeout(function(){ if(hint.parentNode) hint.parentNode.removeChild(hint); }, 4000);
+
+    imgEl.style.transformOrigin = 'center center';
+    imgEl.style.transition = 'transform .08s ease';
+  })();
+
   if(_galPostId){
     igLoadPostData(_galPostId, _galIdx);
   } else {
