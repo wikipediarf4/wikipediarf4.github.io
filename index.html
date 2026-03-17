@@ -4651,14 +4651,14 @@ document.addEventListener('DOMContentLoaded', function(){
 
   function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
-  // Proxy de imágenes para evitar bloqueo CORS de rf4game.com
+  // Las URLs ya vienen con weserv desde el scraper — usarlas directo
   function imgUrl(url){
     if(!url) return "";
     if(url.startsWith("//")) url = "https:" + url;
-    // Usar weserv como proxy
-    if(url.includes("rf4game.com/res/")){
+    // Si viene de rf4game.com/res sin proxy, agregar weserv
+    if(url.includes("rf4game.com/res/") && !url.includes("weserv")){
       var path = url.replace(/^https?:\/\//, "").replace(/^\/\//, "");
-      return "https://images.weserv.nl/?url=" + encodeURIComponent(path) + "&w=48&h=48&fit=contain&bg=transparent";
+      return "https://images.weserv.nl/?url=" + path;
     }
     return url;
   }
@@ -4694,7 +4694,7 @@ document.addEventListener('DOMContentLoaded', function(){
     return map;
   }
 
-  // ── Tab 1: Todos — diseño tipo rf4game.com ────────────────────────────────
+  // ── Tab 1: Todos — desplegable como rf4game.com ─────────────────────────
   function renderRecords(el, q){
     var filtered = _records.filter(function(r){
       return !q || r.pez.toLowerCase().includes(q)
@@ -4706,37 +4706,61 @@ document.addEventListener('DOMContentLoaded', function(){
     var especies = Object.keys(grouped).sort();
     if(!especies.length){ el.innerHTML='<div class="rf4rec-empty">Sin resultados</div>'; return; }
 
-    var header = '<div class="rf4rec-header-row">'+
-      '<span></span>'+
-      '<span>Pez</span>'+
-      '<span>Peso</span>'+
-      '<span>Se\u00f1uelo</span>'+
-      '<span>Ubicaci\u00f3n</span>'+
-      '<span>Jugador</span>'+
-      '<span>Fecha</span>'+
-      "</div>";
+    var header = '<div class="rf4rec-header-row">'
+      +'<span></span><span>Pez / Peso</span><span>Se\u00f1uelo</span>'
+      +'<span>Ubicaci\u00f3n</span><span>Jugador</span><span>Fecha</span>'
+      +'</div>';
 
-    var blocks = especies.map(function(pez){
+    var blocks = especies.map(function(pez, idx){
       var items = grouped[pez].slice().sort(function(a,b){return (a.rank||9)-(b.rank||9);});
-      var rows = items.map(function(r, i){
-        var isFirst = i===0;
-        return '<div class="rf4rec-fish-row'+(isFirst?" rank1":"")+'">'+
-          (isFirst ? fishImgHtml(r.img_pez) : '<div></div>')+
-          (isFirst
-            ? '<div><div class="rf4rec-fish-name">'+esc(pez)+"</div></div>"
-            : '<div></div>')+
-          '<div class="rf4rec-peso">'+(isFirst?"":rankBadge(r.rank)+" ")+esc(r.peso)+"</div>"+
-          '<div class="rf4rec-bait-cell">'+baitImgHtml(r.img_senuelo)+'<span class="rf4rec-bait-name">'+esc(r["se\u00f1uelo"]||"\u2014")+"</span></div>"+
-          '<div><span class="rf4rec-loc">'+esc(r.ubicacion||"\u2014")+"</span></div>"+
-          '<div class="rf4rec-player">'+rankBadge(r.rank)+" "+esc(r.jugador)+"</div>"+
-          '<div class="rf4rec-date">'+esc(r.fecha||"\u2014")+"</div>"+
-          "</div>";
-      });
-      return '<div class="rf4rec-fish-block">'+rows.join("")+"</div>";
+      var best = items[0];
+      var hasMore = items.length > 1;
+
+      var row1 = '<div class="rf4rec-fish-row rank1"'
+        +(hasMore?' style="cursor:pointer;" onclick="rf4Toggle('+idx+')"':'')+'>'
+        + fishImgHtml(best.img_pez)
+        + '<div><div class="rf4rec-fish-name">'+esc(pez)+'</div>'
+        + '<div class="rf4rec-peso">'+esc(best.peso)
+        + (hasMore?' <span style="font-size:.68rem;color:var(--accent);" id="rf4arr-'+idx+'">\u25BC</span>':'')
+        + '</div></div>'
+        + '<div class="rf4rec-bait-cell">'+baitImgHtml(best.img_senuelo)
+        + '<span class="rf4rec-bait-name">'+esc(best["se\u00f1uelo"]||"\u2014")+'</span></div>'
+        + '<div><span class="rf4rec-loc">'+esc(best.ubicacion||"\u2014")+'</span></div>'
+        + '<div class="rf4rec-player">'+rankBadge(1)+' '+esc(best.jugador)+'</div>'
+        + '<div class="rf4rec-date">'+esc(best.fecha||"\u2014")+'</div>'
+        + '</div>';
+
+      var extraRows = '';
+      if(hasMore){
+        extraRows = '<div id="rf4exp-'+idx+'" style="display:none;">'
+          + items.slice(1).map(function(r){
+            return '<div class="rf4rec-fish-row" style="background:rgba(46,196,182,.02);">'
+              + '<div></div>'
+              + '<div><div class="rf4rec-peso" style="font-size:.82rem;">'+rankBadge(r.rank)+' '+esc(r.peso)+'</div></div>'
+              + '<div class="rf4rec-bait-cell">'+baitImgHtml(r.img_senuelo)
+              + '<span class="rf4rec-bait-name">'+esc(r["se\u00f1uelo"]||"\u2014")+'</span></div>'
+              + '<div><span class="rf4rec-loc">'+esc(r.ubicacion||"\u2014")+'</span></div>'
+              + '<div class="rf4rec-player" style="color:var(--muted);">'+esc(r.jugador)+'</div>'
+              + '<div class="rf4rec-date">'+esc(r.fecha||"\u2014")+'</div>'
+              + '</div>';
+          }).join('')
+          + '</div>';
+      }
+      return '<div class="rf4rec-fish-block">'+row1+extraRows+'</div>';
     });
 
-    el.innerHTML = '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;">'+header+blocks.join("")+"</div>";
+    el.innerHTML = '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;">'
+      +header+blocks.join('')+'</div>';
   }
+
+  window.rf4Toggle = function(idx){
+    var d = document.getElementById("rf4exp-"+idx);
+    var a = document.getElementById("rf4arr-"+idx);
+    if(!d) return;
+    var open = d.style.display !== "none";
+    d.style.display = open ? "none" : "block";
+    if(a) a.textContent = open ? "\u25BC" : "\u25B2";
+  };
 
   // ── Tab 2: Por especie ────────────────────────────────────────────────────
   function renderPeces(el, q){
