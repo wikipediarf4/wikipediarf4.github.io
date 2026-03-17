@@ -1885,26 +1885,6 @@ document.addEventListener('DOMContentLoaded', function(){
   <div class="layout">
     <!-- LEFT -->
     <div class="sidebar-left">
-
-      <!-- MINI RELOJ RF4 -->
-      <div style="margin:4px 4px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:9px 12px;">
-        <div style="font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;">
-          <span>⏱ Hora dentro del Juego</span>
-          <span style="display:flex;align-items:center;gap:3px;font-size:.6rem;color:var(--green);font-weight:600;text-transform:none;"><span style="width:5px;height:5px;border-radius:50%;background:var(--green);display:inline-block;animation:slClockPulse 2s infinite;"></span>En vivo</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div id="slRF4Clock" style="font-family:'Orbitron',monospace;font-size:1.35rem;font-weight:900;color:var(--accent);letter-spacing:3px;min-width:72px;">--:--</div>
-          <div style="flex:1;">
-            <div id="slRF4Phase" style="font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:100px;background:rgba(46,196,182,.12);color:var(--accent);display:inline-block;margin-bottom:3px;">--</div>
-            <div id="slRF4Season" style="font-size:.62rem;color:var(--muted);">--</div>
-          </div>
-        </div>
-        <div style="margin-top:6px;height:3px;background:var(--bg4);border-radius:2px;overflow:hidden;">
-          <div id="slRF4Bar" style="height:100%;background:var(--accent);border-radius:2px;transition:width 1s linear;width:0%;"></div>
-        </div>
-      </div>
-      <!-- FIN MINI RELOJ RF4 -->
-
       <div class="sl-profile" onclick="gp('profile')">
         <div class="sl-av" id="slAv">👤</div>
         <div class="sl-name" id="slName">Mi Perfil</div>
@@ -4612,9 +4592,10 @@ document.addEventListener('DOMContentLoaded', function(){
     {id:14,name:'Río Akhtuba',lvl:28,diff:'expert',fish:51,spots:15,region:'Sur',baseClimate:'cálido',
      fish_list:['Beluga','Esturión','Siluro','Carpa herbívora','Asp','Lucioperca'],hot_day:['Asp','Lucioperca'],hot_night:['Beluga','Siluro','Esturión'],
      tip:'El río más variado del juego. Beluga y esturión son trofeos legendarios de nivel máximo.'},
-    {id:15,name:'Lago Cobre',lvl:34,diff:'expert',fish:22,spots:4,region:'Siberia',baseClimate:'frío',
-     fish_list:['Lenok','Tímalo','Taimen','Perca siberiana','Lucio'],hot_day:['Tímalo','Lenok'],hot_night:['Taimen'],
-     tip:'Aguas siberianas. Taimen es el trofeo más codiciado. Spinning agresivo al atardecer.'},
+    {id:15,name:'Copper Lake',lvl:29,diff:'expert',fish:14,spots:4,region:'Central',baseClimate:'copper',tempRef:16,
+     fish_list:['C2 SuperFreak','Barbo Común','Carpa Cuero Dinks','Carpa Espejo Dinks','F1','Hi Utsuri','Kohaku','Tenca de Kvolsdorfsky','Carpa de Cuero','Mameshibori Goshiki','Carpa Espejo','Narumi Asagi','Yotsushiro','Orenji'],
+     hot_day:['Kohaku','Hi Utsuri','Carpa Espejo'],hot_night:['C2 SuperFreak','F1','Carpa de Cuero'],
+     tip:'Lago especial con especies criadas artificialmente. Koi japonés, tenca Kwolsdorf y C2 SuperFreak. Prohibido cañas de carpa y carretes >6000.'},
     {id:16,name:'Río Tunguska',lvl:36,diff:'expert',fish:18,spots:3,region:'Siberia',baseClimate:'muy frío',
      fish_list:['Taimen','Lenok','Tímalo','Perca siberiana','Lucio'],hot_day:['Lenok','Tímalo'],hot_night:['Taimen'],
      tip:'Río remoto y difícil. Pocos peces pero de gran tamaño. Solo para jugadores expertos.'},
@@ -4626,14 +4607,17 @@ document.addEventListener('DOMContentLoaded', function(){
      tip:'Única ubicación marina. Halibut gigante como trofeo supremo. Requiere caña de mar.'}
   ];
 
+
   var WEATHER_BY_CLIMATE={
-    'templado':   [['☀️','Despejado','#3fb950'],['⛅','Nublado','#8b949e'],['🌧️','Lluvia','#378ADD'],['⛈️','Tormenta','#9370db'],['💨','Viento','#2ec4b6']],
-    'fresco':     [['⛅','Nublado','#8b949e'],['🌧️','Lluvia','#378ADD'],['☀️','Despejado','#3fb950'],['💨','Viento fuerte','#2ec4b6'],['⛈️','Tormenta','#9370db']],
-    'frío':       [['⛅','Nublado','#8b949e'],['❄️','Nieve ligera','#b0d4ff'],['🌧️','Lluvia fría','#378ADD'],['☀️','Despejado frío','#3fb950'],['💨','Viento norte','#2ec4b6']],
-    'muy frío':   [['❄️','Nevada','#b0d4ff'],['⛅','Nublado','#8b949e'],['🌨️','Nieve intensa','#d0e8ff'],['💨','Ventisca','#2ec4b6'],['☀️','Despejado','#3fb950']],
-    'cálido':     [['☀️','Soleado','#d4a017'],['⛅','Parcial nublado','#8b949e'],['⛈️','Tormenta','#9370db'],['🌧️','Lluvia cálida','#378ADD'],['💨','Brisa','#2ec4b6']],
-    'ártico':     [['❄️','Tormenta de nieve','#b0d4ff'],['⛅','Nublado','#8b949e'],['💨','Viento ártico','#2ec4b6'],['🌨️','Nevada','#d0e8ff'],['☀️','Claro polar','#3fb950']]
+    'templado':   [['☀️','Despejado','#3fb950','Normal'],['⛅','Nublado','#8b949e','Normal'],['🌧️','Lluvia','#378ADD','Baja'],['⛈️','Tormenta','#9370db','Baja'],['💨','Viento','#2ec4b6','Alta']],
+    'fresco':     [['⛅','Nublado','#8b949e','Normal'],['🌧️','Lluvia','#378ADD','Baja'],['☀️','Despejado','#3fb950','Alta'],['💨','Viento fuerte','#2ec4b6','Alta'],['⛈️','Tormenta','#9370db','Baja']],
+    'frío':       [['⛅','Nublado','#8b949e','Baja'],['❄️','Nieve ligera','#b0d4ff','Baja'],['🌧️','Lluvia fría','#378ADD','Baja'],['☀️','Despejado frío','#3fb950','Alta'],['💨','Viento norte','#2ec4b6','Normal']],
+    'muy frío':   [['❄️','Nevada','#b0d4ff','Baja'],['⛅','Nublado','#8b949e','Baja'],['🌨️','Nieve intensa','#d0e8ff','Baja'],['💨','Ventisca','#2ec4b6','Normal'],['☀️','Despejado','#3fb950','Alta']],
+    'cálido':     [['☀️','Soleado','#d4a017','Alta'],['⛅','Parcial nublado','#8b949e','Normal'],['⛈️','Tormenta','#9370db','Baja'],['🌧️','Lluvia cálida','#378ADD','Baja'],['💨','Brisa','#2ec4b6','Normal']],
+    'ártico':     [['❄️','Tormenta de nieve','#b0d4ff','Baja'],['⛅','Nublado','#8b949e','Baja'],['💨','Viento ártico','#2ec4b6','Normal'],['🌨️','Nevada','#d0e8ff','Baja'],['☀️','Claro polar','#3fb950','Alta']],
+    'copper':     [['⛅','Nublado','#8b949e','Baja'],['🌧️','Lluvia ligera','#378ADD','Baja'],['⛅','Parcial nublado','#8b949e','Baja'],['☀️','Despejado','#3fb950','Normal'],['🌧️','Lluvia','#378ADD','Baja']]
   };
+
 
   var SEASONS=[
     {m:[12,1,2],name:'Invierno ❄',temp:[0,4]},
@@ -4728,15 +4712,20 @@ document.addEventListener('DOMContentLoaded', function(){
         // Temp agua
         var season=getSeason();
         var tempMin=season.temp[0]; var tempMax=season.temp[1];
-        var tempOffset={frío:-4,'muy frío':-8,fresco:-2,templado:0,cálido:4,ártico:-12}[lago.baseClimate]||0;
-        var temp=Math.round(tempMin+(tempMax-tempMin)*0.5+tempOffset);
-        html+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px;">';
+        var tempOffset={frío:-4,'muy frío':-8,fresco:-2,templado:0,cálido:4,ártico:-12,copper:-2}[lago.baseClimate]||0;
+        var temp=lago.tempRef ? lago.tempRef : Math.round(tempMin+(tempMax-tempMin)*0.5+tempOffset);
+        var presion=wx[3]||'Normal';
+        var presionColor=presion==='Baja'?'#378ADD':presion==='Alta'?'#f85149':'#3fb950';
+        html+='<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:10px;">';
         html+='<div style="background:var(--bg2);border-radius:var(--rs);padding:7px 8px;text-align:center;">';
         html+='<div style="font-size:.58rem;color:var(--muted);margin-bottom:2px;">Temp. agua</div>';
         html+='<div style="font-size:.85rem;font-weight:700;color:var(--text);">'+temp+'°C</div></div>';
         html+='<div style="background:var(--bg2);border-radius:var(--rs);padding:7px 8px;text-align:center;">';
         html+='<div style="font-size:.58rem;color:var(--muted);margin-bottom:2px;">Clima</div>';
-        html+='<div style="font-size:.85rem;font-weight:700;color:'+wx[2]+';white-space:nowrap;">'+wx[0]+' '+wx[1]+'</div></div>';
+        html+='<div style="font-size:.82rem;font-weight:700;color:'+wx[2]+';white-space:nowrap;">'+wx[0]+' '+wx[1]+'</div></div>';
+        html+='<div style="background:var(--bg2);border-radius:var(--rs);padding:7px 8px;text-align:center;">';
+        html+='<div style="font-size:.58rem;color:var(--muted);margin-bottom:2px;">Presión</div>';
+        html+='<div style="font-size:.85rem;font-weight:700;color:'+presionColor+';">'+presion+'</div></div>';
         html+='<div style="background:var(--bg2);border-radius:var(--rs);padding:7px 8px;text-align:center;">';
         html+='<div style="font-size:.58rem;color:var(--muted);margin-bottom:2px;">Momento</div>';
         html+='<div style="font-size:.78rem;font-weight:700;color:var(--accent);">'+(night?'🌙 Noche':'☀ Día')+'</div></div>';
@@ -24244,47 +24233,5 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
 })();
 </script>
 <!-- ===== FIN JS CHAT RF4 ===== -->
-
-<!-- ===== MINI RELOJ SIDEBAR IZQUIERDO ===== -->
-<style>
-@keyframes slClockPulse{0%,100%{opacity:1}50%{opacity:.3}}
-</style>
-<script>
-(function(){
-  var P=[
-    {s:0,e:4,name:'Madrugada',c:'#378ADD'},{s:4,e:7,name:'Amanecer',c:'#EF9F27'},
-    {s:7,e:11,name:'Mañana',c:'#3fb950'},{s:11,e:14,name:'Mediodía',c:'#d4a017'},
-    {s:14,e:18,name:'Tarde',c:'#3fb950'},{s:18,e:21,name:'Atardecer',c:'#f85149'},
-    {s:21,e:24,name:'Noche',c:'#9370db'}
-  ];
-  var S=[
-    {m:[12,1,2],n:'❄ Invierno'},{m:[3,4,5],n:'🌱 Primavera'},
-    {m:[6,7,8],n:'☀ Verano'},{m:[9,10,11],n:'🍂 Otoño'}
-  ];
-  function pad(n){return String(n).padStart(2,'0');}
-  function tick(){
-    var now=new Date();
-    var u=now.getUTCHours()*3600+now.getUTCMinutes()*60+now.getUTCSeconds();
-    var gs=u%3600;
-    var gh=Math.floor(gs/150);
-    var gm=Math.floor((gs%150)/150*60);
-    var prog=Math.round(gs/3600*100);
-    var phase=P.find(function(p){return gh>=p.s&&gh<p.e;})||P[0];
-    var month=now.getUTCMonth()+1;
-    var season=S.find(function(s){return s.m.indexOf(month)>-1;})||S[0];
-    var c=document.getElementById('slRF4Clock');
-    var ph=document.getElementById('slRF4Phase');
-    var se=document.getElementById('slRF4Season');
-    var bar=document.getElementById('slRF4Bar');
-    if(c) c.textContent=pad(gh)+':'+pad(gm);
-    if(ph){ph.textContent=phase.name;ph.style.color=phase.c;ph.style.background='rgba(46,196,182,.12)';}
-    if(se) se.textContent=season.n;
-    if(bar) bar.style.width=prog+'%';
-  }
-  tick();
-  setInterval(tick,1000);
-})();
-</script>
-<!-- ===== FIN MINI RELOJ SIDEBAR IZQUIERDO ===== -->
 </body>
 </html>
