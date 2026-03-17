@@ -16463,12 +16463,13 @@ async function _fetchPresence(){
         }
       } catch(e){}
     }));
-    // offline: usamos cache local para no hacer otra query
-    const offline = Object.values(window._presenceCache||{})
-      .filter(u=> now - u.ts >= 300000 && now - u.ts < 3600000)
-      .sort((a,b)=>b.ts-a.ts).slice(0,8);
-    // actualizar cache
+    // actualizar cache con usuarios online
     online.forEach(u=>{ if(!window._presenceCache) window._presenceCache={}; window._presenceCache[u.id]=u; });
+    // offline: excluir los que ya están en online para evitar duplicados
+    const onlineIds = new Set(online.map(u=>u.id));
+    const offline = Object.values(window._presenceCache||{})
+      .filter(u=> !onlineIds.has(u.id) && now - u.ts >= 300000 && now - u.ts < 3600000)
+      .sort((a,b)=>b.ts-a.ts).slice(0,8);
     renderContacts(online);
     document.querySelectorAll('#onlineCount,#sidebarOnlineCount').forEach(el=>{ if(el) el.textContent=online.length; });
     renderSidebarOnline(online, offline);
