@@ -1812,6 +1812,7 @@ document.addEventListener('DOMContentLoaded', function(){
     <button class="tb-nav-btn" onclick="gp('ranking-semanal');setNav(this)" title="Ranking Semanal" style="font-size:.75rem;font-weight:700;">🏅 Ranking</button>
     <button class="tb-nav-btn" onclick="gp('trofeos-feed');setNav(this)" title="Trofeos Recientes" style="font-size:.75rem;font-weight:700;">🥇 Trofeos Recientes</button>
     <button class="tb-nav-btn" onclick="gp('reels');setNav(this)" title="Reels" style="font-size:.75rem;font-weight:700;">🎬 Reels</button>
+    <button class="tb-nav-btn" onclick="gp('lagos-rf4');setNav(this)" title="Mapas RF4" style="font-size:.75rem;font-weight:700;">🗺️ Lagos RF4</button>
     <button class="tb-nav-btn" onclick="openPremiumModal()" title="Premium" style="font-size:.75rem;font-weight:800;background:linear-gradient(135deg,rgba(255,215,0,.15),rgba(255,165,0,.08));border-bottom:2px solid #ffd700;color:#ffd700;">⭐ Premium</button>
     <button class="tb-nav-btn" id="pezSemanalNavBtn" onclick="openPezSemanalModal();setNav(this)" title="Pez de la Semana" style="font-size:.75rem;font-weight:700;">🐟 Pez Semanal</button>
     <button class="tb-nav-btn" onclick="gp('peso-del-trofeo');setNav(this)" title="Peso del Trofeo" style="font-size:.75rem;font-weight:700;">🏆 Peso del Trofeo</button>
@@ -1892,6 +1893,7 @@ document.addEventListener('DOMContentLoaded', function(){
       <div class="sl-item" onclick="gp('profile')"><span class="sl-item-icon">👤</span> Mi Perfil</div>
       <div class="sl-item"><span class="sl-item-icon">👥</span> Amigos</div>
       <div class="sl-item"><span class="sl-item-icon">📸</span> Fotos</div>
+      <div class="sl-item" onclick="gp('lagos-rf4')"><span class="sl-item-icon">🗺️</span> Lagos RF4</div>
 
       <div class="sl-item" onclick="gp('reels');setNav(document.querySelectorAll('.tb-nav-btn')[4])"><span class="sl-item-icon">🎬</span> Reels</div>
 
@@ -4480,6 +4482,338 @@ document.addEventListener('DOMContentLoaded', function(){
 
 <!-- PAGE: REELS (placeholder inside layout — el real es el overlay fixed) -->
 <div class="page" id="page-reels" style="height:0;overflow:hidden;padding:0!important;"></div>
+
+<!-- ===== PAGE: LAGOS RF4 ===== -->
+<div class="page" id="page-lagos-rf4" style="max-width:900px;margin:0 auto;padding:20px 16px 80px;">
+
+  <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+    <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#1a7a74);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;">🗺️</div>
+    <div>
+      <div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:var(--accent);">🗺️ Lagos RF4</div>
+      <div style="font-size:.78rem;color:var(--muted);margin-top:2px;">18 reservorios · Clima en tiempo real · Peces por lago</div>
+    </div>
+  </div>
+
+  <!-- Reloj RF4 global -->
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+    <div>
+      <div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Hora RF4 actual</div>
+      <div id="lagosRF4Clock" style="font-family:'Orbitron',monospace;font-size:1.6rem;font-weight:900;color:var(--accent);">--:--</div>
+    </div>
+    <div style="flex:1;min-width:160px;">
+      <div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Progreso del día</div>
+      <div style="height:5px;background:var(--bg4);border-radius:3px;overflow:hidden;">
+        <div id="lagosRF4Bar" style="height:100%;background:var(--accent);border-radius:3px;transition:width 1s linear;width:0%;"></div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Fase</div>
+      <div id="lagosRF4Phase" style="font-size:.82rem;font-weight:700;padding:3px 10px;border-radius:100px;background:rgba(46,196,182,.15);color:var(--accent);">--</div>
+    </div>
+    <div>
+      <div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Temporada</div>
+      <div id="lagosRF4Season" style="font-size:.82rem;font-weight:700;color:var(--text);">--</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:5px;font-size:.7rem;color:var(--green);">
+      <span style="width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;animation:rf4pulse 2s infinite;"></span>En vivo
+    </div>
+  </div>
+
+  <!-- Filtros y búsqueda -->
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;">
+    <input id="lagosSearch" type="text" placeholder="🔍 Buscar lago o pez..." oninput="lagosFilter()"
+      style="background:var(--bg2);border:1px solid var(--border);border-radius:100px;padding:7px 16px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.82rem;outline:none;min-width:200px;flex:1;max-width:300px;">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+      <button class="lagos-fb on" onclick="lagosSetFilter('all',this)">Todos</button>
+      <button class="lagos-fb" onclick="lagosSetFilter('beginner',this)">🟢 Principiante</button>
+      <button class="lagos-fb" onclick="lagosSetFilter('mid',this)">🟡 Intermedio</button>
+      <button class="lagos-fb" onclick="lagosSetFilter('expert',this)">🔴 Experto</button>
+    </div>
+  </div>
+
+  <div id="lagosGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px;"></div>
+</div>
+<!-- ===== FIN PAGE: LAGOS RF4 ===== -->
+
+<style>
+.lagos-fb{background:var(--bg2);border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:100px;font-size:.74rem;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .15s;}
+.lagos-fb.on,.lagos-fb:hover{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:700;}
+.lago-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:border-color .15s;}
+.lago-card:hover,.lago-card.open{border-color:var(--accent);}
+.lago-detail{display:none;border-top:1px solid var(--border);padding:12px 14px;background:var(--bg);}
+.lago-detail.show{display:block;}
+.lago-fish-tag{font-size:.65rem;padding:2px 8px;border-radius:4px;background:var(--bg3);color:var(--muted);border:1px solid var(--border);display:inline-block;}
+.lago-fish-tag.hot{background:rgba(212,160,23,.18);color:var(--gold);border-color:rgba(212,160,23,.35);}
+.weather-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:100px;font-size:.72rem;font-weight:700;}
+</style>
+
+<script>
+(function(){
+  var LAGOS_DATA=[
+    {id:1,name:'Lago Mosquito',lvl:1,diff:'beginner',fish:20,spots:8,region:'Norte',baseClimate:'templado',
+     fish_list:['Perca','Brema','Carpa','Tenca','Rudd','Lucioperca'],hot_day:['Carpa','Brema'],hot_night:['Perca','Lucioperca'],
+     tip:'Lago de inicio. Excelente para principiantes. Carpa y brema abundan cerca de la vegetación.'},
+    {id:2,name:'Arroyo Sinuoso',lvl:4,diff:'beginner',fish:29,spots:9,region:'Norte',baseClimate:'fresco',
+     fish_list:['Dace','Perca','Lucio','Chub','Asp','Ide'],hot_day:['Dace','Chub'],hot_night:['Lucio'],
+     tip:'Gran variedad de peces pequeños. Ideal para subir XP rápido con spinning ligero.'},
+    {id:3,name:'Lago Viejo Burg',lvl:6,diff:'beginner',fish:21,spots:2,region:'Norte',baseClimate:'templado',
+     fish_list:['Brema','Carpa','Tenca','Rudd','Lucio'],hot_day:['Carpa','Brema'],hot_night:['Tenca','Lucio'],
+     tip:'Bueno para carnada artesanal. Carpa nocturna con masa de ajo o maíz.'},
+    {id:4,name:'Río Belaya',lvl:8,diff:'beginner',fish:26,spots:6,region:'Norte',baseClimate:'fresco',
+     fish_list:['Tímalo','Lenok','Perca','Lucio','Chub','Trucha'],hot_day:['Tímalo','Chub'],hot_night:['Lucio'],
+     tip:'Río de corriente rápida. Ideal para spinning con señuelos pequeños en zonas de piedra.'},
+    {id:5,name:'Lago Kuori',lvl:12,diff:'mid',fish:19,spots:3,region:'Norte',baseClimate:'frío',
+     fish_list:['Carpa','Tenca','Lucio','Perca','Brema'],hot_day:['Carpa','Tenca'],hot_night:['Lucio'],
+     tip:'Lago tranquilo y profundo. Carpa koi de gran tamaño activa en la orilla norte al amanecer.'},
+    {id:6,name:'Lago Oso',lvl:18,diff:'mid',fish:18,spots:2,region:'Central',baseClimate:'templado',
+     fish_list:['Carpa','Carpín','Brema','Tenca','Lucio'],hot_day:['Carpa','Carpín'],hot_night:['Lucio','Tenca'],
+     tip:'Carpas gigantes. Necesitás carrete con arrastre de al menos 14kg para los trofeos.'},
+    {id:7,name:'Río Voljov',lvl:20,diff:'mid',fish:23,spots:1,region:'Norte',baseClimate:'fresco',
+     fish_list:['Lucioperca','Perca','Siluro','Asp','Lucio','Brema'],hot_day:['Asp','Lucioperca'],hot_night:['Siluro'],
+     tip:'Río ancho. Siluro grande en aguas profundas con cebo vivo por la noche.'},
+    {id:8,name:'Lago Elk',lvl:16,diff:'mid',fish:19,spots:7,region:'Central',baseClimate:'templado',
+     fish_list:['Carpa','Tenca','Lucio','Perca','Rudd','Brema'],hot_day:['Carpa','Rudd'],hot_night:['Lucio','Tenca'],
+     tip:'Lago de tamaño mediano con spots variados. Excelente para feeder con lombriz.'},
+    {id:9,name:'Río Donets Seversky',lvl:24,diff:'mid',fish:38,spots:12,region:'Sur',baseClimate:'cálido',
+     fish_list:['Siluro','Carpa','Lucioperca','Asp','Brema','Barbo','Carpa herbívora'],hot_day:['Barbo','Asp'],hot_night:['Siluro','Carpa'],
+     tip:'Gran variedad. Siluro y carpa herbívora son los trofeos más buscados. Mejor de madrugada.'},
+    {id:10,name:'Río Sura',lvl:26,diff:'mid',fish:25,spots:3,region:'Central',baseClimate:'templado',
+     fish_list:['Siluro','Lucioperca','Asp','Perca','Lucio','Brema'],hot_day:['Lucioperca','Asp'],hot_night:['Siluro'],
+     tip:'Aguas cálidas en verano. Siluro muy activo de noche cerca del fondo rocoso.'},
+    {id:11,name:'Lago Ladoga',lvl:28,diff:'expert',fish:28,spots:4,region:'Norte',baseClimate:'frío',
+     fish_list:['Trucha de lago','Salmón','Lucioperca','Perca','Tímalo','Lucio'],hot_day:['Tímalo','Perca'],hot_night:['Trucha de lago','Salmón'],
+     tip:'Lago enorme y frío. Salmón y trucha de lago son los grandes trofeos. Requiere nivel 28+.'},
+    {id:12,name:'Lago Ámbar',lvl:30,diff:'expert',fish:26,spots:2,region:'Báltico',baseClimate:'templado',
+     fish_list:['Carpa koi','Carpa','Tenca','Brema','Lucio','Perca'],hot_day:['Carpa koi','Carpa'],hot_night:['Lucio','Tenca'],
+     tip:'Carpa koi de talla récord. Requiere equipo de alto nivel y carnadas especiales.'},
+    {id:13,name:'Archipiélago Ladoga',lvl:32,diff:'expert',fish:33,spots:9,region:'Norte',baseClimate:'frío',
+     fish_list:['Salmón del Atlántico','Trucha','Lucioperca','Perca','Siluro','Brema'],hot_day:['Lucioperca','Perca'],hot_night:['Salmón del Atlántico'],
+     tip:'El mapa más grande. Salmón del Atlántico al amanecer es el trofeo máximo.'},
+    {id:14,name:'Río Akhtuba',lvl:28,diff:'expert',fish:51,spots:15,region:'Sur',baseClimate:'cálido',
+     fish_list:['Beluga','Esturión','Siluro','Carpa herbívora','Asp','Lucioperca'],hot_day:['Asp','Lucioperca'],hot_night:['Beluga','Siluro','Esturión'],
+     tip:'El río más variado del juego. Beluga y esturión son trofeos legendarios de nivel máximo.'},
+    {id:15,name:'Lago Cobre',lvl:34,diff:'expert',fish:22,spots:4,region:'Siberia',baseClimate:'frío',
+     fish_list:['Lenok','Tímalo','Taimen','Perca siberiana','Lucio'],hot_day:['Tímalo','Lenok'],hot_night:['Taimen'],
+     tip:'Aguas siberianas. Taimen es el trofeo más codiciado. Spinning agresivo al atardecer.'},
+    {id:16,name:'Río Tunguska',lvl:36,diff:'expert',fish:18,spots:3,region:'Siberia',baseClimate:'muy frío',
+     fish_list:['Taimen','Lenok','Tímalo','Perca siberiana','Lucio'],hot_day:['Lenok','Tímalo'],hot_night:['Taimen'],
+     tip:'Río remoto y difícil. Pocos peces pero de gran tamaño. Solo para jugadores expertos.'},
+    {id:17,name:'Río Yama',lvl:40,diff:'expert',fish:20,spots:5,region:'Siberia',baseClimate:'frío',
+     fish_list:['Salmón del Pacífico','Trucha arcoíris','Lenok','Tímalo','Perca'],hot_day:['Tímalo','Trucha arcoíris'],hot_night:['Salmón del Pacífico'],
+     tip:'Aguas heladas. Salmón del Pacífico en temporada de desove. Nivel mínimo recomendado 40.'},
+    {id:18,name:'Mar de Noruega',lvl:45,diff:'expert',fish:25,spots:6,region:'Ártico',baseClimate:'ártico',
+     fish_list:['Halibut','Bacalao','Lobo de mar','Caballa','Pez rojo','Escorpión marino'],hot_day:['Caballa','Bacalao'],hot_night:['Halibut','Lobo de mar'],
+     tip:'Única ubicación marina. Halibut gigante como trofeo supremo. Requiere caña de mar.'}
+  ];
+
+  var WEATHER_BY_CLIMATE={
+    'templado':   [['☀️','Despejado','#3fb950'],['⛅','Nublado','#8b949e'],['🌧️','Lluvia','#378ADD'],['⛈️','Tormenta','#9370db'],['💨','Viento','#2ec4b6']],
+    'fresco':     [['⛅','Nublado','#8b949e'],['🌧️','Lluvia','#378ADD'],['☀️','Despejado','#3fb950'],['💨','Viento fuerte','#2ec4b6'],['⛈️','Tormenta','#9370db']],
+    'frío':       [['⛅','Nublado','#8b949e'],['❄️','Nieve ligera','#b0d4ff'],['🌧️','Lluvia fría','#378ADD'],['☀️','Despejado frío','#3fb950'],['💨','Viento norte','#2ec4b6']],
+    'muy frío':   [['❄️','Nevada','#b0d4ff'],['⛅','Nublado','#8b949e'],['🌨️','Nieve intensa','#d0e8ff'],['💨','Ventisca','#2ec4b6'],['☀️','Despejado','#3fb950']],
+    'cálido':     [['☀️','Soleado','#d4a017'],['⛅','Parcial nublado','#8b949e'],['⛈️','Tormenta','#9370db'],['🌧️','Lluvia cálida','#378ADD'],['💨','Brisa','#2ec4b6']],
+    'ártico':     [['❄️','Tormenta de nieve','#b0d4ff'],['⛅','Nublado','#8b949e'],['💨','Viento ártico','#2ec4b6'],['🌨️','Nevada','#d0e8ff'],['☀️','Claro polar','#3fb950']]
+  };
+
+  var SEASONS=[
+    {m:[12,1,2],name:'Invierno ❄',temp:[0,4]},
+    {m:[3,4,5],name:'Primavera 🌱',temp:[8,15]},
+    {m:[6,7,8],name:'Verano ☀',temp:[18,26]},
+    {m:[9,10,11],name:'Otoño 🍂',temp:[6,13]}
+  ];
+  var PHASES=[
+    {s:0,e:4,name:'Madrugada 🌑',c:'#378ADD'},
+    {s:4,e:7,name:'Amanecer 🌅',c:'#EF9F27'},
+    {s:7,e:11,name:'Mañana ☀',c:'#3fb950'},
+    {s:11,e:14,name:'Mediodía 🌞',c:'#d4a017'},
+    {s:14,e:18,name:'Tarde 🌤',c:'#3fb950'},
+    {s:18,e:21,name:'Atardecer 🌇',c:'#f85149'},
+    {s:21,e:24,name:'Noche 🌙',c:'#9370db'}
+  ];
+
+  function pad(n){return String(n).padStart(2,'0');}
+  function getGameH(){
+    var now=new Date();
+    var s=now.getUTCHours()*3600+now.getUTCMinutes()*60+now.getUTCSeconds();
+    return Math.floor((s%3600)/150);
+  }
+  function getGameM(){
+    var now=new Date();
+    var s=now.getUTCHours()*3600+now.getUTCMinutes()*60+now.getUTCSeconds();
+    return Math.floor(((s%3600)%150)/150*60);
+  }
+  function getProgress(){
+    var now=new Date();
+    var s=now.getUTCHours()*3600+now.getUTCMinutes()*60+now.getUTCSeconds();
+    return Math.round((s%3600)/3600*100);
+  }
+  function getPhase(h){return PHASES.find(function(p){return h>=p.s&&h<p.e;})||PHASES[0];}
+  function getSeason(){var m=new Date().getUTCMonth()+1;return SEASONS.find(function(s){return s.m.indexOf(m)>-1;});}
+
+  // Clima pseudo-aleatorio pero estable por lago y ciclo de hora
+  function getLakeWeather(lago){
+    var h=getGameH();
+    var cycleHour=new Date().getUTCHours();
+    var seed=(lago.id*7+cycleHour*3)%5;
+    var options=WEATHER_BY_CLIMATE[lago.baseClimate]||WEATHER_BY_CLIMATE['templado'];
+    return options[seed];
+  }
+
+  function isNight(h){return h<6||h>=20;}
+
+  function lagosRender(){
+    var search=(document.getElementById('lagosSearch')||{}).value||'';
+    var q=search.toLowerCase();
+    var filter=window._lagosFilter||'all';
+    var expandedId=window._lagosExpanded||null;
+    var gh=getGameH();
+    var night=isNight(gh);
+
+    var list=LAGOS_DATA.filter(function(l){
+      var matchDiff=filter==='all'||l.diff===filter;
+      var matchSearch=!q||l.name.toLowerCase().includes(q)||
+        l.fish_list.some(function(f){return f.toLowerCase().includes(q);});
+      return matchDiff&&matchSearch;
+    });
+
+    var html='';
+    list.forEach(function(lago){
+      var wx=getLakeWeather(lago);
+      var isOpen=expandedId===lago.id;
+      var diffLabel={beginner:'Principiante',mid:'Intermedio',expert:'Experto'}[lago.diff];
+      var diffColor={beginner:'var(--green)',mid:'var(--warn)',expert:'var(--red)'}[lago.diff];
+      var hotFish=night?lago.hot_night:lago.hot_day;
+
+      html+='<div class="lago-card'+(isOpen?' open':'')+'" onclick="lagosToggle('+lago.id+')">';
+      html+='<div style="padding:12px 14px;">';
+      html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">';
+      html+='<div style="font-size:.92rem;font-weight:800;color:var(--text);">'+lago.name+'</div>';
+      html+='<div style="font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:100px;background:rgba(46,196,182,.12);color:var(--accent);">Nv. '+lago.lvl+'</div>';
+      html+='</div>';
+      html+='<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:7px;">';
+      html+='<span style="font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:100px;background:rgba(63,185,80,.1);color:'+diffColor+';border:1px solid '+diffColor+'22;">'+diffLabel+'</span>';
+      html+='<span style="font-size:.65rem;color:var(--muted);">'+lago.fish+' peces · '+lago.spots+' spots</span>';
+      html+='<span style="font-size:.65rem;color:var(--muted);">📍 '+lago.region+'</span>';
+      html+='</div>';
+      // Clima en vivo
+      html+='<div style="display:flex;align-items:center;gap:8px;">';
+      html+='<span style="font-size:1.1rem;">'+wx[0]+'</span>';
+      html+='<span style="font-size:.74rem;font-weight:700;color:'+wx[2]+';">'+wx[1]+'</span>';
+      html+='<span style="font-size:.65rem;color:var(--muted);margin-left:auto;">'+lago.baseClimate+'</span>';
+      html+='</div>';
+      html+='</div>';
+
+      if(isOpen){
+        html+='<div class="lago-detail show">';
+        // Temp agua
+        var season=getSeason();
+        var tempMin=season.temp[0]; var tempMax=season.temp[1];
+        var tempOffset={frío:-4,'muy frío':-8,fresco:-2,templado:0,cálido:4,ártico:-12}[lago.baseClimate]||0;
+        var temp=Math.round(tempMin+(tempMax-tempMin)*0.5+tempOffset);
+        html+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px;">';
+        html+='<div style="background:var(--bg2);border-radius:var(--rs);padding:7px 8px;text-align:center;">';
+        html+='<div style="font-size:.58rem;color:var(--muted);margin-bottom:2px;">Temp. agua</div>';
+        html+='<div style="font-size:.85rem;font-weight:700;color:var(--text);">'+temp+'°C</div></div>';
+        html+='<div style="background:var(--bg2);border-radius:var(--rs);padding:7px 8px;text-align:center;">';
+        html+='<div style="font-size:.58rem;color:var(--muted);margin-bottom:2px;">Clima</div>';
+        html+='<div style="font-size:.85rem;font-weight:700;color:'+wx[2]+';white-space:nowrap;">'+wx[0]+' '+wx[1]+'</div></div>';
+        html+='<div style="background:var(--bg2);border-radius:var(--rs);padding:7px 8px;text-align:center;">';
+        html+='<div style="font-size:.58rem;color:var(--muted);margin-bottom:2px;">Momento</div>';
+        html+='<div style="font-size:.78rem;font-weight:700;color:var(--accent);">'+(night?'🌙 Noche':'☀ Día')+'</div></div>';
+        html+='</div>';
+        // Efecto del clima en pesca
+        var wxEffect=getWeatherEffect(wx[1]);
+        html+='<div style="background:var(--bg2);border-radius:var(--rs);padding:8px 10px;margin-bottom:10px;border-left:3px solid '+wx[2]+';font-size:.72rem;color:var(--muted);line-height:1.5;">';
+        html+='<span style="font-weight:700;color:'+wx[2]+';">'+wx[0]+' Efecto en pesca:</span> '+wxEffect+'</div>';
+        // Peces activos
+        html+='<div style="font-size:.62rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">Peces activos ahora '+(night?'🌙':'☀')+'</div>';
+        html+='<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;">';
+        lago.fish_list.forEach(function(f){
+          var isHot=hotFish.indexOf(f)>-1;
+          html+='<span class="lago-fish-tag'+(isHot?' hot':'')+'">'+(isHot?'★ ':'')+f+'</span>';
+        });
+        html+='</div>';
+        // Tip
+        html+='<div style="font-size:.72rem;color:var(--muted);line-height:1.6;padding-top:8px;border-top:1px solid var(--border);">💡 '+lago.tip+'</div>';
+        html+='</div>';
+      }
+      html+='</div>';
+    });
+
+    if(!html) html='<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--muted);font-size:.85rem;">Sin resultados para "'+search+'"</div>';
+    var grid=document.getElementById('lagosGrid');
+    if(grid) grid.innerHTML=html;
+
+    // Actualizar reloj global
+    var gh=getGameH(); var gm=getGameM(); var prog=getProgress();
+    var phase=getPhase(gh); var season=getSeason();
+    var clk=document.getElementById('lagosRF4Clock');
+    var bar=document.getElementById('lagosRF4Bar');
+    var ph=document.getElementById('lagosRF4Phase');
+    var se=document.getElementById('lagosRF4Season');
+    if(clk) clk.textContent=pad(gh)+':'+pad(gm);
+    if(bar) bar.style.width=prog+'%';
+    if(ph){ph.textContent=phase.name;ph.style.background='rgba(46,196,182,.15)';ph.style.color=phase.c;}
+    if(se) se.textContent=season.name;
+  }
+
+  function getWeatherEffect(wx){
+    var effects={
+      'Despejado':'Actividad normal. Buenos momentos en amanecer y atardecer.',
+      'Soleado':'Calor alto. Peces se mueven a zonas más profundas y sombreadas.',
+      'Nublado':'Condición ideal. Los peces se sienten más seguros y suben a la superficie.',
+      'Parcial nublado':'Condición favorable. Buena actividad general en todos los spots.',
+      'Lluvia':'Excelente para carpas y bremas. La lluvia oxigena el agua y activa la picada.',
+      'Lluvia fría':'Peces algo lentos. Intentá fondo profundo con cebo fragante.',
+      'Lluvia cálida':'Muy buena actividad. Peces activos cerca de la orilla con la corriente.',
+      'Tormenta':'Picos de actividad intensa justo antes. Durante la tormenta los peces se retiran a fondo.',
+      'Viento':'Los peces siguen el viento en busca de alimento arrastrado. Pescá a favor del viento.',
+      'Viento fuerte':'Difícil para el lanzado. Peces activos en aguas profundas protegidas.',
+      'Viento norte':'Frío intenso. Los peces se concentran en zonas más cálidas y profundas.',
+      'Viento ártico':'Condición difícil. Solo peces adaptados al frío activos en el fondo.',
+      'Brisa':'Condición ideal. Superficie oxigenada, peces activos en zonas medias.',
+      'Nieve ligera':'Actividad reducida. Mejor fondo con cebo llamativo o luminoso.',
+      'Nieve intensa':'Actividad muy baja. Paciencia y spots en aguas profundas.',
+      'Nevada':'Peces en letargo. Usa cebo muy fragante y espera en spots de fondo.',
+      'Ventisca':'Condición extrema. Muy poca actividad. No recomendado para trofeos.',
+      'Tormenta de nieve':'Condición extrema. Solo peces de fondo activos esporádicamente.',
+      'Claro polar':'Sorpresa: peces activos buscando calor en zonas superficiales al sol.',
+      'Despejado frío':'Buen momento para trucha y salmón que prefieren aguas frías y claras.',
+      'Despejado':'Actividad normal. Buenos momentos en amanecer y atardecer.'
+    };
+    return effects[wx]||'Condiciones variables. Explorá distintos spots y profundidades.';
+  }
+
+  window.lagosToggle=function(id){
+    window._lagosExpanded=window._lagosExpanded===id?null:id;
+    lagosRender();
+  };
+  window.lagosSetFilter=function(f,btn){
+    window._lagosFilter=f;
+    document.querySelectorAll('.lagos-fb').forEach(function(b){b.classList.remove('on');});
+    btn.classList.add('on');
+    lagosRender();
+  };
+  window.lagosFilter=function(){lagosRender();};
+
+  // Init cuando se abre la página
+  var _lagosInterval=null;
+  var origGp=window.gp;
+  window.gp=function(page){
+    if(typeof origGp==='function') origGp(page);
+    if(page==='lagos-rf4'){
+      lagosRender();
+      if(!_lagosInterval) _lagosInterval=setInterval(lagosRender,60000);
+    }
+  };
+
+  // Si ya está en la página al cargar
+  if(document.getElementById('lagosGrid')){
+    lagosRender();
+    _lagosInterval=setInterval(lagosRender,60000);
+  }
+})();
+</script>
 
 <!-- PAGE: MÚSICA -->
 <!-- ===== SUBIR SKILL PAGE ===== -->
