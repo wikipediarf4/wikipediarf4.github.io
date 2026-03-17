@@ -5884,8 +5884,8 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 window.db = db;
 // Exponer funciones Firestore para módulos externos (cebos, chat global, etc.)
-window._fsLib = { getDocs, query, collection, where, orderBy, limit, onSnapshot, addDoc, serverTimestamp };
-window.firebaseFirestore = { getDocs, query, collection, where, orderBy, limit, onSnapshot, addDoc, serverTimestamp };
+window._fsLib = { getDocs, query, collection, where, orderBy, limit, onSnapshot, addDoc, serverTimestamp, doc, updateDoc, deleteDoc };
+window.firebaseFirestore = { getDocs, query, collection, where, orderBy, limit, onSnapshot, addDoc, serverTimestamp, doc, updateDoc, deleteDoc };
 
 // ===== STATE =====
 window.CU = null;
@@ -24517,11 +24517,17 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
         userNick: window.CU.nick||'',
         time: fs.serverTimestamp ? fs.serverTimestamp() : Date.now()
       });
-      toast('¡Pregunta enviada! El admin la revisará pronto 🎣','ok');
+      toast('✅ ¡Enviado! Tu pregunta fue recibida 🎣','ok');
       document.getElementById('faqPropQ').value='';
       document.getElementById('faqPropA').value='';
       document.getElementById('faqPropBox').style.display='none';
       document.getElementById('faqPropBtn').style.display='block';
+      var conf=document.createElement('div');
+      conf.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.8);background:#161b22;border:2px solid #3fb950;border-radius:16px;padding:32px 40px;text-align:center;z-index:9999;box-shadow:0 8px 40px rgba(0,0,0,.7);transition:all .25s;';
+      conf.innerHTML='<div style="font-size:2.5rem;margin-bottom:10px;">✅</div><div style="font-family:Orbitron,monospace;font-size:1.1rem;font-weight:900;color:#3fb950;margin-bottom:6px;">¡ENVIADO!</div><div style="font-size:.85rem;color:#8b949e;">Tu pregunta fue enviada.<br>El admin la revisará pronto 🎣</div>';
+      document.body.appendChild(conf);
+      setTimeout(function(){ conf.style.transform='translate(-50%,-50%) scale(1)'; },10);
+      setTimeout(function(){ conf.style.opacity='0'; conf.style.transform='translate(-50%,-50%) scale(0.8)'; setTimeout(function(){ conf.remove(); },300); },2500);
     } catch(e){ toast('Error al enviar','err'); }
   };
 
@@ -24545,11 +24551,12 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
       snap.docs.forEach(function(d){
         var f=Object.assign({id:d.id},d.data());
         var estadoColor=f.estado==='aprobado'?'var(--green)':f.estado==='rechazado'?'var(--red)':'var(--warn)';
-        html+='<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;">';
+        html+='<div id="faqAdminItem-'+f.id+'" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;">';
         html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">';
         html+='<span style="font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:100px;background:rgba(46,196,182,.1);color:var(--accent);">'+(CAT_LABELS[f.cat]||f.cat)+'</span>';
         html+='<span style="font-size:.65rem;font-weight:700;color:'+estadoColor+';">● '+esc(f.estado||'pendiente')+'</span>';
         html+='<span style="font-size:.65rem;color:var(--muted);margin-left:auto;">Por '+esc(f.userNick||'?')+'</span>';
+        html+='<span class="faq-admin-status-badge" style="font-size:.75rem;font-weight:700;padding:4px 12px;border-radius:100px;display:'+(f.estado!=='pendiente'?'inline-block':'none')+';">'+( f.estado==='aprobado'?'✅ APROBADO':f.estado==='rechazado'?'❌ RECHAZADO':'')+' </span>';
         html+='</div>';
         html+='<div style="font-size:.84rem;font-weight:700;color:var(--text);margin-bottom:6px;">'+esc(f.pregunta)+'</div>';
         html+='<textarea id="faqResp-'+f.id+'" rows="2" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:7px 10px;color:var(--text);font-family:\'Exo 2\',sans-serif;font-size:.78rem;resize:none;outline:none;margin-bottom:8px;box-sizing:border-box;" placeholder="Respuesta...">'+esc(f.respuesta||'')+'</textarea>';
@@ -24564,17 +24571,42 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
   };
 
   window.faqAdminAction = async function(id, estado){
-    if(!window.db || !window._fsLib) return;
+    if(!window.CU){ toast('Necesitás iniciar sesión como admin','err'); return; }
+    if(!window.db || !window._fsLib){ toast('Sin conexión a la base de datos','err'); return; }
     var fs = window._fsLib;
     var respEl = document.getElementById('faqResp-'+id);
     var resp = respEl ? respEl.value.trim() : '';
+    // Feedback visual inmediato en el ítem
+    var itemEl = document.getElementById('faqAdminItem-'+id);
+    if(itemEl){
+      var badge = itemEl.querySelector('.faq-admin-status-badge');
+      if(badge){
+        badge.textContent = estado==='aprobado' ? '✅ APROBADO' : '❌ RECHAZADO';
+        badge.style.color = estado==='aprobado' ? 'var(--green)' : 'var(--red)';
+        badge.style.background = estado==='aprobado' ? 'rgba(63,185,80,.15)' : 'rgba(248,81,73,.1)';
+        badge.style.border = '1px solid '+(estado==='aprobado'?'var(--green)':'var(--red)');
+        badge.style.display = 'inline-block';
+      }
+      itemEl.querySelectorAll('button').forEach(function(b){ b.disabled=true; b.style.opacity='.4'; b.style.cursor='default'; });
+    }
     try {
       var ref = fs.doc(window.db,'faq',id);
-      await fs.updateDoc(ref,{ estado:estado, respuesta:resp, revisadoPor: window.CU&&window.CU.nick||'admin' });
-      toast(estado==='aprobado'?'✅ Aprobada':'❌ Rechazada','ok');
-      loadAdminFaq();
-      loadFaq();
-    } catch(e){ toast('Error','err'); }
+      await fs.updateDoc(ref,{ estado:estado, respuesta:resp, revisadoPor: (window.CU&&window.CU.nick)||'admin' });
+      var color = estado==='aprobado' ? '#3fb950' : '#f85149';
+      var emoji = estado==='aprobado' ? '✅' : '❌';
+      var label = estado==='aprobado' ? '¡APROBADA!' : '¡RECHAZADA!';
+      toast(emoji+' Pregunta '+estado, estado==='aprobado'?'ok':'err');
+      var conf=document.createElement('div');
+      conf.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.8);background:#161b22;border:2px solid '+color+';border-radius:16px;padding:32px 40px;text-align:center;z-index:9999;box-shadow:0 8px 40px rgba(0,0,0,.7);transition:all .25s;';
+      conf.innerHTML='<div style="font-size:2.5rem;margin-bottom:10px;">'+emoji+'</div><div style="font-family:Orbitron,monospace;font-size:1.1rem;font-weight:900;color:'+color+';margin-bottom:6px;">'+label+'</div>';
+      document.body.appendChild(conf);
+      setTimeout(function(){ conf.style.transform='translate(-50%,-50%) scale(1)'; },10);
+      setTimeout(function(){ conf.style.opacity='0'; conf.style.transform='translate(-50%,-50%) scale(0.8)'; setTimeout(function(){ conf.remove(); },300); },2000);
+      setTimeout(function(){ loadAdminFaq(); loadFaq(); }, 1500);
+    } catch(e){
+      toast('Error al guardar: '+(e.message||String(e)),'err');
+      if(itemEl) itemEl.querySelectorAll('button').forEach(function(b){ b.disabled=false; b.style.opacity='1'; b.style.cursor='pointer'; });
+    }
   };
 
   window.faqAdminDelete = async function(id){
