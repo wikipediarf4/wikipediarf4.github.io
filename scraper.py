@@ -1,5 +1,4 @@
 import json
-import re
 from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -18,59 +17,70 @@ records = []
 try:
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     driver.get('https://rf4game.com/records/weekly/region/EN/')
-    time.sleep(8)  # esperar que cargue todo el JS
+    time.sleep(8)
 
-    # ── DEBUG: guardar HTML para inspección ──────────────────────────────────
-    html_source = driver.page_source
-    with open('debug_page.html', 'w', encoding='utf-8') as f:
-        f.write(html_source)
-    print('HTML guardado en debug_page.html')
-
-    # ── Imprimir estructura de las primeras filas para entender la página ────
     all_rows = driver.find_elements(By.CSS_SELECTOR, '.records .row')
-    print(f'Total .records .row encontrados: {len(all_rows)}')
-    for i, row in enumerate(all_rows[:25]):
-        cls = row.get_attribute('class') or ''
-        txt = row.text.strip().replace('\n', ' | ')[:120]
-        ncols = len(row.find_elements(By.CSS_SELECTOR, '.cell'))
-        print(f'  Row {i:02d} cols={ncols} class="{cls}" => "{txt}"')
+    print(f'Total filas: {len(all_rows)}')
 
-    # ── Parsear top 5 por pez ─────────────────────────────────────────────────
     current_fish    = None
     current_img_pez = None
     rank            = 0
 
     for row in all_rows:
         cls  = row.get_attribute('class') or ''
-        cols = row.find_elements(By.CSS_SELECTOR, '.cell')
+        text = row.text.strip()
 
-        # Fila de encabezado de especie: tiene clase header o pocas celdas
-        if 'header' in cls or len(cols) <= 2:
-            txt = row.text.strip()
-            if txt:
-                current_fish = txt
+        # Fila vacía — saltar
+        if not text:
+            continue
+
+        # Separar columnas por el separador visual | o por elementos internos
+        # El texto viene como: "Peso | Ubicacion | Señuelo | Jugador | Fecha"
+        # o para header de pez: solo el nombre del pez
+        parts = [p.strip() for p in text.split('|')]
+
+        # Detectar si es encabezado global (Fish | Weight | Location...)
+        if parts[0].lower() in ('fish', 'pez'):
+            continue
+
+        # Detectar si es nombre de pez solo (1 parte o nombre sin kg)
+        # Los datos de jugador siempre tienen "kg" en la segunda columna
+        if len(parts) == 1 or (len(parts) >= 2 and 'kg' not in parts[1] and 'g' not in parts[1]):
+            # Es nombre de especie
+            fish_name = parts[0]
+            if fish_name and fish_name != current_fish:
+                current_fish = fish_name
                 rank = 0
+                # Imagen del pez
                 try:
                     current_img_pez = row.find_element(By.TAG_NAME, 'img').get_attribute('src') or ''
                 except:
                     current_img_pez = ''
             continue
 
-        # Fila de jugador
-        if len(cols) >= 5 and current_fish:
+        # Es fila de jugador: Peso | Ubicacion | Señuelo | Jugador | Fecha
+        if current_fish and len(parts) >= 4:
             rank += 1
             if rank > 5:
                 continue
 
+            # Imagen del señuelo
             img_senuelo = ''
             try:
-                img_senuelo = cols[3].find_element(By.TAG_NAME, 'img').get_attribute('src') or ''
+                imgs = row.find_elements(By.TAG_NAME, 'img')
+                if len(imgs) >= 2:
+                    img_senuelo = imgs[1].get_attribute('src') or ''
+                elif len(imgs) == 1:
+                    img_senuelo = imgs[0].get_attribute('src') or ''
             except:
                 pass
 
+            # Imagen del pez (si no la tenemos aún)
             if not current_img_pez:
                 try:
-                    current_img_pez = cols[0].find_element(By.TAG_NAME, 'img').get_attribute('src') or ''
+                    imgs = row.find_elements(By.TAG_NAME, 'img')
+                    if imgs:
+                        current_img_pez = imgs[0].get_attribute('src') or ''
                 except:
                     pass
 
@@ -78,16 +88,20 @@ try:
                 'pez':         current_fish,
                 'rank':        rank,
                 'img_pez':     current_img_pez,
-                'peso':        cols[0].text.strip(),
-                'ubicacion':   cols[1].text.strip(),
-                'señuelo':     cols[2].text.strip(),
+                'peso':        parts[0],
+                'ubicacion':   parts[1] if len(parts) > 1 else '—',
+                'señuelo':     parts[2] if len(parts) > 2 else '—',
                 'img_senuelo': img_senuelo,
-                'jugador':     cols[3].text.strip(),
-                'fecha':       cols[4].text.strip() if len(cols) > 4 else '—',
+                'jugador':     parts[3] if len(parts) > 3 else '—',
+                'fecha':       parts[4] if len(parts) > 4 else '—',
             })
 
     driver.quit()
-    print(f'\nRecords extraídos: {len(records)}')
+
+    especies = len(set(r['pez'] for r in records))
+    print(f'Records extraídos: {len(records)} de {especies} especies')
+    if records:
+        print('Ejemplo:', json.dumps(records[:3], ensure_ascii=False, indent=2))
 
 except Exception as e:
     print(f'Error: {e}')
@@ -103,5 +117,4 @@ output = {
 with open('records.json', 'w', encoding='utf-8') as f:
     json.dump(output, f, ensure_ascii=False, indent=2)
 
-especies = len(set(r['pez'] for r in records))
-print(f'Guardados {len(records)} records de {especies} especies')
+print(f'records.json guardado con {len(records)} entradas')
