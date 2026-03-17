@@ -1815,7 +1815,6 @@ document.addEventListener('DOMContentLoaded', function(){
     <button class="tb-nav-btn" onclick="openPremiumModal()" title="Premium" style="font-size:.75rem;font-weight:800;background:linear-gradient(135deg,rgba(255,215,0,.15),rgba(255,165,0,.08));border-bottom:2px solid #ffd700;color:#ffd700;">⭐ Premium</button>
     <button class="tb-nav-btn" id="pezSemanalNavBtn" onclick="openPezSemanalModal();setNav(this)" title="Pez de la Semana" style="font-size:.75rem;font-weight:700;">🐟 Pez Semanal</button>
     <button class="tb-nav-btn" onclick="gp('peso-del-trofeo');setNav(this)" title="Peso del Trofeo" style="font-size:.75rem;font-weight:700;">🏆 Peso del Trofeo</button>
-    <button class="tb-nav-btn" onclick="gp('cebos');setNav(this)" title="Buscador de Cebos" style="font-size:.75rem;font-weight:700;">🪱 Cebos</button>
 
     <button class="tb-nav-btn" id="adminNavBtn" style="display:none;font-size:.75rem;font-weight:700;" onclick="gp('admin');setNav(this)" title="Panel Admin">🛡️ Admin</button>
   </div>
@@ -1905,7 +1904,6 @@ document.addEventListener('DOMContentLoaded', function(){
       <div class="sl-item" onclick="gp('skill')"><span class="sl-item-icon">📈</span> Subir Skill</div>
       <div class="sl-item" onclick="gp('wiki-trofeos')" id="slWikiTrofeosBtn" style="background:linear-gradient(90deg,rgba(255,215,0,.08),transparent);border-left:3px solid #ffd700;"><span class="sl-item-icon">🏆</span> Publicar Trofeos</div>
       <div class="sl-item" onclick="gp('compartir-spot')" id="slCompartirSpotBtn" style="background:linear-gradient(90deg,rgba(46,196,182,.08),transparent);border-left:3px solid var(--accent);"><span class="sl-item-icon">📍</span> Compartir Spot</div>
-      <div class="sl-item" onclick="gp('cebos')" id="slCebosBtn" style="background:linear-gradient(90deg,rgba(0,200,100,.08),transparent);border-left:3px solid #00c853;"><span class="sl-item-icon">🪱</span> Buscador de Cebos</div>
 
       <div class="sl-item"><span class="sl-item-icon">🔖</span> Guardados</div>
       <div class="sl-item" onclick="gp('torneos')"><span class="sl-item-icon">🏆</span> Torneos</div>
@@ -3491,7 +3489,7 @@ document.addEventListener('DOMContentLoaded', function(){
   </div>
 </div>
 
-<!-- Messenger — Burbuja flotante arrastrable estilo Facebook -->
+<!-- Messenger — Burbuja flotante estilo RF4 con 3 tabs -->
 <style>
 #mMessenger{
   display:none;
@@ -3499,24 +3497,19 @@ document.addEventListener('DOMContentLoaded', function(){
   bottom:24px;
   right:24px;
   width:340px;
-  height:520px;
-  background:var(--bg2);
+  height:560px;
+  background:#161b22;
   border-radius:12px;
-  box-shadow:0 8px 40px rgba(0,0,0,.35);
-  border:1px solid var(--border);
+  box-shadow:0 8px 40px rgba(0,0,0,.55);
+  border:1px solid #30363d;
   z-index:3000;
   flex-direction:column;
   overflow:hidden;
   animation:mIn .2s ease;
-  /* NO backdrop, NO overlay */
 }
 #mMessenger.open{ display:flex; }
-#chatDragHandle{
-  cursor:grab;
-  user-select:none;
-}
+#chatDragHandle{ cursor:grab; user-select:none; }
 #chatDragHandle:active{ cursor:grabbing; }
-/* Fix message bubble min-width so short msgs don't wrap weirdly */
 .chat-bubble-text{
   display:inline-block;
   max-width:220px;
@@ -3525,26 +3518,130 @@ document.addEventListener('DOMContentLoaded', function(){
   word-break:break-word;
   white-space:pre-wrap;
 }
+/* RF4 Chat tabs */
+.rf4-tab{
+  flex:1;
+  background:none;
+  border:none;
+  color:#8b949e;
+  font-family:'Exo 2',sans-serif;
+  font-size:.78rem;
+  font-weight:700;
+  padding:8px 4px;
+  cursor:pointer;
+  border-bottom:2px solid transparent;
+  transition:all .2s;
+  text-align:center;
+}
+.rf4-tab.on{
+  color:var(--accent);
+  border-bottom-color:var(--accent);
+}
+/* Global chat line */
+.gchat-line{
+  display:flex;
+  gap:7px;
+  padding:4px 10px;
+  font-size:.8rem;
+  line-height:1.4;
+  transition:background .1s;
+}
+.gchat-line:hover{ background:rgba(255,255,255,.03); }
+.gchat-nick{
+  font-weight:700;
+  color:var(--accent);
+  white-space:nowrap;
+  cursor:pointer;
+  flex-shrink:0;
+}
+.gchat-nick:hover{ text-decoration:underline; }
+.gchat-text{ color:#e6edf3; word-break:break-word; flex:1; }
+.gchat-time{ color:#8b949e; font-size:.65rem; white-space:nowrap; flex-shrink:0; align-self:flex-end; }
+/* Player row */
+.rf4-player-row{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:6px 10px;
+  cursor:pointer;
+  transition:background .15s;
+  border-radius:6px;
+  margin:1px 4px;
+}
+.rf4-player-row:hover{ background:rgba(255,255,255,.05); }
+.rf4-online-dot{
+  width:8px;
+  height:8px;
+  background:#31a24c;
+  border-radius:50%;
+  flex-shrink:0;
+}
+.rf4-offline-dot{
+  width:8px;
+  height:8px;
+  background:#555;
+  border-radius:50%;
+  flex-shrink:0;
+}
 </style>
 
 <div id="mMessenger">
   <!-- Header draggable -->
-  <div id="chatDragHandle" style="background:var(--bg3);flex-shrink:0;border-bottom:1px solid var(--border);">
-    <div style="padding:10px 12px;display:flex;align-items:center;justify-content:space-between;">
-      <div style="font-family:'Orbitron',monospace;font-size:.8rem;font-weight:700;color:var(--accent);">💬 Chats</div>
-      <div style="display:flex;gap:4px;align-items:center;">
-        <button onclick="minimizeMessenger()" title="Minimizar" style="background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background='none'">－</button>
-        <button onclick="closeMessenger()" title="Cerrar" style="background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background='none'">✕</button>
+  <div id="chatDragHandle" style="background:#0d1117;flex-shrink:0;border-bottom:1px solid #30363d;">
+    <!-- Título + controles -->
+    <div style="padding:8px 12px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%230d1117'/%3E%3Ctext x='16' y='21' font-size='16' text-anchor='middle' fill='%232ec4b6'%3E🎣%3C/text%3E%3C/svg%3E" style="width:22px;height:22px;" onerror="this.style.display='none'">
+        <span style="font-family:'Orbitron',monospace;font-size:.78rem;font-weight:900;color:var(--accent);">RF4 · Español</span>
+        <span id="rf4OnlineCount" style="font-size:.65rem;color:#8b949e;">— jugadores</span>
+      </div>
+      <div style="display:flex;gap:2px;align-items:center;">
+        <button onclick="minimizeMessenger()" title="Minimizar" style="background:none;border:none;color:#8b949e;font-size:.9rem;cursor:pointer;width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='#21262d'" onmouseout="this.style.background='none'">－</button>
+        <button onclick="closeMessenger()" title="Cerrar" style="background:none;border:none;color:#8b949e;font-size:.9rem;cursor:pointer;width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='#21262d'" onmouseout="this.style.background='none'">✕</button>
       </div>
     </div>
-
+    <!-- TABS: Chat | Jugadores | Mensajes -->
+    <div style="display:flex;border-top:1px solid #21262d;padding:0 4px;">
+      <button class="rf4-tab on" id="rf4TabChat"     onclick="rf4SwitchTab('chat')"     >💬 Chat</button>
+      <button class="rf4-tab"   id="rf4TabJugadores" onclick="rf4SwitchTab('jugadores')" >👥 Jugadores</button>
+      <button class="rf4-tab"   id="rf4TabMensajes"  onclick="rf4SwitchTab('mensajes')"  >✉️ Mensajes <span id="unreadChatBadge" style="display:none;background:var(--red);color:#fff;border-radius:50%;padding:0 4px;font-size:.6rem;"></span></button>
+    </div>
   </div>
-  <!-- Content -->
-  <div style="flex:1;overflow-y:auto;min-height:0;">
-    <div id="messengerList" style="padding:6px;"></div>
+
+  <!-- ── PANEL CHAT GLOBAL ─────────────────────────────────── -->
+  <div id="rf4PanelChat" style="flex:1;display:flex;flex-direction:column;min-height:0;">
+    <!-- Mensajes -->
+    <div id="globalChatMessages" style="flex:1;overflow-y:auto;padding:6px 0;" class="custom-scroll"></div>
+    <!-- Input -->
+    <div style="padding:6px 8px;border-top:1px solid #21262d;display:flex;gap:6px;align-items:center;flex-shrink:0;background:#0d1117;">
+      <input id="globalChatInput" placeholder="Ingrese su mensaje ..." maxlength="250"
+        style="flex:1;background:#21262d;border:1px solid #30363d;border-radius:6px;padding:6px 10px;color:#e6edf3;font-family:'Exo 2',sans-serif;font-size:.82rem;outline:none;"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){sendGlobalMsg();event.preventDefault();}">
+      <button onclick="sendGlobalMsg()" style="background:var(--accent);border:none;color:#000;padding:6px 12px;border-radius:6px;font-family:'Exo 2',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;flex-shrink:0;transition:opacity .15s;" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">Enviar</button>
+    </div>
+  </div>
+
+  <!-- ── PANEL JUGADORES ───────────────────────────────────── -->
+  <div id="rf4PanelJugadores" style="flex:1;display:none;flex-direction:column;min-height:0;overflow-y:auto;">
+    <!-- Buscador -->
+    <div style="padding:6px 8px;border-bottom:1px solid #21262d;background:#0d1117;flex-shrink:0;">
+      <div style="background:#21262d;border-radius:6px;display:flex;align-items:center;gap:6px;padding:5px 10px;">
+        <span style="color:#8b949e;font-size:.8rem;">🔍</span>
+        <input id="jugadoresSearch" placeholder="Buscar jugador..." maxlength="40"
+          style="background:none;border:none;outline:none;color:#e6edf3;font-family:'Exo 2',sans-serif;font-size:.8rem;width:100%;"
+          oninput="rf4FilterJugadores(this.value)">
+      </div>
+    </div>
+    <div id="rf4JugadoresList" style="padding:6px 0;"></div>
+  </div>
+
+  <!-- ── PANEL MENSAJES (lista de chats privados) ──────────── -->
+  <div id="rf4PanelMensajes" style="flex:1;display:none;flex-direction:column;min-height:0;">
+    <div id="messengerList" style="padding:6px;overflow-y:auto;flex:1;"></div>
     <div id="chatWindow" style="display:none;flex-direction:column;height:100%;"></div>
   </div>
-  <!-- Input row estilo Facebook Messenger -->
+
+  <!-- Input row mensajes privados (se muestra cuando hay chatWindow abierto) -->
   <div id="chatInputRow" style="display:none;padding:8px 10px;border-top:1px solid var(--border);flex-shrink:0;gap:6px;align-items:flex-end;background:var(--bg2);">
     <!-- Botones izquierda -->
     <div style="display:flex;gap:2px;align-items:center;flex-shrink:0;">
@@ -5121,67 +5218,6 @@ document.addEventListener('DOMContentLoaded', function(){
 </div>
 <!-- ===== FIN COMPARTIR SPOT ===== -->
 
-<!-- ===== SECCIÓN CEBOS ===== -->
-<div class="page" id="page-cebos" style="max-width:800px;margin:0 auto;padding:20px 14px 80px;">
-
-  <!-- HEADER -->
-  <div style="background:linear-gradient(135deg,rgba(0,200,100,.1),rgba(46,196,182,.06));border:1px solid rgba(0,200,100,.25);border-radius:14px;padding:20px 20px 16px;margin-bottom:22px;position:relative;overflow:hidden;">
-    <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#00c853,var(--accent),#00c853);background-size:200%;animation:shimmer 2.5s linear infinite;"></div>
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
-      <span style="font-size:2rem;">🪱</span>
-      <div>
-        <div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:#00c853;">Buscador de Cebos</div>
-        <div style="font-size:.75rem;color:var(--muted);margin-top:2px;">Descubrí con qué cebo y en qué mapa se pescó cada especie · datos reales de la comunidad</div>
-      </div>
-    </div>
-    <!-- BUSCADOR -->
-    <div style="display:flex;gap:8px;align-items:center;margin-top:14px;flex-wrap:wrap;position:relative;">
-      <div style="flex:1;min-width:200px;display:flex;align-items:center;gap:8px;background:var(--bg);border:1.5px solid var(--border);border-radius:100px;padding:8px 16px;transition:border-color .2s;" id="cebosSearchWrap">
-        <span style="font-size:1rem;">🔍</span>
-        <input id="cebosSearchInput" type="text" placeholder="Buscar pez... ej: Pike, Catfish, Carpa..."
-          style="background:none;border:none;outline:none;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.9rem;width:100%;"
-          oninput="cebosOnInput(this.value)"
-          onkeydown="if(event.key==='Enter')cebosBuscar()">
-      </div>
-      <button onclick="cebosBuscar()" style="background:linear-gradient(135deg,#00c853,#00a040);border:none;color:#fff;padding:9px 20px;border-radius:100px;font-family:'Exo 2',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;white-space:nowrap;">
-        🪱 Buscar cebo
-      </button>
-      <!-- Autocomplete dropdown -->
-      <div id="cebosSuggestions" style="display:none;position:absolute;left:0;right:0;top:calc(100% + 4px);background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:500;overflow:hidden;"></div>
-    </div>
-  </div>
-
-  <!-- ESTADO -->
-  <div id="cebosEstado" style="text-align:center;padding:40px 20px;color:var(--muted);font-size:.88rem;">
-    <div style="font-size:2.5rem;margin-bottom:10px;">🎣</div>
-    <div style="font-weight:700;color:var(--text);margin-bottom:6px;">¿Qué querés pescar hoy?</div>
-    <div>Escribí el nombre de un pez y te mostramos con qué cebo fue capturado según los trofeos y spots de la comunidad.</div>
-  </div>
-
-  <!-- RESULTADOS -->
-  <div id="cebosResultados" style="display:none;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
-      <div>
-        <div id="cebosResultTitle" style="font-family:'Orbitron',monospace;font-size:.95rem;font-weight:800;color:var(--text);"></div>
-        <div id="cebosResultSub" style="font-size:.72rem;color:var(--muted);margin-top:2px;"></div>
-      </div>
-      <button onclick="cebosLimpiar()" style="background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:5px 14px;border-radius:100px;font-family:'Exo 2',sans-serif;font-size:.75rem;font-weight:700;cursor:pointer;">✕ Nueva búsqueda</button>
-    </div>
-    <div style="display:flex;gap:8px;margin-bottom:16px;">
-      <button id="cebosTabTrofeos" onclick="cebosTab('trofeos')" style="padding:7px 18px;border-radius:100px;font-family:'Exo 2',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;border:1px solid rgba(255,215,0,.5);background:rgba(255,215,0,.15);color:var(--gold);">🏆 Trofeos</button>
-      <button id="cebosTabSpots" onclick="cebosTab('spots')" style="padding:7px 18px;border-radius:100px;font-family:'Exo 2',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--muted);">📍 Spots</button>
-    </div>
-    <div id="cebosMapasPills" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;"></div>
-    <div id="cebosLista"></div>
-    <div id="cebosVacio" style="display:none;text-align:center;padding:40px 20px;">
-      <div style="font-size:2rem;margin-bottom:8px;">🐟</div>
-      <div style="font-weight:700;color:var(--text);margin-bottom:4px;">Sin resultados en esta categoría</div>
-      <div style="font-size:.8rem;color:var(--muted);">Probá con la otra pestaña o buscá otro nombre de pez.</div>
-    </div>
-  </div>
-</div>
-<!-- ===== FIN SECCIÓN CEBOS ===== -->
-
 <!-- MAPA INTERACTIVO DE TROFEOS (solo admin) --><!-- TROFEOS POR MAPA PAGE (solo ruizgustavo12) -->
 
 <!-- CREATE SPOT MODAL -->
@@ -5419,8 +5455,9 @@ const auth = getAuth(app);
 (async()=>{ try{ await setPersistence(auth, browserLocalPersistence); }catch(e){} })();
 const db = getFirestore(app);
 window.db = db;
-// Exponer funciones Firestore para módulos externos (ej: sección Cebos)
-window._fsLib = { getDocs, query, collection, where, orderBy, limit };
+// Exponer funciones Firestore para módulos externos (cebos, chat global, etc.)
+window._fsLib = { getDocs, query, collection, where, orderBy, limit, onSnapshot, addDoc, serverTimestamp };
+window.firebaseFirestore = { getDocs, query, collection, where, orderBy, limit, onSnapshot, addDoc, serverTimestamp };
 
 // ===== STATE =====
 window.CU = null;
@@ -6233,7 +6270,6 @@ const ROUTES = {
   '/pez-semanal': 'pez-semanal',
   '/publicar-trofeos': 'wiki-trofeos',
   '/privacidad': 'privacidad',
-  '/cebos': 'cebos',
 };
 
 // Map page IDs to clean URLs
@@ -6262,7 +6298,6 @@ const PAGE_TO_URL = {
   'admin':         '/admin',
   'grupos':        '/grupos',
   'wiki-trofeos':  '/publicar-trofeos',
-  'cebos':         '/cebos',
 };
 
 function navigateTo(id, pushState = true) {
@@ -23530,314 +23565,318 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
 </script>
 <!-- ===== FIN AVATAR POPUP ===== -->
 
-<!-- ===== JS SECCIÓN CEBOS ===== -->
+<!-- ===== JS CHAT RF4 (Global + Jugadores + Mensajes tabs) ===== -->
 <script>
 (function(){
-  var _tabActual  = 'trofeos';
-  var _trofeos    = [];
-  var _spots      = [];
-  var _query      = '';
-  var _mapaFiltro = '';
-  var _allFish    = [];
 
+  // ── Helpers ──────────────────────────────────────────────────
   function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  function norm(s){ return String(s||'').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+  function fmtHM(ts){ const d=new Date(ts); return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0'); }
 
+  // ── Estado ───────────────────────────────────────────────────
+  var _rf4Tab        = 'chat';
+  var _gcUnsub       = null;   // listener chat global
+  var _gcMsgs        = [];     // mensajes del chat global en memoria
+  var _jugadoresAll  = [];     // lista completa para filtrar
+  var _jLoaded       = false;
+
+  // ── Switch de tabs ───────────────────────────────────────────
+  window.rf4SwitchTab = function(tab){
+    _rf4Tab = tab;
+    // Tabs highlight
+    ['chat','jugadores','mensajes'].forEach(function(t){
+      var btn = document.getElementById('rf4Tab'+t.charAt(0).toUpperCase()+t.slice(1));
+      if(btn) btn.classList.toggle('on', t===tab);
+    });
+    // Paneles
+    var pChat = document.getElementById('rf4PanelChat');
+    var pJug  = document.getElementById('rf4PanelJugadores');
+    var pMsg  = document.getElementById('rf4PanelMensajes');
+    if(pChat) pChat.style.display = tab==='chat'      ? 'flex' : 'none';
+    if(pJug)  pJug.style.display  = tab==='jugadores' ? 'flex' : 'none';
+    if(pMsg)  pMsg.style.display  = tab==='mensajes'  ? 'flex' : 'none';
+
+    if(tab==='chat'      && !_gcUnsub)  initGlobalChat();
+    if(tab==='jugadores' && !_jLoaded)  loadJugadores();
+    if(tab==='mensajes')                renderMessengerList();
+  };
+
+  // ────────────────────────────────────────────────────────────
+  // CHAT GLOBAL
+  // ────────────────────────────────────────────────────────────
   function getFs(){
-    // Usa las funciones expuestas por el módulo ES de Firebase
     var lib = window._fsLib;
     var db  = window.db;
     if(!lib || !db) return null;
-    return { db: db, getDocs: lib.getDocs, q: lib.query, col: lib.collection, where: lib.where, orderBy: lib.orderBy, limit: lib.limit };
+    return lib;
   }
 
-  // ── Autocomplete ────────────────────────────────────────────
-  window.cebosOnInput = function(val){
-    var sug = document.getElementById('cebosSuggestions');
-    if(!sug) return;
-    var q = norm(val);
-    if(q.length < 2){ sug.style.display='none'; return; }
-    var matches = _allFish.filter(function(n){ return norm(n).includes(q); }).slice(0,8);
-    if(!matches.length){ sug.style.display='none'; return; }
-    sug.style.display = 'block';
-    sug.innerHTML = matches.map(function(n){
-      return '<div style="padding:10px 16px;cursor:pointer;font-size:.88rem;color:var(--text);transition:background .15s;display:flex;align-items:center;gap:8px;"'
-        +' onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\'none\'"'
-        +' onclick="cebosSelectSug(\''+esc(n).replace(/'/g,'&#39;')+'\')">'
-        +'<span>🐟</span>'+esc(n)+'</div>';
-    }).join('<div style="height:1px;background:var(--border);margin:0 10px;"></div>');
-  };
-
-  window.cebosSelectSug = function(nombre){
-    var inp = document.getElementById('cebosSearchInput');
-    if(inp) inp.value = nombre;
-    var sug = document.getElementById('cebosSuggestions');
-    if(sug) sug.style.display = 'none';
-    cebosBuscar();
-  };
-
-  document.addEventListener('click', function(e){
-    if(!e.target.closest('#cebosSearchWrap') && !e.target.closest('#cebosSuggestions')){
-      var sug = document.getElementById('cebosSuggestions');
-      if(sug) sug.style.display = 'none';
-    }
-  });
-
-  // ── Precarga nombres para autocomplete ──────────────────────
-  async function precargarNombres(){
-    if(_allFish.length) return;
+  function initGlobalChat(){
     var fs = getFs();
-    if(!fs) return;
-    try {
-      var snap1 = await fs.getDocs(fs.q(fs.col(fs.db,'trofeosPendientes'), fs.where('status','==','approved'), fs.limit(400)));
-      var snap2 = await fs.getDocs(fs.q(fs.col(fs.db,'spotsCompartidos'),  fs.orderBy('time','desc'), fs.limit(300)));
-      var names = {};
-      snap1.docs.forEach(function(d){ var f=(d.data().fish||d.data().especie||'').trim(); if(f) names[f]=true; });
-      snap2.docs.forEach(function(d){ var f=(d.data().fish||'').trim(); if(f) names[f]=true; });
-      _allFish = Object.keys(names).sort();
-    } catch(e){ console.warn('cebos:precarga', e); }
+    if(!fs || !window.db){ setTimeout(initGlobalChat, 800); return; }
+    var { onSnapshot, query: fq, collection, orderBy, limit, serverTimestamp: st } = window.firebaseFirestore || {};
+    // Usar onSnapshot directamente desde el módulo ES ya que _fsLib no incluye onSnapshot
+    // Buscamos en window si fue expuesto, sino hacemos polling
+    if(typeof onSnapshot === 'function'){
+      _gcUnsub = onSnapshot(
+        fq(collection(window.db,'chatGlobal'), orderBy('time','asc'), limit(80)),
+        function(snap){
+          _gcMsgs = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+          renderGlobalChat();
+        },
+        function(err){ console.warn('chatGlobal:', err); }
+      );
+    } else {
+      // Fallback: polling cada 5 segundos
+      loadGlobalMsgsOnce();
+      _gcUnsub = setInterval(loadGlobalMsgsOnce, 5000);
+    }
   }
 
-  // ── Buscar ───────────────────────────────────────────────────
-  window.cebosBuscar = async function(){
-    var inp = document.getElementById('cebosSearchInput');
+  async function loadGlobalMsgsOnce(){
+    var fs = getFs();
+    if(!fs || !window.db) return;
+    try {
+      var snap = await fs.getDocs(fs.q(fs.col(window.db,'chatGlobal'), fs.orderBy('time','asc'), fs.limit(80)));
+      _gcMsgs = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+      renderGlobalChat();
+    } catch(e){ console.warn('chatGlobal load:', e); }
+  }
+
+  function renderGlobalChat(){
+    var el = document.getElementById('globalChatMessages');
+    if(!el) return;
+    var wasAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
+    el.innerHTML = _gcMsgs.map(function(m){
+      var ts   = m.time && m.time.toMillis ? m.time.toMillis() : (m.time||0);
+      var hora = ts ? fmtHM(ts) : '';
+      var nick = esc(m.nick || m.userNick || '?');
+      var uid  = m.uid || m.userId || '';
+      var text = esc(m.text || '');
+      var isMine = window.CU && (m.uid === window.CU.id || m.userId === window.CU.id);
+      // Colores de nick rotativos por uid
+      var colors = ['#2ec4b6','#58a6ff','#f0b90b','#ff7b72','#a371f7','#79c0ff','#56d364'];
+      var colorIdx = 0;
+      if(uid){ var s=0; for(var i=0;i<uid.length;i++) s+=uid.charCodeAt(i); colorIdx=s%colors.length; }
+      var nickColor = isMine ? '#ffd700' : colors[colorIdx];
+      // Insignia admin/premium
+      var badge = '';
+      if(m.role==='admin') badge = '<span style="font-size:.58rem;background:#ff4444;color:#fff;padding:1px 5px;border-radius:3px;margin-right:3px;">ADMIN</span>';
+      else if(m.role==='premium') badge = '<span style="font-size:.58rem;background:linear-gradient(90deg,#b8860b,#ffd700);color:#000;padding:1px 5px;border-radius:3px;margin-right:3px;">⭐</span>';
+
+      return '<div class="gchat-line">'
+        + '<span class="gchat-nick" style="color:'+nickColor+';" onclick="openUserProfile(\''+uid+'\',\''+nick+'\')">'
+          + badge + nick + ':'
+        + '</span>'
+        + '<span class="gchat-text">'+text+'</span>'
+        + (hora ? '<span class="gchat-time">'+hora+'</span>' : '')
+        + '</div>';
+    }).join('');
+    if(wasAtBottom || _gcMsgs.length <= 5){
+      el.scrollTop = el.scrollHeight;
+    }
+  }
+
+  window.sendGlobalMsg = async function(){
+    if(!window.CU){ if(typeof toast==='function') toast('Iniciá sesión primero','err'); return; }
+    var inp = document.getElementById('globalChatInput');
     if(!inp) return;
-    var q = (inp.value||'').trim();
-    if(!q){ if(typeof toast==='function') toast('Escribí el nombre de un pez','warn'); return; }
+    var text = (inp.value||'').trim();
+    if(!text) return;
+    if(text.length > 250) text = text.slice(0,250);
+    inp.value = '';
 
-    _query      = q;
-    _mapaFiltro = '';
-    _tabActual  = 'trofeos';
-
-    var estado = document.getElementById('cebosEstado');
-    var resultados = document.getElementById('cebosResultados');
-    estado.style.display = 'block';
-    estado.innerHTML = '<div style="padding:40px;text-align:center;">'
-      +'<div style="font-size:2rem;display:inline-block;animation:spin 1s linear infinite;">⚙️</div>'
-      +'<div style="color:var(--muted);margin-top:10px;font-size:.85rem;">Buscando cebos para <strong style="color:#00c853;">'+esc(q)+'</strong>...</div>'
-      +'</div>';
-    resultados.style.display = 'none';
+    // Verificar flood: máx 1 msj cada 2 segundos
+    var now = Date.now();
+    if(window._lastGcSend && now - window._lastGcSend < 2000){
+      if(typeof toast==='function') toast('Enviás muy rápido 😅','warn'); return;
+    }
+    window._lastGcSend = now;
 
     var fs = getFs();
-    if(!fs){
-      estado.innerHTML = '<div style="padding:40px;text-align:center;color:var(--red);">⚠️ Firebase aún no está listo. Esperá un segundo y volvé a intentar.</div>';
-      return;
+    if(!fs || !window.db){ if(typeof toast==='function') toast('Sin conexión','err'); return; }
+
+    // Obtener serverTimestamp
+    var { addDoc, collection, serverTimestamp } = window.firebaseFirestore || {};
+    if(typeof addDoc === 'function'){
+      try {
+        await addDoc(collection(window.db,'chatGlobal'), {
+          text: text,
+          uid: window.CU.id,
+          userId: window.CU.id,
+          nick: window.CU.nick || 'Anónimo',
+          userAv: window.CU.av || '',
+          role: window.CU.role || 'novato',
+          time: serverTimestamp ? serverTimestamp() : new Date()
+        });
+        // Auto-limpiar mensajes viejos (mantener últimos 200): no es necesario del lado cliente
+      } catch(e){
+        if(typeof toast==='function') toast('Error al enviar: '+(e.message||''),'err');
+      }
+    } else {
+      // Fallback con _fsLib (no tiene addDoc pero intentamos igualmente)
+      if(typeof toast==='function') toast('Chat global no disponible aún','warn');
     }
+  };
+
+  // ────────────────────────────────────────────────────────────
+  // JUGADORES
+  // ────────────────────────────────────────────────────────────
+  async function loadJugadores(){
+    _jLoaded = true;
+    var el = document.getElementById('rf4JugadoresList');
+    if(!el) return;
+    el.innerHTML = '<div style="text-align:center;padding:24px;color:#8b949e;font-size:.8rem;">⚙️ Cargando jugadores...</div>';
+
+    var fs = getFs();
+    if(!fs || !window.db){ el.innerHTML='<div style="text-align:center;padding:24px;color:#8b949e;font-size:.8rem;">Sin conexión</div>'; return; }
 
     try {
-      var qNorm = norm(q);
+      // Obtener presencia de los últimos 5 minutos
+      var now = Date.now();
+      var since5m = new Date(now - 300000); // 5 min
+      var since24h = new Date(now - 86400000); // 24h
 
-      var snap1 = await fs.getDocs(fs.q(fs.col(fs.db,'trofeosPendientes'), fs.where('status','==','approved'), fs.limit(500)));
-      _trofeos = snap1.docs
-        .map(function(d){ return Object.assign({id:d.id}, d.data()); })
-        .filter(function(t){ return norm(t.fish||t.especie||'').includes(qNorm); });
+      var presSnap = await fs.getDocs(fs.q(fs.col(window.db,'presence'), fs.where('last','>',since24h), fs.limit(200)));
+      var presMap = {};
+      presSnap.docs.forEach(function(d){
+        var ts = d.data().last && d.data().last.toMillis ? d.data().last.toMillis() : 0;
+        presMap[d.id] = ts;
+      });
 
-      var snap2 = await fs.getDocs(fs.q(fs.col(fs.db,'spotsCompartidos'), fs.orderBy('time','desc'), fs.limit(400)));
-      _spots = snap2.docs
-        .map(function(d){ return Object.assign({id:d.id}, d.data()); })
-        .filter(function(s){ return norm(s.fish||'').includes(qNorm); });
+      // Obtener datos de usuarios
+      var onlineIds = Object.keys(presMap).filter(function(id){ return presMap[id] > now-300000; });
+      var allIds    = Object.keys(presMap);
 
-      renderResultados();
+      // Intentamos usar la lista de amigos + presencia para no leer toda la colección users
+      var friends = (window.CU && window.CU.friendsList) || [];
+      var knownUsers = {};
+      friends.forEach(function(f){ knownUsers[f.id] = f; });
+      // También usuarios ya en caché de presencia del app
+      var cache = window._presenceCache || {};
+      Object.values(cache).forEach(function(u){ if(u && u.id) knownUsers[u.id] = u; });
+
+      // Para IDs desconocidos, cargar desde users (en batch de max 20)
+      var unknownIds = allIds.filter(function(id){ return !knownUsers[id] && id !== (window.CU&&window.CU.id); }).slice(0,60);
+      if(unknownIds.length){
+        var chunks = [];
+        for(var i=0;i<unknownIds.length;i+=10) chunks.push(unknownIds.slice(i,i+10));
+        for(var ci=0;ci<chunks.length;ci++){
+          var uSnap = await fs.getDocs(fs.q(fs.col(window.db,'users'), fs.where('__name__','in',chunks[ci])));
+          uSnap.docs.forEach(function(d){ knownUsers[d.id] = Object.assign({id:d.id}, d.data()); });
+        }
+      }
+
+      // Construir lista
+      _jugadoresAll = allIds.map(function(id){
+        var u = knownUsers[id] || { id: id, nick: id.slice(0,8)+'…', av: '' };
+        var ts = presMap[id] || 0;
+        var online = ts > now - 300000;
+        return { id: id, nick: u.nick||u.id, av: u.av||'', online: online, ts: ts, role: u.role||'' };
+      }).filter(function(u){ return u.id !== (window.CU&&window.CU.id); });
+
+      // Ordenar: online primero, luego por último visto
+      _jugadoresAll.sort(function(a,b){
+        if(a.online && !b.online) return -1;
+        if(!a.online && b.online) return 1;
+        return b.ts - a.ts;
+      });
+
+      renderJugadores(_jugadoresAll);
+
+      // Contador en header
+      var onlineCount = _jugadoresAll.filter(function(u){ return u.online; }).length;
+      var countEl = document.getElementById('rf4OnlineCount');
+      if(countEl) countEl.textContent = onlineCount+' en línea / '+_jugadoresAll.length+' jugadores';
+
     } catch(err){
-      estado.innerHTML = '<div style="padding:40px;text-align:center;"><div style="font-size:2rem;">😕</div><div style="color:var(--red);margin-top:8px;font-size:.85rem;">Error: '+esc(err.message||String(err))+'</div></div>';
+      el.innerHTML='<div style="text-align:center;padding:24px;color:#8b949e;font-size:.8rem;">Error: '+esc(String(err.message||err))+'</div>';
     }
-  };
-
-  function renderResultados(){
-    var total = _trofeos.length + _spots.length;
-    var estado = document.getElementById('cebosEstado');
-    var resultados = document.getElementById('cebosResultados');
-
-    if(total === 0){
-      estado.style.display = 'block';
-      estado.innerHTML = '<div style="padding:40px 20px;text-align:center;">'
-        +'<div style="font-size:2.5rem;margin-bottom:10px;">🎣</div>'
-        +'<div style="font-weight:700;color:var(--text);margin-bottom:6px;">Sin resultados para "'+esc(_query)+'"</div>'
-        +'<div style="font-size:.8rem;color:var(--muted);">Los nombres están en inglés en RF4 (ej: Pike, Catfish, Carp, Perch).</div>'
-        +'</div>';
-      resultados.style.display = 'none';
-      return;
-    }
-
-    estado.style.display = 'none';
-    resultados.style.display = 'block';
-
-    document.getElementById('cebosResultTitle').textContent = '🪱 Cebos para: ' + _query;
-    document.getElementById('cebosResultSub').textContent   = _trofeos.length+' trofeo(s)  ·  '+_spots.length+' spot(s)';
-
-    document.getElementById('cebosTabTrofeos').innerHTML = '🏆 Trofeos <span style="background:rgba(255,215,0,.2);color:var(--gold);padding:1px 7px;border-radius:100px;font-size:.72rem;margin-left:4px;">'+_trofeos.length+'</span>';
-    document.getElementById('cebosTabSpots').innerHTML   = '📍 Spots <span style="background:rgba(46,196,182,.15);color:var(--accent);padding:1px 7px;border-radius:100px;font-size:.72rem;margin-left:4px;">'+_spots.length+'</span>';
-
-    renderTab();
   }
 
-  window.cebosTab = function(tab){
-    _tabActual  = tab;
-    _mapaFiltro = '';
-    var bT = document.getElementById('cebosTabTrofeos');
-    var bS = document.getElementById('cebosTabSpots');
-    if(tab==='trofeos'){
-      bT.style.cssText += ';border:1px solid rgba(255,215,0,.5);background:rgba(255,215,0,.15);color:var(--gold);';
-      bS.style.cssText += ';border:1px solid var(--border);background:var(--bg3);color:var(--muted);';
-    } else {
-      bS.style.cssText += ';border:1px solid rgba(46,196,182,.5);background:rgba(46,196,182,.12);color:var(--accent);';
-      bT.style.cssText += ';border:1px solid var(--border);background:var(--bg3);color:var(--muted);';
+  function renderJugadores(list){
+    var el = document.getElementById('rf4JugadoresList');
+    if(!el) return;
+    if(!list.length){ el.innerHTML='<div style="text-align:center;padding:24px;color:#8b949e;font-size:.8rem;">Sin jugadores encontrados</div>'; return; }
+
+    var onlineList  = list.filter(function(u){ return u.online; });
+    var offlineList = list.filter(function(u){ return !u.online; });
+
+    var html = '';
+    if(onlineList.length){
+      html += '<div style="padding:6px 12px 3px;font-size:.68rem;font-weight:700;color:#31a24c;text-transform:uppercase;letter-spacing:.08em;">● En línea — '+onlineList.length+'</div>';
+      html += onlineList.map(playerRow).join('');
     }
-    renderTab();
-  };
-
-  function renderTab(){
-    var data    = _tabActual === 'trofeos' ? _trofeos : _spots;
-    var lista   = document.getElementById('cebosLista');
-    var vacio   = document.getElementById('cebosVacio');
-    var pills   = document.getElementById('cebosMapasPills');
-
-    // Pills de mapas
-    var mc = {};
-    data.forEach(function(item){ var m=(item.map||item.mapa||'').trim(); if(m) mc[m]=(mc[m]||0)+1; });
-    var mapas = Object.keys(mc).sort(function(a,b){ return mc[b]-mc[a]; });
-
-    if(mapas.length > 1){
-      pills.style.display = 'flex';
-      pills.innerHTML = btnPill('','🌍 Todos',!_mapaFiltro)
-        + mapas.map(function(m){ return btnPill(m,'📍 '+m+' ('+mc[m]+')', _mapaFiltro===m); }).join('');
-    } else {
-      pills.style.display = 'none';
-      pills.innerHTML = '';
+    if(offlineList.length){
+      html += '<div style="padding:8px 12px 3px;font-size:.68rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.08em;">○ Desconectados — '+offlineList.length+'</div>';
+      html += offlineList.slice(0,40).map(playerRow).join('');
     }
-
-    var filtered = _mapaFiltro ? data.filter(function(i){ return (i.map||i.mapa||'').trim()===_mapaFiltro; }) : data;
-
-    if(!filtered.length){ lista.innerHTML=''; vacio.style.display='block'; return; }
-    vacio.style.display = 'none';
-    lista.innerHTML = filtered.map(_tabActual==='trofeos' ? trofeoCard : spotCard).join('');
+    el.innerHTML = html;
   }
 
-  function btnPill(mapa, label, activo){
-    var cb = mapa ? "'"+mapa.replace(/'/g,"\\'")+"'" : "''";
-    return '<button onclick="cebosFiltraMapa('+cb+')" style="padding:4px 12px;border-radius:100px;font-family:\'Exo 2\',sans-serif;font-size:.72rem;font-weight:700;cursor:pointer;border:1px solid '+(activo?'#00c853':'var(--border)')+';background:'+(activo?'#00c853':'var(--bg3)')+';color:'+(activo?'#fff':'var(--muted)')+';">'+label+'</button>';
-  }
+  function playerRow(u){
+    var av = u.av ? '<img src="'+u.av+'" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\'">'
+                  : '<span style="font-size:.8rem;font-weight:700;color:var(--accent);">'+(u.nick||'?')[0].toUpperCase()+'</span>';
+    var badge = u.role==='admin' ? ' <span style="font-size:.58rem;background:#ff4444;color:#fff;padding:0 4px;border-radius:3px;">ADMIN</span>'
+              : u.role==='premium' ? ' <span style="font-size:.6rem;color:#ffd700;">⭐</span>' : '';
+    var dot = u.online
+      ? '<div class="rf4-online-dot"></div>'
+      : '<div class="rf4-offline-dot"></div>';
+    var lastSeen = !u.online && u.ts ? ('<span style="font-size:.65rem;color:#555;">'+fmtT(u.ts)+'</span>') : '';
 
-  window.cebosFiltraMapa = function(m){ _mapaFiltro=m; renderTab(); };
-
-  // ── Card Trofeo ──────────────────────────────────────────────
-  function trofeoCard(t){
-    var fish   = esc(t.fish||t.especie||'Desconocido');
-    var mapa   = esc(t.map||t.mapa||'');
-    var peso   = t.weight||t.peso||0;
-    var cebo   = esc(t.bait||t.carnada||'');
-    var tec    = esc(t.technique||t.tecnica||t.tech||'');
-    var spot   = esc(t.spot||t.coords||'');
-    var nota   = esc(t.description||t.notes||t.nota||'');
-    var nick   = esc(t.userNick||t.submittedBy||t.nick||'Anónimo');
-    var av     = t.userPhoto||t.userAv||t.av||'';
-    var uid    = t.userId||'';
-    var img    = (t.images&&t.images[0])||t.imageUrl||t.img||'';
-    var ts     = t.createdAt&&t.createdAt.toMillis ? t.createdAt.toMillis() : (t.createdAt||0);
-    var fecha  = ts && typeof fmtT==='function' ? fmtT(ts) : '';
-    var pesoF  = peso ? (typeof fmtKg==='function' ? fmtKg(peso) : peso+' kg') : '';
-    var hasCebo= cebo||tec;
-
-    return '<div style="background:var(--bg2);border:1px solid rgba(255,215,0,.2);border-radius:var(--r);margin-bottom:12px;overflow:hidden;" onmouseover="this.style.borderColor=\'var(--gold)\'" onmouseout="this.style.borderColor=\'rgba(255,215,0,.2)\'">'
-      +'<div style="height:3px;background:linear-gradient(90deg,var(--gold),#ffb300,var(--gold));"></div>'
-      +'<div style="display:flex;">'
-      +(img?'<div style="width:90px;flex-shrink:0;"><img src="'+img+'" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" onerror="this.parentNode.style.display=\'none\'"></div>':'')
-      +'<div style="flex:1;padding:11px 13px;min-width:0;">'
-        +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:7px;">'
-          +'<span style="font-family:\'Orbitron\',monospace;font-size:.88rem;font-weight:900;color:var(--gold);">🏆 '+fish+'</span>'
-          +(pesoF?'<span style="background:rgba(255,215,0,.12);color:var(--gold);padding:2px 9px;border-radius:100px;font-size:.72rem;font-weight:800;">⚖️ '+pesoF+'</span>':'')
-          +(fecha?'<span style="margin-left:auto;font-size:.65rem;color:var(--muted);">'+fecha+'</span>':'')
-        +'</div>'
-        +'<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px;">'
-          +(cebo?'<span style="background:rgba(0,230,118,.1);border:1px solid rgba(0,230,118,.3);color:#00e676;padding:3px 11px;border-radius:100px;font-size:.76rem;font-weight:700;">🪱 '+cebo+'</span>':'')
-          +(tec ?'<span style="background:rgba(0,198,255,.1);border:1px solid rgba(0,198,255,.3);color:var(--accent);padding:3px 11px;border-radius:100px;font-size:.76rem;font-weight:700;">🎣 '+tec+'</span>':'')
-          +(!hasCebo?'<span style="background:var(--bg3);color:var(--muted);padding:3px 11px;border-radius:100px;font-size:.73rem;">Sin datos de cebo registrados</span>':'')
-        +'</div>'
-        +(mapa?'<div style="font-size:.76rem;color:var(--muted);margin-bottom:4px;">📍 <strong style="color:var(--text);">'+mapa+'</strong>'+(spot?' · '+spot:'')+'</div>':'')
-        +(nota?'<div style="font-size:.73rem;color:var(--muted);font-style:italic;margin-bottom:4px;">"'+nota+'"</div>':'')
-        +'<div style="display:flex;align-items:center;gap:5px;margin-top:5px;cursor:pointer;" onclick="openUserProfile(\''+uid+'\',\''+nick.replace(/'/g,"\\'")+'\')"> '
-          +'<div style="width:20px;height:20px;border-radius:50%;overflow:hidden;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:.6rem;color:var(--accent);flex-shrink:0;border:1px solid var(--border);">'
-            +(av?'<img src="'+av+'" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\'">':(nick[0]||'?').toUpperCase())
-          +'</div>'
-          +'<span style="font-size:.7rem;color:var(--muted);">@'+nick+'</span>'
-          +'<span style="font-size:.62rem;padding:1px 6px;border-radius:100px;background:rgba(255,215,0,.1);color:var(--gold);font-weight:700;margin-left:auto;">🥇 Trofeo</span>'
-        +'</div>'
+    return '<div class="rf4-player-row" onclick="openUserProfile(\''+u.id+'\',\''+esc(u.nick)+'\')">'+dot
+      +'<div style="width:32px;height:32px;border-radius:50%;background:#21262d;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid #30363d;">'+av+'</div>'
+      +'<div style="flex:1;min-width:0;">'
+        +'<div style="font-size:.82rem;font-weight:700;color:#e6edf3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(u.nick)+badge+'</div>'
+        +(lastSeen?'<div>'+lastSeen+'</div>':'')
       +'</div>'
-      +'</div>'
+      +(window.CU && u.id !== window.CU.id ? '<button onclick="event.stopPropagation();rf4SwitchTab(\'mensajes\');openChatWith(\''+u.id+'\',\''+esc(u.nick)+'\');" style="background:none;border:1px solid #30363d;color:#8b949e;padding:3px 8px;border-radius:4px;font-size:.7rem;cursor:pointer;flex-shrink:0;" onmouseover="this.style.borderColor=\'var(--accent)\'" onmouseout="this.style.borderColor=\'#30363d\'">💬</button>' : '')
     +'</div>';
   }
 
-  // ── Card Spot ────────────────────────────────────────────────
-  function spotCard(s){
-    var fish  = esc(s.fish||'Desconocido');
-    var mapa  = esc(s.map||'');
-    var nombre= esc(s.name||'');
-    var desc  = esc((s.desc||s.text||'').slice(0,120));
-    var setup = esc(s.setup||s.tech||'');
-    var peso  = s.weight||0;
-    var nick  = esc(s.userNick||'Anónimo');
-    var av    = s.userAv||'';
-    var uid   = s.userId||'';
-    var img   = (s.images&&s.images[0])||'';
-    var ts    = s.time&&s.time.toMillis ? s.time.toMillis() : 0;
-    var fecha = ts && typeof fmtT==='function' ? fmtT(ts) : '';
-    var pesoF = peso ? (typeof fmtKg==='function' ? fmtKg(peso) : peso+' kg') : '';
-
-    return '<div style="background:var(--bg2);border:1px solid rgba(46,196,182,.2);border-radius:var(--r);margin-bottom:12px;overflow:hidden;" onmouseover="this.style.borderColor=\'var(--accent)\'" onmouseout="this.style.borderColor=\'rgba(46,196,182,.2)\'">'
-      +'<div style="height:3px;background:linear-gradient(90deg,#00c853,var(--accent),#00c853);"></div>'
-      +'<div style="display:flex;">'
-      +(img?'<div style="width:90px;flex-shrink:0;"><img src="'+img+'" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" onerror="this.parentNode.style.display=\'none\'"></div>':'')
-      +'<div style="flex:1;padding:11px 13px;min-width:0;">'
-        +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:7px;">'
-          +'<span style="font-family:\'Orbitron\',monospace;font-size:.88rem;font-weight:800;color:#00c853;">📍 '+fish+'</span>'
-          +(pesoF?'<span style="background:rgba(0,200,100,.1);color:#00c853;padding:2px 9px;border-radius:100px;font-size:.72rem;font-weight:800;">⚖️ '+pesoF+'</span>':'')
-          +(fecha?'<span style="margin-left:auto;font-size:.65rem;color:var(--muted);">'+fecha+'</span>':'')
-        +'</div>'
-        +'<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px;">'
-          +(setup?'<span style="background:rgba(0,230,118,.1);border:1px solid rgba(0,230,118,.3);color:#00e676;padding:3px 11px;border-radius:100px;font-size:.76rem;font-weight:700;">🪱 '+setup+'</span>':'<span style="background:var(--bg3);color:var(--muted);padding:3px 11px;border-radius:100px;font-size:.73rem;">Sin datos de setup/cebo</span>')
-        +'</div>'
-        +(mapa?'<div style="font-size:.76rem;color:var(--muted);margin-bottom:4px;">📍 <strong style="color:var(--text);">'+mapa+'</strong>'+(nombre?' · '+nombre:'')+'</div>':'')
-        +(desc?'<div style="font-size:.73rem;color:var(--muted);margin-bottom:4px;">'+desc+(desc.length===120?'…':'')+'</div>':'')
-        +'<div style="display:flex;align-items:center;gap:5px;margin-top:5px;cursor:pointer;" onclick="openUserProfile(\''+uid+'\',\''+nick.replace(/'/g,"\\'")+'\')"> '
-          +'<div style="width:20px;height:20px;border-radius:50%;overflow:hidden;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:.6rem;color:var(--accent);flex-shrink:0;border:1px solid var(--border);">'
-            +(av?'<img src="'+av+'" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\'">':(nick[0]||'?').toUpperCase())
-          +'</div>'
-          +'<span style="font-size:.7rem;color:var(--muted);">@'+nick+'</span>'
-          +'<span style="font-size:.62rem;padding:1px 6px;border-radius:100px;background:rgba(46,196,182,.1);color:var(--accent);font-weight:700;margin-left:auto;">📍 Spot</span>'
-        +'</div>'
-      +'</div>'
-      +'</div>'
-    +'</div>';
-  }
-
-  // ── Limpiar ──────────────────────────────────────────────────
-  window.cebosLimpiar = function(){
-    var inp = document.getElementById('cebosSearchInput');
-    if(inp) inp.value = '';
-    document.getElementById('cebosResultados').style.display = 'none';
-    var e = document.getElementById('cebosEstado');
-    e.style.display = 'block';
-    e.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--muted);font-size:.88rem;"><div style="font-size:2.5rem;margin-bottom:10px;">🎣</div><div style="font-weight:700;color:var(--text);margin-bottom:6px;">¿Qué querés pescar hoy?</div><div>Escribí el nombre de un pez y te mostramos con qué cebo fue capturado.</div></div>';
-    _query=''; _trofeos=[]; _spots=[];
+  window.rf4FilterJugadores = function(val){
+    if(!val){ renderJugadores(_jugadoresAll); return; }
+    var q = val.toLowerCase();
+    renderJugadores(_jugadoresAll.filter(function(u){ return (u.nick||'').toLowerCase().includes(q); }));
   };
 
-  // ── Precarga en background cuando se entra a la página ───────
-  var _origGpHooked = false;
-  function hookGp(){
-    if(_origGpHooked || typeof window.gp !== 'function') return;
-    _origGpHooked = true;
-    var orig = window.gp;
-    window.gp = function(id, ps){
-      orig(id, ps);
-      if(id === 'cebos') precargarNombres();
-    };
+  // ────────────────────────────────────────────────────────────
+  // Hook openMessenger para iniciar chat global al abrir
+  // ────────────────────────────────────────────────────────────
+  var _origOpen = window.openMessenger;
+  window.openMessenger = function(){
+    if(typeof _origOpen === 'function') _origOpen();
+    // Iniciar chat global si no está iniciado
+    if(!_gcUnsub && window.db && window._fsLib) initGlobalChat();
+    // Actualizar contador online
+    updateOnlineCount();
+  };
+
+  function updateOnlineCount(){
+    if(!window.db || !window._fsLib) return;
+    var fs = window._fsLib;
+    var now5m = new Date(Date.now()-300000);
+    fs.getDocs(fs.q(fs.col(window.db,'presence'), fs.where('last','>',now5m), fs.limit(200)))
+      .then(function(snap){
+        var count = snap.size;
+        var el = document.getElementById('rf4OnlineCount');
+        if(el) el.textContent = count+' en línea';
+      }).catch(function(){});
   }
-  var _iv = setInterval(function(){ if(typeof window.gp==='function'){ hookGp(); clearInterval(_iv); } }, 200);
-  // También precargamos en background al cargar la página
-  window.addEventListener('DOMContentLoaded', function(){ setTimeout(precargarNombres, 5000); });
+
+  // Exponer serverTimestamp para que sendGlobalMsg lo use (inyectado desde el módulo)
+  // Se asume que window.firebaseFirestore existe si el módulo lo expone
+  // Si no, se usa Date como fallback (ya manejado arriba)
+
+  // ── Inicializar tabs al arrancar el messenger ───────────────
+  window.addEventListener('DOMContentLoaded', function(){
+    setTimeout(function(){
+      if(window.db && window._fsLib) initGlobalChat();
+    }, 3000);
+  });
 
 })();
 </script>
-<!-- ===== FIN JS SECCIÓN CEBOS ===== -->
+<!-- ===== FIN JS CHAT RF4 ===== -->
 </body>
 </html>
