@@ -24374,15 +24374,16 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
     if(!window.db || !window._fsLib) return;
     var fs = window._fsLib;
     try {
-      var snap = await getDocs(query(
-        collection(db,'faq'),
-        where('estado','==','aprobado'),
-        orderBy('time','desc')
+      var snap = await fs.getDocs(fs.query(
+        fs.collection(window.db,'faq'),
+        fs.where('estado','==','aprobado'),
+        fs.orderBy('cat','asc'),
+        fs.orderBy('time','desc')
       ));
       _faqAll = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
       faqRender();
-      // Badge admin pendientes
-      var pendSnap = await getDocs(query(collection(db,'faq'), where('estado','==','pendiente')));
+      // Badge admin
+      var pendSnap = await fs.getDocs(fs.query(fs.collection(window.db,'faq'), fs.where('estado','==','pendiente')));
       var badge = document.getElementById('admFaqBadge');
       if(badge && pendSnap.size > 0){ badge.style.display='inline'; badge.textContent=pendSnap.size; }
     } catch(e){ console.log('FAQ load error',e); }
@@ -24437,28 +24438,39 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
 
   window.faqSubmit = async function(){
     if(!window.CU){ toast('Iniciá sesión primero','err'); return; }
-    if(!window.db || !window._fsLib){ toast('Sin conexión','err'); return; }
-    var q = (document.getElementById('faqPropQ')||{}).value||'';
-    var a = (document.getElementById('faqPropA')||{}).value||'';
-    var cat = (document.getElementById('faqPropCat')||{}).value||'carnadas';
+    if(!window.db){ toast('Sin conexión','err'); return; }
+    var qEl=document.getElementById('faqPropQ');
+    var aEl=document.getElementById('faqPropA');
+    var cEl=document.getElementById('faqPropCat');
+    var q=(qEl||{}).value||'';
+    var a=(aEl||{}).value||'';
+    var cat=(cEl||{}).value||'carnadas';
     if(!q.trim()){ toast('Escribí tu pregunta','err'); return; }
-    var fs = window._fsLib;
+    var btn=document.querySelector('#faqPropBox button[onclick="faqSubmit()"]');
+    if(btn){ btn.disabled=true; btn.textContent='Enviando...'; }
     try {
-      await fs.addDoc(fs.collection(window.db,'faq'),{
-        pregunta: q.trim(),
-        respuesta: a.trim(),
-        cat: cat,
-        estado: 'pendiente',
-        userId: window.CU.id,
-        userNick: window.CU.nick||'',
-        time: serverTimestamp()
+      await addDoc(collection(db,'faq'),{
+        pregunta:q.trim(), respuesta:a.trim(), cat:cat,
+        estado:'pendiente', userId:window.CU.id, userNick:window.CU.nick||'',
+        time:serverTimestamp()
       });
-      toast('¡Pregunta enviada! El admin la revisará pronto 🎣','ok');
-      document.getElementById('faqPropQ').value='';
-      document.getElementById('faqPropA').value='';
-      document.getElementById('faqPropBox').style.display='none';
-      document.getElementById('faqPropBtn').style.display='block';
-    } catch(e){ console.error('faqSubmit error',e); toast('Error al enviar: '+String(e.message||e),'err'); }
+      if(qEl) qEl.value='';
+      if(aEl) aEl.value='';
+      var box=document.getElementById('faqPropBox');
+      var btnBox=document.getElementById('faqPropBtn');
+      if(box){
+        box.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:2rem;margin-bottom:8px;">✅</div><div style="font-size:.88rem;font-weight:700;color:var(--green);">¡Pregunta enviada!</div><div style="font-size:.75rem;color:var(--muted);margin-top:4px;">El admin la revisará pronto. Gracias por contribuir a la comunidad 🎣</div></div>';
+        setTimeout(function(){
+          box.innerHTML='<div style="font-size:.88rem;font-weight:700;color:var(--text);margin-bottom:12px;">💬 Proponer una pregunta</div><select id="faqPropCat" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:8px 12px;color:var(--text);font-family:\'Exo 2\',sans-serif;font-size:.82rem;margin-bottom:8px;outline:none;"><option value="carnadas">🪱 Carnadas y señuelos</option><option value="aparejos">🎣 Aparejos y equipo</option><option value="nivel">📈 Nivel y progreso</option></select><textarea id="faqPropQ" placeholder="¿Cuál es tu pregunta?" rows="2" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:8px 12px;color:var(--text);font-family:\'Exo 2\',sans-serif;font-size:.82rem;resize:none;outline:none;margin-bottom:8px;box-sizing:border-box;"></textarea><textarea id="faqPropA" placeholder="Si sabés la respuesta, escribila acá (opcional)" rows="2" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:8px 12px;color:var(--text);font-family:\'Exo 2\',sans-serif;font-size:.82rem;resize:none;outline:none;margin-bottom:10px;box-sizing:border-box;"></textarea><button onclick="faqSubmit()" style="background:var(--accent);border:none;color:#0d1117;padding:8px 20px;border-radius:var(--rs);font-family:\'Exo 2\',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;">Enviar propuesta</button>';
+          box.style.display='none';
+          if(btnBox) btnBox.style.display='block';
+        },3000);
+      }
+    } catch(e){
+      console.error('faqSubmit',e);
+      toast('Error al enviar: '+String(e.message||e),'err');
+      if(btn){ btn.disabled=false; btn.textContent='Enviar propuesta'; }
+    }
   };
 
   // ── Admin FAQ ─────────────────────────────────────────────────
@@ -24471,18 +24483,29 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
     if(!window.db){ el.innerHTML='<div style="color:var(--muted);padding:20px;">Sin conexión</div>'; return; }
     el.innerHTML='<div style="text-align:center;padding:32px;color:var(--muted);">Cargando...</div>';
     try {
-      var fs = window._fsLib;
       var q;
-      if(_faqAdminFilter==='todas') q=fs.query(fs.collection(window.db,'faq'), fs.orderBy('time','desc'));
-      else q=fs.query(fs.collection(window.db,'faq'), fs.where('estado','==',_faqAdminFilter), fs.orderBy('time','desc'));
-      var snap = await fs.getDocs(q);
+      if(_faqAdminFilter==='todas') q=query(collection(db,'faq'), orderBy('time','desc'));
+      else q=query(collection(db,'faq'), where('estado','==',_faqAdminFilter), orderBy('time','desc'));
+      var snap = await getDocs(q);
       if(!snap.docs.length){ el.innerHTML='<div style="text-align:center;padding:32px;color:var(--muted);">Sin preguntas</div>'; return; }
+
       var html='';
+      // Barra de acciones múltiples
+      html+='<div style="display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap;padding:8px 10px;background:var(--bg3);border-radius:var(--rs);border:1px solid var(--border);">';
+      html+='<input type="checkbox" id="faqSelAll" onchange="faqSelAllToggle(this.checked)" style="width:16px;height:16px;cursor:pointer;">';
+      html+='<span style="font-size:.72rem;color:var(--muted);">Seleccionar todo</span>';
+      html+='<div style="margin-left:auto;display:flex;gap:6px;">';
+      html+='<button onclick="faqBulkAction(\'aprobado\')" style="background:rgba(63,185,80,.15);border:1px solid var(--green);color:var(--green);padding:4px 10px;border-radius:var(--rs);font-size:.72rem;cursor:pointer;font-family:\'Exo 2\',sans-serif;font-weight:700;">✅ Aprobar sel.</button>';
+      html+='<button onclick="faqBulkAction(\'rechazado\')" style="background:rgba(248,81,73,.1);border:1px solid var(--red);color:var(--red);padding:4px 10px;border-radius:var(--rs);font-size:.72rem;cursor:pointer;font-family:\'Exo 2\',sans-serif;font-weight:700;">❌ Rechazar sel.</button>';
+      html+='<button onclick="faqBulkDelete()" style="background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:var(--rs);font-size:.72rem;cursor:pointer;font-family:\'Exo 2\',sans-serif;">🗑 Eliminar sel.</button>';
+      html+='</div></div>';
+
       snap.docs.forEach(function(d){
         var f=Object.assign({id:d.id},d.data());
         var estadoColor=f.estado==='aprobado'?'var(--green)':f.estado==='rechazado'?'var(--red)':'var(--warn)';
-        html+='<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;">';
+        html+='<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;" id="faqrow-'+f.id+'">';
         html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">';
+        html+='<input type="checkbox" class="faq-sel-cb" data-id="'+f.id+'" style="width:16px;height:16px;cursor:pointer;">';
         html+='<span style="font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:100px;background:rgba(46,196,182,.1);color:var(--accent);">'+(CAT_LABELS[f.cat]||f.cat)+'</span>';
         html+='<span style="font-size:.65rem;font-weight:700;color:'+estadoColor+';">● '+esc(f.estado||'pendiente')+'</span>';
         html+='<span style="font-size:.65rem;color:var(--muted);margin-left:auto;">Por '+esc(f.userNick||'?')+'</span>';
@@ -24499,12 +24522,48 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
     } catch(e){ el.innerHTML='<div style="color:var(--red);padding:20px;">Error: '+esc(String(e.message||e))+'</div>'; }
   };
 
-  window.faqAdminAction = async function(id, estado){
-    if(!window.db) return;
-    var respEl = document.getElementById('faqResp-'+id);
-    var resp = respEl ? respEl.value.trim() : '';
+  window.faqSelAllToggle = function(checked){
+    document.querySelectorAll('.faq-sel-cb').forEach(function(cb){ cb.checked=checked; });
+  };
+
+  function _faqSelectedIds(){
+    return Array.from(document.querySelectorAll('.faq-sel-cb:checked')).map(function(cb){ return cb.dataset.id; });
+  }
+
+  window.faqBulkAction = async function(estado){
+    var ids = _faqSelectedIds();
+    if(!ids.length){ toast('Seleccioná al menos una pregunta','err'); return; }
+    if(!window.db){ toast('Sin conexión','err'); return; }
     try {
-      await updateDoc(doc(db,'faq',id),{ estado:estado, respuesta:resp, revisadoPor: window.CU&&window.CU.nick||'admin' });
+      for(var i=0;i<ids.length;i++){
+        var respEl=document.getElementById('faqResp-'+ids[i]);
+        var resp=respEl?respEl.value.trim():'';
+        await updateDoc(doc(db,'faq',ids[i]),{ estado:estado, respuesta:resp, revisadoPor:window.CU&&window.CU.nick||'admin' });
+      }
+      toast((estado==='aprobado'?'✅ Aprobadas':'❌ Rechazadas')+' ('+ids.length+')','ok');
+      window.loadAdminFaq();
+      loadFaq();
+    } catch(e){ console.error('faqBulkAction',e); toast('Error: '+String(e.message||e),'err'); }
+  };
+
+  window.faqBulkDelete = async function(){
+    var ids = _faqSelectedIds();
+    if(!ids.length){ toast('Seleccioná al menos una pregunta','err'); return; }
+    if(!confirm('¿Eliminar '+ids.length+' pregunta(s)?')) return;
+    if(!window.db){ toast('Sin conexión','err'); return; }
+    try {
+      for(var i=0;i<ids.length;i++) await deleteDoc(doc(db,'faq',ids[i]));
+      toast('🗑 Eliminadas ('+ids.length+')','ok');
+      window.loadAdminFaq();
+    } catch(e){ toast('Error','err'); }
+  };
+
+  window.faqAdminAction = async function(id, estado){
+    if(!window.db){ toast('Sin conexión','err'); return; }
+    var respEl=document.getElementById('faqResp-'+id);
+    var resp=respEl?respEl.value.trim():'';
+    try {
+      await updateDoc(doc(db,'faq',id),{ estado:estado, respuesta:resp, revisadoPor:window.CU&&window.CU.nick||'admin' });
       toast(estado==='aprobado'?'✅ Aprobada':'❌ Rechazada','ok');
       window.loadAdminFaq();
       loadFaq();
@@ -24513,10 +24572,10 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
 
   window.faqAdminDelete = async function(id){
     if(!confirm('¿Eliminar esta pregunta?')) return;
-    if(!window.db) return;
+    if(!window.db){ toast('Sin conexión','err'); return; }
     try {
       await deleteDoc(doc(db,'faq',id));
-      toast('Eliminada','ok');
+      toast('🗑 Eliminada','ok');
       window.loadAdminFaq();
     } catch(e){ toast('Error','err'); }
   };
