@@ -1920,6 +1920,7 @@ document.addEventListener('DOMContentLoaded', function(){
       <div class="sl-item" onclick="gp('ranking-semanal')"><span class="sl-item-icon">🏅</span> Ranking Semanal</div>
       <div class="sl-item" onclick="gp('cafe')" style="background:linear-gradient(90deg,rgba(255,140,0,.08),transparent);border-left:3px solid #ff8c00;"><span class="sl-item-icon">☕</span> Pedidos Café</div>
       <div class="sl-item" onclick="gp('casitrofeo')"><span class="sl-item-icon">🏅</span> Casi Trofeo</div>
+      <div class="sl-item" onclick="gp('rf4-records')" style="background:linear-gradient(90deg,rgba(46,196,182,.08),transparent);border-left:3px solid var(--accent);"><span class="sl-item-icon">🎣</span> Records RF4</div>
       <div class="sl-item" onclick="gp('trofeos-feed');setNav(document.querySelector('.tb-nav-btn'))"><span class="sl-item-icon">🥇</span> Trofeos Recientes</div>
 
       <div class="sl-item" onclick="gp('peso-del-trofeo')"><span class="sl-item-icon">🏆</span> Peso del Trofeo</div>
@@ -4545,6 +4546,245 @@ document.addEventListener('DOMContentLoaded', function(){
   </div>
   <div id="mapPostsFeed"></div>
 </div>
+
+<!-- ===== PAGE: RECORDS RF4 ===== -->
+<div class="page" id="page-rf4-records" style="max-width:960px;margin:0 auto;padding:24px 16px 80px;">
+
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#1a7a74);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;">🎣</div>
+      <div>
+        <div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:var(--accent);">Records RF4</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:2px;">Datos en tiempo real desde rf4-stat.ru · <span id="rf4recMeta" style="color:var(--green);">● cargando...</span></div>
+      </div>
+    </div>
+    <button onclick="rf4RecReload()" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);padding:7px 14px;color:var(--muted);font-family:'Exo 2',sans-serif;font-size:.8rem;cursor:pointer;transition:all .18s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">⟳ Actualizar</button>
+  </div>
+
+  <!-- Tabs -->
+  <div style="display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:14px;overflow-x:auto;scrollbar-width:none;" id="rf4recTabs">
+    <button class="rf4rec-tab active" onclick="rf4RecTab('locations',this)">📍 Ubicaciones</button>
+    <button class="rf4rec-tab" onclick="rf4RecTab('fish',this)">🐟 Peces</button>
+    <button class="rf4rec-tab" onclick="rf4RecTab('baits',this)">🪱 Cebos</button>
+    <button class="rf4rec-tab" onclick="rf4RecTab('players',this)">🏆 Ranking</button>
+    <button class="rf4rec-tab" onclick="rf4RecTab('recent',this)">🕐 Recientes</button>
+  </div>
+
+  <!-- Buscador -->
+  <div style="margin-bottom:14px;">
+    <input id="rf4recSearch" type="text" placeholder="🔍 Buscar..." oninput="rf4RecSearch(this.value)"
+      style="width:100%;max-width:340px;background:var(--bg2);border:1px solid var(--border);border-radius:100px;padding:8px 16px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.85rem;outline:none;transition:border-color .18s;"
+      onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+  </div>
+
+  <!-- Contenido -->
+  <div id="rf4recBody">
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:56px 20px;color:var(--muted);">
+      <div style="width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:rf4recSpin .7s linear infinite;"></div>
+      Cargando records...
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes rf4recSpin { to { transform: rotate(360deg); } }
+.rf4rec-tab {
+  background: none; border: none; border-bottom: 2px solid transparent;
+  color: var(--muted); padding: 8px 16px; font-family: 'Exo 2', sans-serif;
+  font-size: .82rem; font-weight: 600; cursor: pointer; white-space: nowrap;
+  border-radius: 6px 6px 0 0; transition: all .18s;
+}
+.rf4rec-tab:hover { color: var(--text); background: rgba(255,255,255,.03); }
+.rf4rec-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(46,196,182,.05); }
+.rf4rec-table { width: 100%; border-collapse: collapse; font-size: .83rem; }
+.rf4rec-table th { padding: 9px 14px; text-align: left; color: var(--accent); font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; border-bottom: 1px solid var(--border); background: var(--bg2); position: sticky; top: 0; z-index: 1; }
+.rf4rec-table td { padding: 10px 14px; border-bottom: 1px solid rgba(48,54,61,.45); color: var(--text); }
+.rf4rec-table tr:last-child td { border-bottom: none; }
+.rf4rec-table tr:hover td { background: rgba(255,255,255,.02); }
+.rf4rec-badge { display:inline-block; padding:2px 9px; border-radius:100px; font-size:.7rem; font-weight:700; background:rgba(46,196,182,.1); color:var(--accent); border:1px solid rgba(46,196,182,.25); }
+.rf4rec-badge-gold { background:rgba(212,160,23,.12); color:var(--gold); border:1px solid rgba(212,160,23,.3); }
+.rf4rec-empty { text-align:center; padding:40px; color:var(--muted); font-size:.88rem; }
+</style>
+
+<script>
+(function(){
+  var _d = { locations:[], fish:[], baits:[], players:[], recent:[], loaded:false };
+  var _tab = 'locations';
+  var _q   = '';
+
+  function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  // ── Cargar desde Firestore ────────────────────────────────────────────────
+  async function load(){
+    var fs = window._fsLib;
+    if(!fs || !window.db) throw new Error('Firebase no listo');
+    async function getDoc(name){
+      var snap = await fs.getDoc(fs.doc(window.db,'rf4_records',name));
+      return snap.exists() ? snap.data() : null;
+    }
+    var [loc,fish,baits,players,recent,meta] = await Promise.all([
+      getDoc('locations'), getDoc('fish'), getDoc('baits'),
+      getDoc('players'),   getDoc('recent_records'), getDoc('_meta')
+    ]);
+    _d.locations = loc?.items    || [];
+    _d.fish      = fish?.items   || [];
+    _d.baits     = baits?.items  || [];
+    _d.players   = players?.items|| [];
+    _d.recent    = recent?.items || [];
+    _d.loaded    = true;
+
+    // Meta
+    var metaEl = document.getElementById('rf4recMeta');
+    if(metaEl && meta?.lastUpdate){
+      var ts  = meta.lastUpdate.toDate ? meta.lastUpdate.toDate() : new Date(meta.lastUpdate);
+      var min = Math.floor((Date.now()-ts.getTime())/60000);
+      metaEl.textContent = '● actualizado hace '+(min<1?'menos de 1':min)+' min';
+    }
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
+  function render(){
+    var el = document.getElementById('rf4recBody');
+    if(!el) return;
+    if(!_d.loaded){
+      el.innerHTML='<div class="rf4rec-empty"><div style="font-size:2rem;margin-bottom:8px;">🎣</div>Cargando...</div>';
+      return;
+    }
+    var q = _q.toLowerCase();
+    switch(_tab){
+      case 'locations': renderLoc(el,q);     break;
+      case 'fish':      renderFish(el,q);    break;
+      case 'baits':     renderBaits(el,q);   break;
+      case 'players':   renderPlayers(el,q); break;
+      case 'recent':    renderRecent(el,q);  break;
+    }
+  }
+
+  function tbl(head, rows){
+    if(!rows) return '<div class="rf4rec-empty">No hay resultados</div>';
+    return '<div style="overflow-x:auto;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;">'
+      +'<table class="rf4rec-table"><thead><tr>'+head+'</tr></thead><tbody>'+rows+'</tbody></table></div>';
+  }
+
+  function renderLoc(el,q){
+    var data=_d.locations.filter(function(l){return !q||l.name.toLowerCase().includes(q);});
+    if(!data.length){el.innerHTML='<div class="rf4rec-empty">Sin resultados</div>';return;}
+    el.innerHTML=tbl(
+      '<th>Ubicación</th><th>Records</th><th>Peso máx.</th><th>Especies</th>',
+      data.map(function(l){
+        return '<tr><td style="font-weight:600;">'+esc(l.name)+'</td>'
+          +'<td><span class="rf4rec-badge">'+esc(String(l.recordCount||0))+'</span></td>'
+          +'<td>'+esc(l.maxWeight||'-')+'</td>'
+          +'<td>'+esc(String(l.fishCount||'-'))+'</td></tr>';
+      }).join('')
+    );
+  }
+
+  function renderFish(el,q){
+    var data=_d.fish.filter(function(f){return !q||f.name.toLowerCase().includes(q)||(f.location||'').toLowerCase().includes(q);});
+    if(!data.length){el.innerHTML='<div class="rf4rec-empty">Sin resultados</div>';return;}
+    el.innerHTML=tbl(
+      '<th>Especie</th><th>Records</th><th>Peso máx.</th><th>Ubicación</th>',
+      data.map(function(f){
+        return '<tr><td style="font-weight:600;">'+esc(f.name)+'</td>'
+          +'<td><span class="rf4rec-badge">'+esc(String(f.records||0))+'</span></td>'
+          +'<td><span class="rf4rec-badge-gold rf4rec-badge">'+esc(f.maxWeight||'-')+'</span></td>'
+          +'<td style="color:var(--muted);font-size:.8rem;">'+esc(f.location||'-')+'</td></tr>';
+      }).join('')
+    );
+  }
+
+  function renderBaits(el,q){
+    var data=_d.baits.filter(function(b){return !q||b.name.toLowerCase().includes(q)||(b.topFish||'').toLowerCase().includes(q);});
+    if(!data.length){el.innerHTML='<div class="rf4rec-empty">Sin resultados</div>';return;}
+    el.innerHTML=tbl(
+      '<th>Cebo / Señuelo</th><th>En records</th><th>Pez principal</th><th>Ubicación</th>',
+      data.map(function(b){
+        return '<tr><td style="font-weight:600;">'+esc(b.name)+'</td>'
+          +'<td><span class="rf4rec-badge">'+esc(String(b.records||0))+'</span></td>'
+          +'<td>'+esc(b.topFish||'-')+'</td>'
+          +'<td style="color:var(--muted);font-size:.8rem;">'+esc(b.location||'-')+'</td></tr>';
+      }).join('')
+    );
+  }
+
+  function renderPlayers(el,q){
+    var data=_d.players.filter(function(p){return !q||p.name.toLowerCase().includes(q);});
+    if(!data.length){el.innerHTML='<div class="rf4rec-empty">No hay datos de ranking todavía</div>';return;}
+    el.innerHTML=tbl(
+      '<th>#</th><th>Jugador</th><th>Puntuación</th><th>Nivel</th>',
+      data.map(function(p,i){
+        var c=i===0?'#ffd700':i===1?'#c0c0c0':i===2?'#cd7f32':'var(--accent)';
+        return '<tr><td style="font-weight:900;color:'+c+'">#'+(i+1)+'</td>'
+          +'<td style="font-weight:600;">'+esc(p.name)+'</td>'
+          +'<td>'+esc(p.score||'-')+'</td>'
+          +'<td style="color:var(--muted);">'+esc(p.level||'-')+'</td></tr>';
+      }).join('')
+    );
+  }
+
+  function renderRecent(el,q){
+    var data=_d.recent.filter(function(r){
+      return !q||r.fish.toLowerCase().includes(q)||r.player.toLowerCase().includes(q)||(r.location||'').toLowerCase().includes(q);
+    });
+    if(!data.length){el.innerHTML='<div class="rf4rec-empty">Sin records recientes</div>';return;}
+    el.innerHTML=tbl(
+      '<th>Jugador</th><th>Pez</th><th>Peso</th><th>Ubicación</th><th>Cebo</th>',
+      data.slice(0,100).map(function(r){
+        return '<tr><td style="font-weight:600;color:var(--accent);">'+esc(r.player)+'</td>'
+          +'<td>'+esc(r.fish)+'</td>'
+          +'<td><span class="rf4rec-badge rf4rec-badge-gold">'+esc(r.weight)+'</span></td>'
+          +'<td style="color:var(--muted);font-size:.8rem;">'+esc(r.location||'-')+'</td>'
+          +'<td style="color:var(--muted);font-size:.8rem;">'+esc(r.bait||'-')+'</td></tr>';
+      }).join('')
+    );
+  }
+
+  // ── API global ────────────────────────────────────────────────────────────
+  window.rf4RecTab = function(tab, btn){
+    _tab=tab; _q='';
+    var si=document.getElementById('rf4recSearch'); if(si) si.value='';
+    document.querySelectorAll('.rf4rec-tab').forEach(function(b){b.classList.remove('active');});
+    if(btn) btn.classList.add('active');
+    render();
+  };
+
+  window.rf4RecSearch = function(v){ _q=v; render(); };
+
+  window.rf4RecReload = async function(){
+    _d.loaded=false;
+    render();
+    try{ await load(); render(); }
+    catch(e){
+      var el=document.getElementById('rf4recBody');
+      if(el) el.innerHTML='<div class="rf4rec-empty" style="color:var(--red);">❌ Error: '+esc(e.message)+'</div>';
+    }
+  };
+
+  // ── Cargar cuando se abre la página ──────────────────────────────────────
+  var _origGp2 = window.gp;
+  window.gp = function(page){
+    if(typeof _origGp2==='function') _origGp2(page);
+    if(page==='rf4-records' && !_d.loaded){
+      tryLoad();
+    }
+  };
+
+  function tryLoad(){
+    if(window.db && window._fsLib){
+      window.rf4RecReload();
+    } else {
+      var tries=0, iv=setInterval(function(){
+        tries++;
+        if(window.db && window._fsLib){ clearInterval(iv); window.rf4RecReload(); }
+        else if(tries>40) clearInterval(iv);
+      },150);
+    }
+  }
+
+})();
+</script>
 
 <!-- FEED TROFEOS APROBADOS PAGE -->
 <div class="page" id="page-trofeos-feed" style="max-width:760px;margin:0 auto;padding:24px 16px 80px;">
@@ -22520,6 +22760,7 @@ const _SIDEBAR_DEFAULT = [
   { id:'profile',          icon:'👤', label:'Mi Perfil' },
   { id:'torneos',          icon:'🏆', label:'Torneos' },
   { id:'casitrofeo',       icon:'🏅', label:'Casi Trofeo' },
+  { id:'rf4-records',      icon:'🎣', label:'Records RF4' },
   { id:'trofeos-feed',     icon:'🥇', label:'Trofeos Recientes' },
   { id:'peso-del-trofeo',  icon:'🏆', label:'Peso del Trofeo' },
   { id:'skill',            icon:'📈', label:'Subir Skill' },
