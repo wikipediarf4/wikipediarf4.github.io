@@ -23637,7 +23637,7 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
     var fs = getFs();
     if(!fs || !window.db) return;
     try {
-      var snap = await fs.getDocs(fs.q(fs.col(window.db,'chatGlobal'), fs.orderBy('time','asc'), fs.limit(80)));
+      var snap = await fs.getDocs(fs.query(fs.collection(window.db,'chatGlobal'), fs.orderBy('time','asc'), fs.limit(80)));
       _gcMsgs = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
       renderGlobalChat();
     } catch(e){ console.warn('chatGlobal load:', e); }
@@ -23737,7 +23737,7 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
       var since5m = new Date(now - 300000); // 5 min
       var since24h = new Date(now - 86400000); // 24h
 
-      var presSnap = await fs.getDocs(fs.q(fs.col(window.db,'presence'), fs.where('last','>',since24h), fs.limit(200)));
+      var presSnap = await fs.getDocs(fs.query(fs.collection(window.db,'presence'), fs.where('last','>',since24h), fs.limit(200)));
       var presMap = {};
       presSnap.docs.forEach(function(d){
         var ts = d.data().last && d.data().last.toMillis ? d.data().last.toMillis() : 0;
@@ -23762,7 +23762,7 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
         var chunks = [];
         for(var i=0;i<unknownIds.length;i+=10) chunks.push(unknownIds.slice(i,i+10));
         for(var ci=0;ci<chunks.length;ci++){
-          var uSnap = await fs.getDocs(fs.q(fs.col(window.db,'users'), fs.where('__name__','in',chunks[ci])));
+          var uSnap = await fs.getDocs(fs.query(fs.collection(window.db,'users'), fs.where('__name__','in',chunks[ci])));
           uSnap.docs.forEach(function(d){ knownUsers[d.id] = Object.assign({id:d.id}, d.data()); });
         }
       }
@@ -23856,7 +23856,7 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
     if(!window.db || !window._fsLib) return;
     var fs = window._fsLib;
     var now5m = new Date(Date.now()-300000);
-    fs.getDocs(fs.q(fs.col(window.db,'presence'), fs.where('last','>',now5m), fs.limit(200)))
+    fs.getDocs(fs.query(fs.collection(window.db,'presence'), fs.where('last','>',now5m), fs.limit(200)))
       .then(function(snap){
         var count = snap.size;
         var el = document.getElementById('rf4OnlineCount');
