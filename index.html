@@ -24369,8 +24369,63 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
   function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   var CAT_LABELS = { carnadas:'🪱 Carnadas', aparejos:'🎣 Aparejos', nivel:'📈 Nivel y Progreso' };
 
+  // ── FAQ estáticas (se muestran instantáneo mientras carga Firestore) ──
+  var FAQ_STATIC = [
+    // === CARNADAS ===
+    { id:'s1', cat:'carnadas', estado:'aprobado', userNick:'comunidad', pregunta:'¿Cuál es la mejor carnada para carpas?',
+      respuesta:'Las carpas responden muy bien a las boilies de frutas, maíz cocido y pasta de cacahuate. Para trofeos, probá con boilies de 20mm+ y cebado previo en el spot.' },
+    { id:'s2', cat:'carnadas', estado:'aprobado', userNick:'comunidad', pregunta:'¿Para qué sirve el cebador (groundbait)?',
+      respuesta:'El cebador atrae peces al área de pesca y los mantiene activos. Mezclalo con partículas pequeñas como maíz o cañamo. Usá la cantidad justa: demasiado llena los peces y dejan de picar.' },
+    { id:'s3', cat:'carnadas', estado:'aprobado', userNick:'comunidad', pregunta:'¿Qué diferencia hay entre señuelo de superficie y hundido?',
+      respuesta:'Los señuelos de superficie (topwater) imitan insectos o presas en la superficie y son muy efectivos en verano al amanecer. Los hundidos imitan peces pequeños heridos y funcionan mejor en aguas profundas o frías.' },
+    { id:'s4', cat:'carnadas', estado:'aprobado', userNick:'comunidad', pregunta:'¿Cómo sé qué carnada usar en cada lago?',
+      respuesta:'Consultá la wiki de cada lago en el menú de Mapas. Ahí encontrás qué peces hay y qué carnadas prefieren. También podés revisar los trofeos de la comunidad para ver con qué carnada fueron pescados.' },
+    { id:'s5', cat:'carnadas', estado:'aprobado', userNick:'comunidad', pregunta:'¿Los señuelos artificiales se gastan o rompen?',
+      respuesta:'Sí, los señuelos tienen durabilidad. Revisá el inventario para ver el estado. Cuando están muy deteriorados pierden efectividad. Podés repararlos en la tienda o reemplazarlos.' },
+    { id:'s6', cat:'carnadas', estado:'aprobado', userNick:'comunidad', pregunta:'¿Cuándo conviene usar cañamo o semillas?',
+      respuesta:'El cañamo y las semillas son ideales como cebado secundario o mezcla en el groundbait. Son económicos y atraen bien a carpas, bream y tench. También sirven de carnada directa para peces pequeños.' },
+    { id:'s7', cat:'carnadas', estado:'aprobado', userNick:'comunidad', pregunta:'¿Los gusanos funcionan para peces grandes?',
+      respuesta:'Los gusanos son efectivos para una gran variedad de peces pero raramente para los trofeos más grandes. Son ideales para subir nivel rápido pescando perch, roach y ruffe. Para trofeos grandes es mejor usar boilies o señuelos específicos.' },
+
+    // === APAREJOS ===
+    { id:'s8', cat:'aparejos', estado:'aprobado', userNick:'comunidad', pregunta:'¿Qué caña y carrete debo usar al empezar?',
+      respuesta:'Al inicio usá caña y carrete de nivel 1-5 que encontrás en la tienda básica. Con ellos podés pescar la mayoría de peces del lago inicial. No gastes dinero en equipos caros hasta nivel 10+.' },
+    { id:'s9', cat:'aparejos', estado:'aprobado', userNick:'comunidad', pregunta:'¿Qué significa la resistencia (test) del hilo?',
+      respuesta:'Es el peso máximo que aguanta el hilo antes de romperse. Si el pez pesa más que el test del hilo, se rompe y perdés el pez y el anzuelo. Siempre usá hilo con test mayor al peso del pez que buscás.' },
+    { id:'s10', cat:'aparejos', estado:'aprobado', userNick:'comunidad', pregunta:'¿Para qué sirve el freno del carrete?',
+      respuesta:'El freno (drag) controla cuánta resistencia ofrece el carrete cuando el pez jala. Si está muy apretado el hilo se rompe; muy flojo y el pez escapa. Ajustalo a un 70-80% del test del hilo para una pelea efectiva.' },
+    { id:'s11', cat:'aparejos', estado:'aprobado', userNick:'comunidad', pregunta:'¿Cuándo usar flotador vs pesca de fondo?',
+      respuesta:'El flotador es ideal para pescar a media agua o superficie, perfecto para ruffe, roach y perch. La pesca de fondo (bottom fishing / feeder) es mejor para carpas, bream y tench que buscan comida en el lecho del lago.' },
+    { id:'s12', cat:'aparejos', estado:'aprobado', userNick:'comunidad', pregunta:'¿Qué es el leader y para qué sirve?',
+      respuesta:'El leader es un trozo de hilo más grueso entre el hilo principal y el anzuelo. Protege de los dientes del pez y del roce con rocas o vegetación. Es obligatorio para peces con dientes como el pike o el perch grande.' },
+    { id:'s13', cat:'aparejos', estado:'aprobado', userNick:'comunidad', pregunta:'¿Qué diferencia hay entre spinning y feeder?',
+      respuesta:'El spinning se usa con señuelos artificiales que se castean y recuperan activamente. El feeder es pesca de fondo con carnada natural y un alimentador que suelta cebo. Son estilos muy distintos y requieren equipos diferentes.' },
+    { id:'s14', cat:'aparejos', estado:'aprobado', userNick:'comunidad', pregunta:'¿Cómo mejorar el alcance del lanzamiento?',
+      respuesta:'El alcance depende del peso del plomo/señuelo, la potencia de la caña y el nivel del personaje. Usá plomos más pesados para mayor distancia. También mejorá la caña: las de acción rápida lanzan más lejos.' },
+
+    // === NIVEL Y PROGRESO ===
+    { id:'s15', cat:'nivel', estado:'aprobado', userNick:'comunidad', pregunta:'¿Cómo subo de nivel rápido al principio?',
+      respuesta:'Pescá muchos peces pequeños con gusanos o maíz. La cantidad de peces da más XP que pocos peces grandes. Completá las misiones del tablón (notice board) del lago: dan mucha XP y monedas al principio.' },
+    { id:'s16', cat:'nivel', estado:'aprobado', userNick:'comunidad', pregunta:'¿Para qué sirven los puntos de habilidad?',
+      respuesta:'Los puntos de habilidad mejoran stats específicos como resistencia, velocidad de lanzamiento, percepción de picadas y más. Distribuílos según tu estilo: si pescás carpas, priorizá resistencia; si hacés spinning, velocidad de recuperación.' },
+    { id:'s17', cat:'nivel', estado:'aprobado', userNick:'comunidad', pregunta:'¿Cuándo puedo ir a un lago nuevo?',
+      respuesta:'Los lagos tienen requisito de nivel mínimo. Podés ver cuáles están disponibles en el mapa. En general: Old Burg hasta lvl 10, Belaya hasta lvl 15, Winding Rivulet desde lvl 20. No hay penalidad por ir antes, pero el equipo básico no alcanza.' },
+    { id:'s18', cat:'nivel', estado:'aprobado', userNick:'comunidad', pregunta:'¿Qué son los trofeos y cómo conseguirlos?',
+      respuesta:'Los trofeos son peces que superan el tamaño mínimo de trofeo de cada especie. Para conseguirlos necesitás el equipo adecuado, la carnada correcta, el spot preciso y muchas veces cierta hora del día. Consultá la sección de Trofeos de la wiki.' },
+    { id:'s19', cat:'nivel', estado:'aprobado', userNick:'comunidad', pregunta:'¿Cómo gano dinero (plata) en el juego?',
+      respuesta:'Vendé los peces que pescás en la tienda. Los peces grandes valen más. Completar misiones también da buenas recompensas. Evitá gastar en equipos caros hasta nivel 20+. Los peces de noche suelen ser más grandes y valer más.' },
+    { id:'s20', cat:'nivel', estado:'aprobado', userNick:'comunidad', pregunta:'¿El clima y la hora del día afectan la pesca?',
+      respuesta:'Sí, mucho. El amanecer y el atardecer son los mejores momentos para pescar. La lluvia activa mucho a los peces. El viento fuerte los hace menos activos. Cada especie tiene sus preferencias: consultá la wiki de cada pez para más detalle.' },
+    { id:'s21', cat:'nivel', estado:'aprobado', userNick:'comunidad', pregunta:'¿Para qué sirve el keep net (red de retención)?',
+      respuesta:'El keep net guarda los peces vivos que pescás sin que ocupen inventario. Cuando terminás la sesión, vendés todo de una vez. Es esencial para sesiones largas de grinding de XP o dinero.' },
+    { id:'s22', cat:'nivel', estado:'aprobado', userNick:'comunidad', pregunta:'¿Cómo funciona la fatiga del personaje?',
+      respuesta:'El personaje se cansa con el tiempo. La fatiga alta reduce la precisión de lanzamiento y la fuerza. Descansá en la carpa/tienda del lago. Algunos alimentos y bebidas reducen la fatiga más rápido.' }
+  ];
+
   // ── Cargar FAQ pública ────────────────────────────────────────
   async function loadFaq(){
+    // Mostrar estáticas inmediatamente mientras carga Firestore
+    if(!_faqAll.length){ _faqAll = FAQ_STATIC.slice(); faqRender(); }
     if(!window.db || !window._fsLib) return;
     var fs = window._fsLib;
     try {
@@ -24380,7 +24435,15 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
         fs.orderBy('cat','asc'),
         fs.orderBy('time','desc')
       ));
-      _faqAll = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+      // Si Firestore tiene preguntas, combinar con las estáticas (sin duplicar por id)
+      var fromDb = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+      if(fromDb.length){
+        var dbIds = fromDb.map(function(f){ return f.id; });
+        var staticOnly = FAQ_STATIC.filter(function(f){ return !dbIds.includes(f.id); });
+        _faqAll = staticOnly.concat(fromDb);
+      } else {
+        _faqAll = FAQ_STATIC.slice();
+      }
       faqRender();
       // Badge admin
       var pendSnap = await fs.getDocs(fs.query(fs.collection(window.db,'faq'), fs.where('estado','==','pendiente')));
