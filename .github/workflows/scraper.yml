@@ -1,35 +1,27 @@
 name: RF4 Records Scraper
-
 on:
   schedule:
     - cron: '*/30 * * * *'
   workflow_dispatch:
-
 jobs:
   scrape:
     runs-on: ubuntu-latest
     timeout-minutes: 8
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-
       - name: Install Chrome
         run: |
           sudo apt-get update
           sudo apt-get install -y chromium-browser chromium-chromedriver
-
       - name: Install Python deps
         run: pip install selenium requests
-
       - name: Run scraper
         run: python scraper.py
-
       - name: Commit records.json
         run: |
           git config user.name "github-actions"
