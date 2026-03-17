@@ -1885,6 +1885,26 @@ document.addEventListener('DOMContentLoaded', function(){
   <div class="layout">
     <!-- LEFT -->
     <div class="sidebar-left">
+
+      <!-- MINI RELOJ RF4 -->
+      <div style="margin:4px 4px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:9px 12px;">
+        <div style="font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;">
+          <span>⏱ Hora dentro del Juego</span>
+          <span style="display:flex;align-items:center;gap:3px;font-size:.6rem;color:var(--green);font-weight:600;text-transform:none;"><span style="width:5px;height:5px;border-radius:50%;background:var(--green);display:inline-block;animation:slClockPulse 2s infinite;"></span>En vivo</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div id="slRF4Clock" style="font-family:'Orbitron',monospace;font-size:1.35rem;font-weight:900;color:var(--accent);letter-spacing:3px;min-width:72px;">--:--</div>
+          <div style="flex:1;">
+            <div id="slRF4Phase" style="font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:100px;background:rgba(46,196,182,.12);color:var(--accent);display:inline-block;margin-bottom:3px;">--</div>
+            <div id="slRF4Season" style="font-size:.62rem;color:var(--muted);">--</div>
+          </div>
+        </div>
+        <div style="margin-top:6px;height:3px;background:var(--bg4);border-radius:2px;overflow:hidden;">
+          <div id="slRF4Bar" style="height:100%;background:var(--accent);border-radius:2px;transition:width 1s linear;width:0%;"></div>
+        </div>
+      </div>
+      <!-- FIN MINI RELOJ RF4 -->
+
       <div class="sl-profile" onclick="gp('profile')">
         <div class="sl-av" id="slAv">👤</div>
         <div class="sl-name" id="slName">Mi Perfil</div>
@@ -4664,9 +4684,11 @@ document.addEventListener('DOMContentLoaded', function(){
     {id:14,name:'Río Akhtuba',lvl:28,diff:'expert',fish:51,spots:15,region:'Sur',baseClimate:'cálido',
      fish_list:['Beluga','Esturión','Siluro','Carpa herbívora','Asp','Lucioperca'],hot_day:['Asp','Lucioperca'],hot_night:['Beluga','Siluro','Esturión'],
      tip:'El río más variado del juego. Beluga y esturión son trofeos legendarios de nivel máximo.'},
-    {id:15,name:'Lago Cobre',lvl:34,diff:'expert',fish:22,spots:4,region:'Siberia',baseClimate:'frío',
-     fish_list:['Lenok','Tímalo','Taimen','Perca siberiana','Lucio'],hot_day:['Tímalo','Lenok'],hot_night:['Taimen'],
-     tip:'Aguas siberianas. Taimen es el trofeo más codiciado. Spinning agresivo al atardecer.'},
+    {id:15,name:'Copper Lake',lvl:29,diff:'expert',fish:14,spots:4,region:'Central',baseClimate:'copper',tempRef:16,
+     mapImg:'https://en.rf4h.ru/templates/rf4m/maps/img/copper_83.webp',
+     fish_list:['Kohaku','Hi Utsuri','Narumi Asagi','Mameshibori Goshiki','Yotsushiro','Orenji','F1','C2 SuperFreak','Carpa Espejo','Carpa de Cuero','Carpa Cuero Dinks','Carpa Espejo Dinks','Tenca de Kvolsdorfsky','Barbo Común'],
+     hot_day:['Kohaku','Narumi Asagi','Carpa Espejo'],hot_night:['C2 SuperFreak','F1','Carpa de Cuero'],
+     tip:'Lago especial con Koi japoneses y carpas exóticas criadas artificialmente. Prohibido cañas de carpa y carretes >6000. Aparejo flotante 5 estrellas.'},
     {id:16,name:'Río Tunguska',lvl:36,diff:'expert',fish:18,spots:3,region:'Siberia',baseClimate:'muy frío',
      fish_list:['Taimen','Lenok','Tímalo','Perca siberiana','Lucio'],hot_day:['Lenok','Tímalo'],hot_night:['Taimen'],
      tip:'Río remoto y difícil. Pocos peces pero de gran tamaño. Solo para jugadores expertos.'},
