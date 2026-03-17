@@ -1885,28 +1885,6 @@ document.addEventListener('DOMContentLoaded', function(){
   <div class="layout">
     <!-- LEFT -->
     <div class="sidebar-left">
-
-      <!-- MINI RELOJ RF4 -->
-      <div style="margin:6px 4px 8px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-          <span style="font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">🕐 RF4 Hora</span>
-          <span style="display:flex;align-items:center;gap:3px;font-size:.6rem;color:var(--green);">
-            <span style="width:5px;height:5px;border-radius:50%;background:var(--green);display:inline-block;animation:rf4pulse 2s infinite;"></span>vivo
-          </span>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div id="slRF4Clock" style="font-family:'Orbitron',monospace;font-size:1.25rem;font-weight:900;color:var(--accent);letter-spacing:2px;">--:--</div>
-          <div>
-            <div id="slRF4Phase" style="font-size:.62rem;font-weight:700;padding:1px 7px;border-radius:100px;background:rgba(46,196,182,.15);color:var(--accent);white-space:nowrap;">--</div>
-            <div id="slRF4Season" style="font-size:.6rem;color:var(--muted);margin-top:2px;">--</div>
-          </div>
-        </div>
-        <div style="margin-top:5px;height:3px;background:var(--bg4);border-radius:2px;overflow:hidden;">
-          <div id="slRF4Bar" style="height:100%;background:var(--accent);border-radius:2px;transition:width 1s linear;width:0%;"></div>
-        </div>
-      </div>
-      <!-- FIN MINI RELOJ RF4 -->
-
       <div class="sl-profile" onclick="gp('profile')">
         <div class="sl-av" id="slAv">👤</div>
         <div class="sl-name" id="slName">Mi Perfil</div>
@@ -4593,9 +4571,10 @@ document.addEventListener('DOMContentLoaded', function(){
     {id:7,name:'Río Voljov',lvl:20,diff:'mid',fish:23,spots:1,region:'Norte',baseClimate:'fresco',
      fish_list:['Lucioperca','Perca','Siluro','Asp','Lucio','Brema'],hot_day:['Asp','Lucioperca'],hot_night:['Siluro'],
      tip:'Río ancho. Siluro grande en aguas profundas con cebo vivo por la noche.'},
-    {id:8,name:'Lago Elk',lvl:16,diff:'mid',fish:19,spots:7,region:'Central',baseClimate:'templado',
-     fish_list:['Carpa','Tenca','Lucio','Perca','Rudd','Brema'],hot_day:['Carpa','Rudd'],hot_night:['Lucio','Tenca'],
-     tip:'Lago de tamaño mediano con spots variados. Excelente para feeder con lombriz.'},
+    {id:8,name:'Lago Elk',lvl:1,diff:'beginner',fish:19,spots:7,region:'Norteamérica',baseClimate:'templado',tempRef:22,
+     fish_list:['Black Bass de Boca Grande','Black Bass de Boca Pequeña','Bass Moteado','Bass Rayado','Bass Blanco','Bass Híbrido','Bass Pavo Real','Crappie Blanco','Crappie Negro','Bluegill','Redear Sunfish','Warmouth','Gizzard Shad','Walleye','Catfish de Canal','Flathead Catfish','Tambor de Agua Dulce','Spotted Gar','Alligator Gar'],
+     hot_day:['Black Bass de Boca Grande','Crappie Blanco','Walleye'],hot_night:['Flathead Catfish','Catfish de Canal','Bass Rayado'],
+     tip:'Lago americano en las Grandes Llanuras. Único con peces de Norteamérica. Aparejo giratorio 5 estrellas. Black Bass y Walleye como trofeos principales.'},
     {id:9,name:'Río Donets Seversky',lvl:24,diff:'mid',fish:38,spots:12,region:'Sur',baseClimate:'cálido',
      fish_list:['Siluro','Carpa','Lucioperca','Asp','Brema','Barbo','Carpa herbívora'],hot_day:['Barbo','Asp'],hot_night:['Siluro','Carpa'],
      tip:'Gran variedad. Siluro y carpa herbívora son los trofeos más buscados. Mejor de madrugada.'},
@@ -24246,43 +24225,5 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
 })();
 </script>
 <!-- ===== FIN JS CHAT RF4 ===== -->
-<!-- ===== MINI RELOJ SIDEBAR IZQUIERDO ===== -->
-<script>
-(function(){
-  var SL_PHASES=[
-    {s:0,e:4,name:'Madrugada',c:'#378ADD'},{s:4,e:7,name:'Amanecer',c:'#EF9F27'},
-    {s:7,e:11,name:'Mañana',c:'#3fb950'},{s:11,e:14,name:'Mediodía',c:'#d4a017'},
-    {s:14,e:18,name:'Tarde',c:'#3fb950'},{s:18,e:21,name:'Atardecer',c:'#f85149'},
-    {s:21,e:24,name:'Noche',c:'#9370db'}
-  ];
-  var SL_SEASONS=[
-    {m:[12,1,2],name:'❄ Invierno'},{m:[3,4,5],name:'🌱 Primavera'},
-    {m:[6,7,8],name:'☀ Verano'},{m:[9,10,11],name:'🍂 Otoño'}
-  ];
-  function pad(n){return String(n).padStart(2,'0');}
-  function slUpdate(){
-    var now=new Date();
-    var s=now.getUTCHours()*3600+now.getUTCMinutes()*60+now.getUTCSeconds();
-    var gs=s%3600;
-    var gh=Math.floor(gs/150);
-    var gm=Math.floor((gs%150)/150*60);
-    var prog=Math.round(gs/3600*100);
-    var phase=SL_PHASES.find(function(p){return gh>=p.s&&gh<p.e;})||SL_PHASES[0];
-    var month=now.getUTCMonth()+1;
-    var season=SL_SEASONS.find(function(s){return s.m.indexOf(month)>-1;})||SL_SEASONS[0];
-    var c=document.getElementById('slRF4Clock');
-    var ph=document.getElementById('slRF4Phase');
-    var se=document.getElementById('slRF4Season');
-    var bar=document.getElementById('slRF4Bar');
-    if(c) c.textContent=pad(gh)+':'+pad(gm);
-    if(ph){ph.textContent=phase.name;ph.style.background='rgba(46,196,182,.15)';ph.style.color=phase.c;}
-    if(se) se.textContent=season.name;
-    if(bar) bar.style.width=prog+'%';
-  }
-  slUpdate();
-  setInterval(slUpdate,1000);
-})();
-</script>
-<!-- ===== FIN MINI RELOJ SIDEBAR IZQUIERDO ===== -->
 </body>
 </html>
