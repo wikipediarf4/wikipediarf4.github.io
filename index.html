@@ -4832,7 +4832,10 @@ document.addEventListener('DOMContentLoaded', function(){
   var _origGp2 = window.gp;
   window.gp = function(page){
     if(typeof _origGp2==='function') _origGp2(page);
-    if(page==='rf4-records' && !_loaded) window.rf4RecReload();
+    if(page==='rf4-records'){
+      _loaded = false;
+      setTimeout(function(){ window.rf4RecReload(); }, 100);
+    }
   };
 
 })();
