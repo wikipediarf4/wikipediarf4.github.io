@@ -16,7 +16,6 @@ options.add_argument('--disable-dev-shm-usage')
 records = []
 
 def extract_bg_image(style):
-    """Extrae la URL de un background-image CSS."""
     m = re.search(r"background-image:\s*url\(['\"]?([^'\")\s]+)['\"]?\)", style or '')
     if m:
         url = m.group(1)
@@ -30,112 +29,90 @@ try:
     driver.get('https://rf4game.com/records/weekly/region/EN/')
     time.sleep(8)
 
-    all_rows = driver.find_elements(By.CSS_SELECTOR, '.records .row')
-    print(f'Total filas: {len(all_rows)}')
+    # Usar records_subtable — cada bloque es UN pez con su top5
+    # Row 01, 07, 09... tienen clase "row" y dentro tienen un records_subtable completo
+    subtables = driver.find_elements(By.CSS_SELECTOR, '.records_subtable')
+    print(f'Subtablas encontradas: {len(subtables)}')
 
-    current_fish    = None
-    current_img_pez = None
-    rank            = 0
-
-    for row in all_rows:
-        cls = row.get_attribute('class') or ''
-
-        # ── Fila de encabezado global (Fish | Weight | ...) ──────────────────
-        fish_col = None
+    for subtable in subtables:
+        # Nombre e imagen del pez — en el header de la subtabla
+        pez = ''
+        img_pez = ''
         try:
-            fish_col = row.find_element(By.CSS_SELECTOR, '.col.fish')
-        except:
-            pass
-
-        if not fish_col:
-            continue
-
-        fish_text = fish_col.text.strip()
-
-        # Encabezado global — saltar
-        if fish_text.lower() == 'fish':
-            continue
-
-        # ── Detectar si es fila de nombre de pez (header de especie) ─────────
-        # Estas filas tienen la imagen del pez en background-image del .item_icon
-        try:
-            icon_el = fish_col.find_element(By.CSS_SELECTOR, '.item_icon')
-            icon_style = icon_el.get_attribute('style') or ''
+            header = subtable.find_element(By.CSS_SELECTOR, '.row.header')
+            fish_col = header.find_element(By.CSS_SELECTOR, '.col.fish')
+            pez = fish_col.find_element(By.CSS_SELECTOR, '.text').text.strip()
+            icon_style = fish_col.find_element(By.CSS_SELECTOR, '.item_icon').get_attribute('style') or ''
             img_pez = extract_bg_image(icon_style)
         except:
-            img_pez = ''
-
-        # Si tiene nombre de pez y es header de especie
-        if fish_text and 'header' in cls:
-            current_fish    = fish_text
-            current_img_pez = img_pez or current_img_pez
-            rank            = 0
             continue
 
-        # ── Fila de jugador ───────────────────────────────────────────────────
-        if not current_fish:
+        if not pez:
             continue
 
-        # Leer columnas
-        try:
-            peso_el = row.find_element(By.CSS_SELECTOR, '.col.weight')
-            peso = peso_el.text.strip().replace('\u00a0', ' ')
-        except:
-            continue  # sin peso = fila inválida
-
-        if not peso:
-            continue
-
-        rank += 1
-        if rank > 5:
-            continue
-
-        try:
-            ubicacion = row.find_element(By.CSS_SELECTOR, '.col.location').text.strip()
-        except:
-            ubicacion = '—'
-
-        # Señuelo: texto + imagen background
-        senuelo    = '—'
-        img_senuelo = ''
-        try:
-            bait_el  = row.find_element(By.CSS_SELECTOR, '.col.bait')
-            senuelo  = bait_el.text.strip()
+        # Filas de jugadores — todas las .row que NO son .header dentro de esta subtabla
+        player_rows = subtable.find_elements(By.CSS_SELECTOR, '.row:not(.header)')
+        rank = 0
+        for row in player_rows:
             try:
-                bait_icon = bait_el.find_element(By.CSS_SELECTOR, '.item_icon')
-                img_senuelo = extract_bg_image(bait_icon.get_attribute('style') or '')
+                peso = row.find_element(By.CSS_SELECTOR, '.col.weight').text.strip().replace('\u00a0', ' ')
+            except:
+                continue
+            if not peso:
+                continue
+
+            rank += 1
+            if rank > 5:
+                break
+
+            ubicacion = '—'
+            try:
+                ubicacion = row.find_element(By.CSS_SELECTOR, '.col.location').text.strip()
             except:
                 pass
-        except:
-            pass
 
-        try:
-            jugador = row.find_element(By.CSS_SELECTOR, '.col.player').text.strip()
-        except:
+            senuelo = '—'
+            img_senuelo = ''
+            try:
+                bait_el = row.find_element(By.CSS_SELECTOR, '.col.bait')
+                senuelo = bait_el.find_element(By.CSS_SELECTOR, '.text').text.strip()
+                icon_style = bait_el.find_element(By.CSS_SELECTOR, '.item_icon').get_attribute('style') or ''
+                img_senuelo = extract_bg_image(icon_style)
+            except:
+                try:
+                    senuelo = row.find_element(By.CSS_SELECTOR, '.col.bait').text.strip()
+                except:
+                    pass
+
             jugador = '—'
+            try:
+                jugador = row.find_element(By.CSS_SELECTOR, '.col.player').text.strip()
+            except:
+                pass
 
-        try:
-            fecha = row.find_element(By.CSS_SELECTOR, '.col.date').text.strip()
-        except:
             fecha = '—'
+            try:
+                fecha = row.find_element(By.CSS_SELECTOR, '.col.date').text.strip()
+            except:
+                pass
 
-        records.append({
-            'pez':         current_fish,
-            'rank':        rank,
-            'img_pez':     current_img_pez,
-            'peso':        peso,
-            'ubicacion':   ubicacion,
-            'señuelo':     senuelo,
-            'img_senuelo': img_senuelo,
-            'jugador':     jugador,
-            'fecha':       fecha,
-        })
+            records.append({
+                'pez':         pez,
+                'rank':        rank,
+                'img_pez':     img_pez,
+                'peso':        peso,
+                'ubicacion':   ubicacion,
+                'señuelo':     senuelo,
+                'img_senuelo': img_senuelo,
+                'jugador':     jugador,
+                'fecha':       fecha,
+            })
 
     driver.quit()
 
     especies = len(set(r['pez'] for r in records))
     print(f'Records extraídos: {len(records)} de {especies} especies')
-    print('Ejemplo:')
+    print('Ejemplo (primeros 6):')
     print(json.dumps(records[:6], ensure_ascii=False, indent=2))
 
 except Exception as e:
@@ -143,7 +120,6 @@ except Exception as e:
     import traceback
     traceback.print_exc()
 
-# ── Guardar JSON ──────────────────────────────────────────────────────────────
 output = {
     'updated': datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC'),
     'records': records
