@@ -25149,9 +25149,10 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
 
   // Llamado desde el lightbox
   window.leerEquipoLightbox = function(){
-    var img = document.getElementById('_igImg');
+    var img = document.getElementById('_igMainImg');
     var src = img ? img.src : '';
     if(!src){ toast('No se encontró la imagen','err'); return; }
+    // Cerrar lightbox y abrir modal de equipo
     window.leerEquipoTrofeo('lightbox', src);
   };
 
@@ -25181,23 +25182,17 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
       });
       var mimeType = imgBlob.type || 'image/jpeg';
 
-      var prompt = 'Esta es una captura de pantalla del videojuego Russian Fishing 4 (RF4). Por favor analizá la imagen y extraé SOLO la información del equipo usado que sea visible: caña, carrete, línea, líder, anzuelo, señuelo o carnada. Si no podés ver el equipo, indicalo. Respondé en español, de forma concisa y en formato de lista.';
-
-      var apiRes = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + GEMINI_KEY, {
+      var apiRes = await fetch('https://wrf4-ai.synxyes.workers.dev', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [{
-            parts: [
-              { text: prompt },
-              { inline_data: { mime_type: mimeType, data: base64 } }
-            ]
-          }]
+          action: 'leer_equipo',
+          imageUrl: imgUrl
         })
       });
 
       var apiData = await apiRes.json();
-      var reply = apiData.candidates?.[0]?.content?.parts?.[0]?.text || 'No se pudo leer el equipo de la imagen.';
+      var reply = apiData.reply || 'No se pudo leer el equipo de la imagen.';
 
       // Format reply
       var formatted = reply
