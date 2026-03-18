@@ -13321,6 +13321,12 @@ function openImgLightbox(src, allImgs, postId){
     <!-- IMAGE -->
     <div id="_igImgCol" style="flex:1;min-width:0;background:#000;display:flex;align-items:center;justify-content:center;position:relative;">
       <img id="_igImg" src="${_galImages[_galIdx]||''}" style="max-width:100%;max-height:100%;object-fit:contain;display:block;user-select:none;transition:opacity .12s;" oncontextmenu="rf4ContextMenu(event)">
+      <canvas id="_rf4SelectCanvas" style="position:absolute;inset:0;width:100%;height:100%;cursor:crosshair;display:none;z-index:10;"></canvas>
+      <button id="_rf4SelectBtn" onclick="rf4ToggleSelect()" title="Marcar zona para traducir" style="position:absolute;top:10px;left:10px;z-index:20;background:rgba(46,196,182,.85);border:none;color:#0d1117;padding:6px 12px;border-radius:100px;font-size:.75rem;font-weight:800;cursor:pointer;font-family:Exo 2,sans-serif;display:flex;align-items:center;gap:5px;">✂️ Marcar zona</button>
+      <div id="_rf4TranslatePopup" style="display:none;position:absolute;z-index:30;background:#161b22;border:1px solid rgba(46,196,182,.5);border-radius:10px;padding:6px;box-shadow:0 4px 20px rgba(0,0,0,.7);">
+        <button onclick="rf4TranslateSelection()" style="background:linear-gradient(135deg,#2ec4b6,#1a8a82);border:none;color:#0d1117;padding:7px 14px;border-radius:8px;font-size:.78rem;font-weight:800;cursor:pointer;font-family:Exo 2,sans-serif;">🔍 Traducir selección</button>
+        <button onclick="rf4CancelSelect()" style="background:none;border:none;color:#8b949e;padding:7px 8px;cursor:pointer;font-size:.8rem;">✕</button>
+      </div>
       ${_galImages.length>1?`
         <button onclick="igNav(-1)" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:none;color:#fff;width:44px;height:44px;border-radius:50%;font-size:1.5rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">‹</button>
         <button onclick="igNav(1)"  style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:none;color:#fff;width:44px;height:44px;border-radius:50%;font-size:1.5rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">›</button>
@@ -25128,6 +25134,180 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
 <!-- ===== FIN JS FAQ RF4 ===== -->
 
 
+
+<!-- ===== SELECCION Y TRADUCCION RF4 ===== -->
+<script>
+(function(){
+  var _selActive = false;
+  var _selStart = null;
+  var _selEnd = null;
+  var _selRect = null;
+
+  window.rf4ToggleSelect = function(){
+    _selActive = !_selActive;
+    var canvas = document.getElementById('_rf4SelectCanvas');
+    var btn = document.getElementById('_rf4SelectBtn');
+    var popup = document.getElementById('_rf4TranslatePopup');
+    if(!canvas) return;
+    if(_selActive){
+      canvas.style.display = 'block';
+      if(btn) btn.style.background = 'rgba(248,81,73,.85)';
+      if(btn) btn.innerHTML = '✕ Cancelar';
+      if(popup) popup.style.display = 'none';
+      _selStart = null; _selEnd = null; _selRect = null;
+      var ctx = canvas.getContext('2d');
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+    } else {
+      rf4CancelSelect();
+    }
+  };
+
+  window.rf4CancelSelect = function(){
+    _selActive = false;
+    var canvas = document.getElementById('_rf4SelectCanvas');
+    var btn = document.getElementById('_rf4SelectBtn');
+    var popup = document.getElementById('_rf4TranslatePopup');
+    if(canvas){ canvas.style.display = 'none'; }
+    if(btn){ btn.style.background = 'rgba(46,196,182,.85)'; btn.innerHTML = '✂️ Marcar zona'; }
+    if(popup){ popup.style.display = 'none'; }
+    _selStart = null; _selEnd = null; _selRect = null;
+  };
+
+  function getCanvasPos(canvas, e){
+    var r = canvas.getBoundingClientRect();
+    var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    var clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return { x: clientX - r.left, y: clientY - r.top };
+  }
+
+  function drawSelection(canvas, start, end){
+    var ctx = canvas.getContext('2d');
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    // Overlay oscuro
+    ctx.fillStyle = 'rgba(0,0,0,0.45)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    // Zona seleccionada clara
+    var x = Math.min(start.x, end.x);
+    var y = Math.min(start.y, end.y);
+    var w = Math.abs(end.x - start.x);
+    var h = Math.abs(end.y - start.y);
+    ctx.clearRect(x, y, w, h);
+    // Borde teal
+    ctx.strokeStyle = '#2ec4b6';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6,3]);
+    ctx.strokeRect(x, y, w, h);
+    return {x, y, w, h};
+  }
+
+  document.addEventListener('mousedown', function(e){
+    if(!_selActive) return;
+    var canvas = document.getElementById('_rf4SelectCanvas');
+    if(!canvas || !canvas.contains(e.target)) return;
+    e.preventDefault();
+    _selStart = getCanvasPos(canvas, e);
+    _selEnd = _selStart;
+    var popup = document.getElementById('_rf4TranslatePopup');
+    if(popup) popup.style.display = 'none';
+  });
+
+  document.addEventListener('mousemove', function(e){
+    if(!_selActive || !_selStart) return;
+    var canvas = document.getElementById('_rf4SelectCanvas');
+    if(!canvas) return;
+    _selEnd = getCanvasPos(canvas, e);
+    _selRect = drawSelection(canvas, _selStart, _selEnd);
+  });
+
+  document.addEventListener('mouseup', function(e){
+    if(!_selActive || !_selStart) return;
+    var canvas = document.getElementById('_rf4SelectCanvas');
+    if(!canvas) return;
+    _selEnd = getCanvasPos(canvas, e);
+    _selRect = drawSelection(canvas, _selStart, _selEnd);
+    if(_selRect && _selRect.w > 10 && _selRect.h > 10){
+      var popup = document.getElementById('_rf4TranslatePopup');
+      if(popup){
+        popup.style.display = 'flex';
+        popup.style.left = Math.min(_selRect.x + _selRect.w + 6, window.innerWidth - 220) + 'px';
+        popup.style.top = (_selRect.y + _selRect.h/2 - 20) + 'px';
+      }
+    }
+    _selStart = null;
+  });
+
+  window.rf4TranslateSelection = function(){
+    var canvas = document.getElementById('_rf4SelectCanvas');
+    var igImg = document.getElementById('_igImg');
+    var igCol = document.getElementById('_igImgCol');
+    if(!canvas || !igImg || !_selRect) return;
+
+    try {
+      var colW = igCol.clientWidth;
+      var colH = igCol.clientHeight;
+      var natW = igImg.naturalWidth;
+      var natH = igImg.naturalHeight;
+      var ratio = Math.min(colW / natW, colH / natH);
+      var rendW = natW * ratio;
+      var rendH = natH * ratio;
+      var offX = (colW - rendW) / 2;
+      var offY = (colH - rendH) / 2;
+
+      // Obtener transform de zoom
+      var t = igImg.style.transform || '';
+      var scMatch = t.match(/scale\(([\d.]+)\)/);
+      var txMatch = t.match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)/);
+      var sc = scMatch ? parseFloat(scMatch[1]) : 1;
+      var tx = txMatch ? parseFloat(txMatch[1]) : 0;
+      var ty = txMatch ? parseFloat(txMatch[2]) : 0;
+
+      // Canvas coords a imagen natural
+      var canvW = canvas.offsetWidth;
+      var canvH = canvas.offsetHeight;
+      var scaleX = canvW / colW;
+      var scaleY = canvH / colH;
+
+      var selX = _selRect.x / scaleX;
+      var selY = _selRect.y / scaleY;
+      var selW = _selRect.w / scaleX;
+      var selH = _selRect.h / scaleY;
+
+      // Ajustar por zoom y pan
+      selX = (selX - colW/2 - tx) / sc + colW/2;
+      selY = (selY - colH/2 - ty) / sc + colH/2;
+      selW = selW / sc;
+      selH = selH / sc;
+
+      // A coordenadas de imagen natural
+      var imgX = (selX - offX) / rendW * natW;
+      var imgY = (selY - offY) / rendH * natH;
+      var imgW = selW / rendW * natW;
+      var imgH = selH / rendH * natH;
+
+      imgX = Math.max(0, imgX);
+      imgY = Math.max(0, imgY);
+      imgW = Math.min(natW - imgX, imgW);
+      imgH = Math.min(natH - imgY, imgH);
+
+      var tmpCanvas = document.createElement('canvas');
+      tmpCanvas.width = Math.round(imgW);
+      tmpCanvas.height = Math.round(imgH);
+      var ctx2 = tmpCanvas.getContext('2d');
+      ctx2.drawImage(igImg, imgX, imgY, imgW, imgH, 0, 0, tmpCanvas.width, tmpCanvas.height);
+      var croppedUrl = tmpCanvas.toDataURL('image/jpeg', 0.95);
+
+      rf4CancelSelect();
+      window.leerEquipoTrofeo('seleccion', croppedUrl);
+    } catch(err) {
+      rf4CancelSelect();
+      window.leerEquipoTrofeo('seleccion', igImg.src);
+    }
+  };
+})();
+</script>
+<!-- ===== FIN SELECCION RF4 ===== -->
 
 <!-- ===== MENU CONTEXTUAL RF4 ===== -->
 <style>
