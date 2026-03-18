@@ -25299,10 +25299,10 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
       var croppedUrl = tmpCanvas.toDataURL('image/jpeg', 0.95);
 
       rf4CancelSelect();
-      window.leerEquipoTrofeo('seleccion', croppedUrl);
+      window.leerEquipoTrofeo('seleccion', croppedUrl, true);
     } catch(err) {
       rf4CancelSelect();
-      window.leerEquipoTrofeo('seleccion', igImg.src);
+      window.leerEquipoTrofeo('seleccion', igImg.src, true);
     }
   };
 })();
@@ -25485,15 +25485,16 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
     window.leerEquipoTrofeo('lightbox', src);
   };
 
-  window.leerEquipoTrofeo = async function(tid, imgUrl){
+  window.leerEquipoTrofeo = async function(tid, imgUrl, isSeleccion){
     if(!imgUrl){ console.error('Sin imagen'); return; }
 
     // Show modal with loading
     var modal = getOrCreateModal();
+    var loadingText = isSeleccion ? 'Traduciendo zona seleccionada...' : 'La IA está leyendo el equipo del trofeo...';
     modal.innerHTML = '<div style="background:#161b22;border:1px solid rgba(46,196,182,.35);border-radius:16px;padding:24px 20px;max-width:420px;width:100%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.7);">'
       + '<div style="font-size:1.5rem;margin-bottom:10px;">🔍</div>'
-      + '<div style="font-family:Orbitron,monospace;font-size:.9rem;font-weight:900;color:#2ec4b6;margin-bottom:6px;">ANALIZANDO IMAGEN</div>'
-      + '<div style="font-size:.78rem;color:#8b949e;margin-bottom:16px;">La IA está leyendo el equipo del trofeo...</div>'
+      + '<div style="font-family:Orbitron,monospace;font-size:.9rem;font-weight:900;color:#2ec4b6;margin-bottom:6px;">' + (isSeleccion ? 'TRADUCIENDO SELECCIÓN' : 'ANALIZANDO IMAGEN') + '</div>'
+      + '<div style="font-size:.78rem;color:#8b949e;margin-bottom:16px;">' + loadingText + '</div>'
       + '<div style="display:flex;justify-content:center;gap:6px;">'
       + '<span style="width:8px;height:8px;border-radius:50%;background:#2ec4b6;animation:rf4dot 1.2s ease-in-out infinite;"></span>'
       + '<span style="width:8px;height:8px;border-radius:50%;background:#2ec4b6;animation:rf4dot 1.2s ease-in-out .2s infinite;"></span>'
@@ -25501,10 +25502,9 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
       + '</div></div>';
 
     try {
-      // Si es base64 (zona con zoom), mandarlo como dataUrl
       var reqBody;
       if(imgUrl.startsWith('data:')) {
-        reqBody = { action: 'leer_equipo_base64', imageData: imgUrl };
+        reqBody = { action: isSeleccion ? 'traducir_seleccion' : 'leer_equipo_base64', imageData: imgUrl };
       } else {
         reqBody = { action: 'leer_equipo', imageUrl: imgUrl };
       }
