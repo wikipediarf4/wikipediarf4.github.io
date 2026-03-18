@@ -25239,57 +25239,34 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
   });
 
   window.rf4TranslateSelection = function(){
-    var canvas = document.getElementById('_rf4SelectCanvas');
     var igImg = document.getElementById('_igImg');
     var igCol = document.getElementById('_igImgCol');
-    if(!canvas || !igImg || !_selRect) return;
+    if(!igImg || !_selRect) return;
 
     try {
-      var colW = igCol.clientWidth;
-      var colH = igCol.clientHeight;
-      var natW = igImg.naturalWidth;
-      var natH = igImg.naturalHeight;
-      var ratio = Math.min(colW / natW, colH / natH);
-      var rendW = natW * ratio;
-      var rendH = natH * ratio;
-      var offX = (colW - rendW) / 2;
-      var offY = (colH - rendH) / 2;
+      // Usar getBoundingClientRect para obtener posicion real de la imagen en pantalla
+      var imgRect = igImg.getBoundingClientRect();
+      var colRect = igCol.getBoundingClientRect();
 
-      // Obtener transform de zoom
-      var t = igImg.style.transform || '';
-      var scMatch = t.match(/scale\(([\d.]+)\)/);
-      var txMatch = t.match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)/);
-      var sc = scMatch ? parseFloat(scMatch[1]) : 1;
-      var tx = txMatch ? parseFloat(txMatch[1]) : 0;
-      var ty = txMatch ? parseFloat(txMatch[2]) : 0;
+      // _selRect esta en coordenadas del canvas que cubre todo igCol
+      // Convertir a coordenadas de pantalla
+      var screenX = colRect.left + _selRect.x;
+      var screenY = colRect.top + _selRect.y;
+      var screenW = _selRect.w;
+      var screenH = _selRect.h;
 
-      // Canvas coords a imagen natural
-      var canvW = canvas.offsetWidth;
-      var canvH = canvas.offsetHeight;
-      var scaleX = canvW / colW;
-      var scaleY = canvH / colH;
+      // Convertir a coordenadas dentro de la imagen renderizada
+      var relX = screenX - imgRect.left;
+      var relY = screenY - imgRect.top;
 
-      var selX = _selRect.x / scaleX;
-      var selY = _selRect.y / scaleY;
-      var selW = _selRect.w / scaleX;
-      var selH = _selRect.h / scaleY;
+      // Escala: imagen renderizada vs imagen natural
+      var scaleX = igImg.naturalWidth / imgRect.width;
+      var scaleY = igImg.naturalHeight / imgRect.height;
 
-      // Ajustar por zoom y pan
-      selX = (selX - colW/2 - tx) / sc + colW/2;
-      selY = (selY - colH/2 - ty) / sc + colH/2;
-      selW = selW / sc;
-      selH = selH / sc;
-
-      // A coordenadas de imagen natural
-      var imgX = (selX - offX) / rendW * natW;
-      var imgY = (selY - offY) / rendH * natH;
-      var imgW = selW / rendW * natW;
-      var imgH = selH / rendH * natH;
-
-      imgX = Math.max(0, imgX);
-      imgY = Math.max(0, imgY);
-      imgW = Math.min(natW - imgX, imgW);
-      imgH = Math.min(natH - imgY, imgH);
+      var imgX = Math.max(0, relX * scaleX);
+      var imgY = Math.max(0, relY * scaleY);
+      var imgW = Math.min(igImg.naturalWidth - imgX, screenW * scaleX);
+      var imgH = Math.min(igImg.naturalHeight - imgY, screenH * scaleY);
 
       var tmpCanvas = document.createElement('canvas');
       tmpCanvas.width = Math.round(imgW);
