@@ -13320,7 +13320,7 @@ function openImgLightbox(src, allImgs, postId){
 
     <!-- IMAGE -->
     <div id="_igImgCol" style="flex:1;min-width:0;background:#000;display:flex;align-items:center;justify-content:center;position:relative;">
-      <img id="_igImg" src="${_galImages[_galIdx]||''}" style="max-width:100%;max-height:100%;object-fit:contain;display:block;user-select:none;transition:opacity .12s;" oncontextmenu="rf4ContextMenu(event)">
+      <img id="_igImg" src="${_galImages[_galIdx]||''}" crossorigin="anonymous" style="max-width:100%;max-height:100%;object-fit:contain;display:block;user-select:none;transition:opacity .12s;" oncontextmenu="rf4ContextMenu(event)">
       <canvas id="_rf4SelectCanvas" style="position:absolute;inset:0;width:100%;height:100%;cursor:crosshair;display:none;z-index:10;"></canvas>
       <button id="_rf4SelectBtn" onclick="rf4ToggleSelect()" title="Marcar zona para traducir" style="position:absolute;top:10px;left:10px;z-index:20;background:rgba(46,196,182,.85);border:none;color:#0d1117;padding:6px 12px;border-radius:100px;font-size:.75rem;font-weight:800;cursor:pointer;font-family:Exo 2,sans-serif;display:flex;align-items:center;gap:5px;">✂️ Marcar zona</button>
       <div id="_rf4TranslatePopup" style="display:none;position:absolute;z-index:30;background:#161b22;border:1px solid rgba(46,196,182,.5);border-radius:10px;padding:6px;box-shadow:0 4px 20px rgba(0,0,0,.7);">
@@ -13545,6 +13545,7 @@ function igNav(dir){
 function igNavTo(i){
   _galIdx = i;
   const img = document.getElementById('_igImg');
+  if(img) img.crossOrigin = 'anonymous';
   if(img){ img.style.opacity='0'; setTimeout(()=>{ img.src=_galImages[i]; img.style.opacity='1'; },110); }
   document.querySelectorAll('#_igDots div').forEach((d,j)=>{ d.style.background=j===i?'#fff':'rgba(255,255,255,.35)'; });
   const counter = document.getElementById('_igCounter');
@@ -25283,8 +25284,24 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
       if(croppedUrl && croppedUrl.length > 1000) {
         window.leerEquipoTrofeo('seleccion', croppedUrl, true);
       } else {
-        // CORS fallback: mandar imagen + zona al Worker
-        window.leerEquipoTrofeoZona(igImg.src, pctX, pctY, pctW, pctH);
+        // CORS fallback: recargar imagen con crossOrigin y reintentar
+        var corsImg = new Image();
+        corsImg.crossOrigin = 'anonymous';
+        corsImg.onload = function(){
+          try {
+            var tmpC2 = document.createElement('canvas');
+            tmpC2.width = Math.max(1, Math.round(cropW));
+            tmpC2.height = Math.max(1, Math.round(cropH));
+            tmpC2.getContext('2d').drawImage(corsImg, cropX, cropY, cropW, cropH, 0, 0, tmpC2.width, tmpC2.height);
+            var url2 = tmpC2.toDataURL('image/jpeg', 0.95);
+            window.leerEquipoTrofeo('seleccion', url2, true);
+          } catch(e2) {
+            window.leerEquipoTrofeoZona(igImg.src, pctX, pctY, pctW, pctH);
+          }
+        };
+        corsImg.onerror = function(){ window.leerEquipoTrofeoZona(igImg.src, pctX, pctY, pctW, pctH); };
+        // Agregar timestamp para evitar cache
+        corsImg.src = igImg.src + (igImg.src.includes('?') ? '&' : '?') + '_t=' + Date.now();
       }
     } catch(err) {
       rf4CancelSelect();
