@@ -5867,10 +5867,7 @@ document.addEventListener('DOMContentLoaded', function(){
     <div class="wk-fg"><label class="wk-fl">Descripción / Setup</label><textarea class="wk-fi" id="wkPDesc" placeholder="Señuelo, profundidad, condiciones del agua..." style="min-height:65px"></textarea></div>
     <div class="wk-fg">
       <label class="wk-fl">📸 Fotos (máx. 5)</label>
-      <div class="wk-dz" id="wkDropzone" onclick="document.getElementById('wkFileInput').click()"
-        ondragover="event.preventDefault();this.classList.add('over')"
-        ondragleave="this.classList.remove('over')"
-        ondrop="event.preventDefault();this.classList.remove('over');wkHFiles(event.dataTransfer.files)">
+      <div class="wk-dz" id="wkDropzone" onclick="document.getElementById('wkFileInput').click()">
         <div>📁 Arrastrá o hacé clic para subir fotos</div>
         <div style="font-size:.75rem;color:var(--muted,#567890);margin-top:4px">JPG, PNG · Max 5MB c/u</div>
         <input type="file" id="wkFileInput" multiple accept="image/*" style="display:none" onchange="wkHFiles(this.files)">
