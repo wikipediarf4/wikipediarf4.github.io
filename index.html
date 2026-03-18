@@ -25310,15 +25310,35 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
   </div>
 
   <div id="rf4AiMessages">
-    <!-- Mensaje de bienvenida -->
     <div class="rf4ai-msg bot">
       <div class="rf4ai-msg-av">🎣</div>
-      <div class="rf4ai-bubble">
-        ¡Hola pescador! 👋 Soy tu asistente experto en <b>Russian Fishing 4</b>.<br><br>
+      <div class="rf4ai-bubble" id="rf4AiWelcome">
+        ¡Hola pescador! 👋 Soy tu asistente experto en <b>Russian Fishing 4</b>, creado por <b>WikiPediaRF4.UY</b>.<br><br>
         Puedo ayudarte con equipos, cañas, carretes, líderes, carnadas, técnicas de pesca, mapas, subida de habilidades y mucho más. ¡Preguntame lo que necesites!
       </div>
     </div>
   </div>
+  <script>
+  (function(){
+    function rf4SetWelcome(){
+      var el = document.getElementById('rf4AiWelcome');
+      if(!el) return;
+      var nick = (window.CU && window.CU.nick) ? window.CU.nick : null;
+      if(nick){
+        el.innerHTML = '¡Hola <b>' + nick + '</b>! 👋 Soy tu asistente experto en <b>Russian Fishing 4</b>, creado por <b>WikiPediaRF4.UY</b>.<br><br>Puedo ayudarte con equipos, cañas, carretes, líderes, carnadas, técnicas de pesca, mapas, subida de habilidades y mucho más. ¡Preguntame lo que necesites!';
+      }
+    }
+    document.addEventListener('DOMContentLoaded', function(){
+      setTimeout(rf4SetWelcome, 500);
+      setTimeout(rf4SetWelcome, 2000);
+    });
+    var _origToggle = window.rf4AiToggle;
+    window.rf4AiToggle = function(){
+      if(typeof _origToggle === 'function') _origToggle();
+      rf4SetWelcome();
+    };
+  })();
+  </script>
 
   <!-- Sugerencias rápidas -->
   <div id="rf4AiSuggestions">
