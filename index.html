@@ -25149,10 +25149,9 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
 
   // Llamado desde el lightbox
   window.leerEquipoLightbox = function(){
-    var img = document.getElementById('_igMainImg');
+    var img = document.getElementById('_igImg');
     var src = img ? img.src : '';
     if(!src){ toast('No se encontró la imagen','err'); return; }
-    // Cerrar lightbox y abrir modal de equipo
     window.leerEquipoTrofeo('lightbox', src);
   };
 
