@@ -13311,6 +13311,7 @@ function openImgLightbox(src, allImgs, postId){
     <div style="display:flex;gap:6px;margin-left:auto;">
       ${_galPostId?`<button onclick="igDownload()" title="Descargar" style="background:rgba(255,255,255,.12);border:none;color:#e4e6eb;width:36px;height:36px;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">⬇️</button>`:''}
       ${_galPostId&&window.CU?`<button onclick="igReport()" title="Reportar" style="background:rgba(255,255,255,.12);border:none;color:#e4e6eb;width:36px;height:36px;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">⚠️</button>`:''}
+      ${(_galPostId&&_galPostId.startsWith('trofeo_'))?`<button onclick="leerEquipoLightbox()" title="Leer equipo con IA" style="background:rgba(46,196,182,.2);border:1px solid rgba(46,196,182,.5);color:#2ec4b6;padding:4px 12px;border-radius:100px;font-size:.78rem;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:4px;">🔍 Leer equipo</button>`:''}
     </div>
   </div>
 
@@ -13349,6 +13350,7 @@ function openImgLightbox(src, allImgs, postId){
             </button>
           </div>
           <button class="ig-act-btn" onclick="document.getElementById('_igCmtInp').focus()">💬 Comentar</button>
+          ${(_galPostId&&_galPostId.startsWith('trofeo_'))?`<button class="ig-act-btn" onclick="leerEquipoLightbox()" style="color:#2ec4b6;font-weight:800;" title="La IA lee el equipo de la imagen">🔍 Leer equipo</button>`:''}
           ${_galPostId?`<button class="ig-act-btn" onclick="igShare()">↗ Compartir</button>`:''}
           ${_galPostId?`<button class="ig-act-btn" onclick="(function(){var u=encodeURIComponent(location.origin+location.pathname+'?p='+_galPostId);window.open('https://www.facebook.com/sharer/sharer.php?u='+u,'_blank','width=640,height=460,resizable=yes');})()" style="color:#1877F2;gap:5px;"><svg viewBox='0 0 24 24' width='15' height='15' fill='#1877F2'><path d='M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.268h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z'/></svg> Facebook</button>`:''}
         </div>
@@ -20328,10 +20330,6 @@ function trofeoFeedCardHTML(t){
         </div>
       </div>
       <button class="act-btn" style="flex:1;justify-content:center;" onclick="toggleComments('trofeo_${tid}')">💬 Comentar</button>
-      <button class="act-btn" style="flex:1;justify-content:center;gap:5px;color:#2ec4b6;" onclick="leerEquipoTrofeo('${tid}','${imgUrl}')"
-        onmouseover="this.style.background='rgba(46,196,182,.1)'" onmouseout="this.style.background=''" title="La IA lee la imagen y detecta el equipo usado">
-        🔍 <span style="font-size:.78rem;">Leer equipo</span>
-      </button>
       <button class="act-btn" style="flex:1;justify-content:center;" onclick="sharePost('trofeo_${tid}')">↗️ Compartir</button>
       <button class="act-btn" style="flex:1;justify-content:center;gap:5px;color:#1877F2;" onclick="shareTrofeoFacebook('${tid}','${fish}','${map}',${weight},'${nick}')"
         onmouseover="this.style.background='rgba(24,119,242,.12)'" onmouseout="this.style.background=''">
@@ -25148,6 +25146,15 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
     document.body.appendChild(m);
     return m;
   }
+
+  // Llamado desde el lightbox
+  window.leerEquipoLightbox = function(){
+    var img = document.getElementById('_igMainImg');
+    var src = img ? img.src : '';
+    if(!src){ toast('No se encontró la imagen','err'); return; }
+    // Cerrar lightbox y abrir modal de equipo
+    window.leerEquipoTrofeo('lightbox', src);
+  };
 
   window.leerEquipoTrofeo = async function(tid, imgUrl){
     if(!imgUrl){ toast('Este trofeo no tiene imagen','err'); return; }
