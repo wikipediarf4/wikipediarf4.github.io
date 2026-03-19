@@ -323,12 +323,15 @@ async function publishOrder(){
   var weight = weightUnit === 'g' ? weightVal / 1000 : weightVal;
   var qty    = parseInt(document.getElementById('addQty').value)||1;
   var reward = parseInt(document.getElementById('addReward').value)||0;
-  var mins   = parseInt(document.getElementById('addExpires').value)||30;
+  var gameHours = parseFloat(document.getElementById('gameHH').value)||0;
   if(!map||!fish){ showErr('Elegí mapa y especie.'); return; }
+  if(gameHours <= 0){ showErr('Ingresá las horas del juego.'); return; }
   if(!_sha){ showErr('Cargá primero los pedidos (botón ⟳ Recargar).'); return; }
 
   var fishData = (FISH_BY_MAP[map]||[]).find(function(f){ return f.n===fish; })||{};
-  var expiresAt = new Date(Date.now()+mins*60*1000).toISOString().slice(0,19);
+  // horas de juego ÷ 24 = horas reales → milisegundos
+  var realMs = (gameHours / 24) * 60 * 60 * 1000;
+  var expiresAt = new Date(Date.now() + realMs).toISOString().slice(0,19);
   var addedAt   = new Date().toISOString().slice(0,19);
   var maxId = 0;
   (_data.orders||[]).forEach(function(o){ if((o.id||0)>maxId) maxId=o.id; });
@@ -405,16 +408,18 @@ async function save(msg){
 // ── UI helpers ────────────────────────────────────────────────
 function convertGameTime(){
   var hh = parseFloat(document.getElementById('gameHH').value)||0;
+  var mm = parseFloat(document.getElementById('gameMM').value)||0;
   var res = document.getElementById('gameTimeResult');
   var hidden = document.getElementById('addExpires');
-  if(hh <= 0){
+  var totalGameHours = hh + (mm/60);
+  if(totalGameHours <= 0){
     res.innerHTML='⏱️ Ingresá las horas del juego';
     hidden.value=30;
     document.getElementById('gameTooltipText').textContent='—';
     return;
   }
-  // horas de juego ÷ 24 = horas reales
-  var realMins = Math.ceil((hh / 24) * 60);
+  // horas de juego ÷ 24 = horas reales → convertir a minutos reales
+  var realMins = Math.ceil((totalGameHours / 24) * 60);
   realMins = Math.max(1, realMins);
   hidden.value = realMins;
   var rh = Math.floor(realMins/60);
@@ -422,11 +427,13 @@ function convertGameTime(){
   var realStr = rh > 0 ? rh+'h '+rm+'min reales' : realMins+' min reales';
   res.innerHTML = '⏱️ Tiempo real: <b style="color:#ff8c00;">'+realStr+'</b>';
   // Tooltip: días y horas de juego
-  var gd = Math.floor(hh / 24);
-  var gh = Math.floor(hh % 24);
+  var gd = Math.floor(totalGameHours / 24);
+  var gh = Math.floor(totalGameHours % 24);
+  var gm = Math.floor((totalGameHours % 1) * 60);
   var parts = [];
-  if(gd > 0) parts.push(gd+' día'+(gd>1?'s':'')+' de juego');
+  if(gd > 0) parts.push(gd+' día'+(gd>1?'s':''));
   if(gh > 0) parts.push(gh+' hora'+(gh>1?'s':''));
+  if(gm > 0 && gd === 0) parts.push(gm+' min');
   document.getElementById('gameTooltipText').textContent = parts.join(' ') || '< 1 hora';
 }
 
