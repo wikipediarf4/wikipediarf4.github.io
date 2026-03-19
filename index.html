@@ -5696,9 +5696,10 @@ document.addEventListener('DOMContentLoaded', function(){
       var ghH = Math.floor(gameHoursLeft % 24);
       var ghM = Math.floor((gameHoursLeft % 1) * 60);
 
-      // Lo que muestra el círculo azul: horas de juego restantes
-      var timerDisplay = Math.floor(gameHoursLeft) + 'h';
-      if(ghH === 0 && ghD === 0) timerDisplay = ghM + 'm';
+      // Círculo muestra HH:MM de juego igual que RF4
+      var totalGameH = Math.floor(gameHoursLeft);
+      var totalGameM = Math.floor((gameHoursLeft - totalGameH) * 60);
+      var timerDisplay = totalGameH + ':' + String(totalGameM).padStart(2,'0');
 
       // Tooltip en días de juego
       var gameTimeParts = [];
