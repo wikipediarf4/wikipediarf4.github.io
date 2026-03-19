@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>☕ Admin Café — WikiPediaRF4.UY</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh;padding:20px 12px 60px;}
+.wrap{max-width:860px;margin:0 auto;}
+h1{font-size:1.15rem;font-weight:900;color:#ff8c00;margin-bottom:20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+h1 span{font-size:.72rem;color:#8b949e;font-weight:400;}
+.card{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:18px 20px;margin-bottom:18px;}
+.card-title{font-size:.78rem;font-weight:700;color:#8b949e;text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+label{display:block;font-size:.72rem;color:#8b949e;font-weight:700;margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em;}
+input,select,textarea{width:100%;background:#21262d;border:1px solid #30363d;border-radius:6px;color:#e6edf3;padding:8px 11px;font-size:.88rem;font-family:inherit;outline:none;transition:border-color .15s;}
+input:focus,select:focus{border-color:#ff8c00;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.field{margin-bottom:0;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:6px;border:none;font-size:.88rem;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;}
+.btn-orange{background:#ff8c00;color:#fff;width:100%;justify-content:center;font-size:.95rem;margin-top:12px;padding:10px;}
+.btn-orange:hover{background:#e07800;}
+.btn-orange:disabled{background:#555;cursor:not-allowed;}
+.btn-teal{background:rgba(46,196,182,.12);border:1px solid rgba(46,196,182,.3);color:#2ec4b6;}
+.btn-teal:hover{background:rgba(46,196,182,.22);}
+.btn-red{background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.25);color:#f85149;padding:5px 12px;font-size:.75rem;}
+.btn-red:hover{background:rgba(248,81,73,.22);}
+.fish-preview{display:flex;align-items:center;gap:10px;background:#21262d;border:1px solid #30363d;border-radius:6px;padding:7px 11px;margin-top:6px;}
+.fish-preview img{width:34px;height:34px;object-fit:contain;}
+.fish-preview .fn{font-size:.85rem;font-weight:700;color:#e6edf3;}
+.fish-preview .ft{font-size:.72rem;color:#d4a017;margin-left:auto;}
+.orders-list{display:flex;flex-direction:column;gap:8px;}
+.order-row{background:#1c2128;border:1px solid #30363d;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:12px;}
+.order-row.expired{opacity:.4;}
+.order-img{width:38px;height:38px;object-fit:contain;border-radius:6px;background:#21262d;flex-shrink:0;}
+.order-info{flex:1;min-width:0;}
+.order-fish{font-size:.9rem;font-weight:700;color:#e6edf3;}
+.order-meta{font-size:.72rem;color:#8b949e;margin-top:2px;}
+.order-trophy{font-size:.7rem;color:#d4a017;}
+.order-right{text-align:right;flex-shrink:0;}
+.order-reward{font-size:.88rem;font-weight:700;color:#3fb950;}
+.timer{font-size:.82rem;font-weight:700;font-variant-numeric:tabular-nums;}
+.map-badge{display:inline-block;background:#21262d;border:1px solid #30363d;border-radius:100px;padding:2px 8px;font-size:.68rem;color:#8b949e;white-nospace:nowrap;}
+.ok{background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.3);color:#3fb950;padding:10px 16px;border-radius:8px;margin-bottom:14px;font-size:.85rem;display:none;}
+.err{background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);color:#f85149;padding:10px 16px;border-radius:8px;margin-bottom:14px;font-size:.85rem;display:none;}
+.loading{display:flex;align-items:center;gap:10px;padding:30px;color:#8b949e;font-size:.88rem;justify-content:center;}
+.spin{width:20px;height:20px;border:2px solid #30363d;border-top-color:#2ec4b6;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.token-help{font-size:.72rem;color:#8b949e;margin-top:6px;line-height:1.5;}
+.token-help a{color:#2ec4b6;}
+.sep{height:1px;background:#30363d;margin:14px 0;}
+.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px;}
+.dot-green{background:#3fb950;}
+.dot-red{background:#f85149;}
+.dot-gray{background:#8b949e;}
+@media(max-width:600px){.g2,.g3{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>☕ Admin Pedidos del Café <span>WikiPediaRF4.UY</span>
+  <a href="/" style="font-size:.75rem;color:#2ec4b6;text-decoration:none;margin-left:auto;">← Volver al sitio</a>
+</h1>
+
+<!-- CONFIGURACIÓN GITHUB -->
+<div class="card" id="configCard">
+  <div class="card-title">🔑 Configuración GitHub</div>
+  <div class="g2">
+    <div class="field">
+      <label>Repositorio (usuario/repo)</label>
+      <input type="text" id="cfgRepo" placeholder="wikipediarf4/wikipediarf4.github.io" value="wikipediarf4/wikipediarf4.github.io">
+    </div>
+    <div class="field">
+      <label>Archivo JSON en el repo</label>
+      <input type="text" id="cfgFile" placeholder="cafe.json" value="cafe.json">
+    </div>
+  </div>
+  <div class="field" style="margin-top:10px;">
+    <label>GitHub Personal Access Token</label>
+    <input type="password" id="cfgToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+    <div class="token-help">
+      Generá tu token en <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens</a> →
+      seleccioná solo el permiso <b>repo</b> (Contents: Read & Write). El token se guarda solo en tu navegador.
+    </div>
+  </div>
+  <button class="btn btn-teal" style="margin-top:12px;" onclick="saveConfig()">💾 Guardar configuración</button>
+  <span id="cfgStatus" style="font-size:.75rem;color:#8b949e;margin-left:12px;"></span>
+</div>
+
+<div id="msgOk" class="ok"></div>
+<div id="msgErr" class="err"></div>
+
+<!-- AGREGAR PEDIDO -->
+<div class="card">
+  <div class="card-title">+ Nuevo Pedido</div>
+  <div class="g2" style="margin-bottom:10px;">
+    <div class="field">
+      <label>Mapa</label>
+      <select id="addMap" onchange="onMapChange()">
+        <option value="">— Seleccioná mapa —</option>
+        <option value="Mosquito Lake">Mosquito Lake</option>
+        <option value="Winding Rivulet">Winding Rivulet</option>
+        <option value="Old Burg Lake">Old Burg Lake</option>
+        <option value="Belaya River">Belaya River</option>
+        <option value="Volkhov River">Volkhov River</option>
+        <option value="Seversky Donets">Seversky Donets</option>
+        <option value="Sura River">Sura River</option>
+        <option value="Ladoga Lake">Ladoga Lake</option>
+        <option value="Kuori Lake">Kuori Lake</option>
+        <option value="Amber Lake">Amber Lake</option>
+        <option value="Bear Lake">Bear Lake</option>
+        <option value="Akhtuba River">Akhtuba River</option>
+        <option value="Ladoga archipelago">Ladoga archipelago</option>
+        <option value="Lower Tunguska River">Lower Tunguska River</option>
+        <option value="Yama River">Yama River</option>
+        <option value="Norwegian Sea">Norwegian Sea</option>
+        <option value="Cooper Lake">Cooper Lake</option>
+        <option value="Moose Lake">Moose Lake</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Especie</label>
+      <select id="addFish" onchange="onFishChange()" disabled>
+        <option value="">— Primero elegí mapa —</option>
+      </select>
+      <div class="fish-preview" id="fishPreview" style="display:none;">
+        <img id="fpImg" src="" alt="" onerror="this.style.display='none'">
+        <span class="fn" id="fpName"></span>
+        <span class="ft" id="fpTrophy"></span>
+      </div>
+    </div>
+  </div>
+  <div class="g3" style="margin-bottom:10px;">
+    <div class="field">
+      <label>Peso pedido (kg)</label>
+      <input type="number" id="addWeight" step="0.001" placeholder="0.000">
+      <div style="font-size:.68rem;color:#d4a017;margin-top:3px;">🏆 Trofeo desde: <span id="weightRef">—</span></div>
+    </div>
+    <div class="field">
+      <label>Cantidad</label>
+      <input type="number" id="addQty" value="1" min="1">
+    </div>
+    <div class="field">
+      <label>Recompensa 💰</label>
+      <input type="number" id="addReward" placeholder="0">
+    </div>
+  </div>
+  <div class="field" style="max-width:200px;">
+    <label>Expira en (minutos)</label>
+    <input type="number" id="addExpires" value="30" min="1" max="1440">
+  </div>
+  <button class="btn btn-orange" id="btnPublish" onclick="publishOrder()">+ Publicar en cafe.json</button>
+</div>
+
+<!-- PEDIDOS ACTUALES -->
+<div class="card">
+  <div class="card-title" style="justify-content:space-between;">
+    <span>📋 Pedidos en cafe.json</span>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-teal" style="padding:5px 12px;font-size:.75rem;" onclick="loadOrders()">⟳ Recargar</button>
+      <button class="btn btn-red" onclick="cleanExpired()">🗑️ Limpiar expirados</button>
+    </div>
+  </div>
+  <div id="ordersMeta" style="font-size:.72rem;color:#8b949e;margin-bottom:10px;"></div>
+  <div id="ordersList"><div class="loading"><div class="spin"></div>Cargando cafe.json...</div></div>
+</div>
+
+</div>
+
+<script>
+// ── FISH DB por mapa ──────────────────────────────────────────
+var FISH_BY_MAP = {
+  'Mosquito Lake':        [{n:'Cucaracha',img:'roach.png',t:'1.000 kg'},{n:'Perca',img:'perch.png',t:'2.500 kg'},{n:'Lucio',img:'pike.png',t:'10.000 kg'},{n:'Carpa Gibel',img:'crucian.png',t:'1.900 kg'},{n:'Rana',img:'frog.png',t:'190 g'},{n:'Ide',img:'s.orfe.png',t:'4 kg'},{n:'Tenca Oro',img:'g_tench.png',t:'4 kg'},{n:'Ruffe',img:'ruffe.png',t:'100 g'}],
+  'Winding Rivulet':      [{n:'Aspio',img:'asp.png',t:'8.000 kg'},{n:'Cangrejo de Río',img:'crawfish.png',t:'200 g'},{n:'Gobio',img:'gudgeon.png',t:'100 g'},{n:'Carpa Gibel',img:'crucian.png',t:'1.900 kg'},{n:'Rana',img:'frog.png',t:'190 g'},{n:'Ide',img:'s.orfe.png',t:'4 kg'},{n:'Perca',img:'perch.png',t:'2.500 kg'},{n:'Cucaracha',img:'roach.png',t:'1.000 kg'}],
+  'Old Burg Lake':        [{n:'Carpa Herbívora',img:'g_carp.png',t:'28 kg'},{n:'Carpa Gibel',img:'crucian.png',t:'1.900 kg'},{n:'Rana',img:'frog.png',t:'190 g'},{n:'Ide',img:'s.orfe.png',t:'4 kg'},{n:'Lucio',img:'pike.png',t:'10.000 kg'},{n:'Perca',img:'perch.png',t:'2.500 kg'}],
+  'Belaya River':         [{n:'Aspio',img:'asp.png',t:'8.000 kg'},{n:'Cangrejo de Río',img:'crawfish.png',t:'200 g'},{n:'Tímalo',img:'a_grayling.png',t:'3.200 kg'},{n:'Tímalo Siberiano',img:'zs_grayling.png',t:'2.000 kg'},{n:'Coregonus de Pidschian',img:'sig_p.png',t:'4.500 kg'},{n:'Carpa Gibel',img:'crucian.png',t:'1.900 kg'},{n:'Rana',img:'frog.png',t:'190 g'},{n:'Ide',img:'s.orfe.png',t:'4 kg'},{n:'Taimen',img:'taimen.png',t:'50 kg'}],
+  'Volkhov River':        [{n:'Aspio',img:'asp.png',t:'8.000 kg'},{n:'Salmón del Atlántico',img:'a_salmon.png',t:'30.000 kg'},{n:'Cangrejo de Río',img:'crawfish.png',t:'200 g'},{n:'Carpa Gibel',img:'crucian.png',t:'1.900 kg'},{n:'Rana',img:'frog.png',t:'190 g'},{n:'Ide',img:'s.orfe.png',t:'4 kg'},{n:'Lucio',img:'pike.png',t:'10.000 kg'},{n:'Perca',img:'perch.png',t:'2.500 kg'}],
+  'Seversky Donets':      [{n:'Aspio',img:'asp.png',t:'8.000 kg'},{n:'Cangrejo de Río',img:'crawfish.png',t:'200 g'},{n:'Carpa Herbívora',img:'g_carp.png',t:'28 kg'},{n:'Carpa Gibel',img:'crucian.png',t:'1.900 kg'},{n:'Rana',img:'frog.png',t:'190 g'},{n:'Ide',img:'s.orfe.png',t:'4 kg'},{n:'Gobio',img:'gudgeon.png',t:'100 g'}],
+  'Sura River':           [{n:'Aspio',img:'asp.png',t:'8.000 kg'},{n:'Cangrejo de Río',img:'crawfish.png',t:'200 g'},{n:'Carpa Herbívora',img:'g_carp.png',t:'28 kg'},{n:'Carpa Gibel',img:'crucian.png',t:'1.900 kg'},{n:'Rana',img:'frog.png',t:'190 g'},{n:'Ide',img:'s.orfe.png',t:'4 kg'},{n:'Gobio',img:'gudgeon.png',t:'100 g'}],
+  'Ladoga Lake':          [{n:'Salmón del Atlántico',img:'a_salmon.png',t:'30.000 kg'},{n:'Esturión del Báltico',img:'osetr_balt.png',t:'200 kg'},{n:'Cangrejo de Río',img:'crawfish.png',t:'200 g'},{n:'Salvelino Gris',img:'palia_kr.png',t:'3 kg'},{n:'Tímalo',img:'a_grayling.png',t:'3.200 kg'},{n:'Omul Baikal',img:'b_omul.png',t:'6 kg'},{n:'Carpa Gibel',img:'crucian.png',t:'1.900 kg'},{n:'Rana',img:'frog.png',t:'190 g'},{n:'Ide',img:'s.orfe.png',t:'4 kg'}],
+  'Kuori Lake':           [{n:'Trucha Ártica',img:'a_char.png',t:'11.000 kg'},{n:'Tímalo',img:'a_grayling.png',t:'3.200 kg'},{n:'Salvelino Kuori',img:'chartus_kuoriius.png',t:'22 kg'},{n:'Pescado Blanco Kuori',img:'sig_kuor.png',t:'3.500 kg'}],
+  'Amber Lake':           [{n:'Carpa Espejo Enmarcado Albino',img:'r_carp_albino.png',t:'25 kg'},{n:'Carpa Espejo Enmarcado',img:'r_carp.png',t:'25 kg'},{n:'Carpa Herbívora',img:'g_carp.png',t:'28 kg'},{n:'Rana',img:'frog.png',t:'190 g'}],
+  'Bear Lake':            [{n:'Barbo Albino',img:'alb_barbel.png',t:'8.000 kg'},{n:'Tenca Oro',img:'g_tench.png',t:'4 kg'}],
+  'Akhtuba River':        [{n:'Siluro Albino',img:'w_catfish_a.png',t:'100.000 kg'},{n:'Aspio',img:'asp.png',t:'8.000 kg'},{n:'Esturión Bastardo',img:'osetr_ship.png',t:'50 kg'},{n:'Carpa Herbívora',img:'g_carp.png',t:'28 kg'},{n:'Carpa Gibel',img:'crucian.png',t:'1.900 kg'},{n:'Arenque de Kessler',img:'k_herring.png',t:'1.200 kg'},{n:'Gobio',img:'gudgeon.png',t:'100 g'},{n:'Rana',img:'frog.png',t:'190 g'},{n:'Ide',img:'s.orfe.png',t:'4 kg'}],
+  'Ladoga archipelago':   [{n:'Salmón del Atlántico',img:'a_salmon.png',t:'30.000 kg'},{n:'Esturión del Báltico',img:'osetr_balt.png',t:'200 kg'},{n:'Omul Baikal',img:'b_omul.png',t:'6 kg'},{n:'Salvelino Gris',img:'palia_kr.png',t:'3 kg'},{n:'Tímalo',img:'a_grayling.png',t:'3.200 kg'},{n:'Carpa Gibel',img:'crucian.png',t:'1.900 kg'},{n:'Rana',img:'frog.png',t:'190 g'},{n:'Ide',img:'s.orfe.png',t:'4 kg'}],
+  'Lower Tunguska River': [{n:'Trucha Ártica',img:'a_char.png',t:'11.000 kg'},{n:'Tímalo Siberiano',img:'zs_grayling.png',t:'2.000 kg'},{n:'Omul Ártico',img:'a_omul.png',t:'3.000 kg'},{n:'Omul Baikal',img:'b_omul.png',t:'6 kg'},{n:'Eperlano Asiático',img:'a_smelt.png',t:'270 g'},{n:'Silurus Amur',img:'a_catfish.png',t:'5.000 kg'},{n:'Coregonus de Pidschian',img:'sig_p.png',t:'4.500 kg'},{n:'Ide',img:'s.orfe.png',t:'4 kg'}],
+  'Yama River':           [{n:'Kaluga',img:'kaluga.png',t:'500 kg'},{n:'Trucha Arcoíris de Kamchatka',img:'mikija.png',t:'8 kg'},{n:'Trucha Ártica',img:'a_char.png',t:'11.000 kg'},{n:'Eperlano Asiático',img:'a_smelt.png',t:'270 g'},{n:'Ide',img:'s.orfe.png',t:'4 kg'}],
+  'Norwegian Sea':        [{n:'Solla Americana',img:'hippoglos_p.png',t:'4.000 kg'},{n:'Artic Skate',img:'ambl_h.png',t:'8.000 kg'},{n:'Atún Rojo',img:'thynnus_t.png',t:'250 kg'},{n:'Bacalao del Atlántico',img:'atl_cod.png',t:'50 kg'},{n:'Fletán del Atlántico',img:'halibut_w.png',t:'150 kg'},{n:'Arenque del Atlántico',img:'atl_herring.png',t:'800 g'},{n:'Caballa Atlántica',img:'makrel.png',t:'2 kg'},{n:'Chancharro',img:'sebastes_n.png',t:'9 kg'},{n:'Saurio del Atlántico',img:'s_saurus.png',t:'600 g'},{n:'Pez Lobo del Atlántico',img:'p_zubatka.png',t:'14.500 kg'},{n:'Atlantic Wreckfish',img:'polyprion.png',t:'60 kg'},{n:'Tiburón Peregrino',img:'cetorhinus_m.png',t:'1.300 kg'},{n:'Fletán Negro',img:'halibut_b.png',t:'25 kg'},{n:'Tiburón de Groenlandia',img:'somniosus_m.png',t:'600 kg'},{n:'Eglefino',img:'piksha.png',t:'11 kg'},{n:'Vieira Islandesa',img:'chlamys_isl.png',t:'350 g'},{n:'Tiburón Serpiente',img:'c_anguineus.png',t:'50 kg'}],
+  'Cooper Lake':          [{n:'Hi Utsuri',img:'hi_utsri.png',t:'25 kg'},{n:'Kohaku',img:'kohaku.png',t:'25 kg'},{n:'Tenca de Kvolsdorfsky',img:'kw_tench.png',t:'4 kg'}],
+  'Moose Lake':           [{n:'Carpa Gibel',img:'crucian.png',t:'1.900 kg'},{n:'Perca',img:'perch.png',t:'2.500 kg'},{n:'Lucio',img:'pike.png',t:'10.000 kg'}],
+};
+
+var BASE_IMG = 'https://en.rf4-stat.ru/images/rf4game/';
+var _sha = null;  // SHA del archivo en GitHub (necesario para actualizar)
+var _data = {updated:'', orders:[]};
+
+// ── Config (localStorage) ────────────────────────────────────
+function saveConfig(){
+  var repo  = document.getElementById('cfgRepo').value.trim();
+  var file  = document.getElementById('cfgFile').value.trim();
+  var token = document.getElementById('cfgToken').value.trim();
+  if(!repo||!file||!token){ showErr('Completá todos los campos de configuración.'); return; }
+  localStorage.setItem('rf4cafe_repo',  repo);
+  localStorage.setItem('rf4cafe_file',  file);
+  localStorage.setItem('rf4cafe_token', token);
+  document.getElementById('cfgStatus').textContent = '✅ Guardado';
+  setTimeout(function(){ document.getElementById('cfgStatus').textContent=''; }, 2000);
+  loadOrders();
+}
+function getCfg(){
+  return {
+    repo:  localStorage.getItem('rf4cafe_repo')  || document.getElementById('cfgRepo').value.trim(),
+    file:  localStorage.getItem('rf4cafe_file')  || document.getElementById('cfgFile').value.trim(),
+    token: localStorage.getItem('rf4cafe_token') || document.getElementById('cfgToken').value.trim(),
+  };
+}
+function restoreCfg(){
+  var r = localStorage.getItem('rf4cafe_repo');
+  var f = localStorage.getItem('rf4cafe_file');
+  var t = localStorage.getItem('rf4cafe_token');
+  if(r) document.getElementById('cfgRepo').value = r;
+  if(f) document.getElementById('cfgFile').value = f;
+  if(t) document.getElementById('cfgToken').value = t;
+}
+
+// ── GitHub API ───────────────────────────────────────────────
+async function ghGet(cfg){
+  var url = 'https://api.github.com/repos/'+cfg.repo+'/contents/'+cfg.file;
+  var res = await fetch(url, { headers:{ Authorization:'token '+cfg.token, Accept:'application/vnd.github.v3+json' } });
+  if(!res.ok) throw new Error('GitHub API: '+res.status+' — ¿Token y repo correctos?');
+  return res.json();
+}
+async function ghPut(cfg, content, sha, msg){
+  var url = 'https://api.github.com/repos/'+cfg.repo+'/contents/'+cfg.file;
+  var body = { message: msg||'☕ Actualizar cafe.json', content: btoa(unescape(encodeURIComponent(content))), sha: sha };
+  var res = await fetch(url, {
+    method:'PUT',
+    headers:{ Authorization:'token '+cfg.token, Accept:'application/vnd.github.v3+json', 'Content-Type':'application/json' },
+    body: JSON.stringify(body)
+  });
+  if(!res.ok){ var e=await res.json(); throw new Error(e.message||'Error al guardar'); }
+  return res.json();
+}
+
+// ── Cargar pedidos ────────────────────────────────────────────
+async function loadOrders(){
+  var list = document.getElementById('ordersList');
+  list.innerHTML = '<div class="loading"><div class="spin"></div>Cargando cafe.json...</div>';
+  var cfg = getCfg();
+  if(!cfg.token){ list.innerHTML='<div class="loading">⚠️ Configurá tu token de GitHub primero.</div>'; return; }
+  try{
+    var gh = await ghGet(cfg);
+    _sha = gh.sha;
+    var json = JSON.parse(decodeURIComponent(escape(atob(gh.content.replace(/\n/g,'')))));
+    _data = json;
+    document.getElementById('ordersMeta').textContent = 'Actualizado: '+(_data.updated||'—')+' · '+(_data.orders||[]).length+' pedidos en total';
+    renderOrders();
+  }catch(e){
+    list.innerHTML='<div class="loading" style="color:#f85149;">⚠️ '+e.message+'</div>';
+  }
+}
+
+function renderOrders(){
+  var list = document.getElementById('ordersList');
+  var orders = _data.orders||[];
+  if(!orders.length){ list.innerHTML='<div class="loading" style="color:#8b949e;">Sin pedidos. Publicá el primero.</div>'; return; }
+  var now = Date.now();
+  list.innerHTML = '<div class="orders-list">'
+    + orders.map(function(o,i){
+      var expired = new Date(o.expiresAt) <= now;
+      var sl = Math.max(0, Math.round((new Date(o.expiresAt)-now)/1000));
+      var m = Math.floor(sl/60), s = sl%60;
+      var tc = sl<300?'#f85149':sl<600?'#d29922':'#3fb950';
+      var timerTxt = expired ? '<span style="color:#f85149;">EXPIRADO</span>' : '<span style="color:'+tc+';font-weight:700;">'+m+'m '+String(s).padStart(2,'0')+'s</span>';
+      return '<div class="order-row'+(expired?' expired':'')+'">'
+        +'<img class="order-img" src="'+(o.fishImg||'')+'" alt="" onerror="this.style.display=\'none\'">'
+        +'<div class="order-info">'
+        +'<div class="order-fish">'+esc(o.fish||'')+'</div>'
+        +'<div class="order-meta"><span class="map-badge">'+esc(o.map||'')+'</span> · Peso: <b>'+parseFloat(o.weight||0).toFixed(3)+' kg</b> · Cant: '+esc(o.qty||1)+'</div>'
+        +(o.trophyWeight?'<div class="order-trophy">🏆 Trofeo desde: '+esc(o.trophyWeight)+'</div>':'')
+        +'</div>'
+        +'<div class="order-right">'
+        +'<div class="order-reward">💰 '+esc(o.reward||0)+'</div>'
+        +'<div class="timer" style="margin-top:3px;">'+timerTxt+'</div>'
+        +'</div>'
+        +'<button class="btn btn-red" style="margin-left:8px;" onclick="deleteOrder('+i+')">✕</button>'
+        +'</div>';
+    }).join('')
+    +'</div>';
+}
+
+// ── Publicar pedido ───────────────────────────────────────────
+async function publishOrder(){
+  var map    = document.getElementById('addMap').value;
+  var fishSel= document.getElementById('addFish');
+  var fish   = fishSel.value;
+  var weight = parseFloat(document.getElementById('addWeight').value)||0;
+  var qty    = parseInt(document.getElementById('addQty').value)||1;
+  var reward = parseInt(document.getElementById('addReward').value)||0;
+  var mins   = parseInt(document.getElementById('addExpires').value)||30;
+  if(!map||!fish){ showErr('Elegí mapa y especie.'); return; }
+  if(!_sha){ showErr('Cargá primero los pedidos (botón ⟳ Recargar).'); return; }
+
+  var fishData = (FISH_BY_MAP[map]||[]).find(function(f){ return f.n===fish; })||{};
+  var expiresAt = new Date(Date.now()+mins*60*1000).toISOString().slice(0,19);
+  var addedAt   = new Date().toISOString().slice(0,19);
+  var maxId = 0;
+  (_data.orders||[]).forEach(function(o){ if((o.id||0)>maxId) maxId=o.id; });
+
+  var newOrder = {
+    id: maxId+1,
+    map: map,
+    fish: fish,
+    fishImg: fishData.img ? BASE_IMG+fishData.img : '',
+    trophyWeight: fishData.t||'',
+    weight: weight,
+    qty: qty,
+    reward: reward,
+    addedAt: addedAt,
+    expiresAt: expiresAt
+  };
+
+  _data.orders = _data.orders||[];
+  _data.orders.unshift(newOrder);
+  _data.updated = new Date().toISOString().slice(0,16).replace('T',' ');
+
+  await save('☕ Agregar pedido: '+fish+' en '+map);
+}
+
+// ── Eliminar pedido ───────────────────────────────────────────
+async function deleteOrder(idx){
+  if(!confirm('¿Eliminar este pedido?')) return;
+  _data.orders.splice(idx,1);
+  _data.updated = new Date().toISOString().slice(0,16).replace('T',' ');
+  await save('☕ Eliminar pedido #'+idx);
+}
+
+// ── Limpiar expirados ─────────────────────────────────────────
+async function cleanExpired(){
+  var now = Date.now();
+  var before = (_data.orders||[]).length;
+  _data.orders = (_data.orders||[]).filter(function(o){ return new Date(o.expiresAt)>now; });
+  var removed = before - _data.orders.length;
+  if(!removed){ showOk('No hay pedidos expirados.'); return; }
+  _data.updated = new Date().toISOString().slice(0,16).replace('T',' ');
+  await save('☕ Limpiar '+removed+' pedido(s) expirado(s)');
+}
+
+// ── Guardar en GitHub ─────────────────────────────────────────
+async function save(msg){
+  var btn = document.getElementById('btnPublish');
+  btn.disabled = true; btn.textContent = '⏳ Guardando...';
+  var cfg = getCfg();
+  try{
+    var content = JSON.stringify(_data, null, 2);
+    var result  = await ghPut(cfg, content, _sha, msg);
+    _sha = result.content.sha;
+    renderOrders();
+    document.getElementById('ordersMeta').textContent = 'Actualizado: '+_data.updated+' · '+_data.orders.length+' pedidos';
+    showOk('✅ Guardado en GitHub. Aparecerá en el sitio en segundos.');
+    // Reset form
+    document.getElementById('addMap').value='';
+    document.getElementById('addFish').innerHTML='<option value="">— Primero elegí mapa —</option>';
+    document.getElementById('addFish').disabled=true;
+    document.getElementById('fishPreview').style.display='none';
+    document.getElementById('addWeight').value='';
+    document.getElementById('addQty').value='1';
+    document.getElementById('addReward').value='';
+    document.getElementById('weightRef').textContent='—';
+  }catch(e){
+    showErr('❌ '+e.message);
+  }
+  btn.disabled=false; btn.textContent='+ Publicar en cafe.json';
+}
+
+// ── UI helpers ────────────────────────────────────────────────
+function onMapChange(){
+  var map  = document.getElementById('addMap').value;
+  var sel  = document.getElementById('addFish');
+  var prev = document.getElementById('fishPreview');
+  sel.innerHTML='<option value="">— Seleccioná pez —</option>';
+  sel.disabled = !map;
+  prev.style.display='none';
+  document.getElementById('weightRef').textContent='—';
+  if(!map||!FISH_BY_MAP[map]) return;
+  FISH_BY_MAP[map].forEach(function(f){
+    var o=document.createElement('option');
+    o.value=f.n; o.textContent=f.n+' (🏆 '+f.t+')';
+    sel.appendChild(o);
+  });
+}
+function onFishChange(){
+  var map  = document.getElementById('addMap').value;
+  var fish = document.getElementById('addFish').value;
+  var prev = document.getElementById('fishPreview');
+  if(!fish||!FISH_BY_MAP[map]){ prev.style.display='none'; return; }
+  var f = FISH_BY_MAP[map].find(function(x){ return x.n===fish; });
+  if(!f){ prev.style.display='none'; return; }
+  document.getElementById('fpImg').src   = BASE_IMG+(f.img||'');
+  document.getElementById('fpName').textContent  = f.n;
+  document.getElementById('fpTrophy').textContent = '🏆 '+f.t;
+  document.getElementById('weightRef').textContent = f.t;
+  prev.style.display='flex';
+}
+function showOk(msg){ var el=document.getElementById('msgOk'); el.textContent=msg; el.style.display='block'; setTimeout(function(){el.style.display='none';},4000); }
+function showErr(msg){ var el=document.getElementById('msgErr'); el.textContent=msg; el.style.display='block'; setTimeout(function(){el.style.display='none';},5000); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// Actualizar timers cada segundo
+setInterval(function(){ if(_data.orders&&_data.orders.length) renderOrders(); }, 1000);
+
+// Init
+restoreCfg();
+loadOrders();
+</script>
+</body>
+</html>

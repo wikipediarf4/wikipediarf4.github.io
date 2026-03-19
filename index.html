@@ -5549,39 +5549,7 @@ document.addEventListener('DOMContentLoaded', function(){
       <button class="cafe-map-btn" onclick="cafeSelectMap(this,'yama','Yama River')">Yama</button>
       <button class="cafe-map-btn" onclick="cafeSelectMap(this,'sea','Norwegian Sea')">Mar Noruega</button>
     </div>
-    <span id="cafeAdminTrigger" style="font-size:.72rem;color:var(--muted);cursor:default;user-select:none;flex-shrink:0;" onclick="cafeAdminClick()">⏱️ En vivo</span>
-  </div>
-
-  <!-- Panel Admin -->
-  <div id="cafeAdminPanel">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-      <span style="font-family:'Orbitron',monospace;font-size:.78rem;font-weight:900;color:#ff8c00;">🛡️ ADMIN — Nuevo pedido</span>
-      <span style="font-size:.7rem;color:var(--muted);margin-left:auto;">Mapa: <b id="cafeAdminMapLabel" style="color:#ff8c00;">Komarinoe</b></span>
-    </div>
-    <div class="cafe-admin-row">
-      <div class="cafe-fish-select-wrap">
-        <div class="cafe-admin-label">Especie del pez</div>
-        <select class="cafe-admin-input" id="caInFishSelect" onchange="cafeOnFishSelect()">
-          <option value="">— Seleccioná un pez —</option>
-        </select>
-        <div class="cafe-fish-preview" id="cafeFishPreview" style="display:none;">
-          <img id="cafeFishPreviewImg" src="" alt="">
-          <span id="cafeFishPreviewName"></span>
-          <span id="cafeFishPreviewTrophy" style="font-size:.7rem;color:var(--gold);margin-left:auto;"></span>
-        </div>
-      </div>
-      <div>
-        <div class="cafe-admin-label">Peso pedido (kg)</div>
-        <input class="cafe-admin-input" id="caInWeight" type="number" step="0.001" placeholder="0.000">
-        <div style="font-size:.68rem;color:var(--muted);margin-top:4px;">Trofeo desde: <span id="caInWeightRef" style="color:var(--gold);">—</span></div>
-      </div>
-    </div>
-    <div class="cafe-admin-row3">
-      <div><div class="cafe-admin-label">Cantidad</div><input class="cafe-admin-input" id="caInQty" type="number" min="1" placeholder="1"></div>
-      <div><div class="cafe-admin-label">Recompensa 💰</div><input class="cafe-admin-input" id="caInReward" type="number" placeholder="0"></div>
-      <div><div class="cafe-admin-label">Expira en (min)</div><input class="cafe-admin-input" id="caInExpires" type="number" placeholder="30"></div>
-    </div>
-    <button class="cafe-admin-btn" onclick="cafeAddOrder()">+ Publicar pedido</button>
+    <span id="cafeMeta" style="font-size:.7rem;color:var(--muted);flex-shrink:0;">● cargando...</span>
   </div>
 
   <!-- Barra info -->
@@ -5598,78 +5566,40 @@ document.addEventListener('DOMContentLoaded', function(){
 
 <script>
 (function(){
-  var CAFE_PIN = 'rf4admin2025';
-  var cafeClicks = 0, cafeClickTimer = null, cafeUnlocked = false;
-  var cafeCurrentMap = 'komarinoe';
-  var cafeCurrentMapFull = 'Mosquito Lake';
-  var cafeIdCounter = 200;
-  var cafeMapData = {};
+  // ── Estado ──────────────────────────────────────────────
+  var _orders      = [];   // todos los pedidos cargados del JSON
+  var _updated     = '';
+  var _loaded      = false;
+  var _cafeMap     = 'Mosquito Lake';  // mapa activo (nombre completo del JSON)
+  var _tick        = null;
 
-  var cafeMapLabels = {
+  // Mapa clave-botón → nombre completo igual al cafe.json
+  var CAFE_MAP_KEYS = {
+    komarinoe:'Mosquito Lake', losinoe:'Moose Lake', vjunok:'Winding Rivulet',
+    ostrog:'Old Burg Lake',    belaya:'Belaya River', kuori:'Kuori Lake',
+    volhov:'Volkhov River',    donets:'Seversky Donets', sura:'Sura River',
+    ladoga:'Ladoga Lake',      yantarnoe:'Amber Lake', archipelago:'Ladoga archipelago',
+    ahtuba:'Akhtuba River',    mednoe:'Cooper Lake',   tunguska:'Lower Tunguska River',
+    yama:'Yama River',         sea:'Norwegian Sea'
+  };
+  var CAFE_MAP_LABELS = {
     komarinoe:'Komarinoe',losinoe:'Losinoe',vjunok:'Vjunok',ostrog:'Ostrog',
     belaya:'Belaya',kuori:'Kuori',volhov:'Volkhov',donets:'Donets',
     sura:'Sura',ladoga:'Ladoga',yantarnoe:'Yantarnoe',archipelago:'Archipiélago',
     ahtuba:'Akhtuba',mednoe:'Mednoe',tunguska:'Tunguska',yama:'Yama',sea:'Mar Noruega'
   };
-  Object.keys(cafeMapLabels).forEach(function(k){ cafeMapData[k]=[]; });
 
-  window.cafeAdminClick = function(){
-    cafeClicks++;
-    clearTimeout(cafeClickTimer);
-    cafeClickTimer = setTimeout(function(){ cafeClicks=0; }, 1500);
-    if(cafeClicks >= 5){
-      cafeClicks = 0;
-      if(!cafeUnlocked){
-        var pin = prompt('🔐 Contraseña admin:');
-        if(pin === CAFE_PIN){
-          cafeUnlocked = true;
-          document.getElementById('cafeAdminPanel').classList.add('visible');
-          cafePopulateFishSelect();
-        }
-      } else {
-        document.getElementById('cafeAdminPanel').classList.toggle('visible');
-      }
-    }
-  };
+  // ── Helpers ──────────────────────────────────────────────
+  function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-  function cafePopulateFishSelect(){
-    var sel = document.getElementById('caInFishSelect');
-    if(!sel) return;
-    var fishes = (typeof FISH_DB !== 'undefined' ? FISH_DB : []).filter(function(f){
-      return f.maps && f.maps.some(function(m){ return m.n === cafeCurrentMapFull; });
-    });
-    fishes.sort(function(a,b){ return a.n.localeCompare(b.n); });
-    sel.innerHTML = '<option value="">— Seleccioná un pez —</option>';
-    fishes.forEach(function(f, i){
-      var opt = document.createElement('option');
-      opt.value = i;
-      opt.textContent = f.n + ' (trofeo: ' + f.t + ')';
-      opt._fishRef = f;
-      sel.appendChild(opt);
-    });
-    sel._fishList = fishes;
-    document.getElementById('cafeFishPreview').style.display = 'none';
-    document.getElementById('caInWeightRef').textContent = '—';
+  function secsLeft(expiresAt){
+    return Math.max(0, Math.round((new Date(expiresAt) - Date.now()) / 1000));
   }
-
-  window.cafeOnFishSelect = function(){
-    var sel = document.getElementById('caInFishSelect');
-    var idx = parseInt(sel.value);
-    var preview = document.getElementById('cafeFishPreview');
-    var ref = document.getElementById('caInWeightRef');
-    if(isNaN(idx) || !sel._fishList || !sel._fishList[idx]){
-      preview.style.display = 'none';
-      ref.textContent = '—';
-      return;
-    }
-    var f = sel._fishList[idx];
-    document.getElementById('cafeFishPreviewImg').src = f.img;
-    document.getElementById('cafeFishPreviewName').textContent = f.n;
-    document.getElementById('cafeFishPreviewTrophy').textContent = '🏆 ' + f.t;
-    preview.style.display = 'flex';
-    ref.textContent = f.t;
-  };
-
+  function totalSecs(expiresAt, addedAt){
+    // Si no hay addedAt, asumimos 30 min total
+    if(!addedAt) return 30*60;
+    return Math.max(1, Math.round((new Date(expiresAt) - new Date(addedAt)) / 1000));
+  }
   function fmtTime(s){
     s = Math.max(0, Math.round(s));
     return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0');
@@ -5680,115 +5610,121 @@ document.addEventListener('DOMContentLoaded', function(){
     return '#f85149';
   }
 
+  // ── Carga desde cafe.json (igual que records.json) ───────
+  async function load(){
+    var bust = Math.floor(Date.now() / (60*1000)); // cache bust cada 1 min
+    var urls = ['/cafe.json?v='+bust];
+    for(var i=0;i<urls.length;i++){
+      try{
+        var res = await fetch(urls[i]);
+        if(!res.ok) continue;
+        var json = await res.json();
+        _orders  = json.orders || [];
+        _updated = json.updated || '';
+        _loaded  = true;
+        var meta = document.getElementById('cafeMeta');
+        if(meta){ meta.textContent = '● actualizado '+esc(_updated); meta.style.color='var(--green)'; }
+        return;
+      }catch(e){}
+    }
+    throw new Error('No se pudo cargar cafe.json');
+  }
+
+  // ── Render ───────────────────────────────────────────────
   function cafeRender(){
-    var orders = (cafeMapData[cafeCurrentMap]||[]).filter(function(o){ return o.secsLeft > 0; });
+    var now = Date.now();
+    var active = _orders.filter(function(o){
+      return o.map === _cafeMap && new Date(o.expiresAt) > now;
+    });
+    active.sort(function(a,b){ return new Date(a.expiresAt) - new Date(b.expiresAt); });
+
     var list = document.getElementById('cafeOrdersList');
-    var cnt = document.getElementById('cafeOrderCount');
-    if(cnt) cnt.textContent = orders.length;
+    var cnt  = document.getElementById('cafeOrderCount');
+    if(cnt) cnt.textContent = active.length;
     if(!list) return;
-    if(!orders.length){
-      list.innerHTML = '<div class="cafe-empty">Sin pedidos activos en este mapa.<br><span style="font-size:.74rem;">Aparecerán aquí cuando el admin publique uno.</span></div>';
+
+    if(!active.length){
+      list.innerHTML = '<div class="cafe-empty">Sin pedidos activos en este mapa.<br>'
+        +'<span style="font-size:.74rem;">Se actualizan automáticamente cada 60 segundos.</span></div>';
       return;
     }
-    list.innerHTML = orders.map(function(o){
-      var ratio = o.secsLeft / o.totalSecs;
-      var isUrgent = o.secsLeft <= 5*60;
-      var isWarn = o.secsLeft <= 10*60 && !isUrgent;
+
+    list.innerHTML = active.map(function(o){
+      var sl    = secsLeft(o.expiresAt);
+      var ts    = totalSecs(o.expiresAt, o.addedAt) || 30*60;
+      var ratio = sl / ts;
+      var isUrgent = sl <= 5*60;
+      var isWarn   = sl <= 10*60 && !isUrgent;
       var cls = isUrgent?' urgent':isWarn?' warning':'';
-      var bc = barColor(ratio);
+      var bc  = barColor(ratio);
       var pct = Math.max(0, ratio*100).toFixed(1);
-      var tc = isUrgent?'#f85149':isWarn?'#d29922':'#3fb950';
+      var tc  = isUrgent?'#f85149':isWarn?'#d29922':'#3fb950';
       var imgHtml = o.fishImg
-        ? '<img src="'+o.fishImg+'" alt="'+o.fishName+'" onerror="this.style.display=\'none\'">'
+        ? '<img src="'+esc(o.fishImg)+'" alt="'+esc(o.fish)+'" onerror="this.style.display=\'none\'">'
         : '<span style="font-size:1.3rem;">🐟</span>';
-      var delBtn = cafeUnlocked
-        ? '<button class="cafe-del-btn" onclick="cafeDeleteOrder('+o.id+')" title="Eliminar pedido">✕</button>'
-        : '';
       return '<div class="cafe-order-card'+cls+'">'
         +'<div class="cafe-fish-img'+(isUrgent?' urgent':'')+'">'+imgHtml+'</div>'
         +'<div class="cafe-info">'
-        +'<div class="cafe-fish-name">'+o.fishName+' <span class="cafe-badge">0/'+o.qty+'</span></div>'
-        +'<div class="cafe-fish-detail">Peso pedido: <b style="color:var(--text);">'+o.weight.toFixed(3)+' kg</b></div>'
-        +(o.trophyWeight ? '<div class="cafe-fish-trophy">🏆 Trofeo desde: '+o.trophyWeight+'</div>' : '')
+        +'<div class="cafe-fish-name">'+esc(o.fish)+' <span class="cafe-badge">0/'+esc(o.qty)+'</span></div>'
+        +'<div class="cafe-fish-detail">Peso: <b style="color:var(--text);">'+parseFloat(o.weight||0).toFixed(3)+' kg</b></div>'
+        +(o.trophyWeight?'<div class="cafe-fish-trophy">🏆 Trofeo desde: '+esc(o.trophyWeight)+'</div>':'')
         +'</div>'
         +'<div class="cafe-right">'
-        +'<div class="cafe-reward">💰 '+o.reward+'</div>'
+        +'<div class="cafe-reward">💰 '+esc(o.reward)+'</div>'
         +'<div class="cafe-timer-wrap">'
         +'<div class="cafe-bar-bg"><div class="cafe-bar-fill" style="width:'+pct+'%;background:'+bc+'"></div></div>'
-        +'<div class="cafe-timer-label" style="color:'+tc+'">'+fmtTime(o.secsLeft)+'</div>'
-        +'</div>'
-        +'</div>'
-        +delBtn
+        +'<div class="cafe-timer-label" style="color:'+tc+'">'+fmtTime(sl)+'</div>'
+        +'</div></div>'
         +'</div>';
     }).join('');
   }
 
+  // ── Tick cada segundo (solo actualiza timers del mapa activo) ─
+  function startTick(){
+    if(_tick) clearInterval(_tick);
+    _tick = setInterval(function(){ cafeRender(); }, 1000);
+  }
+
+  // ── Recarga el JSON cada 60 segundos ─────────────────────
+  async function autoReload(){
+    try{ await load(); cafeRender(); }catch(e){}
+    setTimeout(autoReload, 60*1000);
+  }
+
+  // ── Cambio de mapa ────────────────────────────────────────
   window.cafeSelectMap = function(btn, mapKey, mapFull){
     document.querySelectorAll('.cafe-map-btn').forEach(function(b){ b.classList.remove('active'); });
     btn.classList.add('active');
-    cafeCurrentMap = mapKey;
-    cafeCurrentMapFull = mapFull;
-    var lbl = cafeMapLabels[mapKey]||mapKey;
+    _cafeMap = mapFull;
+    var lbl = CAFE_MAP_LABELS[mapKey] || mapKey;
     var e1 = document.getElementById('cafeCurrentMapLabel');
-    var e2 = document.getElementById('cafeAdminMapLabel');
     if(e1) e1.textContent = lbl;
-    if(e2) e2.textContent = lbl;
-    if(cafeUnlocked) cafePopulateFishSelect();
     cafeRender();
   };
 
-  window.cafeAddOrder = function(){
-    var sel = document.getElementById('caInFishSelect');
-    var idx = parseInt(sel.value);
-    if(isNaN(idx) || !sel._fishList || !sel._fishList[idx]){
-      sel.focus(); return;
+  // ── Init ──────────────────────────────────────────────────
+  async function init(){
+    var meta = document.getElementById('cafeMeta');
+    if(meta){ meta.textContent='● cargando...'; meta.style.color='var(--muted)'; }
+    try{
+      await load();
+    }catch(e){
+      if(meta){ meta.textContent='● sin datos'; meta.style.color='var(--red)'; }
     }
-    var fish = sel._fishList[idx];
-    var weight = parseFloat(document.getElementById('caInWeight').value)||0;
-    var qty = parseInt(document.getElementById('caInQty').value)||1;
-    var reward = parseInt(document.getElementById('caInReward').value)||0;
-    var mins = parseInt(document.getElementById('caInExpires').value)||30;
-    var secs = mins * 60;
-    cafeIdCounter++;
-    cafeMapData[cafeCurrentMap].unshift({
-      id: cafeIdCounter,
-      fishName: fish.n,
-      fishImg: fish.img,
-      trophyWeight: fish.t,
-      weight: weight,
-      qty: qty,
-      reward: reward,
-      totalSecs: secs,
-      secsLeft: secs
-    });
-    sel.value = '';
-    document.getElementById('cafeFishPreview').style.display = 'none';
-    document.getElementById('caInWeight').value = '';
-    document.getElementById('caInQty').value = '';
-    document.getElementById('caInReward').value = '';
-    document.getElementById('caInExpires').value = '';
-    document.getElementById('caInWeightRef').textContent = '—';
     cafeRender();
+    startTick();
+    setTimeout(autoReload, 60*1000);
+  }
+
+  // Arrancar cuando se abre la sección café
+  var _origGpCafe = window.gp;
+  window.gp = function(page){
+    if(typeof _origGpCafe === 'function') _origGpCafe(page);
+    if(page === 'cafe'){ if(!_loaded) init(); else cafeRender(); }
   };
-
-  window.cafeDeleteOrder = function(id){
-    Object.keys(cafeMapData).forEach(function(m){
-      cafeMapData[m] = cafeMapData[m].filter(function(o){ return o.id !== id; });
-    });
-    cafeRender();
-  };
-
-  setInterval(function(){
-    var changed = false;
-    Object.keys(cafeMapData).forEach(function(m){
-      cafeMapData[m].forEach(function(o){ if(o.secsLeft>0){ o.secsLeft=Math.max(0,o.secsLeft-1); changed=true; } });
-      cafeMapData[m] = cafeMapData[m].filter(function(o){ return o.secsLeft>0; });
-    });
-    if(changed) cafeRender();
-  }, 1000);
-
-  document.addEventListener('DOMContentLoaded', function(){ cafeRender(); });
-  setTimeout(function(){ cafeRender(); }, 600);
+  document.addEventListener('DOMContentLoaded', function(){
+    if(document.getElementById('cafeOrdersList')) init();
+  });
 })();
 </script>
 

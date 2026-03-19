@@ -1,0 +1,27 @@
+{
+  "updated": "2026-03-19 12:00",
+  "orders": [
+    {
+      "id": 1,
+      "map": "Yama River",
+      "fish": "Kaluga",
+      "fishImg": "https://en.rf4-stat.ru/images/rf4game/kaluga.png",
+      "trophyWeight": "500 kg",
+      "weight": 15.000,
+      "qty": 2,
+      "reward": 2500,
+      "expiresAt": "2026-03-19T23:59:00"
+    },
+    {
+      "id": 2,
+      "map": "Mosquito Lake",
+      "fish": "Carpa Gibel",
+      "fishImg": "https://en.rf4-stat.ru/images/rf4game/crucian.png",
+      "trophyWeight": "1.900 kg",
+      "weight": 0.500,
+      "qty": 5,
+      "reward": 320,
+      "expiresAt": "2026-03-19T23:59:00"
+    }
+  ]
+}
