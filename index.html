@@ -5595,16 +5595,17 @@ document.addEventListener('DOMContentLoaded', function(){
     if(!addedAt) return 30*60;
     return Math.max(1, Math.round((new Date(expiresAt) - new Date(addedAt)) / 1000));
   }
-  function fmtTimeDays(s){
-    s = Math.max(0, Math.round(s));
-    var d = Math.floor(s/86400);
-    var h = Math.floor((s%86400)/3600);
-    var m = Math.floor((s%3600)/60);
-    if(d > 0 && h > 0) return d+' día'+(d>1?'s':'')+' '+h+' hora'+(h>1?'s':'');
-    if(d > 0) return d+' día'+(d>1?'s':'');
-    if(h > 0 && m > 0) return h+' hora'+(h>1?'s':'')+' '+m+' minuto'+(m>1?'s':'');
-    if(h > 0) return h+' hora'+(h>1?'s':'');
-    return m+' minuto'+(m>1?'s':'');
+  function fmtTimeDays(realSecs){
+    // tiempo de juego = tiempo real × 24
+    var gameSecs = realSecs * 24;
+    var gd = Math.floor(gameSecs / 86400);
+    var gh = Math.floor((gameSecs % 86400) / 3600);
+    var gm = Math.floor((gameSecs % 3600) / 60);
+    var parts = [];
+    if(gd > 0) parts.push(gd+' día'+(gd>1?'s':''));
+    if(gh > 0) parts.push(gh+' hora'+(gh>1?'s':''));
+    if(gm > 0 && gd === 0) parts.push(gm+' minuto'+(gm>1?'s':''));
+    return parts.length ? parts.join(' ') : 'menos de 1 minuto';
   }
   function fmtWeight(w){
     var kg = parseFloat(w)||0;
@@ -5689,13 +5690,22 @@ document.addEventListener('DOMContentLoaded', function(){
       var cls = isUrgent?' urgent':isWarn?' warning':'';
       var timerCls = isUrgent?' urgent':isWarn?' warning':'';
 
-      // Formato HH:MM para el círculo
-      var sh = Math.floor(sl/3600);
-      var sm = Math.floor((sl%3600)/60);
-      var ss = sl%60;
-      var timerDisplay = sh > 0
-        ? sh+':'+String(sm).padStart(2,'0')
-        : String(sm).padStart(2,'0')+':'+String(ss).padStart(2,'0');
+      // Horas de juego restantes = segundos reales × 24 / 3600
+      var gameHoursLeft = (sl * 24) / 3600;
+      var ghD = Math.floor(gameHoursLeft / 24);
+      var ghH = Math.floor(gameHoursLeft % 24);
+      var ghM = Math.floor((gameHoursLeft % 1) * 60);
+
+      // Lo que muestra el círculo azul: horas de juego restantes
+      var timerDisplay = Math.floor(gameHoursLeft) + 'h';
+      if(ghH === 0 && ghD === 0) timerDisplay = ghM + 'm';
+
+      // Tooltip en días de juego
+      var gameTimeParts = [];
+      if(ghD > 0) gameTimeParts.push(ghD+' día'+(ghD>1?'s':''));
+      if(ghH > 0) gameTimeParts.push(ghH+' hora'+(ghH>1?'s':''));
+      if(ghM > 0 && ghD === 0) gameTimeParts.push(ghM+' min');
+      var gameTimeStr = gameTimeParts.join(' ') || 'menos de 1 hora';
 
       var imgHtml = o.fishImg
         ? '<img src="'+esc(o.fishImg)+'" alt="'+esc(o.fish)+'" onerror="this.parentNode.innerHTML=\'<span class=cafe-no-img>🐟</span>\'">'
@@ -5712,7 +5722,7 @@ document.addEventListener('DOMContentLoaded', function(){
         // Tooltip estado
         +'<div class="cafe-estado" style="display:none;position:absolute;top:60px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);border:1px solid #444;border-radius:6px;padding:8px 12px;z-index:10;min-width:160px;flex-direction:column;gap:2px;pointer-events:none;">'
         +'<div style="font-size:.68rem;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;">Estado</div>'
-        +'<div style="font-size:.82rem;color:#fff;font-weight:600;">El pedido expira en '+fmtTimeDays(sl)+'</div>'
+        +'<div style="font-size:.82rem;color:#fff;font-weight:600;">El pedido expira en '+gameTimeStr+'</div>'
         +'</div>'
         // Cuerpo
         +'<div class="cafe-card-body">'
