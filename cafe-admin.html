@@ -154,22 +154,20 @@ input:focus,select:focus{border-color:#ff8c00;}
     </div>
   </div>
   <div class="field" style="max-width:280px;">
-    <label>Horas del juego (ej: 110.09)</label>
-    <div style="position:relative;">
-      <input type="number" id="gameMin" min="0" step="0.01" placeholder="ej: 110.09"
-        oninput="convertGameTime()"
-        onmouseenter="showGameTooltip(true)"
-        onmouseleave="showGameTooltip(false)"
-        style="width:100%;">
+    <label>Tiempo del juego (HH:MM como en RF4)</label>
+    <div style="display:flex;align-items:center;gap:6px;position:relative;">
+      <input type="number" id="gameHH" min="0" placeholder="107" style="flex:1;" oninput="convertGameTime()" onmouseenter="showGameTooltip(true)" onmouseleave="showGameTooltip(false)">
+      <span style="color:#8b949e;font-weight:900;font-size:1.2rem;">:</span>
+      <input type="number" id="gameMM" min="0" max="59" placeholder="26" style="width:64px;" oninput="convertGameTime()" onmouseenter="showGameTooltip(true)" onmouseleave="showGameTooltip(false)">
       <div id="gameTooltip" style="display:none;position:absolute;bottom:calc(100% + 6px);left:0;
         background:#1c2128;border:1px solid #ff8c00;border-radius:8px;padding:10px 14px;
         font-size:.82rem;color:#e6edf3;white-space:nowrap;z-index:10;pointer-events:none;line-height:1.8;">
-        <div style="font-size:.7rem;color:#8b949e;margin-bottom:2px;">🎮 En el juego equivale a:</div>
+        <div style="font-size:.7rem;color:#8b949e;margin-bottom:2px;">🎮 En el juego son:</div>
         <div id="gameTooltipText" style="font-weight:700;color:#ff8c00;">—</div>
       </div>
     </div>
     <div style="margin-top:5px;background:#21262d;border:1px solid #30363d;border-radius:6px;padding:6px 10px;font-size:.78rem;" id="gameTimeResult">
-      ⏱️ Ingresá las horas del juego
+      ⏱️ Ingresá el tiempo como aparece en el juego
     </div>
     <input type="hidden" id="addExpires" value="30">
   </div>
@@ -389,8 +387,8 @@ async function save(msg){
     document.getElementById('addFish').innerHTML='<option value="">— Primero elegí mapa —</option>';
     document.getElementById('addFish').disabled=true;
     document.getElementById('fishPreview').style.display='none';
-    document.getElementById('gameMin').value='';
-    document.getElementById('gameSec').value='';
+    document.getElementById('gameHH').value='';
+    document.getElementById('gameMM').value='';
     document.getElementById('gameTimeResult').innerHTML='⏱️ Ingresá el tiempo como aparece en el juego';
     document.getElementById('addExpires').value='30';
     document.getElementById('addWeightUnit').value='kg';
@@ -405,38 +403,40 @@ async function save(msg){
 
 // ── UI helpers ────────────────────────────────────────────────
 function convertGameTime(){
-  var gameHours = parseFloat(document.getElementById('gameMin').value)||0;
+  var hh = parseFloat(document.getElementById('gameHH').value)||0;
+  var mm = parseFloat(document.getElementById('gameMM').value)||0;
   var res = document.getElementById('gameTimeResult');
   var hidden = document.getElementById('addExpires');
-  if(gameHours <= 0){
-    res.innerHTML='⏱️ Ingresá las horas del juego';
+  var totalGameHours = hh + (mm/60);
+  if(totalGameHours <= 0){
+    res.innerHTML='⏱️ Ingresá el tiempo como aparece en el juego';
     hidden.value=30;
     document.getElementById('gameTooltipText').textContent='—';
     return;
   }
   // horas de juego ÷ 24 = horas reales
-  var realMins = Math.ceil((gameHours / 24) * 60);
+  var realMins = Math.ceil((totalGameHours / 24) * 60);
   realMins = Math.max(1, realMins);
   hidden.value = realMins;
   var rh = Math.floor(realMins/60);
   var rm = realMins%60;
   var realStr = rh > 0 ? rh+'h '+rm+'min' : realMins+' min';
   res.innerHTML = '⏱️ Tiempo real: <b style="color:#ff8c00;">'+realStr+'</b>';
-
-  // Calcular días/horas/min de juego para el tooltip
-  var gd = Math.floor(gameHours / 24);
-  var gh = Math.floor(gameHours % 24);
-  var gm = Math.round((gameHours % 1) * 60);
+  // Tooltip: días y horas de juego
+  var gd = Math.floor(totalGameHours / 24);
+  var gh = Math.floor(totalGameHours % 24);
+  var gm = Math.round((totalGameHours % 1) * 60);
   var parts = [];
   if(gd > 0) parts.push(gd+' día'+(gd>1?'s':''));
   if(gh > 0) parts.push(gh+' hora'+(gh>1?'s':''));
-  if(gm > 0) parts.push(gm+' min');
-  document.getElementById('gameTooltipText').textContent = parts.join(', ') || '< 1 min';
+  if(gm > 0 && gd === 0) parts.push(gm+' min');
+  document.getElementById('gameTooltipText').textContent = parts.join(' ') || '< 1 hora';
 }
 
 function showGameTooltip(show){
-  var val = parseFloat(document.getElementById('gameMin').value)||0;
-  document.getElementById('gameTooltip').style.display = (show && val > 0) ? 'block' : 'none';
+  var hh = parseFloat(document.getElementById('gameHH').value)||0;
+  var mm = parseFloat(document.getElementById('gameMM').value)||0;
+  document.getElementById('gameTooltip').style.display = (show && (hh>0||mm>0)) ? 'block' : 'none';
 }
 
 function onMapChange(){
