@@ -322,17 +322,18 @@ async function publishOrder(){
   var weightUnit = document.getElementById('addWeightUnit').value;
   var weight = weightUnit === 'g' ? weightVal / 1000 : weightVal;
   var qty    = parseInt(document.getElementById('addQty').value)||1;
-  var reward = parseInt(document.getElementById('addReward').value)||0;
+  var reward = parseFloat(document.getElementById('addReward').value)||0;
   var gameHours = parseFloat(document.getElementById('gameHH').value)||0;
   if(!map||!fish){ showErr('Elegí mapa y especie.'); return; }
   if(gameHours <= 0){ showErr('Ingresá las horas del juego.'); return; }
   if(!_sha){ showErr('Cargá primero los pedidos (botón ⟳ Recargar).'); return; }
 
   var fishData = (FISH_BY_MAP[map]||[]).find(function(f){ return f.n===fish; })||{};
-  // horas de juego ÷ 24 = horas reales → milisegundos
+  // horas de juego ÷ 24 = horas reales → milisegundos (todo en UTC)
+  var nowUTC = Date.now();
   var realMs = (gameHours / 24) * 60 * 60 * 1000;
-  var expiresAt = new Date(Date.now() + realMs).toISOString().slice(0,19);
-  var addedAt   = new Date().toISOString().slice(0,19);
+  var expiresAt = new Date(nowUTC + realMs).toISOString().slice(0,19) + 'Z';
+  var addedAt   = new Date(nowUTC).toISOString().slice(0,19) + 'Z';
   var maxId = 0;
   (_data.orders||[]).forEach(function(o){ if((o.id||0)>maxId) maxId=o.id; });
 

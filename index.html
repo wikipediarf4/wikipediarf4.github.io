@@ -5588,12 +5588,14 @@ document.addEventListener('DOMContentLoaded', function(){
   function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
   function secsLeft(expiresAt){
-    return Math.max(0, Math.round((new Date(expiresAt) - Date.now()) / 1000));
+    var d = expiresAt.endsWith('Z') ? new Date(expiresAt) : new Date(expiresAt+'Z');
+    return Math.max(0, Math.round((d - Date.now()) / 1000));
   }
   function totalSecs(expiresAt, addedAt){
-    // Si no hay addedAt, asumimos 30 min total
     if(!addedAt) return 30*60;
-    return Math.max(1, Math.round((new Date(expiresAt) - new Date(addedAt)) / 1000));
+    var e = expiresAt.endsWith('Z') ? new Date(expiresAt) : new Date(expiresAt+'Z');
+    var a = addedAt.endsWith('Z') ? new Date(addedAt) : new Date(addedAt+'Z');
+    return Math.max(1, Math.round((e - a) / 1000));
   }
   function fmtTimeDays(realSecs){
     // tiempo de juego = tiempo real × 24
