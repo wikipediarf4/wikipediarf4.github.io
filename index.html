@@ -5631,9 +5631,6 @@ document.addEventListener('DOMContentLoaded', function(){
     if(m > 0) return m+' minutos '+sec+' segundos';
     return sec+' segundos';
   }
-    s = Math.max(0, Math.round(s));
-    return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0');
-  }
   function barColor(r){
     if(r > 0.5) return '#3fb950';
     if(r > 0.2) return '#d29922';
@@ -5653,7 +5650,7 @@ document.addEventListener('DOMContentLoaded', function(){
         _updated = json.updated || '';
         _loaded  = true;
         var meta = document.getElementById('cafeMeta');
-        if(meta){ meta.textContent = '● actualizado '+esc(_updated); meta.style.color='var(--green)'; }
+        if(meta){ meta.textContent = '● actualizado '+esc(_updated)+' ('+_orders.length+' pedidos)'; meta.style.color='var(--green)'; }
         return;
       }catch(e){}
     }

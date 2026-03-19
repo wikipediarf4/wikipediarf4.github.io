@@ -134,8 +134,14 @@ input:focus,select:focus{border-color:#ff8c00;}
   </div>
   <div class="g3" style="margin-bottom:10px;">
     <div class="field">
-      <label>Peso pedido (kg)</label>
-      <input type="number" id="addWeight" step="0.001" placeholder="0.000">
+      <label>Peso pedido</label>
+      <div style="display:flex;gap:6px;">
+        <input type="number" id="addWeight" step="0.001" placeholder="0" style="flex:1;">
+        <select id="addWeightUnit" style="width:60px;padding:8px 4px;background:#21262d;border:1px solid #30363d;border-radius:6px;color:#e6edf3;font-size:.82rem;outline:none;">
+          <option value="kg">kg</option>
+          <option value="g">g</option>
+        </select>
+      </div>
       <div style="font-size:.68rem;color:#d4a017;margin-top:3px;">🏆 Trofeo desde: <span id="weightRef">—</span></div>
     </div>
     <div class="field">
@@ -296,7 +302,9 @@ async function publishOrder(){
   var map    = document.getElementById('addMap').value;
   var fishSel= document.getElementById('addFish');
   var fish   = fishSel.value;
-  var weight = parseFloat(document.getElementById('addWeight').value)||0;
+  var weightVal = parseFloat(document.getElementById('addWeight').value)||0;
+  var weightUnit = document.getElementById('addWeightUnit').value;
+  var weight = weightUnit === 'g' ? weightVal / 1000 : weightVal;
   var qty    = parseInt(document.getElementById('addQty').value)||1;
   var reward = parseInt(document.getElementById('addReward').value)||0;
   var mins   = parseInt(document.getElementById('addExpires').value)||30;
@@ -366,6 +374,7 @@ async function save(msg){
     document.getElementById('addFish').disabled=true;
     document.getElementById('fishPreview').style.display='none';
     document.getElementById('addWeight').value='';
+    document.getElementById('addWeightUnit').value='kg';
     document.getElementById('addQty').value='1';
     document.getElementById('addReward').value='';
     document.getElementById('weightRef').textContent='—';
