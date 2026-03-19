@@ -5483,56 +5483,254 @@ document.addEventListener('DOMContentLoaded', function(){
 <!-- ===== PÁGINA SOPORTE TÉCNICO ===== -->
 <!-- PAGE: CAFÉ -->
 <div class="page" id="page-cafe" style="padding-top:0 !important;">
-  <div style="height:calc(100vh - 56px);display:flex;flex-direction:column;overflow:hidden;">
+<style>
+#page-cafe .cafe-header{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0;}
+#page-cafe .cafe-map-btn{background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--muted);padding:5px 11px;font-family:'Exo 2',sans-serif;font-size:.76rem;font-weight:700;cursor:pointer;transition:all .18s;white-space:nowrap;}
+#page-cafe .cafe-map-btn:hover{background:var(--bg4);color:var(--text);}
+#page-cafe .cafe-map-btn.active{background:rgba(255,140,0,.15);border-color:#ff8c00;color:#ff8c00;}
+#page-cafe .cafe-body{padding:12px 16px;overflow-y:auto;flex:1;}
+#page-cafe .cafe-order-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;transition:border-color .2s;}
+#page-cafe .cafe-order-card:hover{border-color:var(--muted);}
+#page-cafe .cafe-order-card.urgent{border-color:#f85149;background:rgba(248,81,73,.06);}
+#page-cafe .cafe-order-card.warning{border-color:#d29922;background:rgba(210,153,34,.05);}
+#page-cafe .cafe-fish-av{width:38px;height:38px;border-radius:50%;background:rgba(255,140,0,.12);border:1px solid rgba(255,140,0,.3);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
+#page-cafe .cafe-fish-av.urgent{background:rgba(248,81,73,.15);border-color:rgba(248,81,73,.4);}
+#page-cafe .cafe-info{flex:1;min-width:0;}
+#page-cafe .cafe-fish-name{font-size:.92rem;font-weight:700;color:var(--text);}
+#page-cafe .cafe-fish-detail{font-size:.75rem;color:var(--muted);margin-top:2px;}
+#page-cafe .cafe-right{text-align:right;flex-shrink:0;}
+#page-cafe .cafe-reward{font-size:.88rem;font-weight:700;color:#3fb950;}
+#page-cafe .cafe-timer-wrap{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-top:5px;}
+#page-cafe .cafe-bar-bg{width:72px;height:4px;border-radius:2px;background:var(--bg4);overflow:hidden;}
+#page-cafe .cafe-bar-fill{height:100%;border-radius:2px;transition:width 1s linear;}
+#page-cafe .cafe-timer-label{font-size:.8rem;font-weight:700;font-variant-numeric:tabular-nums;min-width:38px;text-align:right;}
+#page-cafe .cafe-badge{display:inline-block;background:var(--bg4);color:var(--muted);font-size:.68rem;padding:1px 7px;border-radius:20px;margin-left:5px;font-weight:700;}
+#page-cafe .cafe-empty{text-align:center;padding:48px 16px;color:var(--muted);font-size:.85rem;}
+/* Admin panel */
+#cafeAdminPanel{background:var(--bg2);border-bottom:1px solid rgba(255,140,0,.3);padding:12px 16px;display:none;}
+#cafeAdminPanel.visible{display:block;}
+.cafe-admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+.cafe-admin-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;}
+.cafe-admin-label{font-size:.7rem;color:var(--muted);margin-bottom:3px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+.cafe-admin-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:7px 10px;font-family:'Exo 2',sans-serif;font-size:.82rem;outline:none;box-sizing:border-box;}
+.cafe-admin-input:focus{border-color:#ff8c00;}
+.cafe-admin-btn{width:100%;padding:8px;border-radius:6px;border:none;background:#ff8c00;color:#fff;font-family:'Exo 2',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;margin-top:2px;}
+.cafe-admin-btn:hover{background:#e07800;}
+.cafe-del-btn{background:none;border:none;color:var(--muted);font-size:.9rem;cursor:pointer;padding:4px 6px;border-radius:4px;transition:color .15s;}
+.cafe-del-btn:hover{color:var(--red);}
+</style>
 
-  <!-- Header selector de mapas -->
-  <div style="background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0;">
-    <span style="font-family:'Orbitron',monospace;font-size:1rem;font-weight:900;color:#ff8c00;">☕ Pedidos del Café</span>
-    <select id="cafeWaterSelect" onchange="loadCafeMap(this.value)"
-      style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);padding:5px 10px;font-family:'Exo 2',sans-serif;font-size:.82rem;cursor:pointer;outline:none;">
-      <option value="komarinoe">🏞️ Lago Komarinoe</option>
-      <option value="losinoe">🏞️ Lago Losinoe</option>
-      <option value="vjunok">🌊 Río Vjunok</option>
-      <option value="ostrog">🏞️ Lago Stary Ostrog</option>
-      <option value="belaya">🌊 Río Belaya</option>
-      <option value="kuori">🏞️ Lago Kuori</option>
-      <option value="volhov">🌊 Río Volkhov</option>
-      <option value="donets">🌊 Río Seversky Donets</option>
-      <option value="sura">🌊 Río Sura</option>
-      <option value="ladoga">🏞️ Lago Ladoga</option>
-      <option value="yantarnoe">🏞️ Lago Yantarnoe</option>
-      <option value="archipelago">🏝️ Archipiélago Ladoga</option>
-      <option value="ahtuba">🌊 Río Akhtuba</option>
-      <option value="mednoe">🏞️ Lago Mednoe</option>
-      <option value="tunguska">🌊 Río N. Tunguska</option>
-      <option value="yama">🌊 Río Yama</option>
-      <option value="sea">🌊 Mar de Noruega</option>
-    </select>
-    <span style="font-size:.75rem;color:var(--muted);margin-left:auto;">⏱️ Actualización cada 60 seg.</span>
+<div style="height:calc(100vh - 56px);display:flex;flex-direction:column;overflow:hidden;">
+
+  <!-- Header -->
+  <div class="cafe-header">
+    <span style="font-family:'Orbitron',monospace;font-size:.95rem;font-weight:900;color:#ff8c00;flex-shrink:0;">☕ Pedidos del Café</span>
+    <div id="cafeMapBtns" style="display:flex;gap:6px;flex-wrap:wrap;flex:1;">
+      <button class="cafe-map-btn active" onclick="cafeSelectMap(this,'komarinoe')">Komarinoe</button>
+      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'losinoe')">Losinoe</button>
+      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'vjunok')">Vjunok</button>
+      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'ostrog')">Ostrog</button>
+      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'belaya')">Belaya</button>
+      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'kuori')">Kuori</button>
+      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'volhov')">Volkhov</button>
+      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'donets')">Donets</button>
+      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'sura')">Sura</button>
+      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'ladoga')">Ladoga</button>
+      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'yantarnoe')">Yantarnoe</button>
+      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'archipelago')">Archipiélago</button>
+      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'ahtuba')">Akhtuba</button>
+      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'mednoe')">Mednoe</button>
+      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'tunguska')">Tunguska</button>
+      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'yama')">Yama</button>
+      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'sea')">Mar Noruega</button>
+    </div>
+    <!-- Botón admin oculto: clic 5 veces en el ícono de café para abrir -->
+    <span id="cafeAdminTrigger" title="" style="font-size:.75rem;color:var(--muted);cursor:default;user-select:none;" onclick="cafeAdminClick()">⏱️ En vivo</span>
   </div>
 
-  <!-- Iframe normal + botón para abrir traducido en nueva pestaña -->
-  <div style="background:var(--bg3);padding:6px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;border-bottom:1px solid var(--border);">
-    <span style="font-size:.78rem;color:var(--muted);">⚠️ El sitio está en ruso.</span>
-    <button onclick="document.getElementById('cafeIframe').src='https://translate.google.com/translate?sl=ru&tl=es&u='+encodeURIComponent(document.getElementById('cafeIframe').getAttribute('data-url'))"
-      style="background:var(--accent);border:none;color:#fff;border-radius:var(--rs);padding:4px 12px;font-family:'Exo 2',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;">
-      🌐 Ver en Español
-    </button>
-    <button onclick="document.getElementById('cafeIframe').src=document.getElementById('cafeIframe').getAttribute('data-url')"
-      style="background:var(--bg4);border:1px solid var(--border);color:var(--text);border-radius:var(--rs);padding:4px 12px;font-family:'Exo 2',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;">
-      🇷🇺 Ver en Ruso
-    </button>
+  <!-- Panel Admin (oculto por defecto) -->
+  <div id="cafeAdminPanel">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+      <span style="font-family:'Orbitron',monospace;font-size:.78rem;font-weight:900;color:#ff8c00;">🛡️ ADMIN — Agregar Pedido</span>
+      <span style="font-size:.7rem;color:var(--muted);margin-left:auto;">Mapa: <b id="cafeAdminMapLabel" style="color:#ff8c00;">Komarinoe</b></span>
+    </div>
+    <div class="cafe-admin-grid">
+      <div><div class="cafe-admin-label">Especie</div><input class="cafe-admin-input" id="caInFish" type="text" placeholder="Ej: Roach, Pike..."></div>
+      <div><div class="cafe-admin-label">Peso mín. (kg)</div><input class="cafe-admin-input" id="caInWeight" type="number" step="0.01" placeholder="0.00"></div>
+    </div>
+    <div class="cafe-admin-grid-3">
+      <div><div class="cafe-admin-label">Cantidad</div><input class="cafe-admin-input" id="caInQty" type="number" min="1" placeholder="1"></div>
+      <div><div class="cafe-admin-label">Recompensa 💰</div><input class="cafe-admin-input" id="caInReward" type="number" placeholder="0"></div>
+      <div><div class="cafe-admin-label">Expira en (min)</div><input class="cafe-admin-input" id="caInExpires" type="number" placeholder="30"></div>
+    </div>
+    <button class="cafe-admin-btn" onclick="cafeAddOrder()">+ Publicar pedido</button>
   </div>
 
-  <iframe id="cafeIframe"
-    src="https://rf4-cafe.ru/komarinoe"
-    data-url="https://rf4-cafe.ru/komarinoe"
-    style="flex:1;width:100%;border:none;background:#1a1a2e;display:block;"
-    allowfullscreen>
-  </iframe>
-
+  <!-- Conteo -->
+  <div style="background:var(--bg3);border-bottom:1px solid var(--border);padding:6px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;">
+    <span style="font-size:.75rem;color:var(--muted);">Pedidos activos en <b id="cafeCurrentMapLabel" style="color:#ff8c00;">Komarinoe</b>:</span>
+    <span id="cafeOrderCount" style="font-size:.75rem;font-weight:700;color:var(--text);">0</span>
+    <span style="font-size:.68rem;color:var(--muted);margin-left:auto;">🔴 Los pedidos expirados se eliminan solos</span>
   </div>
+
+  <!-- Lista de pedidos -->
+  <div class="cafe-body" id="cafeOrdersList"></div>
+
 </div>
+</div>
+
+<script>
+(function(){
+  var CAFE_ADMIN_PIN = 'rf4admin2025';
+  var cafeAdminClicks = 0;
+  var cafeAdminTimer = null;
+  var cafeAdminUnlocked = false;
+
+  window.cafeAdminClick = function(){
+    cafeAdminClicks++;
+    clearTimeout(cafeAdminTimer);
+    cafeAdminTimer = setTimeout(function(){ cafeAdminClicks = 0; }, 1500);
+    if(cafeAdminClicks >= 5){
+      cafeAdminClicks = 0;
+      if(!cafeAdminUnlocked){
+        var pin = prompt('🔐 Contraseña admin:');
+        if(pin === CAFE_ADMIN_PIN){
+          cafeAdminUnlocked = true;
+          document.getElementById('cafeAdminPanel').classList.add('visible');
+        }
+      } else {
+        document.getElementById('cafeAdminPanel').classList.toggle('visible');
+      }
+    }
+  };
+
+  var cafeMapData = {};
+  var cafeCurrentMap = 'komarinoe';
+  var cafeMapLabels = {
+    komarinoe:'Komarinoe',losinoe:'Losinoe',vjunok:'Vjunok',ostrog:'Ostrog',
+    belaya:'Belaya',kuori:'Kuori',volhov:'Volkhov',donets:'Donets',
+    sura:'Sura',ladoga:'Ladoga',yantarnoe:'Yantarnoe',archipelago:'Archipiélago',
+    ahtuba:'Akhtuba',mednoe:'Mednoe',tunguska:'Tunguska',yama:'Yama',sea:'Mar Noruega'
+  };
+
+  // Inicializar todos los mapas vacíos
+  Object.keys(cafeMapLabels).forEach(function(k){ cafeMapData[k] = []; });
+
+  // Datos de demo para komarinoe
+  cafeMapData['komarinoe'] = [
+    { id:1, fish:'Roach', weight:0.15, qty:5, done:2, reward:120, totalSecs:18*60, secsLeft:18*60 },
+    { id:2, fish:'Perch', weight:0.40, qty:3, done:0, reward:340, totalSecs:4*60, secsLeft:4*60 },
+    { id:3, fish:'Pike',  weight:1.20, qty:1, done:0, reward:890, totalSecs:27*60, secsLeft:27*60 },
+  ];
+  cafeMapData['yama'] = [
+    { id:4, fish:'Salmon', weight:2.50, qty:2, done:0, reward:1200, totalSecs:15*60, secsLeft:15*60 },
+    { id:5, fish:'Grayling', weight:0.60, qty:4, done:1, reward:480, totalSecs:8*60, secsLeft:8*60 },
+  ];
+
+  var cafeIdCounter = 100;
+
+  function fmtTime(s){
+    s = Math.max(0, Math.round(s));
+    return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0');
+  }
+  function barColor(ratio){
+    if(ratio > 0.5) return '#3fb950';
+    if(ratio > 0.2) return '#d29922';
+    return '#f85149';
+  }
+
+  function cafeRender(){
+    var orders = (cafeMapData[cafeCurrentMap]||[]).filter(function(o){ return o.secsLeft > 0; });
+    var list = document.getElementById('cafeOrdersList');
+    var countEl = document.getElementById('cafeOrderCount');
+    if(countEl) countEl.textContent = orders.length;
+    if(!list) return;
+    if(orders.length === 0){
+      list.innerHTML = '<div class="cafe-empty">No hay pedidos activos en este mapa.<br><span style="font-size:.75rem;color:var(--muted);">Los pedidos aparecerán aquí cuando se publiquen.</span></div>';
+      return;
+    }
+    list.innerHTML = orders.map(function(o){
+      var ratio = o.secsLeft / o.totalSecs;
+      var isUrgent = o.secsLeft <= 5*60;
+      var isWarn = o.secsLeft <= 10*60 && !isUrgent;
+      var cls = isUrgent ? ' urgent' : isWarn ? ' warning' : '';
+      var bc = barColor(ratio);
+      var pct = Math.max(0,(ratio*100)).toFixed(1);
+      var timerColor = isUrgent ? '#f85149' : isWarn ? '#d29922' : '#3fb950';
+      var delBtn = cafeAdminUnlocked
+        ? '<button class="cafe-del-btn" onclick="cafeDeleteOrder('+o.id+')" title="Eliminar">✕</button>'
+        : '';
+      return '<div class="cafe-order-card'+cls+'">'
+        +'<div class="cafe-fish-av'+(isUrgent?' urgent':'')+'">🐟</div>'
+        +'<div class="cafe-info">'
+        +'<div class="cafe-fish-name">'+o.fish+' <span class="cafe-badge">'+o.done+'/'+o.qty+'</span></div>'
+        +'<div class="cafe-fish-detail">Peso mín: '+o.weight.toFixed(2)+' kg · '+cafeMapLabels[cafeCurrentMap]+'</div>'
+        +'</div>'
+        +'<div class="cafe-right">'
+        +'<div class="cafe-reward">💰 '+o.reward+'</div>'
+        +'<div class="cafe-timer-wrap">'
+        +'<div class="cafe-bar-bg"><div class="cafe-bar-fill" style="width:'+pct+'%;background:'+bc+';"></div></div>'
+        +'<div class="cafe-timer-label" style="color:'+timerColor+';">'+fmtTime(o.secsLeft)+'</div>'
+        +'</div>'
+        +'</div>'
+        +delBtn
+        +'</div>';
+    }).join('');
+  }
+
+  window.cafeSelectMap = function(btn, map){
+    document.querySelectorAll('.cafe-map-btn').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    cafeCurrentMap = map;
+    var lbl = cafeMapLabels[map]||map;
+    var el1 = document.getElementById('cafeCurrentMapLabel');
+    var el2 = document.getElementById('cafeAdminMapLabel');
+    if(el1) el1.textContent = lbl;
+    if(el2) el2.textContent = lbl;
+    cafeRender();
+  };
+
+  window.cafeAddOrder = function(){
+    var fish = document.getElementById('caInFish').value.trim();
+    var weight = parseFloat(document.getElementById('caInWeight').value)||0;
+    var qty = parseInt(document.getElementById('caInQty').value)||1;
+    var reward = parseInt(document.getElementById('caInReward').value)||0;
+    var mins = parseInt(document.getElementById('caInExpires').value)||30;
+    if(!fish){ document.getElementById('caInFish').focus(); return; }
+    var secs = mins*60;
+    cafeIdCounter++;
+    if(!cafeMapData[cafeCurrentMap]) cafeMapData[cafeCurrentMap]=[];
+    cafeMapData[cafeCurrentMap].unshift({ id:cafeIdCounter, fish:fish, weight:weight, qty:qty, done:0, reward:reward, totalSecs:secs, secsLeft:secs });
+    ['caInFish','caInWeight','caInQty','caInReward','caInExpires'].forEach(function(id){
+      var el = document.getElementById(id); if(el) el.value='';
+    });
+    cafeRender();
+  };
+
+  window.cafeDeleteOrder = function(id){
+    Object.keys(cafeMapData).forEach(function(map){
+      cafeMapData[map] = cafeMapData[map].filter(function(o){ return o.id !== id; });
+    });
+    cafeRender();
+  };
+
+  // Tick cada segundo
+  setInterval(function(){
+    var changed = false;
+    Object.keys(cafeMapData).forEach(function(map){
+      cafeMapData[map].forEach(function(o){
+        if(o.secsLeft > 0){ o.secsLeft = Math.max(0, o.secsLeft - 1); changed = true; }
+      });
+      cafeMapData[map] = cafeMapData[map].filter(function(o){ return o.secsLeft > 0; });
+    });
+    if(changed) cafeRender();
+  }, 1000);
+
+  // Render inicial cuando se abre la página
+  document.addEventListener('DOMContentLoaded', function(){ cafeRender(); });
+  setTimeout(function(){ cafeRender(); }, 500);
+})();
+</script>
 
 <div class="page" id="page-soporte" style="max-width:680px;margin:0 auto;padding:24px 16px 80px;">
 
