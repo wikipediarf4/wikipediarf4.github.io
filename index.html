@@ -4000,17 +4000,6 @@ document.addEventListener('DOMContentLoaded', function(){
   <!-- TAB: Reportes -->
 
   <div id="admt-reports">
-    <!-- Videos pendientes -->
-    <div style="margin-bottom:24px;">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-        <span style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:900;color:#ffaa00;">🎬 Videos pendientes de aprobación</span>
-        <span id="adminVideoPendingCount" style="background:rgba(255,170,0,.2);color:#ffaa00;border-radius:100px;padding:2px 8px;font-size:.72rem;font-weight:700;">0</span>
-      </div>
-      <div id="adminVideoPendingList" style="display:flex;flex-direction:column;gap:10px;">
-        <div style="text-align:center;padding:20px;color:var(--muted);font-size:.82rem;">Sin videos pendientes ✅</div>
-      </div>
-    </div>
-
     <div id="adminReportsList"><div style="text-align:center;padding:30px;color:var(--muted);">Cargando reportes...</div></div>
   </div>
 
@@ -6946,7 +6935,7 @@ function _stub(name){ return function(){ _q.push([name, arguments]); }; }
  'doForgotPassword','quickLogin','createGroup','previewGroupImg',
  'submitMapPost','previewMapMedia','filterMapPosts',
  'gp','om','cm','setNav','toggleUserMenu','doLogout',
- 'swAdminTab','loadAdminData','previewAdminMedia','saveSiteConfig','aprobarVideo',
+ 'swAdminTab','loadAdminData','previewAdminMedia','saveSiteConfig',
  'submitPatch','submitTorneo','submitAdminGroup','submitAd','toggleAd',
  'banUser','deleteAdminContent','deleteAdminPost','resolveReport','adminEditUser','adminSaveUser','adminDeleteUser','adminConfirmDelete','filterAdminUsers',
  'openUserProfile','sendFriendRequest','togglePostMenu','renderProfileFriendsList','openEditPost','saveEditPost','deleteMyPost',
@@ -10400,24 +10389,11 @@ function postHTML(p){
   if(p.video){
     const ytId = extractYtId(p.video);
     const ttId = extractTikTokId(p.video);
-    const isAdmin = window.CU && (window.CU.nick==='ruizgustavo12'||window.CU.email==='synxyes@gmail.com'||window.CU.role==='admin');
-    const isOwner = window.CU && window.CU.id === p.userId;
-    // Si está pendiente, solo el autor y el admin lo ven
-    if(p.videoStatus === 'pending' && !isAdmin && !isOwner){
-      videoHTML = '';
-    } else if(ytId){
-      var _adminBtns = isAdmin
-        ? '<button onclick="aprobarVideo(\'' + p.id + '\',true)" style="margin-left:8px;background:#00e676;border:none;border-radius:3px;padding:2px 8px;font-size:.68rem;font-weight:700;cursor:pointer;color:#000;">✓ Aprobar</button>'
-          + '<button onclick="aprobarVideo(\'' + p.id + '\',false)" style="margin-left:4px;background:#f85149;border:none;border-radius:3px;padding:2px 8px;font-size:.68rem;font-weight:700;cursor:pointer;color:#fff;">✗ Rechazar</button>'
-        : '';
-      var pendingBadge = p.videoStatus==='pending'
-        ? '<div style="background:rgba(255,170,0,.9);color:#000;font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:4px;margin-bottom:6px;display:inline-flex;align-items:center;gap:5px;">'
-          + '⏳ Video pendiente de aprobación' + _adminBtns + '</div>'
-        : '';
-      videoHTML = pendingBadge + '<div style="width:100%;aspect-ratio:16/9;border-radius:var(--rs);overflow:hidden;margin-bottom:10px;background:#000;">'
-        + '<iframe src="https://www.youtube.com/embed/' + ytId + '?rel=0" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"'
-        + ' style="width:100%;height:100%;display:block;border:none;" loading="lazy"></iframe>'
-        + '</div>';
+    if(ytId){
+      videoHTML = `<div style="width:100%;aspect-ratio:16/9;border-radius:var(--rs);overflow:hidden;margin-bottom:10px;background:#000;">
+        <iframe src="https://www.youtube.com/embed/${ytId}?rel=0" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          style="width:100%;height:100%;display:block;border:none;" loading="lazy"></iframe>
+      </div>`;
     } else if(ttId){
       videoHTML = `<div style="display:flex;justify-content:center;margin-bottom:10px;">
         <div style="width:100%;max-width:340px;aspect-ratio:9/16;border-radius:var(--rs);overflow:hidden;background:#000;">
@@ -10829,7 +10805,6 @@ async function submitPost(){
   const videoUrl0 = document.getElementById('ytUrlInput')?.value.trim() || '';
   if(!text && !fish && !_postMediaFiles.length && !linkUrl && !videoUrl0){ toast('Escribe algo o agrega un video para publicar','err'); return; }
 
-  const _hasVideo = (document.getElementById('ytUrlInput')?.value.trim()||'').length > 0;
   toast('Publicando...','inf');
   if(window.CU?.verified) launchGoldConfetti();
   const mediaUrls = [];
@@ -10857,7 +10832,6 @@ async function submitPost(){
     text, fish, weight, map, tech,
     images: mediaUrls,
     video: videoUrl,
-    videoStatus: videoUrl ? 'pending' : null,
     link: linkData,
     feeling: window._selectedFeeling || null,
     taggedPeople: (window._taggedPeople||[]).map(u=>({id:u.id,nick:u.nick,av:u.av||''})),
@@ -10867,7 +10841,6 @@ async function submitPost(){
 
   // config/stats: incrementar totalPosts
   try{ await setDoc(doc(db,'config','stats'),{totalPosts: increment(1)},{merge:true}); }catch(e){}
-  if(_hasVideo){ toast('🎬 Video enviado — pendiente de aprobación por el admin','inf'); }
 
   // Notificar a personas etiquetadas desde el modal
   if(window._taggedPeople && window._taggedPeople.length){
@@ -14895,22 +14868,6 @@ function swAdminTab(el, tabId){
   if(tabId==='admt-faq') loadAdminFaq();
 }
 
-// ── Aprobar / rechazar video ──────────────────────────────
-async function aprobarVideo(postId, aprobar){
-  try{
-    if(aprobar){
-      await updateDoc(doc(db,'posts',postId), { videoStatus: 'approved' });
-      toast('✅ Video aprobado — ya es visible para todos','ok');
-    } else {
-      // Rechazar: eliminar el video del post
-      await updateDoc(doc(db,'posts',postId), { video: '', videoStatus: 'rejected' });
-      toast('🗑 Video rechazado y eliminado','inf');
-    }
-    // Reload feed
-    if(typeof renderFeed === 'function') renderFeed();
-  }catch(e){ toast('Error: '+e.message,'err'); }
-}
-
 async function loadAdminData(){
   if(!window.CU || (window.CU.nick !== 'ruizgustavo12' && window.CU.email !== 'synxyes@gmail.com')) return;
 
@@ -14926,37 +14883,6 @@ async function loadAdminData(){
   }catch(e){}
 
   // Reports y posts siguen leyendose para mostrar la lista (necesario)
-  // Load pending videos
-  try{
-    const pendingSnap = await getDocs(query(collection(db,'posts'), where('videoStatus','==','pending'), orderBy('time','desc')));
-    const pendingList = document.getElementById('adminVideoPendingList');
-    const pendingCount = document.getElementById('adminVideoPendingCount');
-    const pendingVideos = pendingSnap.docs.map(d=>({id:d.id,...d.data()}));
-    if(pendingCount) pendingCount.textContent = pendingVideos.length;
-    if(pendingList){
-      if(!pendingVideos.length){
-        pendingList.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.82rem;">Sin videos pendientes ✅</div>';
-      } else {
-        pendingList.innerHTML = pendingVideos.map(function(p){
-          const ytId = extractYtId(p.video||'');
-          const thumb = ytId ? 'https://img.youtube.com/vi/'+ytId+'/mqdefault.jpg' : '';
-          return '<div style="background:var(--bg2);border:1px solid rgba(255,170,0,.3);border-radius:10px;padding:12px;display:flex;gap:12px;align-items:center;">'
-            +(thumb?'<img src="'+thumb+'" style="width:100px;height:56px;object-fit:cover;border-radius:6px;flex-shrink:0;">':'')
-            +'<div style="flex:1;min-width:0;">'
-            +'<div style="font-weight:700;font-size:.85rem;color:var(--text);">'+esc(p.userNick||'')+'</div>'
-            +'<div style="font-size:.75rem;color:var(--muted);margin-top:2px;">'+esc((p.text||'').slice(0,80))+'</div>'
-            +'<a href="'+esc(p.video||'')+'" target="_blank" style="font-size:.72rem;color:var(--accent);">'+esc(p.video||'')+'</a>'
-            +'</div>'
-            +'<div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">'
-            +'<button onclick="aprobarVideo(''+p.id+'',true)" style="background:#00e676;border:none;border-radius:6px;padding:6px 14px;font-weight:700;font-size:.78rem;cursor:pointer;color:#000;">✓ Aprobar</button>'
-            +'<button onclick="aprobarVideo(''+p.id+'',false)" style="background:rgba(248,81,73,.2);border:1px solid rgba(248,81,73,.4);border-radius:6px;padding:6px 14px;font-weight:700;font-size:.78rem;cursor:pointer;color:#f85149;">✗ Rechazar</button>'
-            +'</div>'
-            +'</div>';
-        }).join('');
-      }
-    }
-  }catch(e){ console.log('pending videos error:',e); }
-
   const [postsSnap, reportsSnap, storiesSnap] = await Promise.all([
     getDocs(query(collection(db,'posts'), orderBy('time','desc'), limit(100))),
     getDocs(query(collection(db,'reports'), limit(200))),
@@ -21575,7 +21501,7 @@ const _expose = {
   openSV,closeSV,svNav,reactStory,reportStory,submitStoryComment,deleteMyStory,_svToggleRxnPop,_svCloseRxnPop,
   doSearch,
   reportPost,submitReport,
-  loadAdminData,deleteAdminPost,resolveReport,aprobarVideo,
+  loadAdminData,deleteAdminPost,resolveReport,
   requestVerification, loadVerifRequests, adminApproveVerif, adminRejectVerif, adminRevokeVerif,
   sendShopAnnouncementToAll,
   switchNotifTab, markAllNotifsRead, filterChatSearch,
