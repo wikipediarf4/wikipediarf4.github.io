@@ -26986,14 +26986,29 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
         var res = await fetch('https://wrf4-ai.synxyes.workers.dev', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ action: 'leer_equipo_tienda', imageData: dataUrl, tipo: tipo })
+          body: JSON.stringify({ action: 'leer_equipo_base64', imageData: dataUrl })
         });
         var data = await res.json();
         var reply = (data.reply || '').trim();
         var parsed = null;
-        try{ parsed = JSON.parse(reply.replace(/```json|```/g,'').trim()); }catch(pe){}
+        try{
+          var clean = reply.replace(/```json|```/g,'').trim();
+          var jsonMatch = clean.match(/\{[\s\S]*\}/);
+          if(jsonMatch) clean = jsonMatch[0];
+          parsed = JSON.parse(clean);
+        }catch(pe){ parsed = null; }
         if(parsed && parsed.nombre){
           _tiendaIADataMulti.push(Object.assign({ tipo: tipo }, parsed));
+        } else if(reply && reply.length > 5){
+          // Respuesta en texto — extraer nombre del primer renglón
+          var lines = reply.split('\n');
+          var nombre = lines[0].replace(/[*#_]/g,'').trim() || ('Ítem '+(i+1));
+          var stats = {};
+          lines.slice(1).forEach(function(l){
+            var m = l.match(/^[*\-]?\s*([^:]+):\s*(.+)/);
+            if(m) stats[m[1].trim()] = m[2].trim();
+          });
+          _tiendaIADataMulti.push({ nombre: nombre, tipo: tipo, imagen: '', descripcion: '', stats: stats });
         } else { errores++; }
       }catch(err){ errores++; }
     }
