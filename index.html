@@ -26983,28 +26983,46 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
           r.readAsDataURL(files[i]);
         });
 
+        // Use leer_cafe_base64 with a structured JSON prompt
         var res = await fetch('https://wrf4-ai.synxyes.workers.dev', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ action: 'leer_equipo_base64', imageData: dataUrl })
+          body: JSON.stringify({
+            action: 'leer_cafe_base64',
+            imageData: dataUrl,
+            prompt: 'Sos un asistente del juego Russian Fishing 4. Mirá esta imagen de la tienda del juego. Puede mostrar UNO o VARIOS ítems de tipo "' + tipo + '". Para CADA ítem visible en la imagen, extraé: nombre exacto, tamaño, precio, relación de equipo, arrastre máximo, y cualquier otra stat. Respondé ÚNICAMENTE con un array JSON sin ningún texto extra, sin markdown. Ejemplo: [{"nombre":"SAT Simplex","tipo":"' + tipo + '","imagen":"","descripcion":"","stats":{"Tamaño":"20 - 40","Precio":"1.188,80","Relación de equipo":"3,8:1 - 5,1:1","Arrastre máximo":"8,2 - 10 kg"}}]. Si hay varios ítems, ponelos todos en el array.'
+          })
         });
         var data = await res.json();
         var reply = (data.reply || '').trim();
-        var parsed = null;
+
+        // Try to parse as array of items
+        var parsedItems = null;
         try{
           var clean = reply.replace(/```json|```/g,'').trim();
-          var jsonMatch = clean.match(/\{[\s\S]*\}/);
-          if(jsonMatch) clean = jsonMatch[0];
-          parsed = JSON.parse(clean);
-        }catch(pe){ parsed = null; }
-        if(parsed && parsed.nombre){
-          _tiendaIADataMulti.push(Object.assign({ tipo: tipo }, parsed));
+          // Find array or object
+          var arrMatch = clean.match(/\[[\s\S]*\]/);
+          var objMatch = clean.match(/\{[\s\S]*\}/);
+          if(arrMatch){
+            parsedItems = JSON.parse(arrMatch[0]);
+            if(!Array.isArray(parsedItems)) parsedItems = [parsedItems];
+          } else if(objMatch){
+            parsedItems = [JSON.parse(objMatch[0])];
+          }
+        }catch(pe){ parsedItems = null; }
+
+        if(parsedItems && parsedItems.length > 0){
+          parsedItems.forEach(function(it){
+            if(it && it.nombre){
+              _tiendaIADataMulti.push(Object.assign({ tipo: tipo, imagen: '', descripcion: '' }, it));
+            }
+          });
         } else if(reply && reply.length > 5){
-          // Respuesta en texto — extraer nombre del primer renglón
-          var lines = reply.split('\n');
-          var nombre = lines[0].replace(/[*#_]/g,'').trim() || ('Ítem '+(i+1));
+          // Fallback: text response — extract line by line
+          var rlines = reply.split('\n').filter(function(l){ return l.trim(); });
+          var nombre = rlines[0].replace(/[*#_\d\.]/g,'').trim() || ('Ítem '+(i+1));
           var stats = {};
-          lines.slice(1).forEach(function(l){
+          rlines.slice(1).forEach(function(l){
             var m = l.match(/^[*\-]?\s*([^:]+):\s*(.+)/);
             if(m) stats[m[1].trim()] = m[2].trim();
           });
