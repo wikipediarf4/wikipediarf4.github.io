@@ -26491,7 +26491,11 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
         var res = await fetch('https://wrf4-ai.synxyes.workers.dev', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'leer_cafe_base64', imageData: dataUrl })
+          body: JSON.stringify({
+            action: 'leer_cafe_base64',
+            imageData: dataUrl,
+            forcePrompt: 'Sos un asistente del juego Russian Fishing 4. Analizá esta imagen de la tienda. Para CADA ítem visible extraé todos sus datos. Respondé ÚNICAMENTE con un array JSON sin texto extra ni markdown. Estructura: [{"nombre":"nombre exacto","tipo":"Carrete","imagen":"","descripcion":"","stats":{"Precio":"349,80","Tamaño":"10 - 30","Relación de equipo":"4,3:1 - 5,1:1","Arrastre máximo":"5,5 - 7,3 kg"}}]. Si hay varios ítems ponelos todos en el array.'
+          })
         });
         var data = await res.json();
         var reply = (data.reply || '').trim();
@@ -26885,10 +26889,20 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
     }
 
     list.innerHTML = '<div class="tienda-grid">' + items.map(function(it){
-      var img = it.imagen ? '<img src="'+it.imagen+'" alt="'+it.nombre+'" onerror="this.style.display=\'none\'">' : '<span style="font-size:3rem;opacity:.25;">🎣</span>';
+      var img = it.imagen
+        ? '<img src="'+it.imagen+'" alt="'+it.nombre+'" style="max-width:90%;max-height:110px;object-fit:contain;" onerror="this.style.opacity=\'0.1\'">'
+        : '<span style="font-size:3rem;opacity:.2;">🎣</span>';
       var stats = '';
+      var precio = '';
       if(it.stats){
-        stats = Object.entries(it.stats).map(function(e){ return '<div>'+e[0]+': <b style="color:#e6edf3;">'+e[1]+'</b></div>'; }).join('');
+        Object.entries(it.stats).forEach(function(e){
+          var k = (e[0]||'').toLowerCase();
+          if(k.includes('precio') || k.includes('price')){
+            precio = '<div style="color:#ffd700;font-weight:700;font-size:.88rem;margin:5px 0;">₴ '+e[1]+'</div>';
+          } else {
+            stats += '<div><span style="color:#8b949e;font-size:.7rem;">'+e[0]+':</span> <b style="color:#e6edf3;font-size:.7rem;">'+e[1]+'</b></div>';
+          }
+        });
       }
       var delBtn = isAdmin ? '<button class="tienda-card-del" onclick="tiendaDelete(\''+it._id+'\',this)">🗑 Borrar</button>' : '';
       return '<div class="tienda-card">'
@@ -26896,6 +26910,7 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
         +'<div class="tienda-card-body">'
         +'<div class="tienda-card-type">'+it.tipo+'</div>'
         +'<div class="tienda-card-name">'+it.nombre+'</div>'
+        +precio
         +'<div class="tienda-card-stats">'+stats+'</div>'
         +delBtn
         +'</div></div>';
@@ -26915,16 +26930,10 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
 
   // ── Modal IA ─────────────────────────────────────────────
   window.tiendaAbrirIA = function(){
-    var isAdmin = window.CU && (
-      window.CU.role === 'admin' ||
-      window.CU.nick === 'ruizgustavo12' ||
-      window.CU.email === 'synxyes@gmail.com'
-    );
-    if(!window.CU){ alert('Tenés que estar logueado.'); return; }
-    if(!isAdmin){ alert('Solo admins.'); return; }
+    if(!window.CU || !isAdminUser(window.CU)){ alert('Solo admins.'); return; }
     var m = document.getElementById('tiendaIAModal');
-    if(m){ m.style.display = 'flex'; }
-    window.tiendaIAReset();
+    if(m) m.style.display = 'flex';
+    tiendaIAReset();
   };
 
   window.tiendaIAReset = function(){
@@ -26983,48 +26992,49 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
           r.readAsDataURL(files[i]);
         });
 
-        // Use leer_cafe_base64 with a structured JSON prompt
         var res = await fetch('https://wrf4-ai.synxyes.workers.dev', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({
-            action: 'leer_cafe_base64',
-            imageData: dataUrl,
-            prompt: 'Sos un asistente del juego Russian Fishing 4. Mirá esta imagen de la tienda del juego. Puede mostrar UNO o VARIOS ítems de tipo "' + tipo + '". Para CADA ítem visible en la imagen, extraé: nombre exacto, tamaño, precio, relación de equipo, arrastre máximo, y cualquier otra stat. Respondé ÚNICAMENTE con un array JSON sin ningún texto extra, sin markdown. Ejemplo: [{"nombre":"SAT Simplex","tipo":"' + tipo + '","imagen":"","descripcion":"","stats":{"Tamaño":"20 - 40","Precio":"1.188,80","Relación de equipo":"3,8:1 - 5,1:1","Arrastre máximo":"8,2 - 10 kg"}}]. Si hay varios ítems, ponelos todos en el array.'
-          })
+          body: JSON.stringify({ action: 'leer_cafe_base64', imageData: dataUrl })
         });
         var data = await res.json();
         var reply = (data.reply || '').trim();
 
-        // Try to parse as array of items
+        // Intentar parsear JSON (array o objeto)
         var parsedItems = null;
         try{
           var clean = reply.replace(/```json|```/g,'').trim();
-          // Find array or object
-          var arrMatch = clean.match(/\[[\s\S]*\]/);
-          var objMatch = clean.match(/\{[\s\S]*\}/);
-          if(arrMatch){
-            parsedItems = JSON.parse(arrMatch[0]);
-            if(!Array.isArray(parsedItems)) parsedItems = [parsedItems];
-          } else if(objMatch){
-            parsedItems = [JSON.parse(objMatch[0])];
-          }
+          var arrM = clean.match(/\[[\s\S]*\]/);
+          var objM = clean.match(/\{[\s\S]*\}/);
+          if(arrM){ parsedItems = JSON.parse(arrM[0]); if(!Array.isArray(parsedItems)) parsedItems=[parsedItems]; }
+          else if(objM){ parsedItems = [JSON.parse(objM[0])]; }
         }catch(pe){ parsedItems = null; }
 
         if(parsedItems && parsedItems.length > 0){
           parsedItems.forEach(function(it){
-            if(it && it.nombre){
-              _tiendaIADataMulti.push(Object.assign({ tipo: tipo, imagen: '', descripcion: '' }, it));
-            }
+            if(!it || !it.nombre) return;
+            // Buscar imagen en rf4-stat.ru basada en el nombre
+            var imgKey = it.nombre.toLowerCase()
+              .replace(/[áàä]/g,'a').replace(/[éèë]/g,'e').replace(/[íìï]/g,'i').replace(/[óòö]/g,'o').replace(/[úùü]/g,'u')
+              .replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
+            var imgUrl = it.imagen || 'https://en.rf4-stat.ru/images/rf4game/' + imgKey + '.png';
+            _tiendaIADataMulti.push({
+              nombre: it.nombre,
+              tipo: it.tipo || tipo,
+              imagen: imgUrl,
+              descripcion: it.descripcion || '',
+              stats: it.stats || (it.precio ? { 'Precio': it.precio, 'Tamaño': it.tamano||it.tamaño||'', 'Relación de equipo': it.relacion||'', 'Arrastre máximo': it.arrastre||'' } : {})
+            });
           });
-        } else if(reply && reply.length > 5){
-          // Fallback: text response — extract line by line
+        } else if(reply && reply.length > 10){
+          // Fallback texto libre — parsear líneas
           var rlines = reply.split('\n').filter(function(l){ return l.trim(); });
-          var nombre = rlines[0].replace(/[*#_\d\.]/g,'').trim() || ('Ítem '+(i+1));
+          var nombre = rlines[0].replace(/[*#_\d\.:\-]/g,'').trim();
+          if(!nombre) nombre = 'Ítem '+(i+1);
           var stats = {};
           rlines.slice(1).forEach(function(l){
-            var m = l.match(/^[*\-]?\s*([^:]+):\s*(.+)/);
-            if(m) stats[m[1].trim()] = m[2].trim();
+            var m = l.match(/^[\*\-]?\s*([^:]+):\s*(.+)/);
+            if(m) stats[m[1].replace(/[*_]/g,'').trim()] = m[2].replace(/[*_]/g,'').trim();
           });
           _tiendaIADataMulti.push({ nombre: nombre, tipo: tipo, imagen: '', descripcion: '', stats: stats });
         } else { errores++; }
