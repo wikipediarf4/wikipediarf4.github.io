@@ -27288,18 +27288,15 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
 
 
 <!-- ===== YOUTUBE OAUTH UPLOAD ===== -->
-<!-- Input fijo en el DOM — evita bloqueo de navegadores al hacer .click() dinámico -->
+<!-- Input fijo en el DOM — evita bloqueo de navegadores -->
 <input type="file" id="_ytFileInput" accept="video/*" style="display:none;position:fixed;left:-9999px;top:-9999px;">
 
 <script>
 (function(){
   'use strict';
 
-  var YT_CLIENT_ID = '963662297198-e83hmmi35lmififldo755lic0h46dk3h.apps.googleusercontent.com';
-  var YT_SCOPE = 'https://www.googleapis.com/auth/youtube.upload';
-  var _ytAccessToken = null;
-  var _ytPendingFile  = null;
-  var _ytUploading    = false;
+  var WORKER_URL = 'https://wrf4-ai.synxyes.workers.dev';
+  var _ytUploading = false;
 
   // ── Bloquear/desbloquear botón Publicar ─────────────────
   function _lockPublish(lock){
@@ -27325,25 +27322,12 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
     if(box) box.style.display = box.style.display === 'none' ? 'block' : 'none';
   };
 
-  // ── Vista previa local inmediata ─────────────────────────
-  function _showLocalPreview(file){
-    var statusEl = document.getElementById('ytUploadStatus');
-    if(!statusEl) return;
-    var sizeMB = (file.size / (1024*1024)).toFixed(1);
-    var localUrl = URL.createObjectURL(file);
-    statusEl.style.display = 'block';
-    statusEl.innerHTML =
-      '<div style="margin-bottom:6px;font-size:.78rem;color:var(--accent);font-weight:700;">📁 ' + file.name + ' (' + sizeMB + ' MB)</div>'
-      + '<video src="' + localUrl + '" controls style="width:100%;max-height:200px;border-radius:var(--rs);background:#000;display:block;" preload="metadata"></video>'
-      + '<div id="_ytStatusMsg" style="margin-top:6px;font-size:.76rem;padding:6px 10px;background:rgba(255,170,0,.08);border:1px solid rgba(255,170,0,.25);border-radius:6px;color:var(--warn);">⏳ Autorizando con Google... no cierres esta ventana</div>';
-  }
-
+  // ── Mensaje de estado ────────────────────────────────────
   function _setStatusMsg(msg, color){
     var el = document.getElementById('_ytStatusMsg');
     if(!el) return;
     el.textContent = msg;
     el.style.color = color || 'var(--muted)';
-    // Cambiar fondo según estado
     if(color === 'var(--green)'){
       el.style.background = 'rgba(63,185,80,.08)';
       el.style.borderColor = 'rgba(63,185,80,.3)';
@@ -27356,10 +27340,23 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
     }
   }
 
+  // ── Vista previa local inmediata ─────────────────────────
+  function _showLocalPreview(file){
+    var statusEl = document.getElementById('ytUploadStatus');
+    if(!statusEl) return;
+    var sizeMB = (file.size / (1024*1024)).toFixed(1);
+    var localUrl = URL.createObjectURL(file);
+    statusEl.style.display = 'block';
+    statusEl.innerHTML =
+      '<div style="margin-bottom:6px;font-size:.78rem;color:var(--accent);font-weight:700;">📁 ' + file.name + ' (' + sizeMB + ' MB)</div>'
+      + '<video src="' + localUrl + '" controls style="width:100%;max-height:200px;border-radius:var(--rs);background:#000;display:block;" preload="metadata"></video>'
+      + '<div id="_ytStatusMsg" style="margin-top:6px;font-size:.76rem;padding:6px 10px;background:rgba(255,170,0,.08);border:1px solid rgba(255,170,0,.25);border-radius:6px;color:var(--warn);">⏳ Subiendo a YouTube... no cierres esta ventana</div>';
+  }
+
   // ── Iniciar subida ───────────────────────────────────────
   window.ytSubirVideo = function(){
     if(!window.CU){ alert('Tenés que estar logueado.'); return; }
-    if(_ytUploading){ toast('Ya hay un video subiendo, esperá a que termine','inf'); return; }
+    if(_ytUploading){ toast('Ya hay un video subiendo, esperá','inf'); return; }
 
     var inp = document.getElementById('_ytFileInput');
     if(!inp) return;
@@ -27372,89 +27369,42 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
         toast('El video no puede superar los 100MB','err');
         return;
       }
-      _ytPendingFile = file;
       _showLocalPreview(file);
       _lockPublish(true);
-      _ytAuthorize();
+      _ytUpload(file);
     };
     inp.click();
   };
 
-  // ── OAuth popup ──────────────────────────────────────────
-  function _ytAuthorize(){
-    var state = Math.random().toString(36).slice(2);
-    var authUrl = 'https://accounts.google.com/o/oauth2/v2/auth'
-      + '?client_id=' + YT_CLIENT_ID
-      + '&redirect_uri=' + encodeURIComponent(location.origin)
-      + '&response_type=token'
-      + '&scope=' + encodeURIComponent(YT_SCOPE)
-      + '&state=' + state;
-
-    var popup = window.open(authUrl, 'ytAuth', 'width=500,height=600,left=200,top=100');
-
-    var interval = setInterval(function(){
-      try{
-        if(!popup || popup.closed){
-          clearInterval(interval);
-          if(!_ytAccessToken){
-            _setStatusMsg('❌ Autorización cancelada — volvé a intentar', 'var(--red)');
-            _lockPublish(false);
-          }
-          return;
-        }
-        var hash = popup.location.hash;
-        if(hash && hash.includes('access_token')){
-          clearInterval(interval);
-          popup.close();
-          var params = new URLSearchParams(hash.slice(1));
-          _ytAccessToken = params.get('access_token');
-          if(_ytAccessToken && _ytPendingFile){
-            _ytUpload(_ytPendingFile, _ytAccessToken);
-          }
-        }
-      }catch(e){
-        // Cross-origin — esperar a que redirija
-      }
-    }, 500);
-  }
-
-  // ── Subir a YouTube ──────────────────────────────────────
-  async function _ytUpload(file, token){
-    _setStatusMsg('⏳ Iniciando subida a YouTube...', 'var(--warn)');
-
+  // ── Subir via Worker (sin OAuth popup) ──────────────────
+  async function _ytUpload(file){
     try{
-      var title = (window.CU.nick || 'Usuario') + ' — RF4 ' + new Date().toLocaleDateString('es-UY');
+      // 1. Pedir upload URL al worker (usa tu refresh_token guardado)
+      _setStatusMsg('⏳ Iniciando subida...', 'var(--warn)');
 
-      // 1. Iniciar upload resumible
-      var initResp = await fetch('https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status', {
+      var initResp = await fetch(WORKER_URL, {
         method: 'POST',
-        headers: {
-          'Authorization': 'Bearer ' + token,
-          'Content-Type': 'application/json',
-          'X-Upload-Content-Type': file.type,
-          'X-Upload-Content-Length': file.size
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          snippet: {
-            title: title,
-            description: 'Video publicado desde WikiPediaRF4.UY',
-            tags: ['RF4','Russian Fishing 4','pesca']
-          },
-          status: { privacyStatus: 'unlisted' }
+          action:   'yt_init_upload',
+          fileName: file.name,
+          fileType: file.type,
+          fileSize: file.size,
+          userNick: window.CU.nick || window.CU.id
         })
       });
 
-      if(!initResp.ok) throw new Error('Error iniciando upload: ' + initResp.status);
-      var uploadUrl = initResp.headers.get('Location');
-      if(!uploadUrl) throw new Error('No se obtuvo URL de upload');
+      var initData = await initResp.json();
+      if(initData.error) throw new Error(initData.error);
+      if(!initData.uploadUrl) throw new Error('No se obtuvo URL de subida');
 
-      // 2. Subir el archivo
-      _setStatusMsg('📤 Enviando video a YouTube... no cierres esta ventana', 'var(--warn)');
+      // 2. Subir el archivo directo a YouTube con esa URL
+      _setStatusMsg('📤 Enviando video... no cierres esta ventana', 'var(--warn)');
 
-      var uploadResp = await fetch(uploadUrl, {
+      var uploadResp = await fetch(initData.uploadUrl, {
         method: 'PUT',
         headers: {
-          'Content-Type': file.type,
+          'Content-Type':   file.type,
           'Content-Length': file.size
         },
         body: file
@@ -27465,7 +27415,7 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
       var videoId = videoData.id;
       if(!videoId) throw new Error('No se obtuvo ID del video');
 
-      // 3. Guardar URL en el input oculto del post
+      // 3. Guardar URL en el input del post
       var ytLink = 'https://www.youtube.com/watch?v=' + videoId;
       var ytInp = document.getElementById('ytUrlInput');
       if(ytInp){
@@ -27474,7 +27424,7 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
         ytInp.value = ytLink;
       }
 
-      // 4. Guardar en Firestore como pendiente de moderación
+      // 4. Guardar en Firestore como pendiente
       try{
         var fi = window._fsLib || {};
         if(fi.addDoc && fi.collection && window.db){
@@ -27490,11 +27440,9 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
         }
       }catch(fe){ console.warn('videoPendientes:', fe); }
 
-      // 5. Desbloquear Publicar y marcar sesión
+      // 5. Desbloquear y listo
       window._ytUploadedThisSession = true;
-      _ytPendingFile = null;
       _lockPublish(false);
-
       _setStatusMsg('✅ Video listo! Ahora podés publicar — quedará pendiente de aprobación', 'var(--green)');
       toast('✅ Video subido — ahora hacé click en Publicar','ok');
 
