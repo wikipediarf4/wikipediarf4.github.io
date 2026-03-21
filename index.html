@@ -10398,22 +10398,40 @@ function postHTML(p){
   }
   let videoHTML = '';
   if(p.video){
-    const ytId = extractYtId(p.video);
-    const ttId = extractTikTokId(p.video);
-    if(ytId){
-      videoHTML = `<div style="width:100%;aspect-ratio:16/9;border-radius:var(--rs);overflow:hidden;margin-bottom:10px;background:#000;">
-        <iframe src="https://www.youtube.com/embed/${ytId}?rel=0" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          style="width:100%;height:100%;display:block;border:none;" loading="lazy"></iframe>
-      </div>`;
-    } else if(ttId){
-      videoHTML = `<div style="display:flex;justify-content:center;margin-bottom:10px;">
-        <div style="width:100%;max-width:340px;aspect-ratio:9/16;border-radius:var(--rs);overflow:hidden;background:#000;">
-          <iframe src="https://www.tiktok.com/embed/v2/${ttId}" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            style="width:100%;height:100%;display:block;border:none;" loading="lazy"></iframe>
-        </div>
-      </div>`;
+    const _isAdmin = window.CU && (window.CU.nick === 'ruizgustavo12' || window.CU.email === 'synxyes@gmail.com' || window.CU.role === 'admin');
+    const _isPending = p.videoStatus === 'pending';
+    // Si el video está pendiente y no soy admin, no mostrar nada
+    if(_isPending && !_isAdmin){
+      videoHTML = ''; // oculto para usuarios normales
     } else {
-      videoHTML = `<video src="${p.video}" controls style="width:100%;border-radius:var(--rs);margin-bottom:10px;max-height:320px;display:block;"></video>`;
+      const ytId = extractYtId(p.video);
+      const ttId = extractTikTokId(p.video);
+      if(ytId){
+        const _pendingBanner = _isPending ? `
+          <div style="background:rgba(255,170,0,.12);border:1px solid rgba(255,170,0,.4);border-radius:var(--rs);padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+            <div>
+              <div style="font-size:.8rem;font-weight:800;color:#f0a500;">⏳ Video pendiente de aprobación</div>
+              <div style="font-size:.72rem;color:var(--muted);margin-top:2px;">Subido por <strong>${esc(p.userNick)}</strong> — solo vos ves esto</div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button onclick="adminAprobarVideo('${p.id}','${ytId}')" style="background:linear-gradient(135deg,#238636,#2ea043);border:none;border-radius:6px;color:#fff;padding:7px 16px;font-family:'Exo 2',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;">✅ Aprobar</button>
+              <button onclick="adminRechazarVideo('${p.id}','${ytId}')" style="background:rgba(248,81,73,.15);border:1px solid rgba(248,81,73,.4);border-radius:6px;color:#f85149;padding:7px 16px;font-family:'Exo 2',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;">❌ Rechazar</button>
+            </div>
+          </div>` : '';
+        videoHTML = `${_pendingBanner}<div style="width:100%;aspect-ratio:16/9;border-radius:var(--rs);overflow:hidden;margin-bottom:10px;background:#000;">
+          <iframe src="https://www.youtube.com/embed/${ytId}?rel=0" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            style="width:100%;height:100%;display:block;border:none;" loading="lazy"></iframe>
+        </div>`;
+      } else if(ttId){
+        videoHTML = `<div style="display:flex;justify-content:center;margin-bottom:10px;">
+          <div style="width:100%;max-width:340px;aspect-ratio:9/16;border-radius:var(--rs);overflow:hidden;background:#000;">
+            <iframe src="https://www.tiktok.com/embed/v2/${ttId}" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              style="width:100%;height:100%;display:block;border:none;" loading="lazy"></iframe>
+          </div>
+        </div>`;
+      } else {
+        videoHTML = `<video src="${p.video}" controls style="width:100%;border-radius:var(--rs);margin-bottom:10px;max-height:320px;display:block;"></video>`;
+      }
     }
   }
   const sharedHTML = p.sharedFrom ? (function(){
@@ -10843,12 +10861,14 @@ async function submitPost(){
     text, fish, weight, map, tech,
     images: mediaUrls,
     video: videoUrl,
+    videoStatus: (videoUrl && videoUrl.includes('youtube.com') && window._ytUploadedThisSession) ? 'pending' : null,
     link: linkData,
     feeling: window._selectedFeeling || null,
     taggedPeople: (window._taggedPeople||[]).map(u=>({id:u.id,nick:u.nick,av:u.av||''})),
     time: serverTimestamp(),
     likes:0, comments:[], reactions:{}, reactionCounts:{}
   });
+  window._ytUploadedThisSession = false;
 
   // config/stats: incrementar totalPosts
   try{ await setDoc(doc(db,'config','stats'),{totalPosts: increment(1)},{merge:true}); }catch(e){}
@@ -27268,9 +27288,6 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
 
 
 <!-- ===== YOUTUBE OAUTH UPLOAD ===== -->
-<!-- Input oculto permanente en el DOM para evitar bloqueo de navegadores -->
-<input type="file" id="_ytFileInput" accept="video/*" style="display:none;position:fixed;left:-9999px;top:-9999px;">
-
 <script>
 (function(){
   'use strict';
@@ -27279,22 +27296,6 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
   var YT_SCOPE = 'https://www.googleapis.com/auth/youtube.upload';
   var _ytAccessToken = null;
   var _ytPendingFile  = null;
-
-  // ── Mostrar vista previa local del video ─────────────────
-  function _ytShowLocalPreview(file){
-    var status = document.getElementById('ytUploadStatus');
-    if(!status) return;
-    status.style.display = 'block';
-    status.style.color = 'var(--muted)';
-
-    var sizeMB = (file.size / (1024*1024)).toFixed(1);
-    var localUrl = URL.createObjectURL(file);
-
-    status.innerHTML =
-      '<div style="margin-bottom:6px;font-size:.78rem;color:var(--accent);font-weight:700;">📁 '+file.name+' ('+sizeMB+' MB)</div>'
-      + '<video src="'+localUrl+'" controls style="width:100%;max-height:180px;border-radius:var(--rs);background:#000;display:block;" preload="metadata"></video>'
-      + '<div style="margin-top:6px;font-size:.76rem;color:var(--muted);">⏳ Esperando autorización de Google para subir...</div>';
-  }
 
   // ── Toggle link input ────────────────────────────────────
   window.ytToggleLink = function(){
@@ -27305,14 +27306,10 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
   // ── Iniciar subida ───────────────────────────────────────
   window.ytSubirVideo = function(){
     if(!window.CU){ alert('Tenés que estar logueado.'); return; }
-
-    // Usar el input fijo en el DOM para evitar bloqueo por popup en Chrome/Firefox
-    var inp = document.getElementById('_ytFileInput');
-    if(!inp) return;
-
-    // Limpiar valor anterior para permitir reseleccionar el mismo archivo
-    inp.value = '';
-
+    // Abrir selector de archivo
+    var inp = document.createElement('input');
+    inp.type = 'file';
+    inp.accept = 'video/*';
     inp.onchange = function(){
       if(!inp.files || !inp.files[0]) return;
       var file = inp.files[0];
@@ -27321,8 +27318,6 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
         return;
       }
       _ytPendingFile = file;
-      // Mostrar vista previa local inmediatamente
-      _ytShowLocalPreview(file);
       // Pedir autorización OAuth
       _ytAuthorize();
     };
@@ -27368,23 +27363,7 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
   // ── Subir a YouTube ──────────────────────────────────────
   async function _ytUpload(file, token){
     var status = document.getElementById('ytUploadStatus');
-
-    function setMsg(msg, color){
-      if(!status) return;
-      // Mantener la vista previa del video y solo actualizar el mensaje de estado
-      var msgEl = status.querySelector('._ytMsg');
-      if(!msgEl){
-        msgEl = document.createElement('div');
-        msgEl.className = '_ytMsg';
-        msgEl.style.cssText = 'margin-top:6px;font-size:.76rem;';
-        status.appendChild(msgEl);
-      }
-      msgEl.style.color = color || 'var(--muted)';
-      msgEl.textContent = msg;
-    }
-
-    if(status){ status.style.display = 'block'; }
-    setMsg('⏳ Iniciando subida a YouTube...', 'var(--muted)');
+    if(status){ status.style.display = 'block'; status.textContent = '⏳ Subiendo video a YouTube...'; }
 
     try{
       var title = (window.CU.nick || 'Usuario') + ' — RF4 ' + new Date().toLocaleDateString('es-UY');
@@ -27404,7 +27383,7 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
             description: 'Video publicado desde WikiPediaRF4.UY',
             tags: ['RF4','Russian Fishing 4','pesca']
           },
-          status: { privacyStatus: 'public' }
+          status: { privacyStatus: 'unlisted' }
         })
       });
 
@@ -27413,7 +27392,7 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
       if(!uploadUrl) throw new Error('No se obtuvo URL de upload');
 
       // 2. Subir el archivo
-      setMsg('📤 Enviando video... (puede tardar unos minutos)', 'var(--muted)');
+      if(status) status.textContent = '📤 Enviando video... (puede tardar unos minutos)';
 
       var uploadResp = await fetch(uploadUrl, {
         method: 'PUT',
@@ -27440,12 +27419,32 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
         if(typeof previewYtEmbed === 'function') previewYtEmbed(ytLink);
       }
 
-      setMsg('✅ Video subido! Ya aparece en tu publicación.', 'var(--green)');
-      toast('✅ Video subido a YouTube exitosamente','ok');
-      _ytPendingFile  = null;
+      // 4. Guardar en Firestore el videoId y estado pendiente para moderación
+      try{
+        var fi = window._fsLib || {};
+        if(fi.addDoc && fi.collection && window.db){
+          await fi.addDoc(fi.collection(window.db,'videoPendientes'),{
+            videoId:    videoId,
+            videoUrl:   ytLink,
+            userId:     window.CU.id,
+            userNick:   window.CU.nick || window.CU.id,
+            userAv:     window.CU.av || '',
+            status:     'pending',
+            submittedAt: new Date().toISOString()
+          });
+        }
+      }catch(fe){ console.warn('No se pudo guardar en videoPendientes:',fe); }
+
+      if(status){
+        status.textContent = '⏳ Video subido! Quedará visible cuando el admin lo apruebe.';
+        status.style.color = 'var(--warn)';
+      }
+      toast('⏳ Video enviado — pendiente de aprobación del admin','inf');
+      window._ytUploadedThisSession = true;
+      _ytPendingFile = null;
 
     }catch(e){
-      setMsg('❌ Error: ' + e.message, 'var(--red)');
+      if(status){ status.textContent = '❌ Error: ' + e.message; status.style.color = 'var(--red)'; }
       toast('Error al subir: ' + e.message, 'err');
     }
   }
@@ -27453,6 +27452,107 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
 })();
 </script>
 <!-- ===== FIN YOUTUBE OAUTH UPLOAD ===== -->
+
+<!-- ===== ADMIN VIDEO MODERATION ===== -->
+<script>
+(function(){
+  'use strict';
+
+  // ── Aprobar video ────────────────────────────────────────
+  window.adminAprobarVideo = async function(postId, ytId){
+    const _isAdmin = window.CU && (window.CU.nick === 'ruizgustavo12' || window.CU.email === 'synxyes@gmail.com' || window.CU.role === 'admin');
+    if(!_isAdmin){ toast('Sin permisos','err'); return; }
+    if(!confirm('¿Aprobar este video? Quedará visible para todos los usuarios.')) return;
+
+    try{
+      var fi = window._fsLib || {};
+      if(!fi.updateDoc || !fi.doc || !window.db) throw new Error('Firestore no disponible');
+
+      // 1. Marcar el post como aprobado
+      await fi.updateDoc(fi.doc(window.db,'posts',postId),{
+        videoStatus: 'approved'
+      });
+
+      // 2. Actualizar registro en videoPendientes si existe
+      try{
+        const snap = await fi.getDocs(fi.query(
+          fi.collection(window.db,'videoPendientes'),
+          fi.where('videoId','==',ytId),
+          fi.limit(1)
+        ));
+        if(!snap.empty){
+          await fi.updateDoc(snap.docs[0].ref,{ status:'approved', approvedAt: new Date().toISOString() });
+        }
+      }catch(e2){}
+
+      toast('✅ Video aprobado — ahora es visible para todos','ok');
+
+      // Re-renderizar el post en el feed
+      const postEl = document.getElementById('post_'+postId);
+      if(postEl && typeof _posts !== 'undefined'){
+        const pp = _posts.find(x=>x.id===postId);
+        if(pp){
+          pp.videoStatus = 'approved';
+          const tmp = document.createElement('div');
+          tmp.innerHTML = postHTML(pp);
+          postEl.replaceWith(tmp.firstElementChild);
+        }
+      }
+    }catch(e){
+      toast('Error al aprobar: '+e.message,'err');
+    }
+  };
+
+  // ── Rechazar video ───────────────────────────────────────
+  window.adminRechazarVideo = async function(postId, ytId){
+    const _isAdmin = window.CU && (window.CU.nick === 'ruizgustavo12' || window.CU.email === 'synxyes@gmail.com' || window.CU.role === 'admin');
+    if(!_isAdmin){ toast('Sin permisos','err'); return; }
+    if(!confirm('¿Rechazar y eliminar este video del post? El video en YouTube quedará sin listar.')) return;
+
+    try{
+      var fi = window._fsLib || {};
+      if(!fi.updateDoc || !fi.doc || !window.db) throw new Error('Firestore no disponible');
+
+      // 1. Quitar el video del post y marcar rechazado
+      await fi.updateDoc(fi.doc(window.db,'posts',postId),{
+        video: null,
+        videoStatus: 'rejected'
+      });
+
+      // 2. Actualizar videoPendientes
+      try{
+        const snap = await fi.getDocs(fi.query(
+          fi.collection(window.db,'videoPendientes'),
+          fi.where('videoId','==',ytId),
+          fi.limit(1)
+        ));
+        if(!snap.empty){
+          await fi.updateDoc(snap.docs[0].ref,{ status:'rejected', rejectedAt: new Date().toISOString() });
+        }
+      }catch(e2){}
+
+      toast('❌ Video rechazado y removido del post','inf');
+
+      // Re-renderizar el post
+      const postEl = document.getElementById('post_'+postId);
+      if(postEl && typeof _posts !== 'undefined'){
+        const pp = _posts.find(x=>x.id===postId);
+        if(pp){
+          pp.video = null;
+          pp.videoStatus = 'rejected';
+          const tmp = document.createElement('div');
+          tmp.innerHTML = postHTML(pp);
+          postEl.replaceWith(tmp.firstElementChild);
+        }
+      }
+    }catch(e){
+      toast('Error al rechazar: '+e.message,'err');
+    }
+  };
+
+})();
+</script>
+<!-- ===== FIN ADMIN VIDEO MODERATION ===== -->
 
 </body>
 </html>
