@@ -5725,6 +5725,29 @@ document.addEventListener('DOMContentLoaded', function(){
         </div>
         <button onclick="document.getElementById('cafeIAModal').style.display='none'" style="margin-left:auto;background:none;border:none;color:#8b949e;font-size:1.2rem;cursor:pointer;">✕</button>
       </div>
+      <!-- Selector de mapa para IA -->
+      <div style="margin-bottom:14px;">
+        <div style="font-size:.72rem;color:#8b949e;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Mapa destino de los pedidos</div>
+        <select id="cafeIAMapSelect" style="width:100%;background:#21262d;border:1px solid rgba(46,196,182,.4);border-radius:6px;color:#e6edf3;padding:8px 11px;font-family:'Exo 2',sans-serif;font-size:.85rem;outline:none;">
+          <option value="Mosquito Lake">Mosquito Lake</option>
+          <option value="Winding Rivulet">Winding Rivulet</option>
+          <option value="Old Burg Lake">Old Burg Lake</option>
+          <option value="Bear Lake">Bear Lake</option>
+          <option value="Belaya River">Belaya River</option>
+          <option value="Kuori Lake">Kuori Lake</option>
+          <option value="Volkhov River">Volkhov River</option>
+          <option value="Seversky Donets River">Seversky Donets River</option>
+          <option value="Sura River">Sura River</option>
+          <option value="Ladoga Lake">Ladoga Lake</option>
+          <option value="Ladoga archipelago">Ladoga archipelago</option>
+          <option value="Amber Lake">Amber Lake</option>
+          <option value="Akhtuba River">Akhtuba River</option>
+          <option value="Copper lake">Copper Lake</option>
+          <option value="Lower Tunguska River">Lower Tunguska River</option>
+          <option value="Yama River">Yama River</option>
+          <option value="Norwegian Sea">Norwegian Sea</option>
+        </select>
+      </div>
       <div id="cafeIADropZone" onclick="document.getElementById('cafeIAInput').click()" style="border:2px dashed rgba(46,196,182,.4);border-radius:12px;padding:30px 16px;text-align:center;cursor:pointer;margin-bottom:14px;background:rgba(46,196,182,.03);">
         <div style="font-size:2rem;margin-bottom:8px;">📸</div>
         <div style="color:#2ec4b6;font-weight:700;font-size:.9rem;margin-bottom:4px;">Hacé clic para subir imagen</div>
@@ -5991,8 +6014,7 @@ document.addEventListener('DOMContentLoaded', function(){
         +'<div class="cafe-card-reward">'
         +'<span class="cafe-coin-icon">☽</span>'
         +esc(o.reward)
-        +'</div>'
-        +'</div>';
+        +'</div>'        +(o._id && window.CU && (window.CU.nick === o.reportedBy || window.CU.id === o.reportedBy || window.CU.role === 'admin')          ? '<button onclick="cafeDeleteOrder(\''+o._id+'\',this)" style="width:calc(100% - 28px);display:block;margin:0 14px 10px;padding:5px;border-radius:5px;border:1px solid rgba(248,81,73,.4);background:rgba(248,81,73,.08);color:#f85149;font-family:Exo 2,sans-serif;font-size:.72rem;font-weight:700;cursor:pointer;">🗑 Borrar pedido</button>'          : '')        +'</div>';
     }).join('')+'</div>';
   }
 
@@ -6017,6 +6039,25 @@ document.addEventListener('DOMContentLoaded', function(){
       });
     }catch(e){}
   }
+
+  // ── Borrar pedido (Firestore) ────────────────────────────
+  window.cafeDeleteOrder = async function(docId, btn){
+    if(!window.CU){ return; }
+    if(!confirm('¿Borrar este pedido?')) return;
+    try {
+      btn.disabled = true;
+      btn.textContent = '⏳ Borrando...';
+      var { doc, deleteDoc } = window._fsImports || {};
+      if(!deleteDoc) throw new Error('Firestore no disponible');
+      await deleteDoc(doc(window.db, 'cafe_pedidos', docId));
+      btn.closest('.cafe-card').style.opacity = '0.3';
+      setTimeout(function(){ btn.closest('.cafe-card').remove(); }, 400);
+    } catch(e) {
+      btn.disabled = false;
+      btn.textContent = '🗑 Borrar pedido';
+      alert('Error al borrar: ' + e.message);
+    }
+  };
 
   // Mostrar/ocultar botón según login
   function cafeCheckLogin(){
@@ -26291,6 +26332,12 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
     if(!window.CU){ alert('Tenés que estar logueado para publicar pedidos.'); return; }
     var m = document.getElementById('cafeIAModal');
     if(m){ m.style.display = 'flex'; }
+    // Pre-seleccionar el mapa activo
+    var sel = document.getElementById('cafeIAMapSelect');
+    if(sel && typeof _cafeMap !== 'undefined'){
+      sel.value = _cafeMap;
+      if(!sel.value) sel.selectedIndex = 0;
+    }
     cafeIAReset();
   };
 
@@ -26354,8 +26401,10 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
         var rt = document.getElementById('cafeIAResultText');
 
         if(parsed && parsed.pedidos && parsed.pedidos.length > 0){
-          var mapa = typeof _cafeMap !== 'undefined' ? _cafeMap : 'Ladoga Lake';
+          var sel = document.getElementById('cafeIAMapSelect');
+          var mapa = (sel && sel.value) ? sel.value : (typeof _cafeMap !== 'undefined' ? _cafeMap : 'Ladoga Lake');
           window._cafeIAPedidosPendientes = parsed.pedidos.filter(function(p){ return p.pez; });
+          window._cafeIAMapaDestino = mapa;
 
           var html = '<div style="color:#2ec4b6;font-weight:700;font-size:.88rem;margin-bottom:10px;">🤖 La IA detectó '+window._cafeIAPedidosPendientes.length+' pedido'+(window._cafeIAPedidosPendientes.length!==1?'s':'')+'. Revisá y publicá:</div>';
 
@@ -26423,7 +26472,7 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
       return;
     }
 
-    var mapa = typeof _cafeMap !== 'undefined' ? _cafeMap : 'Ladoga Lake';
+    var mapa = window._cafeIAMapaDestino || (typeof _cafeMap !== 'undefined' ? _cafeMap : 'Ladoga Lake');
     var nick = window.CU ? (window.CU.nick || window.CU.id) : 'IA';
     var now  = Date.now();
     var publicados = 0;
