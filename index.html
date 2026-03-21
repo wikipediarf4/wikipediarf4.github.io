@@ -26434,5 +26434,199 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
 })();
 </script>
 <!-- ===== FIN LEER PEDIDOS CAFÉ IA ===== -->
+
+<!-- ===== AUTOCOMPLETADO DE PECES RF4 ===== -->
+<style>
+._rf4FishDrop {
+  position: absolute;
+  z-index: 99999;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 10px;
+  max-height: 220px;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(0,0,0,.5);
+  min-width: 220px;
+  width: 100%;
+}
+._rf4FishDrop::-webkit-scrollbar { width: 5px; }
+._rf4FishDrop::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
+._rf4FishItem {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 12px;
+  cursor: pointer;
+  font-size: .82rem;
+  color: #e6edf3;
+  font-family: 'Exo 2', sans-serif;
+  transition: background .12s;
+  border-bottom: 1px solid #21262d;
+}
+._rf4FishItem:last-child { border-bottom: none; }
+._rf4FishItem:hover, ._rf4FishItem._rf4FishActive {
+  background: #21262d;
+  color: #2ec4b6;
+}
+._rf4FishItem img {
+  width: 32px;
+  height: 22px;
+  object-fit: contain;
+  flex-shrink: 0;
+  border-radius: 3px;
+}
+._rf4FishItemName { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+._rf4FishItemHint { font-size: .68rem; color: #8b949e; white-space: nowrap; }
+._rf4FishWrap { position: relative; }
+</style>
+<script>
+(function(){
+  'use strict';
+
+  // IDs de todos los campos de pez
+  var FISH_INPUT_IDS = ['tagFish','epFish','pszFish','wkPF','spPFish','spotFish'];
+
+  var _activeDrop = null;
+  var _activeInput = null;
+  var _activeIdx = -1;
+
+  function getFishDB(){
+    return (typeof FISH_DB !== 'undefined' ? FISH_DB : (window.FISH_DB || []));
+  }
+
+  function closeDrop(){
+    if(_activeDrop){ _activeDrop.remove(); _activeDrop = null; }
+    _activeInput = null;
+    _activeIdx = -1;
+  }
+
+  function highlight(q, text){
+    if(!q) return text;
+    var re = new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+    return text.replace(re,'<mark style="background:rgba(46,196,182,.22);color:#2ec4b6;border-radius:2px;">$1</mark>');
+  }
+
+  function openDrop(input, matches){
+    closeDrop();
+    if(!matches.length) return;
+
+    var wrap = input.closest('._rf4FishWrap') || input.parentElement;
+    var drop = document.createElement('div');
+    drop.className = '_rf4FishDrop';
+
+    matches.forEach(function(f, i){
+      var item = document.createElement('div');
+      item.className = '_rf4FishItem';
+      item.dataset.idx = i;
+      var q = input.value.trim();
+      item.innerHTML = '<img src="'+f.img+'" alt="" onerror="this.style.display=\'none\'">'
+        + '<span class="_rf4FishItemName">'+highlight(q, f.n)+'</span>'
+        + '<span class="_rf4FishItemHint">'+f.t+'</span>';
+      item.addEventListener('mousedown', function(e){
+        e.preventDefault();
+        input.value = f.n;
+        input.dispatchEvent(new Event('input', {bubbles:true}));
+        closeDrop();
+      });
+      drop.appendChild(item);
+    });
+
+    // Posicionar justo debajo del input
+    if(input.closest('._rf4FishWrap')){
+      wrap.appendChild(drop);
+    } else {
+      // Crear wrapper si no existe
+      var parent = input.parentNode;
+      var wrapDiv = document.createElement('div');
+      wrapDiv.className = '_rf4FishWrap';
+      wrapDiv.style.cssText = 'position:relative;';
+      parent.insertBefore(wrapDiv, input);
+      wrapDiv.appendChild(input);
+      wrapDiv.appendChild(drop);
+    }
+
+    _activeDrop = drop;
+    _activeInput = input;
+    _activeIdx = -1;
+  }
+
+  function doSearch(input){
+    var q = input.value.trim().toLowerCase();
+    if(q.length < 1){ closeDrop(); return; }
+    var db = getFishDB();
+    var results = db.filter(function(f){
+      return f.n && f.n.toLowerCase().indexOf(q) !== -1;
+    }).slice(0, 12);
+    openDrop(input, results);
+  }
+
+  function navigateDrop(e){
+    if(!_activeDrop) return;
+    var items = _activeDrop.querySelectorAll('._rf4FishItem');
+    if(!items.length) return;
+    if(e.key === 'ArrowDown'){
+      e.preventDefault();
+      _activeIdx = Math.min(_activeIdx + 1, items.length - 1);
+    } else if(e.key === 'ArrowUp'){
+      e.preventDefault();
+      _activeIdx = Math.max(_activeIdx - 1, 0);
+    } else if(e.key === 'Enter' && _activeIdx >= 0){
+      e.preventDefault();
+      items[_activeIdx].dispatchEvent(new MouseEvent('mousedown'));
+      return;
+    } else if(e.key === 'Escape'){
+      closeDrop(); return;
+    } else { return; }
+    items.forEach(function(it){ it.classList.remove('_rf4FishActive'); });
+    if(_activeIdx >= 0){ items[_activeIdx].classList.add('_rf4FishActive'); items[_activeIdx].scrollIntoView({block:'nearest'}); }
+  }
+
+  function attachToInput(input){
+    if(input._rf4AutocompleteAttached) return;
+    input._rf4AutocompleteAttached = true;
+    input.setAttribute('autocomplete','off');
+
+    input.addEventListener('input', function(){ doSearch(input); });
+    input.addEventListener('focus', function(){ if(input.value.trim()) doSearch(input); });
+    input.addEventListener('keydown', navigateDrop);
+    input.addEventListener('blur', function(){ setTimeout(closeDrop, 160); });
+  }
+
+  function attachAll(){
+    FISH_INPUT_IDS.forEach(function(id){
+      var el = document.getElementById(id);
+      if(el) attachToInput(el);
+    });
+  }
+
+  // Adjuntar cuando el DOM esté listo
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', attachAll);
+  } else {
+    attachAll();
+  }
+
+  // También adjuntar si los inputs aparecen dinámicamente (modales)
+  var _obs = new MutationObserver(function(){
+    FISH_INPUT_IDS.forEach(function(id){
+      var el = document.getElementById(id);
+      if(el && !el._rf4AutocompleteAttached) attachToInput(el);
+    });
+    // También buscar el input dinámico _weF
+    var we = document.getElementById('_weF');
+    if(we && !we._rf4AutocompleteAttached) attachToInput(we);
+  });
+  _obs.observe(document.body, {childList:true, subtree:true});
+
+  // Cerrar al hacer clic fuera
+  document.addEventListener('mousedown', function(e){
+    if(_activeDrop && !_activeDrop.contains(e.target) && e.target !== _activeInput){
+      closeDrop();
+    }
+  });
+
+})();
+</script>
+<!-- ===== FIN AUTOCOMPLETADO DE PECES RF4 ===== -->
 </body>
 </html>
