@@ -1762,21 +1762,21 @@ body {
   color: #2d88ff !important;
 }
 
-/* Stats / reacciones */
+/* Stats / reacciones — estilo RF4 oscuro */
 .post-stats {
-  border-top: 1px solid #3e4042 !important;
-  background: #242526 !important;
+  border-top: 1px solid rgba(255,255,255,.07) !important;
+  background: transparent !important;
 }
-.post-rxn-summary { color: #b0b3b8 !important; }
-.post-rxn-summary:hover { color: #e4e6eb !important; }
+.post-rxn-summary { color: var(--muted) !important; }
+.post-rxn-summary:hover { color: var(--text) !important; }
 
-/* ── BOTONES DE ACCIÓN (Me gusta, Comentar, Compartir) — ESTILO FACEBOOK ── */
+/* ── BOTONES DE ACCIÓN — ESTILO WikiRF4 ── */
 .post-actions {
   display: flex !important;
-  gap: 0 !important;
-  padding: 4px !important;
-  border-top: 1px solid #3e4042 !important;
-  background: #242526 !important;
+  gap: 4px !important;
+  padding: 6px 8px !important;
+  border-top: 1px solid rgba(255,255,255,.07) !important;
+  background: transparent !important;
 }
 .post-action-btn, .act-btn {
   flex: 1 !important;
@@ -1784,30 +1784,33 @@ body {
   align-items: center !important;
   justify-content: center !important;
   gap: 6px !important;
-  padding: 8px 4px !important;
-  border-radius: 6px !important;
-  background: none !important;
-  border: none !important;
-  color: #b0b3b8 !important;
-  font-size: .875rem !important;
+  padding: 7px 4px !important;
+  border-radius: 8px !important;
+  background: rgba(255,255,255,.04) !important;
+  border: 1px solid rgba(255,255,255,.08) !important;
+  color: var(--muted) !important;
+  font-size: .82rem !important;
   font-weight: 700 !important;
   cursor: pointer !important;
-  transition: background .15s !important;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  transition: background .15s, color .15s, border-color .15s !important;
+  font-family: 'Exo 2', 'Orbitron', sans-serif !important;
 }
 .post-action-btn:hover, .act-btn:hover {
-  background: #3a3b3c !important;
-  color: #e4e6eb !important;
+  background: rgba(255,255,255,.09) !important;
+  border-color: rgba(255,255,255,.18) !important;
+  color: var(--text) !important;
 }
 .post-action-btn.active, .act-btn.active {
-  color: #2d88ff !important;
+  color: #ff6b35 !important;
+  background: rgba(255,107,53,.12) !important;
+  border-color: rgba(255,107,53,.3) !important;
 }
 
-/* Reaction popup — estilo Facebook */
+/* Reaction popup — estilo RF4 */
 .rxn-popup {
-  background: #242526 !important;
-  border: 1px solid #3e4042 !important;
-  box-shadow: 0 2px 12px rgba(0,0,0,.5) !important;
+  background: var(--bg2, #0d1117) !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,.7) !important;
 }
 
 /* ── STORIES ── */
@@ -7112,12 +7115,12 @@ let _unsubPosts = null;
 let _unsubStories = null;
 
 const REACTIONS = [
-  {emoji:'👍', label:'Me gusta', color:'#2078f4'},
-  {emoji:'❤️', label:'Me encanta', color:'#f33e58'},
-  {emoji:'😂', label:'Me divierte', color:'#f7b125'},
-  {emoji:'😮', label:'Me asombra', color:'#f7b125'},
-  {emoji:'😢', label:'Me entristece', color:'#f7b125'},
-  {emoji:'😡', label:'Me enoja', color:'#e9710f'},
+  {emoji:'🔥', label:'¡Fuego!',     color:'#ff6b35'},
+  {emoji:'🎣', label:'¡A pescar!',  color:'#2ec4b6'},
+  {emoji:'❤️', label:'Me encanta',  color:'#f33e58'},
+  {emoji:'👏', label:'¡Bravo!',     color:'#f7b125'},
+  {emoji:'😮', label:'Me asombra',  color:'#a78bfa'},
+  {emoji:'💯', label:'¡100%!',      color:'#4ade80'},
 ];
 const REACTION_EMOJIS = REACTIONS.map(r=>r.emoji);
 const FISH_EMOJIS = {'Pike':'🐟','Catfish':'🦈','Bream':'🐡','Perch':'🐠','Carp':'🐟','Trout':'🐟','Salmon':'🐟','Burbot':'🐟','Ruffe':'🐟','Tench':'🐟'};
@@ -10735,7 +10738,7 @@ function postHTML(p){
     </div>
     <div class="post-actions">
       <div class="rxn-wrap" onmouseenter="showRxnPop('${p.id}')" onmouseleave="schedHideRxnPop('${p.id}')">
-        <button class="post-action-btn ${myRxn?'active':''}" id="rxnt_${p.id}" onclick="quickReact('${p.id}')" style="${myRxn?`color:${REACTIONS.find(r=>r.emoji===myRxn)?.color||'var(--accent)'}`:''}">${myRxn||'👍'} <span style="font-size:.82rem;">${myRxn ? (REACTIONS.find(r=>r.emoji===myRxn)?.label||'Me gusta') : 'Me gusta'}</span></button>
+        <button class="post-action-btn ${myRxn?'active':''}" id="rxnt_${p.id}" onclick="quickReact('${p.id}')" style="${myRxn?`color:${REACTIONS.find(r=>r.emoji===myRxn)?.color||'var(--accent)'}`:''}\">${myRxn||'🔥'} <span style="font-size:.82rem;">${myRxn ? (REACTIONS.find(r=>r.emoji===myRxn)?.label||'Reaccionar') : '🔥 Reaccionar'}</span></button>
         <div class="rxn-popup" id="rxnp_${p.id}" onmouseenter="cancelHideRxnPop('${p.id}')" onmouseleave="schedHideRxnPop('${p.id}')">${rxnBtns}</div>
       </div>
       <button class="post-action-btn" onclick="toggleComments('${p.id}')">💬 <span style="font-size:.82rem;">Comentar</span></button>
@@ -11324,15 +11327,15 @@ async function doReact(pid, emoji){
   // Update reaction button — normal posts
   const rxnBtn = document.getElementById('rxnt_'+pid);
   if(rxnBtn){
-    rxnBtn.innerHTML = (myNewRxn||'👍') + ' <span style="font-size:.82rem;">' + (rxnDef?.label||'Me gusta') + '</span>';
+    rxnBtn.innerHTML = (myNewRxn||'🔥') + ' <span style="font-size:.82rem;">' + (rxnDef?.label||'🔥 Reaccionar') + '</span>';
     rxnBtn.style.color = myNewRxn ? (rxnDef?.color||'var(--accent)') : '';
     rxnBtn.classList.toggle('active', !!myNewRxn);
   }
   // Update reaction button — trofeo cards
   const trofeoRxnIcon = document.getElementById('trofeoRxnIcon_'+realId);
   const trofeoRxnLbl = document.getElementById('trofeoRxnLbl_'+realId);
-  if(trofeoRxnIcon) trofeoRxnIcon.textContent = myNewRxn||'👍';
-  if(trofeoRxnLbl){ trofeoRxnLbl.textContent = rxnDef?.label||'Me gusta'; trofeoRxnLbl.closest('button').style.color = myNewRxn ? (rxnDef?.color||'var(--accent)') : ''; }
+  if(trofeoRxnIcon) trofeoRxnIcon.textContent = myNewRxn||'🔥';
+  if(trofeoRxnLbl){ trofeoRxnLbl.textContent = rxnDef?.label||'Reaccionar'; trofeoRxnLbl.closest('button').style.color = myNewRxn ? (rxnDef?.color||'var(--accent)') : ''; }
 
   // Update reaction summary
   const rxnSummary = document.getElementById('rxns_'+pid);
@@ -11357,7 +11360,7 @@ async function doReact(pid, emoji){
     else { delete p.reactions[window.CU.id]; }
   }
 }
-function quickReact(pid){ if(!window.CU){toast('Inicia sesión','err');return;} doReact(pid,'👍'); }
+function quickReact(pid){ if(!window.CU){toast('Inicia sesión','err');return;} doReact(pid,'🔥'); }
 
 // ===== COMMENTS =====
 async function toggleComments(pid){
