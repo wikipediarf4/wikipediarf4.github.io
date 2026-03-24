@@ -717,16 +717,16 @@ img[title="Verificado"]:hover{
 .rxn-wrap{position:relative;padding-bottom:6px;margin-bottom:-6px;}
 .rxn-popup{display:none;position:absolute;bottom:0;left:0;z-index:9500;
   background:#161b22;border:1px solid var(--border);border-radius:16px;
-  padding:8px;box-shadow:0 4px 24px rgba(0,0,0,.4);
-  transform:translateY(calc(-100% - 6px));width:300px;max-width:90vw;}
+  padding:8px;box-shadow:0 4px 24px rgba(0,0,0,.5);
+  transform:translateY(calc(-100% - 6px));width:280px;max-width:92vw;}
 .rxn-popup.show{display:block;animation:rxnPop .16s ease;}
 @keyframes rxnPop{from{opacity:0;transform:translateY(calc(-100% - 6px)) scale(.85)}to{opacity:1;transform:translateY(calc(-100% - 6px)) scale(1)}}
-.rxn-cats{display:flex;gap:4px;overflow-x:auto;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:6px;scrollbar-width:none;}
+.rxn-cats{display:flex;gap:3px;overflow-x:auto;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:6px;scrollbar-width:none;}
 .rxn-cats::-webkit-scrollbar{display:none;}
-.rxn-cat-btn{background:none;border:none;font-size:.75rem;color:#8b949e;cursor:pointer;padding:3px 7px;border-radius:8px;white-space:nowrap;transition:background .15s,color .15s;}
+.rxn-cat-btn{background:none;border:none;font-size:.7rem;color:#8b949e;cursor:pointer;padding:3px 7px;border-radius:8px;white-space:nowrap;transition:background .15s,color .15s;}
 .rxn-cat-btn:hover,.rxn-cat-btn.active{background:rgba(255,255,255,.1);color:#e6edf3;}
-.rxn-grid{display:flex;flex-wrap:wrap;gap:2px;max-height:140px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#30363d transparent;}
-.rxn-btn{background:none;border:none;font-size:1.35rem;cursor:pointer;padding:3px 4px;border-radius:8px;transition:transform .13s,background .13s;line-height:1;position:relative;}
+.rxn-grid{display:flex;flex-wrap:wrap;gap:2px;max-height:130px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#30363d transparent;}
+.rxn-btn{background:none;border:none;font-size:1.3rem;cursor:pointer;padding:3px 4px;border-radius:8px;transition:transform .13s,background .13s;line-height:1;position:relative;}
 .rxn-btn:hover{transform:scale(1.5) translateY(-3px);background:rgba(255,255,255,.08);}
 .rxn-btn:hover .rxn-tooltip{opacity:1!important;}
 .rxn-btn.rxn-active{background:rgba(46,196,182,.15);}
@@ -7138,155 +7138,65 @@ let _rxnTimers = {};
 let _unsubPosts = null;
 let _unsubStories = null;
 
-// ── Categorías de reacciones Twemoji ────────────────────────────────────────
 const REACTION_CATEGORIES = [
   { cat:'😀 Caras', emojis:[
-    {emoji:'😀',label:'Feliz',color:'#f7b125'},
-    {emoji:'😂',label:'¡Jajaja!',color:'#f7b125'},
-    {emoji:'🥰',label:'Con amor',color:'#f33e58'},
-    {emoji:'😍',label:'¡Me encanta!',color:'#f33e58'},
-    {emoji:'🤩',label:'¡Wow!',color:'#a78bfa'},
-    {emoji:'😎',label:'¡Genial!',color:'#2ec4b6'},
-    {emoji:'🥳',label:'¡Fiesta!',color:'#ff6b35'},
-    {emoji:'😮',label:'Me asombra',color:'#a78bfa'},
-    {emoji:'😢',label:'Me pone mal',color:'#60a5fa'},
-    {emoji:'😡',label:'¡No me gusta!',color:'#f33e58'},
-    {emoji:'🤯',label:'¡Mente volada!',color:'#ff6b35'},
-    {emoji:'🤣',label:'¡Muerto de risa!',color:'#f7b125'},
-    {emoji:'😴',label:'Aburrido',color:'#8b949e'},
-    {emoji:'🥺',label:'Por favor...',color:'#60a5fa'},
-    {emoji:'😤',label:'¡Indignado!',color:'#ff6b35'},
+    {emoji:'😀',label:'Feliz',color:'#f7b125'},{emoji:'😂',label:'¡Jajaja!',color:'#f7b125'},
+    {emoji:'🥰',label:'Con amor',color:'#f33e58'},{emoji:'😍',label:'¡Me encanta!',color:'#f33e58'},
+    {emoji:'🤩',label:'¡Wow!',color:'#a78bfa'},{emoji:'😎',label:'¡Genial!',color:'#2ec4b6'},
+    {emoji:'🥳',label:'¡Fiesta!',color:'#ff6b35'},{emoji:'😮',label:'Me asombra',color:'#a78bfa'},
+    {emoji:'😢',label:'Me pone mal',color:'#60a5fa'},{emoji:'😡',label:'¡No me gusta!',color:'#f33e58'},
+    {emoji:'🤯',label:'¡Mente volada!',color:'#ff6b35'},{emoji:'🤣',label:'¡Muerto de risa!',color:'#f7b125'},
   ]},
   { cat:'👋 Gestos', emojis:[
-    {emoji:'👍',label:'¡Bueno!',color:'#4ade80'},
-    {emoji:'👎',label:'No me gusta',color:'#f33e58'},
-    {emoji:'👏',label:'¡Bravo!',color:'#f7b125'},
-    {emoji:'🙌',label:'¡Arriba!',color:'#ff6b35'},
-    {emoji:'🤝',label:'De acuerdo',color:'#2ec4b6'},
-    {emoji:'🙏',label:'Por favor',color:'#a78bfa'},
-    {emoji:'💪',label:'¡Fuerza!',color:'#f7b125'},
-    {emoji:'✌️',label:'Paz',color:'#4ade80'},
-    {emoji:'🤙',label:'¡Buena onda!',color:'#2ec4b6'},
-    {emoji:'👌',label:'Perfecto',color:'#4ade80'},
-    {emoji:'🤞',label:'¡Suerte!',color:'#a78bfa'},
-    {emoji:'🫶',label:'Con cariño',color:'#f33e58'},
+    {emoji:'👍',label:'¡Bueno!',color:'#4ade80'},{emoji:'👎',label:'No me gusta',color:'#f33e58'},
+    {emoji:'👏',label:'¡Bravo!',color:'#f7b125'},{emoji:'🙌',label:'¡Arriba!',color:'#ff6b35'},
+    {emoji:'🤝',label:'De acuerdo',color:'#2ec4b6'},{emoji:'🙏',label:'Por favor',color:'#a78bfa'},
+    {emoji:'💪',label:'¡Fuerza!',color:'#f7b125'},{emoji:'✌️',label:'Paz',color:'#4ade80'},
+    {emoji:'🤙',label:'¡Buena onda!',color:'#2ec4b6'},{emoji:'👌',label:'Perfecto',color:'#4ade80'},
+    {emoji:'🤞',label:'¡Suerte!',color:'#a78bfa'},{emoji:'🫶',label:'Con cariño',color:'#f33e58'},
   ]},
   { cat:'❤️ Corazones', emojis:[
-    {emoji:'❤️',label:'Me encanta',color:'#f33e58'},
-    {emoji:'🧡',label:'Me gusta mucho',color:'#ff6b35'},
-    {emoji:'💛',label:'Felicidad',color:'#f7b125'},
-    {emoji:'💚',label:'Esperanza',color:'#4ade80'},
-    {emoji:'💙',label:'Tranquilidad',color:'#60a5fa'},
-    {emoji:'💜',label:'Admiración',color:'#a78bfa'},
-    {emoji:'🖤',label:'Oscuro',color:'#8b949e'},
-    {emoji:'🤍',label:'Pureza',color:'#e6edf3'},
-    {emoji:'💔',label:'Me rompe el corazón',color:'#f33e58'},
-    {emoji:'💕',label:'Doble amor',color:'#f33e58'},
-    {emoji:'💯',label:'¡100%!',color:'#4ade80'},
-    {emoji:'✨',label:'¡Brillante!',color:'#f7b125'},
+    {emoji:'❤️',label:'Me encanta',color:'#f33e58'},{emoji:'🧡',label:'Me gusta mucho',color:'#ff6b35'},
+    {emoji:'💛',label:'Felicidad',color:'#f7b125'},{emoji:'💚',label:'Esperanza',color:'#4ade80'},
+    {emoji:'💙',label:'Tranquilidad',color:'#60a5fa'},{emoji:'💜',label:'Admiración',color:'#a78bfa'},
+    {emoji:'💔',label:'Me rompe el corazón',color:'#f33e58'},{emoji:'💕',label:'Doble amor',color:'#f33e58'},
+    {emoji:'💯',label:'¡100%!',color:'#4ade80'},{emoji:'✨',label:'¡Brillante!',color:'#f7b125'},
+    {emoji:'🔥',label:'¡Fuego!',color:'#ff6b35'},{emoji:'⭐',label:'¡Estrella!',color:'#f7b125'},
   ]},
-  { cat:'🐶 Animales', emojis:[
-    {emoji:'🐟',label:'¡Pescado!',color:'#60a5fa'},
-    {emoji:'🎣',label:'¡A pescar!',color:'#2ec4b6'},
-    {emoji:'🐬',label:'Delfín',color:'#60a5fa'},
-    {emoji:'🐳',label:'Ballena',color:'#60a5fa'},
-    {emoji:'🦈',label:'Tiburón',color:'#8b949e'},
-    {emoji:'🐙',label:'Pulpo',color:'#f33e58'},
-    {emoji:'🦞',label:'Langosta',color:'#ff6b35'},
-    {emoji:'🐊',label:'Cocodrilo',color:'#4ade80'},
-    {emoji:'🐸',label:'Rana',color:'#4ade80'},
-    {emoji:'🦅',label:'Águila',color:'#f7b125'},
-    {emoji:'🐻',label:'Oso',color:'#f7b125'},
-    {emoji:'🦁',label:'León',color:'#ff6b35'},
-  ]},
-  { cat:'🍕 Comida', emojis:[
-    {emoji:'🍺',label:'¡Salud!',color:'#f7b125'},
-    {emoji:'🍻',label:'¡Brindemos!',color:'#f7b125'},
-    {emoji:'☕',label:'Café',color:'#ff6b35'},
-    {emoji:'🍕',label:'Pizza',color:'#ff6b35'},
-    {emoji:'🍔',label:'Hamburguesa',color:'#f7b125'},
-    {emoji:'🌮',label:'Taco',color:'#f7b125'},
-    {emoji:'🍣',label:'Sushi',color:'#f33e58'},
-    {emoji:'🎂',label:'Torta',color:'#f33e58'},
-    {emoji:'🍦',label:'Helado',color:'#a78bfa'},
-    {emoji:'🍓',label:'Frutilla',color:'#f33e58'},
-    {emoji:'🥑',label:'Palta',color:'#4ade80'},
-    {emoji:'🍾',label:'¡A celebrar!',color:'#f7b125'},
-  ]},
-  { cat:'⚽ Deportes', emojis:[
-    {emoji:'🏆',label:'¡Campeón!',color:'#f7b125'},
-    {emoji:'🥇',label:'¡Primer lugar!',color:'#f7b125'},
-    {emoji:'🥈',label:'Segundo lugar',color:'#8b949e'},
-    {emoji:'🥉',label:'Tercer lugar',color:'#ff6b35'},
-    {emoji:'⚽',label:'Fútbol',color:'#4ade80'},
-    {emoji:'🎯',label:'¡Al blanco!',color:'#f33e58'},
-    {emoji:'🏅',label:'Medalla',color:'#f7b125'},
-    {emoji:'💪',label:'¡Fuerza!',color:'#ff6b35'},
-    {emoji:'🎽',label:'¡A entrenar!',color:'#60a5fa'},
-    {emoji:'🏊',label:'¡A nadar!',color:'#60a5fa'},
-    {emoji:'🎮',label:'¡A jugar!',color:'#a78bfa'},
-    {emoji:'🃏',label:'¡Comodín!',color:'#f33e58'},
-  ]},
-  { cat:'🚀 Viajes', emojis:[
-    {emoji:'🚀',label:'¡Al espacio!',color:'#a78bfa'},
-    {emoji:'✈️',label:'¡Viajando!',color:'#60a5fa'},
-    {emoji:'🌍',label:'El mundo',color:'#4ade80'},
-    {emoji:'🏖️',label:'¡Playa!',color:'#f7b125'},
-    {emoji:'🏔️',label:'¡Montaña!',color:'#8b949e'},
-    {emoji:'🌊',label:'¡Olas!',color:'#60a5fa'},
-    {emoji:'⛵',label:'¡Barco!',color:'#60a5fa'},
-    {emoji:'🏕️',label:'Campamento',color:'#4ade80'},
-    {emoji:'🌅',label:'Amanecer',color:'#ff6b35'},
-    {emoji:'🗺️',label:'¡A explorar!',color:'#f7b125'},
-    {emoji:'🧭',label:'Brújula',color:'#2ec4b6'},
-    {emoji:'⚓',label:'Ancla',color:'#8b949e'},
-  ]},
-  { cat:'💡 Objetos', emojis:[
-    {emoji:'🔥',label:'¡Fuego!',color:'#ff6b35'},
-    {emoji:'💎',label:'¡Diamante!',color:'#60a5fa'},
-    {emoji:'🎁',label:'Regalo',color:'#f33e58'},
-    {emoji:'🔔',label:'Notificación',color:'#f7b125'},
-    {emoji:'📸',label:'Foto',color:'#8b949e'},
-    {emoji:'🎵',label:'Música',color:'#a78bfa'},
-    {emoji:'💡',label:'¡Idea!',color:'#f7b125'},
-    {emoji:'⚡',label:'¡Rayo!',color:'#f7b125'},
-    {emoji:'🔑',label:'Clave',color:'#f7b125'},
-    {emoji:'📢',label:'¡Anuncio!',color:'#ff6b35'},
-    {emoji:'💰',label:'¡Dinero!',color:'#4ade80'},
-    {emoji:'🛡️',label:'Protegido',color:'#60a5fa'},
-  ]},
-  { cat:'🌍 Naturaleza', emojis:[
-    {emoji:'🌈',label:'Arcoíris',color:'#a78bfa'},
-    {emoji:'☀️',label:'Sol',color:'#f7b125'},
-    {emoji:'🌙',label:'Luna',color:'#a78bfa'},
-    {emoji:'⭐',label:'Estrella',color:'#f7b125'},
-    {emoji:'❄️',label:'Frío',color:'#60a5fa'},
-    {emoji:'🌊',label:'Olas',color:'#60a5fa'},
-    {emoji:'🌿',label:'Naturaleza',color:'#4ade80'},
-    {emoji:'🍀',label:'Suerte',color:'#4ade80'},
-    {emoji:'🌸',label:'Flores',color:'#f33e58'},
-    {emoji:'🌻',label:'Girasol',color:'#f7b125'},
-    {emoji:'🌋',label:'Volcán',color:'#ff6b35'},
-    {emoji:'🌌',label:'Galaxia',color:'#a78bfa'},
+  { cat:'🐟 Pesca', emojis:[
+    {emoji:'🎣',label:'¡A pescar!',color:'#2ec4b6'},{emoji:'🐟',label:'¡Pescado!',color:'#60a5fa'},
+    {emoji:'🐬',label:'Delfín',color:'#60a5fa'},{emoji:'🐳',label:'Ballena',color:'#60a5fa'},
+    {emoji:'🦈',label:'Tiburón',color:'#8b949e'},{emoji:'🐙',label:'Pulpo',color:'#f33e58'},
+    {emoji:'🦞',label:'Langosta',color:'#ff6b35'},{emoji:'🦀',label:'Cangrejo',color:'#ff6b35'},
+    {emoji:'🐊',label:'Cocodrilo',color:'#4ade80'},{emoji:'🦅',label:'Águila',color:'#f7b125'},
+    {emoji:'🏆',label:'¡Campeón!',color:'#f7b125'},{emoji:'🥇',label:'¡Primer lugar!',color:'#f7b125'},
   ]},
   { cat:'🎮 Entretenimiento', emojis:[
-    {emoji:'🎉',label:'¡Celebración!',color:'#f7b125'},
-    {emoji:'🎊',label:'¡Confeti!',color:'#ff6b35'},
-    {emoji:'🎭',label:'Teatro',color:'#a78bfa'},
-    {emoji:'🎬',label:'Acción',color:'#8b949e'},
-    {emoji:'🎤',label:'¡Al micrófono!',color:'#f33e58'},
-    {emoji:'🎸',label:'Rock',color:'#ff6b35'},
-    {emoji:'🥁',label:'¡Batería!',color:'#f7b125'},
-    {emoji:'🎲',label:'¡Suerte!',color:'#a78bfa'},
-    {emoji:'🃏',label:'¡Comodín!',color:'#f33e58'},
-    {emoji:'🎯',label:'¡En el blanco!',color:'#f33e58'},
-    {emoji:'🏅',label:'Medalla',color:'#f7b125'},
-    {emoji:'🎆',label:'Fuegos',color:'#ff6b35'},
+    {emoji:'🎉',label:'¡Celebración!',color:'#f7b125'},{emoji:'🎊',label:'¡Confeti!',color:'#ff6b35'},
+    {emoji:'🎮',label:'¡A jugar!',color:'#a78bfa'},{emoji:'🎯',label:'¡En el blanco!',color:'#f33e58'},
+    {emoji:'🎲',label:'¡Suerte!',color:'#a78bfa'},{emoji:'🎸',label:'Rock',color:'#ff6b35'},
+    {emoji:'🎵',label:'Música',color:'#a78bfa'},{emoji:'🎬',label:'Acción',color:'#8b949e'},
+    {emoji:'🏅',label:'Medalla',color:'#f7b125'},{emoji:'🥈',label:'Segundo lugar',color:'#8b949e'},
+    {emoji:'🥉',label:'Tercer lugar',color:'#ff6b35'},{emoji:'🎆',label:'Fuegos',color:'#ff6b35'},
+  ]},
+  { cat:'🌍 Naturaleza', emojis:[
+    {emoji:'🌈',label:'Arcoíris',color:'#a78bfa'},{emoji:'☀️',label:'Sol',color:'#f7b125'},
+    {emoji:'🌊',label:'Olas',color:'#60a5fa'},{emoji:'⚡',label:'¡Rayo!',color:'#f7b125'},
+    {emoji:'❄️',label:'Frío',color:'#60a5fa'},{emoji:'🌿',label:'Naturaleza',color:'#4ade80'},
+    {emoji:'🍀',label:'Suerte',color:'#4ade80'},{emoji:'🌸',label:'Flores',color:'#f33e58'},
+    {emoji:'🌋',label:'Volcán',color:'#ff6b35'},{emoji:'🌌',label:'Galaxia',color:'#a78bfa'},
+    {emoji:'🌙',label:'Luna',color:'#a78bfa'},{emoji:'💧',label:'Agua',color:'#60a5fa'},
+  ]},
+  { cat:'🍕 Comida', emojis:[
+    {emoji:'🍺',label:'¡Salud!',color:'#f7b125'},{emoji:'🍻',label:'¡Brindemos!',color:'#f7b125'},
+    {emoji:'☕',label:'Café',color:'#ff6b35'},{emoji:'🍕',label:'Pizza',color:'#ff6b35'},
+    {emoji:'🍔',label:'Hamburguesa',color:'#f7b125'},{emoji:'🌮',label:'Taco',color:'#f7b125'},
+    {emoji:'🍣',label:'Sushi',color:'#f33e58'},{emoji:'🎂',label:'Torta',color:'#f33e58'},
+    {emoji:'🍾',label:'¡A celebrar!',color:'#f7b125'},{emoji:'🍓',label:'Frutilla',color:'#f33e58'},
+    {emoji:'💎',label:'¡Diamante!',color:'#60a5fa'},{emoji:'💰',label:'¡Dinero!',color:'#4ade80'},
   ]},
 ];
-
-// Array plano de todas las reacciones (para compatibilidad con el resto del código)
-const REACTIONS = REACTION_CATEGORIES.flatMap(c => c.emojis);
+const REACTIONS = REACTION_CATEGORIES.flatMap(c=>c.emojis);
 const REACTION_EMOJIS = REACTIONS.map(r=>r.emoji);
 const FISH_EMOJIS = {'Pike':'🐟','Catfish':'🦈','Bream':'🐡','Perch':'🐠','Carp':'🐟','Trout':'🐟','Salmon':'🐟','Burbot':'🐟','Ruffe':'🐟','Tench':'🐟'};
 
@@ -10569,7 +10479,8 @@ function postHTML(p){
   const myRxn = window.CU ? (p.reactions?.[window.CU.id]||null) : null;
   const totalRxn = Object.values(p.reactionCounts||{}).reduce((a,b)=>a+b,0);
   const topRxn = Object.entries(p.reactionCounts||{}).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([e])=>e).join('');
-  const rxnBtns = `<div class="rxn-cats">${REACTION_CATEGORIES.map((c,i)=>`<button class="rxn-cat-btn${i===0?' active':''}" onclick="rxnSwitchCat(this,'${p.id}',${i})">${c.cat}</button>`).join('')}</div><div class="rxn-grid" id="rxn-grid-${p.id}">${REACTION_CATEGORIES[0].emojis.map(r=>`<button class="rxn-btn${myRxn===r.emoji?' rxn-active':''}" onclick="doReact('${p.id}','${r.emoji}')" title="${r.label}">${r.emoji}<span style="position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;font-size:.58rem;white-space:nowrap;padding:2px 6px;border-radius:4px;pointer-events:none;opacity:0;transition:opacity .15s;" class="rxn-tooltip">${r.label}</span></button>`).join('')}</div>`;
+  const myRxnObj = REACTIONS.find(r=>r.emoji===myRxn);
+  const rxnBtns = `<div class="rxn-cats">${REACTION_CATEGORIES.map((c,i)=>`<button class="rxn-cat-btn${i===0?' active':''}" onclick="rxnSwitchCat(this,'${p.id}',${i})">${c.cat}</button>`).join('')}</div><div class="rxn-grid" id="rxn-grid-${p.id}">${REACTION_CATEGORIES[0].emojis.map(r=>`<button class="rxn-btn${myRxn===r.emoji?' rxn-active':''}" onclick="doReact('${p.id}','${r.emoji}');schedHideRxnPop('${p.id}')" title="${r.label}">${r.emoji}<span style="position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;font-size:.58rem;white-space:nowrap;padding:2px 6px;border-radius:4px;pointer-events:none;opacity:0;transition:opacity .15s;" class="rxn-tooltip">${r.label}</span></button>`).join('')}</div>`;
   const fishTag = p.fish ? `<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(0,198,255,.08);border:1px solid rgba(0,198,255,.2);border-radius:100px;padding:4px 12px;font-size:.78rem;margin-bottom:10px;margin-left:14px"><span>🎣</span><strong>${p.fish}</strong>${p.weight?` · ${fmtKg(p.weight)}`:''} ${p.map?`· ${p.map}`:''} ${p.tech?`· ${p.tech}`:''}</div>` : '';
   // Store images globally for lightbox
   window._postImgsMap = window._postImgsMap || {};
@@ -10927,9 +10838,9 @@ function postHTML(p){
         <button class="post-action-btn ${myRxn?'active':''}" id="rxnt_${p.id}" onclick="quickReact('${p.id}')" style="${myRxn?`color:${REACTIONS.find(r=>r.emoji===myRxn)?.color||'var(--accent)'}`:''}\">${myRxn||'🔥'} <span style="font-size:.82rem;">${myRxn ? (REACTIONS.find(r=>r.emoji===myRxn)?.label||'Reaccionar') : '🔥 Reaccionar'}</span></button>
         <div class="rxn-popup" id="rxnp_${p.id}" onmouseenter="cancelHideRxnPop('${p.id}')" onmouseleave="schedHideRxnPop('${p.id}')">${rxnBtns}</div>
       </div>
-      <button class="post-action-btn" onclick="toggleComments('${p.id}')">💬 <span style="font-size:.82rem;">Comentar</span></button>
-      <button class="post-action-btn" onclick="sharePost('${p.id}')">🔁 <span style="font-size:.82rem;">Compartir</span></button>
-      <button class="post-action-btn" onclick="(function(){var u=encodeURIComponent(location.origin+location.pathname+'?p=${p.id}');window.open('https://www.facebook.com/sharer/sharer.php?u='+u,'_blank','width=640,height=460,resizable=yes');})();" title="Compartir en Facebook" style="color:#1877F2;gap:5px;">
+      <button class="post-action-btn" style="display:none;" onclick="toggleComments('${p.id}')">💬 <span style="font-size:.82rem;">Comentar</span></button>
+      <button class="post-action-btn" style="display:none;" onclick="sharePost('${p.id}')">🔁 <span style="font-size:.82rem;">Compartir</span></button>
+      <button class="post-action-btn" style="display:none;" onclick="(function(){var u=encodeURIComponent(location.origin+location.pathname+'?p=${p.id}');window.open('https://www.facebook.com/sharer/sharer.php?u='+u,'_blank','width=640,height=460,resizable=yes');})();" title="Compartir en Facebook" style="color:#1877F2;gap:5px;display:none;">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="#1877F2"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.268h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
         <span style="font-size:.82rem;">Facebook</span>
       </button>
@@ -11466,17 +11377,45 @@ function schedHideRxnPop(id){ _rxnPops[id]=setTimeout(()=>{ document.getElementB
 function cancelHideRxnPop(id){ if(_rxnPops[id]){clearTimeout(_rxnPops[id]);delete _rxnPops[id];} }
 
 function rxnSwitchCat(btn, pid, catIdx){
-  // Actualizar tab activo
   const popup = btn.closest('.rxn-popup');
   if(popup) popup.querySelectorAll('.rxn-cat-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  // Renderizar emojis de la categoría elegida
   const grid = document.getElementById('rxn-grid-'+pid);
   if(!grid) return;
   const myRxn = window.CU ? (window._posts?.find(p=>p.id===pid)?.reactions?.[window.CU.id]||null) : null;
   const cat = REACTION_CATEGORIES[catIdx];
   if(!cat) return;
-  grid.innerHTML = cat.emojis.map(r=>`<button class="rxn-btn${myRxn===r.emoji?' rxn-active':''}" onclick="doReact('${pid}','${r.emoji}')" title="${r.label}">${r.emoji}<span style="position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;font-size:.58rem;white-space:nowrap;padding:2px 6px;border-radius:4px;pointer-events:none;opacity:0;transition:opacity .15s;" class="rxn-tooltip">${r.label}</span></button>`).join('');
+  grid.innerHTML = cat.emojis.map(r=>`<button class="rxn-btn${myRxn===r.emoji?' rxn-active':''}" onclick="doReact('${pid}','${r.emoji}');schedHideRxnPop('${pid}')" title="${r.label}">${r.emoji}<span style="position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;font-size:.58rem;white-space:nowrap;padding:2px 6px;border-radius:4px;pointer-events:none;opacity:0;transition:opacity .15s;" class="rxn-tooltip">${r.label}</span></button>`).join('');
+}
+
+function openTrofeoViewers(tid){
+  const t = window._trofeosFeedData?.find(x=>x.id===tid);
+  const viewers = t?.viewers || {};
+  const list = Object.values(viewers);
+  const total = t?.views || 0;
+  const html = list.length
+    ? list.map(v=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);">
+        <div style="width:36px;height:36px;border-radius:50%;background:rgba(46,196,182,.2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;overflow:hidden;flex-shrink:0;">
+          ${v.av?`<img src="${v.av}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`:(v.nick||'?')[0].toUpperCase()}
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:.88rem;font-weight:700;color:#e6edf3;">${v.nick||'Anónimo'}</div>
+          ${v.time?`<div style="font-size:.7rem;color:#8b949e;">${new Date(v.time).toLocaleString('es',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>`:''}
+        </div>
+      </div>`).join('')
+    : '<div style="text-align:center;color:#8b949e;padding:20px;font-size:.85rem;">Aún no hay datos de quién lo vio.</div>';
+
+  const m = document.createElement('div');
+  m.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;padding:16px;';
+  m.innerHTML=`<div style="background:#161b22;border:1px solid rgba(255,215,0,.3);border-radius:16px;width:100%;max-width:360px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;">
+    <div style="padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-weight:700;color:#e6edf3;">👁 ${total} visitas</span>
+      <button onclick="this.closest('[style*=fixed]').remove()" style="background:none;border:none;color:#8b949e;font-size:1.2rem;cursor:pointer;">✕</button>
+    </div>
+    <div style="overflow-y:auto;padding:0 16px;">${html}</div>
+  </div>`;
+  m.addEventListener('click',e=>{ if(e.target===m) m.remove(); });
+  document.body.appendChild(m);
 }
 
 async function doReact(pid, emoji){
@@ -21412,7 +21351,23 @@ function renderTrofeosFeed(){
     }
   });
   el.innerHTML = data.map(t=>trofeoFeedCardHTML(t)).join('');
-  // Actualizar summaries de reacciones después de renderizar
+  // Registrar vista y actualizar contador en tiempo real
+  data.forEach(t => {
+    if(!t.id) return;
+    // Actualizar contador visual
+    const viewEl = document.getElementById('trofeo_views_'+t.id);
+    if(viewEl) viewEl.textContent = t.views||0;
+    // Registrar quién lo vio (solo si está logueado y no es el dueño)
+    if(window.CU && window.CU.id !== t.userId){
+      try{
+        const viewerData = {};
+        viewerData[`viewers.${window.CU.id}`] = { nick: window.CU.nick, av: window.CU.av||'', time: Date.now() };
+        viewerData['views'] = increment(1);
+        updateDoc(doc(db,'trofeosPendientes',t.id), viewerData).catch(()=>{});
+      }catch(e){}
+    }
+  });
+  // Actualizar summaries de reacciones
   data.forEach(t => {
     const fakeId = 'trofeo_' + (t.id||'');
     const p = window._posts.find(x=>x.id===fakeId);
@@ -21483,28 +21438,25 @@ function trofeoFeedCardHTML(t){
       <div class="post-rxn-summary" id="rxns_trofeo_${tid}" onclick="openReactionsModal('trofeo_${tid}')" style="min-height:22px;"></div>
       <div style="font-size:.72rem;color:var(--muted);cursor:pointer;" id="trofeo_cmtcount_${tid}"></div>
     </div>
-    <!-- Action bar: Reaccionar / Comentar / Compartir -->
-    <div style="display:flex;border-top:1px solid rgba(255,215,0,.12);padding:0 4px;">
+    <!-- Action bar: solo Reaccionar + Visitas -->
+    <div style="display:flex;align-items:center;border-top:1px solid rgba(255,215,0,.12);padding:0 4px;">
       <div class="rxn-wrap" style="flex:1;">
         <button class="act-btn" id="trofeoRxnBtn_${tid}"
           onmouseenter="showRxnPop('trofeo_${tid}')"
           onmouseleave="schedHideRxnPop('trofeo_${tid}')"
           onclick="quickReact('trofeo_${tid}')"
           style="width:100%;justify-content:center;gap:6px;">
-          <span id="trofeoRxnIcon_${tid}">👍</span> <span id="trofeoRxnLbl_${tid}">Me gusta</span>
+          <span id="trofeoRxnIcon_${tid}">🎣</span> <span id="trofeoRxnLbl_${tid}">Reaccionar</span>
         </button>
         <div class="rxn-popup" id="rxnp_trofeo_${tid}"
           onmouseenter="cancelHideRxnPop('trofeo_${tid}')"
           onmouseleave="schedHideRxnPop('trofeo_${tid}')">
-          ${rxnBtnsHtml}
+          <div class="rxn-cats">${REACTION_CATEGORIES.map((c,i)=>`<button class="rxn-cat-btn${i===0?' active':''}" onclick="rxnSwitchCat(this,'trofeo_${tid}',${i})">${c.cat}</button>`).join('')}</div>
+          <div class="rxn-grid" id="rxn-grid-trofeo_${tid}">${REACTION_CATEGORIES[0].emojis.map(r=>`<button class="rxn-btn" onclick="doReact('trofeo_${tid}','${r.emoji}');schedHideRxnPop('trofeo_${tid}')" title="${r.label}">${r.emoji}<span style="position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;font-size:.58rem;white-space:nowrap;padding:2px 6px;border-radius:4px;pointer-events:none;opacity:0;transition:opacity .15s;" class="rxn-tooltip">${r.label}</span></button>`).join('')}</div>
         </div>
       </div>
-      <button class="act-btn" style="flex:1;justify-content:center;" onclick="toggleComments('trofeo_${tid}')">💬 Comentar</button>
-      <button class="act-btn" style="flex:1;justify-content:center;" onclick="sharePost('trofeo_${tid}')">↗️ Compartir</button>
-      <button class="act-btn" style="flex:1;justify-content:center;gap:5px;color:#1877F2;" onclick="shareTrofeoFacebook('${tid}','${fish}','${map}',${weight},'${nick}')"
-        onmouseover="this.style.background='rgba(24,119,242,.12)'" onmouseout="this.style.background=''">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="#1877F2" style="flex-shrink:0"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.268h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
-        <span style="font-size:.78rem;">Facebook</span>
+      <button class="act-btn" style="flex:1;justify-content:center;gap:5px;color:var(--muted);" onclick="openTrofeoViewers('${tid}')">
+        👁 <span id="trofeo_views_${tid}">${t.views||0}</span> visitas
       </button>
     </div>
     <!-- Comments section -->
@@ -23366,7 +23318,8 @@ async function wkLoadHome() {
   grid.innerHTML = '<div class="wk-ld"><div class="wk-sp"></div></div>';
   try {
     const snap = await getDocs(query(collection(db,'trofeosPendientes'), where('status','==','approved'), limit(50)));
-    _wkAllTrophies = snap.docs.map(d=>({id:d.id,...d.data()}));
+    _wkAllTrophies = snap.docs.map(d=>({id:d.id,...d.data()}))
+      .sort((a,b)=>(b.createdAt?.toMillis?.()??b.createdAt?.seconds*1000??0)-(a.createdAt?.toMillis?.()??a.createdAt?.seconds*1000??0));
     if(_wkAllTrophies.length===0){ grid.innerHTML=''; empty.style.display='block'; return; }
     empty.style.display='none';
     grid.innerHTML = _wkAllTrophies.map(t=>wkCard(t)).join('');
@@ -23377,7 +23330,8 @@ async function wkLoadHome() {
     // fallback: try without orderBy
     try {
       const snap2 = await getDocs(query(collection(db,'trofeosPendientes'), where('status','==','approved'), limit(12)));
-      _wkAllTrophies = snap2.docs.map(d=>({id:d.id,...d.data()}));
+      _wkAllTrophies = snap2.docs.map(d=>({id:d.id,...d.data()}))
+        .sort((a,b)=>(b.createdAt?.toMillis?.()??b.createdAt?.seconds*1000??0)-(a.createdAt?.toMillis?.()??a.createdAt?.seconds*1000??0));
       if(!_wkAllTrophies.length){ grid.innerHTML=''; empty.style.display='block'; return; }
       empty.style.display='none';
       grid.innerHTML = _wkAllTrophies.map(t=>wkCard(t)).join('');
@@ -23415,7 +23369,8 @@ window.wkRenderTrophies = async () => {
   grid.innerHTML = '<div class="wk-ld"><div class="wk-sp"></div></div>';
   try {
     const snap = await getDocs(query(collection(db,'trofeosPendientes'), where('status','==','approved'), limit(100)));
-    let items = snap.docs.map(d=>({id:d.id,...d.data()}));
+    let items = snap.docs.map(d=>({id:d.id,...d.data()}))
+      .sort((a,b)=>(b.createdAt?.toMillis?.()??b.createdAt?.seconds*1000??0)-(a.createdAt?.toMillis?.()??a.createdAt?.seconds*1000??0));
     // Apply filters
     const fMap = document.getElementById('wkFMap')?.value||'';
     const fTech = document.getElementById('wkFTech')?.value||'';
