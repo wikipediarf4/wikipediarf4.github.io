@@ -692,6 +692,52 @@ img[title="Verificado"]:hover{
   0%, 100% { transform: translateY(0) rotate(-5deg); }
   50%       { transform: translateY(-3px) rotate(5deg); }
 }
+/* ===== USER-NAME: igual que admin-name pero azul/cian ===== */
+.user-name {
+  position: relative;
+  display: inline-block;
+  font-weight: 900;
+  letter-spacing: .02em;
+  padding: 1px 8px 2px 6px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #ccefff 0%, #00c8ff 30%, #0057ff 60%, #00c8ff 80%, #ccefff 100%);
+  background-size: 250% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: userWaterText 2.5s linear infinite;
+  filter: drop-shadow(0 0 5px rgba(0,180,255,.7)) drop-shadow(0 0 12px rgba(0,80,255,.4));
+}
+.user-name::before {
+  content: '';
+  position: absolute;
+  inset: -1.5px;
+  border-radius: 7px;
+  padding: 1.5px;
+  background: conic-gradient(from var(--user-angle, 0deg), #0057ff, #00c8ff, #00e5cc, #ccefff, #00e5cc, #00c8ff, #0057ff);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  mask-composite: exclude;
+  animation: userBorderSpin 2s linear infinite;
+}
+.user-name::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 9px;
+  background: radial-gradient(ellipse at center, rgba(0,180,255,.35) 0%, transparent 70%);
+  z-index: -1;
+  animation: userGlowPulse 1.8s ease-in-out infinite;
+}
+@property --user-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes userBorderSpin { to { --user-angle: 360deg; } }
+@keyframes userWaterText { 0% { background-position: 0% center; } 100% { background-position: 250% center; } }
+@keyframes userGlowPulse { 0%, 100% { opacity: .6; transform: scale(1); } 50% { opacity: 1; transform: scale(1.06); } }
+/* ===== FIN USER-NAME ===== */
 .post-author:hover{color:var(--accent);}
 .post-time{font-size:.72rem;color:var(--muted);display:flex;align-items:center;gap:4px;}
 .post-menu{background:none;border:none;color:var(--muted);font-size:1.1rem;padding:4px 8px;border-radius:var(--rs);transition:background .2s;}
@@ -10753,7 +10799,7 @@ function postHTML(p){
             if(_isVerif) return `<span style="font-weight:800;font-family:'Exo 2',sans-serif;background:linear-gradient(90deg,#f5a623,#ffe082,#f5a623);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:_vShine 2s linear infinite;">${_nick}</span><span style="-webkit-text-fill-color:initial;filter:drop-shadow(0 0 3px gold);">✅</span>`;
             if(_isLegend) return `<span style="font-weight:800;font-family:'Exo 2',sans-serif;background:linear-gradient(90deg,#ce93d8,#f48fb1,#b39ddb,#ce93d8);background-size:250% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:_legShine 2.5s linear infinite;">${_nick}</span><span style="-webkit-text-fill-color:initial;filter:drop-shadow(0 0 3px #b39ddb);">⚡</span>`;
             if(_isHighLvl) return `<span style="font-weight:700;font-family:'Exo 2',sans-serif;color:${_plvl.color};text-shadow:0 0 6px ${_plvl.color}44;">${_nick}</span>`;
-            return _nick;
+            return `<span class="user-name">${_nick}</span>`;
           })()}${_postBadge?' <span style="font-size:1rem;" title="Badge">'+_postBadge+'</span>':''}${p.feeling?` <span style="font-weight:400;font-size:.85rem;">está ${p.feeling.emoji} <span style="color:var(--muted);">me siento ${p.feeling.label}.</span></span>`:''}</div>
           ${_postTitulo?`<span style="font-size:.6rem;font-weight:800;color:var(--muted);background:rgba(0,0,0,.06);border-radius:100px;padding:1px 8px;letter-spacing:.04em;">${esc(_postTitulo)}</span>`:''}
           ${(()=>{ const plvl=getLevel(p.userXp||0); return `<span style="font-size:.6rem;font-weight:700;padding:1px 7px;border-radius:100px;border:1px solid;color:${plvl.color};border-color:${plvl.border};background:${plvl.border.replace(/[\d.]+\)$/,'.08)')};">${plvl.name}</span>`; })()}
@@ -18576,7 +18622,7 @@ function renderFeedOnline(online){
       const lvl = getLevel(u.xp||0);
       nickHtml = `<span style="color:${lvl.color};font-weight:700;">${nick}</span>`;
     } else {
-      nickHtml = `<span style="color:var(--text);">${nick}</span>`;
+      nickHtml = `<span class="user-name" style="font-size:.75rem;">${nick}</span>`;
     }
 
     return `<div class="fow-card" onclick="openUserProfile('${u.id}','${nick.replace(/'/g,"\'")}')">
@@ -18714,8 +18760,7 @@ function renderSidebarOnline(online, offline){
         <span style="font-size:.62rem;padding:0 4px;border-radius:4px;border:1px solid ${uLvl.border};color:${uLvl.color};
           background:${uLvl.border.replace(/[\d.]+\)$/,'.12)')};-webkit-text-fill-color:${uLvl.color};">${uLvl.name}</span>`;
     } else {
-      nickHtml = `<span style="font-size:.8rem;font-weight:700;color:var(--text);font-family:'Exo 2',sans-serif;
-                white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px;">${nick}</span>`;
+      nickHtml = `<span class="user-name" style="font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px;">${nick}</span>`;
     }
 
     // ── Avatar marco (admin tiene su propio glow) ──
@@ -21396,7 +21441,7 @@ function trofeoFeedCardHTML(t){
       </div>
       <div class="post-meta" style="cursor:pointer;" onclick="openUserProfile('${userId}','${nick.replace(/'/g,"\'")}')">
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-          <div class="post-author">${(()=>{ const _tVerif=!!t.userVerified,_tXp=t.userXp||0,_isAdmT=t.userNick==='ruizgustavo12'||t.userRole==='admin',_isLegT=_tXp>=2000,_isHiT=_tXp>=500,_plvlT=getLevel(_tXp); if(_isAdmT) return '<span class=\"admin-name\">'+ nick +'</span><span class=\"admin-crown\">👑</span>'; if(_tVerif) return '<span style=\"font-weight:800;background:linear-gradient(90deg,#f5a623,#ffe082,#f5a623);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:_vShine 2s linear infinite\">'+ nick +'</span><span style=\"-webkit-text-fill-color:initial;filter:drop-shadow(0 0 3px gold)\">✅</span>'; if(_isLegT) return '<span style=\"font-weight:800;background:linear-gradient(90deg,#ce93d8,#f48fb1,#b39ddb,#ce93d8);background-size:250% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:_legShine 2.5s linear infinite\">'+ nick +'</span><span style=\"-webkit-text-fill-color:initial;filter:drop-shadow(0 0 3px #b39ddb)\">⚡</span>'; if(_isHiT) return '<span style=\"font-weight:700;color:'+ _plvlT.color +';text-shadow:0 0 6px '+ _plvlT.color +'44\">'+ nick +'</span>'; return nick; })()}</div>
+          <div class="post-author">${(()=>{ const _tVerif=!!t.userVerified,_tXp=t.userXp||0,_isAdmT=t.userNick==='ruizgustavo12'||t.userRole==='admin',_isLegT=_tXp>=2000,_isHiT=_tXp>=500,_plvlT=getLevel(_tXp); if(_isAdmT) return '<span class=\"admin-name\">'+ nick +'</span><span class=\"admin-crown\">👑</span>'; if(_tVerif) return '<span style=\"font-weight:800;background:linear-gradient(90deg,#f5a623,#ffe082,#f5a623);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:_vShine 2s linear infinite\">'+ nick +'</span><span style=\"-webkit-text-fill-color:initial;filter:drop-shadow(0 0 3px gold)\">✅</span>'; if(_isLegT) return '<span style=\"font-weight:800;background:linear-gradient(90deg,#ce93d8,#f48fb1,#b39ddb,#ce93d8);background-size:250% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:_legShine 2.5s linear infinite\">'+ nick +'</span><span style=\"-webkit-text-fill-color:initial;filter:drop-shadow(0 0 3px #b39ddb)\">⚡</span>'; if(_isHiT) return '<span style=\"font-weight:700;color:'+ _plvlT.color +';text-shadow:0 0 6px '+ _plvlT.color +'44\">'+ nick +'</span>'; return '<span class=\"user-name\">'+ nick +'</span>'; })()}</div>
           <span style="font-size:.62rem;font-weight:700;padding:1px 8px;border-radius:100px;border:1px solid rgba(255,215,0,.4);color:var(--gold);background:rgba(255,215,0,.08);">🥇 Trofeo</span>
         </div>
         <div class="post-time">🌐 ${fmtT(approvedAt)} · WikiPediaRF4.UY</div>
