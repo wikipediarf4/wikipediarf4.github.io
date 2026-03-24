@@ -28262,7 +28262,8 @@ function listenSignals(roomId){
       for(const change of snap.docChanges()){
         if(change.type === 'removed') continue;
         const sig = change.doc.data();
-        if(sig.to !== myUid) continue;  // no es para mí
+        // Aceptar señales dirigidas a mí o señales 'join' broadcast
+        if(sig.to !== myUid && !(sig.type === 'join' && sig.to === 'all')) continue;
 
         const fromUid = sig.from;
         vrLog('signal from', fromUid, 'type:', sig.type);
@@ -28405,15 +28406,19 @@ function toggleVoiceDeaf(){
 }
 
 // ── Panel inferior ────────────────────────────────────────────────────────────
+let _vrPanelUnsub = null;  // unsub del listener del panel inferior
+
 function showVoicePanel(roomId){
   const panel = document.getElementById('voiceRoomPanel');
   if(!panel) return;
   document.getElementById('vrPanelName').textContent = '🎙️ En sala...';
   document.getElementById('vrPanelStatus').textContent = 'Conectado';
   panel.style.display = 'block';
+  // Cancelar listener previo si existe
+  if(_vrPanelUnsub){ _vrPanelUnsub(); _vrPanelUnsub = null; }
   // Escuchar cambios de la sala para el panel
   const { onSnapshot, doc } = window._fsLib;
-  onSnapshot(doc(window.db, VR_COL, roomId), snap => {
+  _vrPanelUnsub = onSnapshot(doc(window.db, VR_COL, roomId), snap => {
     if(!snap.exists()) return;
     const room = snap.data();
     const nameEl = document.getElementById('vrPanelName');
@@ -28438,8 +28443,17 @@ function showVoicePanel(roomId){
 function hideVoicePanel(){
   const panel = document.getElementById('voiceRoomPanel');
   if(panel) panel.style.display = 'none';
+  // Cancelar listener del panel
+  if(_vrPanelUnsub){ _vrPanelUnsub(); _vrPanelUnsub = null; }
   // Limpiar audios
   document.querySelectorAll('[id^="vrAudio_"]').forEach(a => a.remove());
+  // Limpiar texto del panel para próxima sesión
+  const nameEl = document.getElementById('vrPanelName');
+  if(nameEl) nameEl.textContent = '🎙️ En sala...';
+  const statusEl = document.getElementById('vrPanelStatus');
+  if(statusEl) statusEl.textContent = 'Conectado';
+  const membEl = document.getElementById('vrPanelMembers');
+  if(membEl) membEl.innerHTML = '';
 }
 
 // ── Modal crear sala ──────────────────────────────────────────────────────────
@@ -28483,37 +28497,22 @@ const _vrPollInterval = setInterval(() => {
   }
 }, 400);
 
-// ── Arrancar listener cuando se navega a voice-rooms ─────────────────────────
-// No sobreescribimos window.gp (ya hay muchos overrides).
-// En su lugar, usamos un MutationObserver sobre la página de salas de voz.
-(function(){
-  function tryListenVR(tries){
+// ── Override de gp para capturar cuando el usuario navega a voice-rooms ──────
+const _origGp = window.gp;
+window.gp = function(page, ...args){
+  const r = _origGp ? _origGp(page, ...args) : undefined;
+  if(page === 'voice-rooms'){
+    // Actualizar botón crear sala
+    const createBtn = document.getElementById('createRoomBtn');
+    if(createBtn) createBtn.style.display = window.CU ? 'block' : 'none';
+    // Si Firebase ya está listo, arrancar listener inmediatamente
     if(window.db && window._fsLib){
       if(!_vrRoomsUnsub) listenVoiceRooms();
-      const btn = document.getElementById('createRoomBtn');
-      if(btn) btn.style.display = window.CU ? 'block' : 'none';
-    } else if(tries > 0){
-      setTimeout(function(){ tryListenVR(tries-1); }, 500);
     }
+    // Si no, el polling de arriba lo va a arrancar en cuanto Firebase esté listo
   }
-
-  // Observar cuando page-voice-rooms se vuelve visible
-  var _vrObserver = new MutationObserver(function(){
-    var pg = document.getElementById('page-voice-rooms');
-    if(pg && pg.style.display !== 'none'){
-      tryListenVR(20);
-    }
-  });
-
-  document.addEventListener('DOMContentLoaded', function(){
-    var pg = document.getElementById('page-voice-rooms');
-    if(pg){
-      _vrObserver.observe(pg, { attributes: true, attributeFilter: ['style'] });
-      // Si ya está visible al cargar
-      if(pg.style.display !== 'none') tryListenVR(20);
-    }
-  });
-})();
+  return r;
+};
 
 // Exponer funciones globales
 window.joinVoiceRoom     = joinVoiceRoom;
@@ -28525,8 +28524,8 @@ window.toggleVoiceDeaf   = toggleVoiceDeaf;
 window.openCreateRoomModal  = openCreateRoomModal;
 window.closeCreateRoomModal = closeCreateRoomModal;
 window.listenVoiceRooms  = listenVoiceRooms;
-
-
+// Exponer getter para que código externo pueda chequear si el listener está activo
+Object.defineProperty(window, '_vrRoomsUnsub', { get: () => _vrRoomsUnsub });
 
 // Limpiar al cerrar ventana
 window.addEventListener('beforeunload', () => {
