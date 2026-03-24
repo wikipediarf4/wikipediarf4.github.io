@@ -28031,9 +28031,10 @@ function renderVoiceRooms(rooms){
 }
 // ── Cargar salas en tiempo real ───────────────────────────────────────────────
 function listenVoiceRooms(){
-  if(!window.db || !window.onSnapshot){
+  if(!window.db || !window._fsLib){
     setTimeout(listenVoiceRooms, 800); return;
   }
+  const { onSnapshot, collection, query, orderBy, getDocs } = window._fsLib;
 
   // Mostrar botón crear sala si está logueado
   const createBtn = document.getElementById('createRoomBtn');
@@ -28041,9 +28042,8 @@ function listenVoiceRooms(){
 
   if(_vrRoomsUnsub) _vrRoomsUnsub();
 
-  // Sin orderBy para evitar requerir índice compuesto — ordenamos en JS
   _vrRoomsUnsub = onSnapshot(
-    collection(db, VR_COL),
+    collection(window.db, VR_COL),
     snap => {
       const rooms = snap.docs
         .map(d => ({id:d.id, ...d.data()}))
@@ -28056,7 +28056,6 @@ function listenVoiceRooms(){
     },
     err => {
       vrErr('listenVoiceRooms:', err);
-      // Mostrar aviso si hay error de permisos
       const warn = document.getElementById('vrFirestoreWarning');
       if(warn) warn.style.display = 'block';
       renderVoiceRooms([]);
@@ -28070,8 +28069,9 @@ async function createVoiceRoom(){
   const name = (document.getElementById('roomNameInput')?.value||'').trim();
   if(!name){ vrToast('Ingresá un nombre para la sala','err'); return; }
   const desc = (document.getElementById('roomDescInput')?.value||'').trim();
+  const { addDoc, collection, serverTimestamp } = window._fsLib;
   try{
-    await addDoc(collection(db, VR_COL), {
+    await addDoc(collection(window.db, VR_COL), {
       name, desc, icon: _vrSelectedEmoji,
       createdBy: window.CU.id,
       createdByNick: window.CU.nick||'?',
@@ -28087,8 +28087,9 @@ async function createVoiceRoom(){
 async function deleteVoiceRoom(roomId){
   if(!confirm('¿Eliminar esta sala de voz?')) return;
   if(_vrCurrentRoom === roomId) await leaveVoiceRoom();
+  const { deleteDoc, doc } = window._fsLib;
   try{
-    await deleteDoc(doc(db, VR_COL, roomId));
+    await deleteDoc(doc(window.db, VR_COL, roomId));
     vrToast('Sala eliminada','ok');
   }catch(e){ vrToast('Error: '+e.message,'err'); }
 }
@@ -28120,7 +28121,8 @@ async function joinVoiceRoom(roomId){
     joinedAt: Date.now()
   };
   try{
-    await updateDoc(doc(db, VR_COL, roomId), {
+    const { updateDoc, doc } = window._fsLib;
+    await updateDoc(doc(window.db, VR_COL, roomId), {
       [`members.${window.CU.id}`]: memberData
     });
   }catch(e){ vrErr('joinVoiceRoom updateDoc:', e); }
@@ -28154,7 +28156,8 @@ async function leaveVoiceRoom(){
   // Removerme de Firestore
   if(window.CU){
     try{
-      await updateDoc(doc(db, VR_COL, roomId), {
+      const { updateDoc, doc, deleteField } = window._fsLib;
+      await updateDoc(doc(window.db, VR_COL, roomId), {
         [`members.${window.CU.id}`]: deleteField()
       });
     }catch(e){ vrErr('leaveVoiceRoom:', e); }
@@ -28162,8 +28165,9 @@ async function leaveVoiceRoom(){
 
   // Limpiar señales mías
   try{
+    const { getDocs, query, collection, where, deleteDoc } = window._fsLib;
     const sigSnap = await getDocs(query(
-      collection(db, VR_COL, roomId, VR_SIG),
+      collection(window.db, VR_COL, roomId, VR_SIG),
       where('from','==', window.CU?.id||'')
     ));
     sigSnap.docs.forEach(d => deleteDoc(d.ref).catch(()=>{}));
@@ -28181,8 +28185,9 @@ function listenSignals(roomId){
   if(!window.CU) return;
   if(_vrMembersUnsub) _vrMembersUnsub();
 
+  const { onSnapshot, collection, deleteDoc } = window._fsLib;
   _vrMembersUnsub = onSnapshot(
-    collection(db, VR_COL, roomId, VR_SIG),
+    collection(window.db, VR_COL, roomId, VR_SIG),
     async snap => {
       const myUid = window.CU.id;
       for(const change of snap.docChanges()){
@@ -28288,7 +28293,8 @@ function createPeerConnection(roomId, targetUid){
 
 async function sendSignal(roomId, targetUid, data){
   try{
-    await addDoc(collection(db, VR_COL, roomId, VR_SIG), {
+    const { addDoc, collection } = window._fsLib;
+    await addDoc(collection(window.db, VR_COL, roomId, VR_SIG), {
       ...data,
       ts: Date.now()
     });
@@ -28309,7 +28315,8 @@ function toggleVoiceMute(){
   }
   // Actualizar estado en Firestore
   if(_vrCurrentRoom && window.CU){
-    updateDoc(doc(db, VR_COL, _vrCurrentRoom), {
+    const { updateDoc, doc } = window._fsLib;
+    updateDoc(doc(window.db, VR_COL, _vrCurrentRoom), {
       [`members.${window.CU.id}.muted`]: _vrMuted
     }).catch(()=>{});
   }
@@ -28336,7 +28343,8 @@ function showVoicePanel(roomId){
   document.getElementById('vrPanelStatus').textContent = 'Conectado';
   panel.style.display = 'block';
   // Escuchar cambios de la sala para el panel
-  onSnapshot(doc(db, VR_COL, roomId), snap => {
+  const { onSnapshot, doc } = window._fsLib;
+  onSnapshot(doc(window.db, VR_COL, roomId), snap => {
     if(!snap.exists()) return;
     const room = snap.data();
     const nameEl = document.getElementById('vrPanelName');
