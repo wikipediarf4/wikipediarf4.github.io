@@ -21151,7 +21151,12 @@ let _trofeoFeedFilter = 'all';
 
 function listenTrofeosFeed(){
   // Si ya hay un listener onSnapshot activo, solo re-renderizar
-  if(window._unsubTrofeosFeed){ renderTrofeosFeed(); return; }
+  // pero marcar que el próximo update debe mostrar el badge
+  if(window._unsubTrofeosFeed){ 
+    window._trofeosFeedFirstLoad = false; // próximo update mostrará badge
+    renderTrofeosFeed(); 
+    return; 
+  }
   const feedEl = document.getElementById('trofeosFeed');
   if(feedEl) feedEl.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);">
     <div style="font-size:2rem;margin-bottom:8px;">🏆</div>
@@ -21160,6 +21165,7 @@ function listenTrofeosFeed(){
   if(!window.db){ setTimeout(()=>listenTrofeosFeed(), 1000); return; }
   const tsVal = x => x?.toMillis ? x.toMillis() : (typeof x==="number" ? x : (x?.seconds ? x.seconds*1000 : 0));
   let firstLoad = true;
+  window._trofeosFeedFirstLoad = true;
 
   const startListen = (q) => {
     try{
@@ -21179,6 +21185,7 @@ function listenTrofeosFeed(){
           if(badge){ badge.style.display='flex'; badge.textContent='🆕 Nuevo trofeo publicado'; setTimeout(()=>{ badge.style.display='none'; }, 5000); }
         }
         firstLoad = false;
+        window._trofeosFeedFirstLoad = false;
       }, (err) => {
         console.error('[Trofeos RT] Error onSnapshot:', err.code);
         window._unsubTrofeosFeed = null;
@@ -21346,14 +21353,17 @@ function renderTrofeosFeed(){
     const viewEl = document.getElementById('trofeo_views_'+t.id);
     if(viewEl) viewEl.textContent = t.views||0;
     // Registrar quién lo vio (una sola vez por sesión para evitar contar duplicados)
-    if(window.CU && window.CU.id !== t.userId){
-      const sessionKey = 'rf4_feedview_' + t.id;
+    // Usamos la misma key que wkOpenDet ('rf4_wkview_') para no contar doble
+    const tOwner = t.userId || t.uid || '';
+    if(window.CU && (tOwner === '' || window.CU.id !== tOwner)){
+      const sessionKey = 'rf4_wkview_' + t.id;
       if(!sessionStorage.getItem(sessionKey)){
         sessionStorage.setItem(sessionKey, '1');
         try{
-          const viewerData = {};
-          viewerData[`viewers.${window.CU.id}`] = { nick: window.CU.nick, av: window.CU.av||'', time: Date.now() };
-          viewerData['views'] = increment(1);
+          const viewerData = { views: increment(1) };
+          if(window.CU && window.CU.id){
+            viewerData[`viewers.${window.CU.id}`] = { nick: window.CU.nick||'?', av: window.CU.av||'', time: Date.now() };
+          }
           updateDoc(doc(db,'trofeosPendientes',t.id), viewerData).catch(()=>{});
         }catch(e){}
       }
@@ -23634,16 +23644,21 @@ window.wkOpenDet = async (id) => {
     const snap = await getDoc(doc(db,'trofeosPendientes',id));
     if(!snap.exists()){ content.innerHTML='<div class="wk-empty"><div class="wk-ei">❌</div><div class="wk-et">No encontrado</div></div>'; return; }
     const t = {id:snap.id,...snap.data()};
-    // Increment views (solo una vez por sesión)
+    // Increment views (solo una vez por sesión — misma key que el feed para no contar doble)
     try{
       const sessionKey = 'rf4_wkview_' + id;
       if(!sessionStorage.getItem(sessionKey)){
         sessionStorage.setItem(sessionKey, '1');
-        const viewerData = { views: increment(1) };
-        if(window.CU && window.CU.id !== (snap.data().userId||'')){
+        const tOwnerWk = snap.data().userId || snap.data().uid || '';
+        const viewerData = {};
+        // Solo incrementar si no es el dueño del trofeo
+        if(!window.CU || tOwnerWk === '' || window.CU.id !== tOwnerWk){
+          viewerData['views'] = increment(1);
+        }
+        if(window.CU && window.CU.id && (tOwnerWk === '' || window.CU.id !== tOwnerWk)){
           viewerData[`viewers.${window.CU.id}`] = { nick: window.CU.nick||'?', av: window.CU.av||'', time: Date.now() };
         }
-        updateDoc(doc(db,'trofeosPendientes',id), viewerData);
+        if(Object.keys(viewerData).length) updateDoc(doc(db,'trofeosPendientes',id), viewerData);
       }
     }catch(e){}
     const imgs = Array.isArray(t.images)&&t.images.length?t.images:[];
@@ -23892,6 +23907,11 @@ window.wkSubmitTrophy = async () => {
     }catch(e){ console.warn('Auto premium error:',e); }
     // Notificar a todos los suscriptores
     try{ _notifyNewTrophy(fish, weight, window.CU.nick||'?', imageUrls[0]||''); }catch(e){}
+    // Resetear listener del feed para que el nuevo trofeo aparezca con badge
+    if(window._unsubTrofeosFeed){ 
+      try{ window._unsubTrofeosFeed(); }catch(e){} 
+      window._unsubTrofeosFeed = null; 
+    }
     wkCm('wkMPublish'); wkResetForm();
     toast('🏆 ¡Trofeo publicado!','ok');
     _wkLoaded=false; wkLoadHome();
