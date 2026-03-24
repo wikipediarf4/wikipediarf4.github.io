@@ -7523,7 +7523,14 @@ function fmtT(ts){
   if(diff < 60000) return 'Ahora';
   if(diff < 3600000) return Math.floor(diff/60000)+'m';
   if(diff < 86400000) return Math.floor(diff/3600000)+'h';
-  return '';
+  // Más de 24h: mostrar fecha completa día mes año · hora
+  const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const dia = d.getDate();
+  const mes = meses[d.getMonth()];
+  const anio = d.getFullYear();
+  const hora = String(d.getHours()).padStart(2,'0');
+  const min  = String(d.getMinutes()).padStart(2,'0');
+  return `${dia} ${mes} ${anio} · ${hora}:${min}`;
 }
 
 function esc(s){ return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
@@ -25429,7 +25436,13 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
     if(diff < 3600000) return Math.floor(diff/60000)+'m';
     if(diff < 86400000) return Math.floor(diff/3600000)+'h';
     var d = new Date(ms);
-    return d.getDate()+'/'+(d.getMonth()+1);
+    var meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    var dia = d.getDate();
+    var mes = meses[d.getMonth()];
+    var anio = d.getFullYear();
+    var hora = String(d.getHours()).padStart(2,'0');
+    var min  = String(d.getMinutes()).padStart(2,'0');
+    return dia+' '+mes+' '+anio+' · '+hora+':'+min;
   }
 
   // ── Estado ───────────────────────────────────────────────────
