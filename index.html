@@ -10702,7 +10702,20 @@ function postHTML(p){
       </div>
       <div class="post-meta" style="cursor:pointer" onclick="openUserProfile('${p.userId}','${esc(p.userNick)}')">
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-          <div class="post-author">${(()=>{ const _isAdm = p.userNick==='ruizgustavo12'||p.userRole==='admin'; return _isAdm ? `<span class="admin-name">${esc(p.userNick)}</span><span class="admin-crown">👑</span>` : esc(p.userNick); })()}${_postBadge?' <span style="font-size:1rem;" title="Badge">'+_postBadge+'</span>':''}${p.feeling?` <span style="font-weight:400;font-size:.85rem;">está ${p.feeling.emoji} <span style="color:var(--muted);">me siento ${p.feeling.label}.</span></span>`:''}</div>
+          <div class="post-author">${(()=>{
+            const _isAdm = p.userNick==='ruizgustavo12'||p.userRole==='admin';
+            const _isVerif = !!p.userVerified;
+            const _uXp = p.userXp||0;
+            const _isLegend = _uXp >= 2000;
+            const _isHighLvl = _uXp >= 500;
+            const _plvl = getLevel(_uXp);
+            const _nick = esc(p.userNick);
+            if(_isAdm) return `<span class="admin-name">${_nick}</span><span class="admin-crown">👑</span>`;
+            if(_isVerif) return `<span style="font-weight:800;font-family:'Exo 2',sans-serif;background:linear-gradient(90deg,#f5a623,#ffe082,#f5a623);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:_vShine 2s linear infinite;">${_nick}</span><span style="-webkit-text-fill-color:initial;filter:drop-shadow(0 0 3px gold);">✅</span>`;
+            if(_isLegend) return `<span style="font-weight:800;font-family:'Exo 2',sans-serif;background:linear-gradient(90deg,#ce93d8,#f48fb1,#b39ddb,#ce93d8);background-size:250% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:_legShine 2.5s linear infinite;">${_nick}</span><span style="-webkit-text-fill-color:initial;filter:drop-shadow(0 0 3px #b39ddb);">⚡</span>`;
+            if(_isHighLvl) return `<span style="font-weight:700;font-family:'Exo 2',sans-serif;color:${_plvl.color};text-shadow:0 0 6px ${_plvl.color}44;">${_nick}</span>`;
+            return _nick;
+          })()}${_postBadge?' <span style="font-size:1rem;" title="Badge">'+_postBadge+'</span>':''}${p.feeling?` <span style="font-weight:400;font-size:.85rem;">está ${p.feeling.emoji} <span style="color:var(--muted);">me siento ${p.feeling.label}.</span></span>`:''}</div>
           ${_postTitulo?`<span style="font-size:.6rem;font-weight:800;color:var(--muted);background:rgba(0,0,0,.06);border-radius:100px;padding:1px 8px;letter-spacing:.04em;">${esc(_postTitulo)}</span>`:''}
           ${(()=>{ const plvl=getLevel(p.userXp||0); return `<span style="font-size:.6rem;font-weight:700;padding:1px 7px;border-radius:100px;border:1px solid;color:${plvl.color};border-color:${plvl.border};background:${plvl.border.replace(/[\d.]+\)$/,'.08)')};">${plvl.name}</span>`; })()}
         </div>
@@ -18704,18 +18717,39 @@ function renderContacts(onlineUsers){
   const users = onlineUsers || [];
   const el = document.getElementById('contactsList');
   if(!el) return;
-  el.innerHTML = users.length ? users.map(u=>`
-    <div class="contact-item" onclick="openUserProfile('${u.id}','${esc(u.nick)}')">
-      <div class="contact-av">
+
+  function fancyNick(u){
+    const nick = esc(u.nick||'?');
+    const isAdmin = u.nick==='ruizgustavo12'||u.role==='admin';
+    const isVerif = !!u.verified;
+    const uXp = u.xp||0;
+    const isLegend = uXp>=2000, isHighLvl = uXp>=500;
+    const lvl = getLevel(uXp);
+    if(isAdmin) return `<span class="admin-name">${nick}</span><span class="admin-crown">👑</span>`;
+    if(isVerif) return `<span style="font-weight:800;background:linear-gradient(90deg,#f5a623,#ffe082,#f5a623);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:_vShine 2s linear infinite;">${nick}</span><span style="-webkit-text-fill-color:initial;filter:drop-shadow(0 0 3px gold);">✅</span>`;
+    if(isLegend) return `<span style="font-weight:800;background:linear-gradient(90deg,#ce93d8,#f48fb1,#b39ddb,#ce93d8);background-size:250% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:_legShine 2.5s linear infinite;">${nick}</span><span style="-webkit-text-fill-color:initial;filter:drop-shadow(0 0 3px #b39ddb);">⚡</span>`;
+    if(isHighLvl) return `<span style="font-weight:700;color:${lvl.color};text-shadow:0 0 6px ${lvl.color}44;">${nick}</span>`;
+    return `<span style="font-weight:600;">${nick}</span>`;
+  }
+
+  el.innerHTML = users.length ? users.map(u=>{
+    const isAdmin = u.nick==='ruizgustavo12'||u.role==='admin';
+    const dev = u.device||'desktop';
+    const dotColor = dev==='mobile'?'#00e676':'#1877f2';
+    const borderColor = isAdmin?'rgba(255,180,0,.8)':dotColor;
+    const avShadow = isAdmin?'box-shadow:0 0 8px rgba(255,120,0,.5),0 0 18px rgba(255,60,0,.25);':'';
+    return `<div class="contact-item" onclick="openUserProfile('${u.id}','${esc(u.nick)}')" style="position:relative;">
+      <div class="contact-av" style="border:2px solid ${borderColor};${avShadow}position:relative;">
         ${u.av?`<img src="${u.av}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`:`<span style="font-size:.9rem;">${(u.nick||'?')[0].toUpperCase()}</span>`}
-        <div class="online-dot"></div>
+        <div class="online-dot" style="background:${dotColor};border-color:var(--bg2);box-shadow:0 0 5px ${dotColor};"></div>
       </div>
       <div style="flex:1;min-width:0;">
-        <div class="contact-name">${esc(u.nick)} ${getCountryFlag(u.country)||''}</div>
-        <div class="contact-status">● En línea</div>
+        <div style="display:flex;align-items:center;gap:4px;overflow:hidden;">${fancyNick(u)} <span style="font-size:.8rem;flex-shrink:0;">${getCountryFlag(u.country)||''}</span></div>
+        <div class="contact-status" style="color:${dotColor};">● ${dev==='mobile'?'📱 Móvil':'🖥️ PC'} · En línea</div>
       </div>
-      <button onclick="event.stopPropagation();openChatWith('${u.id}','${esc(u.nick)}')" title="Enviar mensaje" style="background:rgba(24,119,242,.1);border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.85rem;transition:background .15s;" onmouseover="this.style.background='rgba(24,119,242,.22)'" onmouseout="this.style.background='rgba(24,119,242,.1)'">💬</button>
-    </div>`).join('')
+      <button onclick="event.stopPropagation();openChatWith('${u.id}','${esc(u.nick)}')" title="Enviar mensaje" style="background:rgba(255,255,255,.07);border:1px solid ${borderColor};border-radius:6px;color:${borderColor};font-size:.8rem;cursor:pointer;padding:3px 7px;margin-right:4px;font-family:'Exo 2',sans-serif;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='rgba(255,255,255,.07)'">💬</button>
+    </div>`;
+  }).join('')
     : `<div style="display:flex;flex-direction:column;align-items:center;padding:14px 8px;gap:6px;">
         <div style="font-size:1.5rem;opacity:.35;">🎣</div>
         <div style="font-size:.75rem;color:var(--muted);text-align:center;">Nadie conectado aún</div>
@@ -21198,7 +21232,7 @@ function trofeoFeedCardHTML(t){
       </div>
       <div class="post-meta" style="cursor:pointer;" onclick="openUserProfile('${userId}','${nick.replace(/'/g,"\\'")}')">
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-          <div class="post-author">${nick}</div>
+          <div class="post-author">${(()=>{ const _tVerif=!!t.userVerified,_tXp=t.userXp||0,_isAdmT=t.userNick==='ruizgustavo12'||t.userRole==='admin',_isLegT=_tXp>=2000,_isHiT=_tXp>=500,_plvlT=getLevel(_tXp); if(_isAdmT) return '<span class=\"admin-name\">'+ nick +'</span><span class=\"admin-crown\">👑</span>'; if(_tVerif) return '<span style=\"font-weight:800;background:linear-gradient(90deg,#f5a623,#ffe082,#f5a623);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:_vShine 2s linear infinite\">'+ nick +'</span><span style=\"-webkit-text-fill-color:initial;filter:drop-shadow(0 0 3px gold)\">✅</span>'; if(_isLegT) return '<span style=\"font-weight:800;background:linear-gradient(90deg,#ce93d8,#f48fb1,#b39ddb,#ce93d8);background-size:250% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:_legShine 2.5s linear infinite\">'+ nick +'</span><span style=\"-webkit-text-fill-color:initial;filter:drop-shadow(0 0 3px #b39ddb)\">⚡</span>'; if(_isHiT) return '<span style=\"font-weight:700;color:'+ _plvlT.color +';text-shadow:0 0 6px '+ _plvlT.color +'44\">'+ nick +'</span>'; return nick; })()}</div>
           <span style="font-size:.62rem;font-weight:700;padding:1px 8px;border-radius:100px;border:1px solid rgba(255,215,0,.4);color:var(--gold);background:rgba(255,215,0,.08);">🥇 Trofeo</span>
         </div>
         <div class="post-time">🌐 ${fmtT(approvedAt)} · WikiPediaRF4.UY</div>
@@ -23706,7 +23740,77 @@ window.wkSwA = (el,sec) => {
 };
 
 window.wkApproveTrophy = async (id) => {
-  try{ await updateDoc(doc(db,'trofeosPendientes',id),{status:'approved'}); toast('Trofeo aprobado ✅','ok'); _wkLoaded=false; wkRenderAdmin(); }catch(e){ toast('Error','err'); }
+  try{
+    const tSnap = await getDoc(doc(db,'trofeosPendientes',id));
+    await updateDoc(doc(db,'trofeosPendientes',id),{status:'approved', approvedAt: serverTimestamp()});
+    toast('Trofeo aprobado ✅','ok');
+    _wkLoaded=false; wkRenderAdmin();
+
+    // ── Auto-publicar en el feed si el usuario NO es admin ──
+    if(tSnap.exists()){
+      const t = tSnap.data();
+      const isAdminUser = t.userNick==='ruizgustavo12' || t.userRole==='admin';
+      if(!isAdminUser && t.userId){
+        try{
+          const fish = t.fish||t.especie||'Pez desconocido';
+          const weight = t.weight||t.peso||0;
+          const map = t.map||t.mapa||'';
+          const technique = t.technique||t.tecnica||'';
+          const spot = t.spot||'';
+          const desc = t.description||t.notes||'';
+          const images = t.images||[];
+          const imgUrl = t.imageUrl||t.img||t.imagen||images[0]||null;
+          const nick = t.userNick||t.submittedBy||'?';
+
+          let postText = `🏆 ¡Trofeo capturado! ${fish} de ${weight} kg`;
+          if(map) postText += ` en ${map}`;
+          if(technique) postText += ` · técnica: ${technique}`;
+          if(spot) postText += ` · spot: ${spot}`;
+          if(desc) postText += `
+
+${desc}`;
+          postText += `
+
+#Trofeo #RussianFishing4 #WikiRF4`;
+
+          await addDoc(collection(db,'posts'),{
+            userId: t.userId,
+            userNick: nick,
+            userAv: t.userPhoto||t.userAv||t.av||'',
+            userVerified: !!t.userVerified,
+            userXp: t.userXp||0,
+            userRole: t.userRole||'',
+            text: postText,
+            fish: fish,
+            weight: String(weight),
+            map: map,
+            tech: technique,
+            images: images.length ? images : (imgUrl ? [imgUrl] : []),
+            video: null,
+            link: null,
+            feeling: null,
+            isTrophyPost: true,
+            trophyId: id,
+            time: serverTimestamp(),
+            likes:0, comments:[], reactions:{}, reactionCounts:{}
+          });
+
+          // Notificar al usuario que su trofeo fue publicado
+          try{
+            await sendNotifToUserWithPost && sendNotifToUserWithPost(
+              t.userId,
+              `🏆 ¡Tu trofeo de ${fish} (${weight} kg) fue aprobado y publicado en el feed!`,
+              null
+            );
+          }catch(ne){ console.warn('notif trofeo:', ne); }
+
+          console.log('[RF4] Trofeo de usuario publicado en feed:', nick, fish, weight+'kg');
+        }catch(postErr){
+          console.warn('[RF4] No se pudo publicar trofeo en feed:', postErr);
+        }
+      }
+    }
+  }catch(e){ toast('Error','err'); console.error(e); }
 };
 window.wkRejectTrophy = async (id) => {
   try{ await updateDoc(doc(db,'trofeosPendientes',id),{status:'rejected'}); toast('Trofeo rechazado','ok'); _wkLoaded=false; wkRenderAdmin(); }catch(e){ toast('Error','err'); }
