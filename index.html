@@ -21127,61 +21127,54 @@ window._trofeosFeedData = window._trofeosFeedData || [];
 let _trofeosFeedData = window._trofeosFeedData;
 let _trofeoFeedFilter = 'all';
 
-async function listenTrofeosFeed(){
-  // No recargar si ya hay datos frescos (menos de 2 minutos) — pero admin siempre recarga
-  const isAdmin = window.CU?.nick === 'ruizgustavo12' || window.CU?.email === 'synxyes@gmail.com' || window.CU?.role === 'admin';
-  if(!isAdmin && window._trofeosFeedLastLoad && (Date.now() - window._trofeosFeedLastLoad) < 120000 && window._trofeosFeedData.length){
-    renderTrofeosFeed(); return;
-  }
+function listenTrofeosFeed(){
+  // Si ya hay un listener onSnapshot activo, solo re-renderizar
+  if(window._unsubTrofeosFeed){ renderTrofeosFeed(); return; }
   const feedEl = document.getElementById('trofeosFeed');
   if(feedEl) feedEl.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);">
     <div style="font-size:2rem;margin-bottom:8px;">🏆</div>
-    <div>Cargando trofeos aprobados...</div>
+    <div>Cargando trofeos en tiempo real...</div>
   </div>`;
-  if(!window.db){
-    setTimeout(()=>listenTrofeosFeed(), 1000); return;
-  }
-  try {
-    console.log('[Trofeos] Iniciando carga desde Firestore...');
-    // Primero intentar con status=='approved' + orderBy (requiere índice compuesto en Firestore)
-    let snap;
-    try {
-      snap = await getDocs(query(
-        collection(db,'trofeosPendientes'),
-        where('status','==','approved'),
-        orderBy('createdAt','desc'),
-        limit(150)
-      ));
-    } catch(idxErr) {
-      // Fallback: traer todos ordenados por fecha y filtrar en JS
-      console.warn('[Trofeos] Índice compuesto no disponible, usando fallback:', idxErr.code);
-      snap = await getDocs(query(
-        collection(db,'trofeosPendientes'),
-        orderBy('createdAt','desc'),
-        limit(300)
-      ));
-    }
-    console.log('[Trofeos] Documentos recibidos:', snap.docs.length);
-    const tsVal = x => x?.toMillis ? x.toMillis() : (typeof x==="number" ? x : (x?.seconds ? x.seconds*1000 : 0));
-    const all = snap.docs.map(d=>({id:d.id,...d.data(),_src:'local'}));
-    const local = all
-      .filter(d => !d.status || d.status === 'approved')
-      .sort((a,b) => tsVal(b.createdAt) - tsVal(a.createdAt));
-    console.log('[Trofeos] Aprobados:', local.length);
-    window._trofeosFeedData = local;
-    _trofeosFeedData = local;
-    window._trofeosFeedLastLoad = Date.now();
-    renderTrofeosFeed();
-  } catch(e) {
-    console.error('[Trofeos] Error:', e.code, e.message);
-    const el = document.getElementById('trofeosFeed');
-    if(el) el.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--muted);">
-      <div style="font-size:3rem;margin-bottom:12px;">🏆</div>
-      <div style="font-size:.95rem;font-weight:700;margin-bottom:6px;">No se pudieron cargar los trofeos</div>
-      <div style="font-size:.8rem;margin-bottom:16px;color:var(--red);">${e.code||e.message||'Error desconocido'}</div>
-      <button class="btn" onclick="window._trofeosFeedLastLoad=0;listenTrofeosFeed();" style="background:var(--gold);color:#000;font-weight:700;">🔄 Reintentar</button>
-    </div>`;
-  }
+  if(!window.db){ setTimeout(()=>listenTrofeosFeed(), 1000); return; }
+  const tsVal = x => x?.toMillis ? x.toMillis() : (typeof x==="number" ? x : (x?.seconds ? x.seconds*1000 : 0));
+  let firstLoad = true;
+
+  const startListen = (q) => {
+    try{
+      const unsub = onSnapshot(q, (snap) => {
+        console.log('[Trofeos RT] Update recibido:', snap.docs.length, 'docs, fromCache:', snap.metadata.fromCache);
+        const all = snap.docs.map(d=>({id:d.id,...d.data(),_src:'local'}));
+        const local = all
+          .filter(d => !d.status || d.status === 'approved')
+          .sort((a,b) => tsVal(b.createdAt) - tsVal(a.createdAt));
+        window._trofeosFeedData = local;
+        _trofeosFeedData = local;
+        window._trofeosFeedLastLoad = Date.now();
+        renderTrofeosFeed();
+        // Badge de nuevo trofeo en updates posteriores al primero
+        if(!firstLoad && !snap.metadata.fromCache){
+          const badge = document.getElementById('trofeoFeedBadge');
+          if(badge){ badge.style.display='flex'; badge.textContent='🆕 Nuevo trofeo publicado'; setTimeout(()=>{ badge.style.display='none'; }, 5000); }
+        }
+        firstLoad = false;
+      }, (err) => {
+        console.error('[Trofeos RT] Error onSnapshot:', err.code);
+        window._unsubTrofeosFeed = null;
+        if(err.code === 'failed-precondition' || err.code === 'unimplemented'){
+          startListen(query(collection(db,'trofeosPendientes'), orderBy('createdAt','desc'), limit(300)));
+        } else {
+          const el = document.getElementById('trofeosFeed');
+          if(el) el.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--muted);">
+            <div style="font-size:3rem;margin-bottom:12px;">🏆</div>
+            <div style="font-size:.95rem;font-weight:700;margin-bottom:6px;">No se pudieron cargar los trofeos</div>
+            <button class="btn" onclick="window._unsubTrofeosFeed=null;listenTrofeosFeed();" style="background:var(--gold);color:#000;font-weight:700;">🔄 Reintentar</button>
+          </div>`;
+        }
+      });
+      window._unsubTrofeosFeed = unsub;
+    } catch(e){ console.error('[Trofeos RT] catch:', e); }
+  };
+  startListen(query(collection(db,'trofeosPendientes'), where('status','==','approved'), orderBy('createdAt','desc'), limit(150)));
 }
 
 function listenTrofeosSidebar(){
@@ -23287,32 +23280,38 @@ function wkCard(t, showSt=false) {
 function wkEsc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 // Load home - recent trophies
-async function wkLoadHome() {
+function wkLoadHome() {
+  // Si ya hay un listener activo para la wiki home, no crear otro
+  if(window._unsubWkHome){ return; }
   const grid = document.getElementById('wkHomeGrid');
   const empty = document.getElementById('wkHomeEmpty');
   if(!grid) return;
   grid.innerHTML = '<div class="wk-ld"><div class="wk-sp"></div></div>';
-  try {
-    const snap = await getDocs(query(collection(db,'trofeosPendientes'), where('status','==','approved'), limit(50)));
-    _wkAllTrophies = snap.docs.map(d=>({id:d.id,...d.data()}))
-      .sort((a,b)=>(b.createdAt?.toMillis?.()??b.createdAt?.seconds*1000??0)-(a.createdAt?.toMillis?.()??a.createdAt?.seconds*1000??0));
-    if(_wkAllTrophies.length===0){ grid.innerHTML=''; empty.style.display='block'; return; }
-    empty.style.display='none';
-    grid.innerHTML = _wkAllTrophies.map(t=>wkCard(t)).join('');
-    // Update stats
-    const hst = document.getElementById('wkTotalTrophy');
-    if(hst) hst.textContent = _wkAllTrophies.length+'+';
-  } catch(e) {
-    // fallback: try without orderBy
-    try {
-      const snap2 = await getDocs(query(collection(db,'trofeosPendientes'), where('status','==','approved'), limit(12)));
-      _wkAllTrophies = snap2.docs.map(d=>({id:d.id,...d.data()}))
-        .sort((a,b)=>(b.createdAt?.toMillis?.()??b.createdAt?.seconds*1000??0)-(a.createdAt?.toMillis?.()??a.createdAt?.seconds*1000??0));
-      if(!_wkAllTrophies.length){ grid.innerHTML=''; empty.style.display='block'; return; }
-      empty.style.display='none';
-      grid.innerHTML = _wkAllTrophies.map(t=>wkCard(t)).join('');
-    } catch(e2){ grid.innerHTML='<div class="wk-empty"><div class="wk-ei">⚠️</div><div class="wk-et">Error al cargar</div></div>'; }
-  }
+  const tsVal = x => x?.toMillis?.() ?? (x?.seconds ? x.seconds*1000 : 0);
+
+  const startListen = (q) => {
+    try{
+      const unsub = onSnapshot(q, (snap) => {
+        _wkAllTrophies = snap.docs.map(d=>({id:d.id,...d.data()}))
+          .filter(d => !d.status || d.status === 'approved')
+          .sort((a,b) => tsVal(b.createdAt) - tsVal(a.createdAt));
+        if(!_wkAllTrophies.length){ grid.innerHTML=''; empty.style.display='block'; return; }
+        empty.style.display='none';
+        grid.innerHTML = _wkAllTrophies.map(t=>wkCard(t)).join('');
+        const hst = document.getElementById('wkTotalTrophy');
+        if(hst) hst.textContent = _wkAllTrophies.length+'+';
+      }, (err) => {
+        window._unsubWkHome = null;
+        if(err.code === 'failed-precondition' || err.code === 'unimplemented'){
+          startListen(query(collection(db,'trofeosPendientes'), limit(50)));
+        } else {
+          grid.innerHTML='<div class="wk-empty"><div class="wk-ei">⚠️</div><div class="wk-et">Error al cargar</div></div>';
+        }
+      });
+      window._unsubWkHome = unsub;
+    } catch(e){ grid.innerHTML='<div class="wk-empty"><div class="wk-ei">⚠️</div><div class="wk-et">Error al cargar</div></div>'; }
+  };
+  startListen(query(collection(db,'trofeosPendientes'), where('status','==','approved'), limit(50)));
 }
 
 // Home map filter
@@ -23338,44 +23337,54 @@ window.wkOnHomeMapChange = async () => {
 };
 
 // Gallery: render all trophies with filters
-window.wkRenderTrophies = async () => {
+window.wkRenderTrophies = () => {
   const grid = document.getElementById('wkTGrid');
   const empty = document.getElementById('wkTEmpty');
   if(!grid) return;
-  grid.innerHTML = '<div class="wk-ld"><div class="wk-sp"></div></div>';
-  try {
-    const snap = await getDocs(query(collection(db,'trofeosPendientes'), where('status','==','approved'), limit(100)));
-    let items = snap.docs.map(d=>({id:d.id,...d.data()}))
-      .sort((a,b)=>(b.createdAt?.toMillis?.()??b.createdAt?.seconds*1000??0)-(a.createdAt?.toMillis?.()??a.createdAt?.seconds*1000??0));
-    // Apply filters
+  // Si ya hay datos en cache de wkHome/Feed, usar esos y aplicar filtros
+  const applyFilters = (items) => {
     const fMap = document.getElementById('wkFMap')?.value||'';
     const fTech = document.getElementById('wkFTech')?.value||'';
     const fSearch = (document.getElementById('wkFSearch')?.value||'').toLowerCase().trim();
-    if(fMap) items = items.filter(t=>t.map===fMap);
-    if(fTech) items = items.filter(t=>t.technique===fTech);
-    if(fSearch) items = items.filter(t=>(t.fish||'').toLowerCase().includes(fSearch)||(t.description||'').toLowerCase().includes(fSearch));
-    if(!items.length){ grid.innerHTML=''; empty.style.display='block'; return; }
-    empty.style.display='none';
-    grid.innerHTML = items.map(t=>wkCard(t)).join('');
-    // Show publish button if logged in
+    let filtered = [...items];
+    if(fMap) filtered = filtered.filter(t=>t.map===fMap);
+    if(fTech) filtered = filtered.filter(t=>t.technique===fTech);
+    if(fSearch) filtered = filtered.filter(t=>(t.fish||'').toLowerCase().includes(fSearch)||(t.description||'').toLowerCase().includes(fSearch));
+    if(!filtered.length){ grid.innerHTML=''; if(empty) empty.style.display='block'; return; }
+    if(empty) empty.style.display='none';
+    grid.innerHTML = filtered.map(t=>wkCard(t)).join('');
     const btn = document.getElementById('wkPubBtn');
     if(btn && window.CU) btn.style.display='';
-  } catch(e){
-    // fallback without orderBy
-    try {
-      const snap2 = await getDocs(query(collection(db,'trofeosPendientes'), where('status','==','approved'), limit(100)));
-      let items2 = snap2.docs.map(d=>({id:d.id,...d.data()}));
-      const fMap = document.getElementById('wkFMap')?.value||'';
-      const fTech = document.getElementById('wkFTech')?.value||'';
-      const fSearch = (document.getElementById('wkFSearch')?.value||'').toLowerCase().trim();
-      if(fMap) items2 = items2.filter(t=>t.map===fMap);
-      if(fTech) items2 = items2.filter(t=>t.technique===fTech);
-      if(fSearch) items2 = items2.filter(t=>(t.fish||'').toLowerCase().includes(fSearch));
-      if(!items2.length){ grid.innerHTML=''; empty.style.display='block'; return; }
-      empty.style.display='none';
-      grid.innerHTML = items2.map(t=>wkCard(t)).join('');
-    } catch(e2){ grid.innerHTML='<div class="wk-empty"><div class="wk-ei">⚠️</div><div class="wk-et">Error al cargar trofeos</div></div>'; }
-  }
+  };
+
+  // Si tenemos cache reciente (de wkLoadHome o trofeosFeed), usarla directamente
+  if(_wkAllTrophies && _wkAllTrophies.length){ applyFilters(_wkAllTrophies); return; }
+  if(window._trofeosFeedData && window._trofeosFeedData.length){ _wkAllTrophies = window._trofeosFeedData; applyFilters(_wkAllTrophies); return; }
+
+  // Si no hay cache, hacer onSnapshot propio para galería
+  if(window._unsubWkGallery){ return; }
+  grid.innerHTML = '<div class="wk-ld"><div class="wk-sp"></div></div>';
+  const tsVal = x => x?.toMillis?.() ?? (x?.seconds ? x.seconds*1000 : 0);
+
+  const startListen = (q) => {
+    try{
+      const unsub = onSnapshot(q, (snap) => {
+        _wkAllTrophies = snap.docs.map(d=>({id:d.id,...d.data()}))
+          .filter(d => !d.status || d.status === 'approved')
+          .sort((a,b) => tsVal(b.createdAt) - tsVal(a.createdAt));
+        applyFilters(_wkAllTrophies);
+      }, (err) => {
+        window._unsubWkGallery = null;
+        if(err.code === 'failed-precondition' || err.code === 'unimplemented'){
+          startListen(query(collection(db,'trofeosPendientes'), limit(100)));
+        } else {
+          grid.innerHTML='<div class="wk-empty"><div class="wk-ei">⚠️</div><div class="wk-et">Error al cargar trofeos</div></div>';
+        }
+      });
+      window._unsubWkGallery = unsub;
+    } catch(e){ grid.innerHTML='<div class="wk-empty"><div class="wk-ei">⚠️</div><div class="wk-et">Error al cargar trofeos</div></div>'; }
+  };
+  startListen(query(collection(db,'trofeosPendientes'), where('status','==','approved'), limit(100)));
 };
 
 // Ranking
