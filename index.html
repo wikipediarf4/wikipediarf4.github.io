@@ -7466,36 +7466,79 @@ function init(){
 function loadAuthTrofeos(){
   const el = document.getElementById('authTrofeosList');
   if(!el) return;
-  getDoc(doc(db,'config','lastTrophy')).then(snap => {
-    if(!snap.exists()){
-      el.innerHTML='<div style="font-size:.75rem;color:#8b949e;text-align:center;padding:8px;">Sin trofeos aun</div>';
-      return;
-    }
-    const t = snap.data();
-    const img = t.imageUrl||'';
-    const fish = (t.fish||'?').substring(0,28);
-    const kg = t.weight||0;
-    const map = (t.map||'').substring(0,22);
-    const nick = (t.nick||'Anonimo').substring(0,20);
-    let w = '';
-    if(kg){
-      const n = Number(kg);
-      w = n >= 1 ? (n.toFixed(3)+' kg') : (Math.round(n*1000)+' g');
-    }
-    el.innerHTML = `<div style="display:flex;align-items:center;gap:12px;background:rgba(255,215,0,.07);border:1px solid rgba(255,215,0,.25);border-radius:12px;padding:10px 14px;">
-      ${img
-        ? `<img src="${img}" style="width:72px;height:72px;object-fit:cover;border-radius:10px;flex-shrink:0;border:1.5px solid rgba(255,215,0,.3);" onerror="this.style.display='none'">`
-        : `<div style="width:72px;height:72px;border-radius:10px;background:rgba(255,215,0,.1);display:flex;align-items:center;justify-content:center;font-size:2.2rem;flex-shrink:0;">&#x1F41F;</div>`}
-      <div style="min-width:0;flex:1;">
-        <div style="font-family:'Orbitron',monospace;font-size:.82rem;font-weight:900;color:var(--gold,#d4a017);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">&#x1F947; ${fish}</div>
-        ${w?`<div style="font-size:1rem;font-weight:800;color:#e6edf3;margin-top:2px;">${w}</div>`:''}
-        <div style="font-size:.7rem;color:#8b949e;margin-top:3px;">${map?'&#x1F4CD; '+map+' &middot; ':''}<span style="color:var(--accent,#2ec4b6);">@${nick}</span></div>
-      </div>
-    </div>`;
-  }).catch(e=>{
-    console.error('loadAuthTrofeos:', e);
-    el.innerHTML='';
-  });
+  if(!window.db){
+    setTimeout(loadAuthTrofeos, 1200); return;
+  }
+  getDocs(query(collection(db,'trofeosPendientes'), where('status','==','approved'), orderBy('createdAt','desc'), limit(3)))
+    .then(snap => {
+      if(snap.empty){
+        // Fallback: traer sin orderBy por si no hay índice
+        return getDocs(query(collection(db,'trofeosPendientes'), where('status','==','approved'), limit(10)));
+      }
+      return snap;
+    })
+    .then(snap2 => {
+      const docs = snap2.docs.map(d=>({id:d.id,...d.data()}));
+      // ordenar en JS por si no existe el índice compuesto
+      const tsVal = x => x?.toMillis ? x.toMillis() : (typeof x==='number'?x:(x?.seconds?x.seconds*1000:0));
+      const trofeos = docs.filter(d=>!d.status||d.status==='approved')
+        .sort((a,b)=>tsVal(b.createdAt)-tsVal(a.createdAt))
+        .slice(0,3);
+      if(!trofeos.length){
+        el.innerHTML='<div style="font-size:.75rem;color:#8b949e;text-align:center;padding:8px;">Sin trofeos aún</div>';
+        return;
+      }
+      el.innerHTML = trofeos.map(t=>{
+        const images = t.images||[];
+        const img = images[0]||t.imageUrl||t.img||t.imagen||'';
+        const fish = (t.fish||t.especie||'?').substring(0,28);
+        const kg = t.weight||t.peso||0;
+        const map = (t.map||t.mapa||'').substring(0,22);
+        const nick = (t.userNick||t.submittedBy||t.nick||'Anónimo').substring(0,20);
+        const n = Number(kg);
+        const w = n>=1 ? n.toFixed(3)+' kg' : (n>0 ? Math.round(n*1000)+' g' : '');
+        return `<div style="display:flex;align-items:center;gap:12px;background:rgba(255,215,0,.07);border:1px solid rgba(255,215,0,.25);border-radius:12px;padding:10px 14px;margin-bottom:6px;">
+          ${img
+            ? `<img src="${img}" style="width:64px;height:64px;object-fit:cover;border-radius:10px;flex-shrink:0;border:1.5px solid rgba(255,215,0,.3);" onerror="this.style.display='none'">`
+            : `<div style="width:64px;height:64px;border-radius:10px;background:rgba(255,215,0,.1);display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;">🐟</div>`}
+          <div style="min-width:0;flex:1;">
+            <div style="font-family:'Orbitron',monospace;font-size:.8rem;font-weight:900;color:#d4a017;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">🥇 ${fish}</div>
+            ${w?`<div style="font-size:.95rem;font-weight:800;color:#e6edf3;margin-top:2px;">${w}</div>`:''}
+            <div style="font-size:.68rem;color:#8b949e;margin-top:3px;">${map?'📍 '+map+' · ':''}<span style="color:#2ec4b6;">@${nick}</span></div>
+          </div>
+        </div>`;
+      }).join('');
+    }).catch(e=>{
+      console.error('loadAuthTrofeos:', e);
+      // Si falla (sin índice), intentar sin where+orderBy
+      getDocs(query(collection(db,'trofeosPendientes'), limit(20)))
+        .then(snap=>{
+          const tsVal = x => x?.toMillis ? x.toMillis() : (typeof x==='number'?x:(x?.seconds?x.seconds*1000:0));
+          const trofeos = snap.docs.map(d=>({id:d.id,...d.data()}))
+            .filter(d=>!d.status||d.status==='approved')
+            .sort((a,b)=>tsVal(b.createdAt)-tsVal(a.createdAt))
+            .slice(0,3);
+          if(!trofeos.length){ el.innerHTML='<div style="font-size:.75rem;color:#8b949e;text-align:center;padding:8px;">Sin trofeos aún</div>'; return; }
+          el.innerHTML = trofeos.map(t=>{
+            const images = t.images||[];
+            const img = images[0]||t.imageUrl||t.img||'';
+            const fish = (t.fish||t.especie||'?').substring(0,28);
+            const kg = t.weight||t.peso||0;
+            const map = (t.map||'').substring(0,22);
+            const nick = (t.userNick||t.submittedBy||t.nick||'Anónimo').substring(0,20);
+            const n=Number(kg); const w=n>=1?n.toFixed(3)+' kg':(n>0?Math.round(n*1000)+' g':'');
+            return `<div style="display:flex;align-items:center;gap:12px;background:rgba(255,215,0,.07);border:1px solid rgba(255,215,0,.25);border-radius:12px;padding:10px 14px;margin-bottom:6px;">
+              ${img?`<img src="${img}" style="width:64px;height:64px;object-fit:cover;border-radius:10px;flex-shrink:0;border:1.5px solid rgba(255,215,0,.3);" onerror="this.style.display='none'">`:
+                `<div style="width:64px;height:64px;border-radius:10px;background:rgba(255,215,0,.1);display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;">🐟</div>`}
+              <div style="min-width:0;flex:1;">
+                <div style="font-family:'Orbitron',monospace;font-size:.8rem;font-weight:900;color:#d4a017;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">🥇 ${fish}</div>
+                ${w?`<div style="font-size:.95rem;font-weight:800;color:#e6edf3;margin-top:2px;">${w}</div>`:''}
+                <div style="font-size:.68rem;color:#8b949e;margin-top:3px;">${map?'📍 '+map+' · ':''}<span style="color:#2ec4b6;">@${nick}</span></div>
+              </div>
+            </div>`;
+          }).join('');
+        }).catch(()=>{ el.innerHTML=''; });
+    });
 }
 // ===== DEMO DATA =====
 // ===== UTILS =====
@@ -21173,6 +21216,17 @@ function trofeoFeedCardHTML(t){
   const notes = esc(t.notes||t.nota||t.description||'');
 
   const tid = t.id||"";
+  // Mostrar botones editar/borrar si el usuario actual es el dueño o admin
+  const isOwner = window.CU && (window.CU.id === userId || (window.CU.nick||'').toLowerCase() === (t.userNick||t.submittedBy||t.nick||'').toLowerCase());
+  const isAdmin = window.CU?.role === 'admin' || window.CU?.nick === 'ruizgustavo12' || window.CU?.email === 'synxyes@gmail.com';
+  const ownerBtns = (isOwner||isAdmin) ? `
+      <button onclick="editTrofeoCard('${tid}')" title="Editar trofeo"
+        style="background:none;border:1px solid rgba(255,215,0,.3);color:var(--gold);padding:4px 10px;border-radius:var(--rs);font-size:.7rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .15s;"
+        onmouseover="this.style.background='rgba(255,215,0,.12)'" onmouseout="this.style.background='none'">✏️ Editar</button>
+      <button onclick="deleteTrofeoCard('${tid}')" title="Borrar trofeo"
+        style="background:none;border:1px solid rgba(248,81,73,.35);color:var(--red);padding:4px 10px;border-radius:var(--rs);font-size:.7rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .15s;"
+        onmouseover="this.style.background='rgba(248,81,73,.1)'" onmouseout="this.style.background='none'">🗑 Borrar</button>` : '';
+
   const rxnBtnsHtml = `<button class="rxn-btn" onclick="doReact('trofeo_${tid}','🏆');schedHideRxnPop('trofeo_${tid}')" title="Trofeo"><img src="/troff.png" style="width:24px;height:24px;"></button><button class="rxn-btn" onclick="doReact('trofeo_${tid}','⭐');schedHideRxnPop('trofeo_${tid}')" title="Super Trofeo"><img src="/troff_super.png" style="width:24px;height:24px;"></button>`;
   return `<div id="trofeo_${tid}" style="background:var(--bg2);border:1px solid rgba(255,215,0,.25);border-radius:var(--r);margin-bottom:18px;overflow:hidden;transition:border-color .2s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='rgba(255,215,0,.25)'">
     <!-- Header type banner -->
@@ -21192,7 +21246,10 @@ function trofeoFeedCardHTML(t){
         </div>
         <div class="post-time">🌐 ${fmtT(approvedAt)} · WikiPediaRF4.UY</div>
       </div>
-      <a href="#" onclick="gp('wiki-trofeos')" target="_blank" style="background:none;border:1px solid rgba(255,215,0,.3);color:var(--gold);padding:4px 10px;border-radius:var(--rs);font-size:.7rem;font-weight:700;cursor:pointer;text-decoration:none;font-family:'Exo 2',sans-serif;">↗ Wiki</a>
+      <div style="display:flex;align-items:center;gap:6px;">
+        ${ownerBtns}
+        <a href="#" onclick="gp('wiki-trofeos')" target="_blank" style="background:none;border:1px solid rgba(255,215,0,.3);color:var(--gold);padding:4px 10px;border-radius:var(--rs);font-size:.7rem;font-weight:700;cursor:pointer;text-decoration:none;font-family:'Exo 2',sans-serif;">↗ Wiki</a>
+      </div>
     </div>
     <!-- Fish info highlight -->
     <div style="margin:0 14px 12px;background:linear-gradient(135deg,rgba(255,215,0,.1),rgba(255,165,0,.05));border:1px solid rgba(255,215,0,.25);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
@@ -21279,6 +21336,104 @@ function renderTrofeoSidebar(items){
   }).join('');
   document.querySelectorAll('[id="trofeoSidebarList"]').forEach(e => e.innerHTML = html);
 }
+
+// ===== EDITAR / BORRAR TROFEO (desde feed) =====
+async function deleteTrofeoCard(tid){
+  if(!tid) return;
+  if(!confirm('¿Seguro que querés borrar este trofeo? Esta acción no se puede deshacer.')) return;
+  try{
+    await deleteDoc(doc(db,'trofeosPendientes',tid));
+    // Quitar del caché local
+    window._trofeosFeedData = (window._trofeosFeedData||[]).filter(t=>t.id!==tid);
+    // Quitar el elemento del DOM
+    const el = document.getElementById('trofeo_'+tid);
+    if(el){ el.style.transition='opacity .3s'; el.style.opacity='0'; setTimeout(()=>el.remove(),320); }
+    toast('Trofeo eliminado ✅','ok');
+  }catch(e){
+    toast('Error al borrar: '+e.message,'err');
+  }
+}
+window.deleteTrofeoCard = deleteTrofeoCard;
+
+function editTrofeoCard(tid){
+  if(!tid) return;
+  const trofeo = (window._trofeosFeedData||[]).find(t=>t.id===tid);
+  if(!trofeo){ toast('No se encontró el trofeo','err'); return; }
+
+  // Crear modal de edición
+  const existing = document.getElementById('_editTrofeoModal');
+  if(existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = '_editTrofeoModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;';
+  modal.innerHTML = `
+    <div style="background:#161b22;border:1px solid rgba(255,215,0,.3);border-radius:14px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;padding:24px;box-shadow:0 8px 40px rgba(0,0,0,.6);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+        <span style="font-family:'Orbitron',monospace;font-size:.95rem;font-weight:900;color:var(--gold);">✏️ Editar Trofeo</span>
+        <button onclick="document.getElementById('_editTrofeoModal').remove()" style="background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer;line-height:1;">✕</button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div>
+          <label style="font-size:.75rem;color:var(--muted);font-weight:700;display:block;margin-bottom:4px;">🐟 Especie</label>
+          <input id="_etFish" value="${(trofeo.fish||trofeo.especie||'').replace(/"/g,'&quot;')}" style="width:100%;background:#0d1117;border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.88rem;outline:none;" placeholder="Nombre del pez">
+        </div>
+        <div>
+          <label style="font-size:.75rem;color:var(--muted);font-weight:700;display:block;margin-bottom:4px;">⚖️ Peso (kg)</label>
+          <input id="_etWeight" type="number" step="0.001" value="${trofeo.weight||trofeo.peso||''}" style="width:100%;background:#0d1117;border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.88rem;outline:none;" placeholder="Ej: 12.345">
+        </div>
+        <div>
+          <label style="font-size:.75rem;color:var(--muted);font-weight:700;display:block;margin-bottom:4px;">📍 Mapa / Lago</label>
+          <input id="_etMap" value="${(trofeo.map||trofeo.mapa||'').replace(/"/g,'&quot;')}" style="width:100%;background:#0d1117;border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.88rem;outline:none;" placeholder="Ej: Mosquito Lake">
+        </div>
+        <div>
+          <label style="font-size:.75rem;color:var(--muted);font-weight:700;display:block;margin-bottom:4px;">🎣 Técnica</label>
+          <input id="_etTech" value="${(trofeo.technique||trofeo.tecnica||trofeo.tech||'').replace(/"/g,'&quot;')}" style="width:100%;background:#0d1117;border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.88rem;outline:none;" placeholder="Ej: Spinning, Float...">
+        </div>
+        <div>
+          <label style="font-size:.75rem;color:var(--muted);font-weight:700;display:block;margin-bottom:4px;">🪱 Carnada / Cebo</label>
+          <input id="_etBait" value="${(trofeo.bait||trofeo.carnada||'').replace(/"/g,'&quot;')}" style="width:100%;background:#0d1117;border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.88rem;outline:none;" placeholder="Ej: Carp Boilie">
+        </div>
+        <div>
+          <label style="font-size:.75rem;color:var(--muted);font-weight:700;display:block;margin-bottom:4px;">📝 Descripción / Notas</label>
+          <textarea id="_etDesc" rows="3" style="width:100%;background:#0d1117;border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.88rem;outline:none;resize:vertical;" placeholder="Comentario adicional...">${(trofeo.description||trofeo.notes||trofeo.nota||'').replace(/</g,'&lt;')}</textarea>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:6px;">
+          <button onclick="document.getElementById('_editTrofeoModal').remove()" style="flex:1;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:'Exo 2',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;">Cancelar</button>
+          <button onclick="saveTrofeoEdit('${tid}')" style="flex:2;padding:10px;background:linear-gradient(135deg,rgba(255,215,0,.2),rgba(255,165,0,.1));border:1px solid rgba(255,215,0,.5);border-radius:8px;color:var(--gold);font-family:'Exo 2',sans-serif;font-size:.88rem;font-weight:800;cursor:pointer;">💾 Guardar cambios</button>
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', function(e){ if(e.target===modal) modal.remove(); });
+}
+window.editTrofeoCard = editTrofeoCard;
+
+async function saveTrofeoEdit(tid){
+  const fish    = (document.getElementById('_etFish')?.value||'').trim();
+  const weight  = parseFloat(document.getElementById('_etWeight')?.value||'') || 0;
+  const map     = (document.getElementById('_etMap')?.value||'').trim();
+  const tech    = (document.getElementById('_etTech')?.value||'').trim();
+  const bait    = (document.getElementById('_etBait')?.value||'').trim();
+  const desc    = (document.getElementById('_etDesc')?.value||'').trim();
+
+  if(!fish){ toast('Ingresá el nombre del pez','err'); return; }
+  try{
+    const updates = { fish, weight, map, technique:tech, bait, description:desc };
+    await updateDoc(doc(db,'trofeosPendientes',tid), updates);
+    // Actualizar caché local
+    const idx = (window._trofeosFeedData||[]).findIndex(t=>t.id===tid);
+    if(idx>=0) Object.assign(window._trofeosFeedData[idx], updates);
+    // Cerrar modal y re-renderizar
+    document.getElementById('_editTrofeoModal')?.remove();
+    window._trofeosFeedLastLoad = 0; // forzar recarga
+    renderTrofeosFeed();
+    toast('Trofeo actualizado ✅','ok');
+  }catch(e){
+    toast('Error al guardar: '+e.message,'err');
+  }
+}
+window.saveTrofeoEdit = saveTrofeoEdit;
 
 // ===== VER/OCULTAR CONTRASEÑA =====
 function togglePassVis(inputId, btn){
@@ -27824,143 +27979,6 @@ window.testRankingPost = async function(){
 })();
 </script>
 <!-- ===== FIN PUBLICACIÓN AUTOMÁTICA RANKING SEMANAL ===== -->
-
-<!-- ===== LIMPIEZA AUTOMÁTICA SEMANAL (POSTS + IMÁGENES CLOUDINARY) ===== -->
-<script>
-(function(){
-'use strict';
-
-const CLEANUP_KEY         = 'rf4_cleanup_last_run';
-const CLEANUP_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000; // 7 días
-const POST_MAX_AGE_MS     = 7 * 24 * 60 * 60 * 1000; // borrar posts > 7 días
-const CLOUDINARY_CLOUD    = 'da0n5tg3g';
-const CLOUDINARY_API_KEY  = '761146859697835';
-const CLOUDINARY_SECRET   = 'bPb9nh0TSTOe0RtGhpZdYZTTe7I';
-
-// ── Extraer public_id de una URL de Cloudinary ──────────────────────────────
-// Ejemplo URL: https://res.cloudinary.com/da0n5tg3g/image/upload/v123/posts/abc.jpg
-// public_id  : posts/abc
-function extractPublicId(url) {
-  try {
-    const match = url.match(/\/upload\/(?:v\d+\/)?(.+?)(?:\.[a-z0-9]+)?$/i);
-    return match ? match[1] : null;
-  } catch(e) { return null; }
-}
-
-// ── Borrar imagen de Cloudinary vía API firmada ─────────────────────────────
-async function deleteFromCloudinary(publicId) {
-  try {
-    const timestamp = Math.floor(Date.now() / 1000);
-    const strToSign = `public_id=${publicId}&timestamp=${timestamp}${CLOUDINARY_SECRET}`;
-
-    // SHA-1 en el browser
-    const msgBuffer  = new TextEncoder().encode(strToSign);
-    const hashBuffer = await crypto.subtle.digest('SHA-1', msgBuffer);
-    const hashArray  = Array.from(new Uint8Array(hashBuffer));
-    const signature  = hashArray.map(b => b.toString(16).padStart(2,'0')).join('');
-
-    const form = new FormData();
-    form.append('public_id', publicId);
-    form.append('timestamp',  timestamp);
-    form.append('api_key',    CLOUDINARY_API_KEY);
-    form.append('signature',  signature);
-
-    const res = await fetch(
-      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/destroy`,
-      { method: 'POST', body: form }
-    );
-    const data = await res.json();
-    return data.result === 'ok';
-  } catch(e) {
-    console.warn('[RF4 Cleanup] Error borrando de Cloudinary:', e);
-    return false;
-  }
-}
-
-// ── Borrar un post y sus imágenes ───────────────────────────────────────────
-async function deletePost(docId, images) {
-  try {
-    // 1. Borrar imágenes de Cloudinary
-    if (images && images.length) {
-      for (const url of images) {
-        if (typeof url === 'string' && url.includes('cloudinary.com')) {
-          const pid = extractPublicId(url);
-          if (pid) {
-            const ok = await deleteFromCloudinary(pid);
-            console.log(`[RF4 Cleanup] Cloudinary ${pid}: ${ok ? '✅ borrada' : '⚠️ falló'}`);
-          }
-        }
-      }
-    }
-    // 2. Borrar documento de Firestore
-    await deleteDoc(doc(db, 'posts', docId));
-    console.log(`[RF4 Cleanup] Post ${docId} borrado de Firestore ✅`);
-  } catch(e) {
-    console.warn('[RF4 Cleanup] Error borrando post:', docId, e);
-  }
-}
-
-// ── Función principal de limpieza ───────────────────────────────────────────
-async function runCleanup() {
-  // Esperar Firebase
-  if (!window.db || !window.getDocs || !window.deleteDoc || !window.doc) {
-    setTimeout(runCleanup, 4000);
-    return;
-  }
-
-  // Solo admins ejecutan la limpieza para no generar carga en todos los clientes
-  if (!window.CU || window.CU.role !== 'admin') return;
-
-  // No correr más de una vez por semana
-  const lastRun = parseInt(localStorage.getItem(CLEANUP_KEY) || '0', 10);
-  if (Date.now() - lastRun < CLEANUP_INTERVAL_MS) return;
-  localStorage.setItem(CLEANUP_KEY, Date.now().toString());
-
-  console.log('[RF4 Cleanup] 🧹 Iniciando limpieza de posts > 7 días...');
-
-  try {
-    const cutoff   = new Date(Date.now() - POST_MAX_AGE_MS);
-    const snap     = await getDocs(
-      query(
-        collection(db, 'posts'),
-        where('time', '<', cutoff),
-        limit(100)  // procesar de a 100 para no bloquear
-      )
-    );
-
-    if (snap.empty) {
-      console.log('[RF4 Cleanup] No hay posts viejos para borrar.');
-      return;
-    }
-
-    console.log(`[RF4 Cleanup] Encontrados ${snap.size} posts para borrar.`);
-    for (const d of snap.docs) {
-      const data = d.data();
-      // Nunca borrar posts del ranking ni posts fijados
-      if (data.isRankingPost || data.pinned) continue;
-      await deletePost(d.id, data.images || []);
-    }
-    console.log('[RF4 Cleanup] ✅ Limpieza completada.');
-  } catch(e) {
-    console.error('[RF4 Cleanup] Error general:', e);
-    // Si falla, resetear para que reintente la próxima visita
-    localStorage.removeItem(CLEANUP_KEY);
-  }
-}
-
-// Ejecutar 10 segundos después del load para asegurar que Firebase y el usuario estén listos
-window.addEventListener('load', () => setTimeout(runCleanup, 10000));
-
-// Exponer para pruebas manuales desde consola: testCleanup()
-window.testCleanup = async function() {
-  localStorage.removeItem(CLEANUP_KEY);
-  console.log('[RF4 Cleanup] Ejecutando test manual...');
-  await runCleanup();
-};
-
-})();
-</script>
-<!-- ===== FIN LIMPIEZA AUTOMÁTICA SEMANAL ===== -->
 
 </body>
 </html>
