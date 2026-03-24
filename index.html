@@ -5239,7 +5239,7 @@ document.addEventListener('DOMContentLoaded', function(){
 </div>
 
 <!-- Modal crear sala -->
-<div id="createRoomModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:99999;display:none;align-items:center;justify-content:center;padding:16px;">
+<div id="createRoomModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:99999;align-items:center;justify-content:center;padding:16px;">
   <div style="background:#161b22;border:1px solid var(--border);border-radius:14px;width:100%;max-width:400px;padding:24px;box-shadow:0 8px 40px rgba(0,0,0,.6);">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
       <span style="font-family:'Orbitron',monospace;font-size:.95rem;font-weight:900;color:var(--accent);">🎙️ Nueva Sala de Voz</span>
@@ -7956,6 +7956,17 @@ function onLogin(){
   }
   checkFriendsBirthdays();
   if(typeof window._checkChangelog === 'function') window._checkChangelog();
+  // Si el usuario ingresa y está en la página de salas de voz, iniciar/actualizar listener
+  setTimeout(function(){
+    const pageVr = document.getElementById('page-voice-rooms');
+    if(pageVr && pageVr.style.display !== 'none'){
+      if(typeof listenVoiceRooms === 'function' && !window._vrRoomsUnsub){
+        listenVoiceRooms();
+      }
+      const createBtn = document.getElementById('createRoomBtn');
+      if(createBtn && window.CU) createBtn.style.display = 'block';
+    }
+  }, 800);
   if(typeof _updatePostBoxPlaceholder === 'function') _updatePostBoxPlaceholder();
   loadRealFriends().then(()=>{
     renderProfile();
@@ -28064,37 +28075,61 @@ function renderVoiceRooms(rooms){
   el.innerHTML = cards.join('');
 }
 // ── Cargar salas en tiempo real ───────────────────────────────────────────────
-function listenVoiceRooms(){
+async function listenVoiceRooms(){
   if(!window.db || !window._fsLib){
     setTimeout(listenVoiceRooms, 800); return;
   }
-  const { onSnapshot, collection, query, orderBy, getDocs } = window._fsLib;
+  const { onSnapshot, collection, getDocs } = window._fsLib;
 
-  // Mostrar botón crear sala si está logueado
+  // Mostrar botón crear sala
   const createBtn = document.getElementById('createRoomBtn');
   if(createBtn) createBtn.style.display = window.CU ? 'block' : 'none';
 
   if(_vrRoomsUnsub) _vrRoomsUnsub();
 
-  _vrRoomsUnsub = onSnapshot(
-    collection(window.db, VR_COL),
-    snap => {
-      const rooms = snap.docs
-        .map(d => ({id:d.id, ...d.data()}))
-        .sort((a,b) => {
-          const ta = a.createdAt?.toMillis ? a.createdAt.toMillis() : (a.createdAt||0);
-          const tb = b.createdAt?.toMillis ? b.createdAt.toMillis() : (b.createdAt||0);
-          return ta - tb;
-        });
-      renderVoiceRooms(rooms);
-    },
-    err => {
-      vrErr('listenVoiceRooms:', err);
-      const warn = document.getElementById('vrFirestoreWarning');
-      if(warn) warn.style.display = 'block';
-      renderVoiceRooms([]);
-    }
-  );
+  // ── Intentar primero con getDocs para verificar permisos ──────────────────
+  try{
+    const testSnap = await getDocs(collection(window.db, VR_COL));
+    const rooms = testSnap.docs
+      .map(d => ({id:d.id, ...d.data()}))
+      .sort((a,b)=>{
+        const ta = a.createdAt?.toMillis ? a.createdAt.toMillis() : (a.createdAt||0);
+        const tb = b.createdAt?.toMillis ? b.createdAt.toMillis() : (b.createdAt||0);
+        return ta - tb;
+      });
+    renderVoiceRooms(rooms);
+    if(createBtn) createBtn.style.display = window.CU ? 'block' : 'none';
+  }catch(e){
+    vrErr('listenVoiceRooms getDocs:', e);
+    const warn = document.getElementById('vrFirestoreWarning');
+    if(warn){ warn.style.display='block'; warn.innerHTML='⚠️ <strong>Error Firestore:</strong> ' + e.message + '<br><span style="font-size:.72rem;">Revisá las reglas de seguridad para la colección <code>voiceRooms</code>.</span>'; }
+    renderVoiceRooms([]);
+    return; // Si getDocs falla, onSnapshot también fallará
+  }
+
+  // ── Suscribir a cambios en tiempo real ────────────────────────────────────
+  try{
+    _vrRoomsUnsub = onSnapshot(
+      collection(window.db, VR_COL),
+      snap => {
+        const rooms = snap.docs
+          .map(d => ({id:d.id, ...d.data()}))
+          .sort((a,b) => {
+            const ta = a.createdAt?.toMillis ? a.createdAt.toMillis() : (a.createdAt||0);
+            const tb = b.createdAt?.toMillis ? b.createdAt.toMillis() : (b.createdAt||0);
+            return ta - tb;
+          });
+        const btn = document.getElementById('createRoomBtn');
+        if(btn) btn.style.display = window.CU ? 'block' : 'none';
+        renderVoiceRooms(rooms);
+      },
+      err => {
+        vrErr('listenVoiceRooms onSnapshot:', err);
+        // Si falla el realtime, seguimos mostrando lo que cargó getDocs
+        vrLog('Fallback: datos estáticos cargados via getDocs');
+      }
+    );
+  }catch(e){ vrErr('onSnapshot setup:', e); }
 }
 
 // ── Crear sala ────────────────────────────────────────────────────────────────
@@ -28429,27 +28464,40 @@ document.addEventListener('click', e => {
   if(e.target.id === 'createRoomModal') closeCreateRoomModal();
 });
 
-// ── Inicializar cuando se entra a la página ───────────────────────────────────
+// ── Función central para arrancar el listener de salas ───────────────────────
+function _vrEnsureListening(){
+  // Solo actuar si la página de salas está visible
+  const page = document.getElementById('page-voice-rooms');
+  if(!page || page.style.display === 'none') return;
+  if(_vrRoomsUnsub) return; // ya escuchando
+  if(!window.db || !window._fsLib) return; // Firebase aún no listo
+  listenVoiceRooms();
+}
+
+// Polling sin límite: cada 400ms chequea si Firebase está listo Y la página está activa
+const _vrPollInterval = setInterval(() => {
+  if(window.db && window._fsLib){
+    _vrEnsureListening();
+    // Si ya tenemos listener, no necesitamos seguir poliando
+    if(_vrRoomsUnsub) clearInterval(_vrPollInterval);
+  }
+}, 400);
+
+// ── Override de gp para capturar cuando el usuario navega a voice-rooms ──────
 const _origGp = window.gp;
 window.gp = function(page, ...args){
+  const r = _origGp ? _origGp(page, ...args) : undefined;
   if(page === 'voice-rooms'){
-    const r = _origGp ? _origGp(page, ...args) : null;
-    // Esperar a Firebase y a CU antes de cargar
-    const _tryLoad = (tries) => {
-      if(window.db && window._fsLib){
-        listenVoiceRooms();
-      } else if(tries > 0){
-        setTimeout(() => _tryLoad(tries-1), 800);
-      } else {
-        // Si Firebase no cargó, mostrar mensaje de error en vez de "Cargando salas..."
-        const el = document.getElementById('voiceRoomsList');
-        if(el) el.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--muted);"><div style="font-size:2rem;margin-bottom:8px;">⚠️</div><div style="font-size:.85rem;">No se pudo conectar. Recargá la página.</div></div>';
-      }
-    };
-    _tryLoad(10);
-    return r;
+    // Actualizar botón crear sala
+    const createBtn = document.getElementById('createRoomBtn');
+    if(createBtn) createBtn.style.display = window.CU ? 'block' : 'none';
+    // Si Firebase ya está listo, arrancar listener inmediatamente
+    if(window.db && window._fsLib){
+      if(!_vrRoomsUnsub) listenVoiceRooms();
+    }
+    // Si no, el polling de arriba lo va a arrancar en cuanto Firebase esté listo
   }
-  return _origGp ? _origGp(page, ...args) : undefined;
+  return r;
 };
 
 // Exponer funciones globales
@@ -28461,6 +28509,9 @@ window.toggleVoiceMute   = toggleVoiceMute;
 window.toggleVoiceDeaf   = toggleVoiceDeaf;
 window.openCreateRoomModal  = openCreateRoomModal;
 window.closeCreateRoomModal = closeCreateRoomModal;
+window.listenVoiceRooms  = listenVoiceRooms;
+// Exponer getter para que código externo pueda chequear si el listener está activo
+Object.defineProperty(window, '_vrRoomsUnsub', { get: () => _vrRoomsUnsub });
 
 // Limpiar al cerrar ventana
 window.addEventListener('beforeunload', () => {
