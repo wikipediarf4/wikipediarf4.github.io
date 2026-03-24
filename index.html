@@ -7388,10 +7388,22 @@ function listenStories() {
       const now = Date.now();
       const expiredIds = [];
       _stories = snap.docs.filter(d => {
-        const raw = d.data().time;
+        const data = d.data();
+
+        // Prioridad 1: usar expiresAt si está guardado en el documento
+        if(data.expiresAt){
+          const exp = data.expiresAt?.toMillis
+            ? data.expiresAt.toMillis()
+            : (data.expiresAt instanceof Date ? data.expiresAt.getTime() : new Date(data.expiresAt).getTime());
+          if(exp && exp < now){ expiredIds.push(d.id); return false; }
+          return true;
+        }
+
+        // Fallback: calcular TTL desde time (historias viejas sin expiresAt)
+        const raw = data.time;
         const t = raw?.toMillis ? raw.toMillis() : (typeof raw === 'number' ? raw : 0);
-        const ttl = d.data().userVerified ? 172800000 : 86400000; // 48h verificados, 24h el resto
-        // t===0 = serverTimestamp pendiente (historia recién publicada) — incluir siempre
+        const ttl = data.userVerified ? 172800000 : 86400000; // 48h verificados, 24h resto
+        // t===0 = serverTimestamp pendiente (historia recien publicada) — incluir siempre
         if(t === 0) return true;
         if((now - t) > ttl){ expiredIds.push(d.id); return false; }
         return true;
@@ -7400,10 +7412,10 @@ function listenStories() {
         const t = raw?.toMillis ? raw.toMillis() : (typeof raw === 'number' ? raw : Date.now());
         return { id: d.id, ...d.data(), time: t };
       });
-      // Intentar borrar las expiradas (solo funciona si el usuario es el dueño o admin)
-      if(!snap.metadata.hasPendingWrites){
+      // Borrar las expiradas — las reglas permiten borrar historias vencidas a cualquier auth
+      if(!snap.metadata.hasPendingWrites && expiredIds.length){
         expiredIds.forEach(id => {
-          deleteDoc(doc(db, 'stories', id)).catch(()=>{}); // silencioso si no hay permisos
+          deleteDoc(doc(db, 'stories', id)).catch(()=>{});
         });
       }
       renderStories();
@@ -10159,9 +10171,12 @@ async function submitStory(){
   if(_storyImgData) imgUrl = await uploadImage(_storyImgData, 'stories');
   if(_storyVideoData) videoUrl = await uploadVideo(_storyVideoData, 'stories');
   if(!text && !imgUrl && !videoUrl && !window._storyGif){ toast('Agregá algo a la historia','err'); return; }
+  const _storyTTL = (window.CU?.verified) ? 172800000 : 86400000; // 48h verificados, 24h resto
+  const _storyExpiresAt = new Date(Date.now() + _storyTTL);
   await addDoc(collection(db, 'stories'), {
     userId:window.CU.id, userNick:window.CU.nick, userAv:window.CU.av||'',
     text, emoji:_storyEmojiPick||'🎣', img:imgUrl, video:videoUrl, yt:'', time:serverTimestamp(),
+    expiresAt: _storyExpiresAt, // ← usado para borrado automático y reglas
     userVerified:window.CU?.verified||false,
     music: window._storyMusic || _storyMusic || null,
     bg: window._storyBg || null,
