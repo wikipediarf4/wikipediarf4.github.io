@@ -16489,11 +16489,19 @@ function renderGallery(){
 // ===== MULTI-MEDIA UPLOAD =====
 let _postMediaFiles = []; // Array of {file, type}
 
+function _getMaxImgs(){
+  if(window.CU && window.CU.role === 'admin') return Infinity;
+  if(window.CU && window.CU.premium) return 6;
+  return 5;
+}
+
 function previewPostMedia(input, type){
   const files = Array.from(input.files);
   if(type === 'image'){
-    const remaining = 5 - _postMediaFiles.filter(f=>f.type==='image').length;
-    if(files.length > remaining){ toast(`Máximo 5 fotos. Solo se agregarán ${remaining}`,'err'); }
+    const maxImgs = _getMaxImgs();
+    const currentImgs = _postMediaFiles.filter(f=>f.type==='image').length;
+    const remaining = maxImgs === Infinity ? files.length : maxImgs - currentImgs;
+    if(files.length > remaining && maxImgs !== Infinity){ toast(`Máximo ${maxImgs} fotos. Solo se agregarán ${remaining}`,'err'); }
     files.slice(0, remaining).forEach(f => _postMediaFiles.push({file:f, type:'image'}));
   } else {
     _postMediaFiles = _postMediaFiles.filter(f=>f.type!=='video');
