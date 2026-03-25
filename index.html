@@ -2164,7 +2164,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
       <div class="sl-item" onclick="gp('ranking-semanal')"><span class="sl-item-icon">🏅</span> Ranking Semanal</div>
       <div class="sl-item" onclick="gp('cafe')" style="background:linear-gradient(90deg,rgba(255,140,0,.08),transparent);border-left:3px solid #ff8c00;"><span class="sl-item-icon">☕</span> Pedidos Café</div>
-      <div class="sl-item" id="slTiendaBtn" style="display:flex;background:linear-gradient(90deg,rgba(255,215,0,.08),transparent);border-left:3px solid #ffd700;" onclick="gp('tienda')"><span class="sl-item-icon">🛒</span> Tienda</div>
+      <div class="sl-item" id="slTiendaBtn" style="display:none;background:linear-gradient(90deg,rgba(255,215,0,.08),transparent);border-left:3px solid #ffd700;" onclick="gp('tienda')"><span class="sl-item-icon">🛒</span> Tienda</div>
       <div class="sl-item" onclick="gp('casitrofeo')"><span class="sl-item-icon">🏅</span> Casi Trofeo</div>
       <div class="sl-item" onclick="gp('rf4-records')" style="background:linear-gradient(90deg,rgba(46,196,182,.08),transparent);border-left:3px solid var(--accent);"><span class="sl-item-icon">🎣</span> Records RF4</div>
       <div class="sl-item" onclick="gp('trofeos-feed');setNav(document.querySelector('.tb-nav-btn'))"><span class="sl-item-icon">🥇</span> Trofeos Recientes</div>
@@ -6336,196 +6336,10 @@ document.addEventListener('DOMContentLoaded', function(){
 </style>
 
 <!-- Header -->
-<div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
   <span style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:#ffd700;">🛒 Tienda RF4</span>
+  <span style="font-size:.72rem;color:#8b949e;background:rgba(248,81,73,.15);border:1px solid rgba(248,81,73,.3);border-radius:100px;padding:2px 8px;">Solo admins</span>
 </div>
-
-<!-- ===== TEMAS DE TEMPORADA ===== -->
-<div id="seccionTemasTemporada" style="margin-bottom:28px;">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
-    <div>
-      <div style="font-family:'Orbitron',monospace;font-size:.88rem;font-weight:900;color:#2ec4b6;letter-spacing:.05em;">🎨 TEMAS DE TEMPORADA</div>
-      <div style="font-size:.72rem;color:#8b949e;margin-top:2px;">Personalizá el aspecto de tus posts. Algunos son por tiempo limitado.</div>
-    </div>
-    <div style="display:flex;align-items:center;gap:6px;background:rgba(255,215,0,.07);border:1px solid rgba(255,215,0,.2);border-radius:100px;padding:5px 12px;">
-      <div style="width:12px;height:12px;border-radius:50%;background:#d4a017;display:flex;align-items:center;justify-content:center;font-size:7px;color:#fff;font-weight:900;">C</div>
-      <span style="font-size:.75rem;color:#8b949e;">Mis monedas:</span>
-      <span style="font-size:.8rem;font-weight:700;color:#d4a017;" id="rf4UserCoins">—</span>
-    </div>
-  </div>
-
-  <!-- Filtros de temas -->
-  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;" id="temasFilterRow">
-    <button class="shop-cat-btn active" onclick="temasFilter('all',this)">Todos</button>
-    <button class="shop-cat-btn" onclick="temasFilter('active',this)">⚡ Activos ahora</button>
-    <button class="shop-cat-btn" onclick="temasFilter('owned',this)">✅ Mis temas</button>
-    <button class="shop-cat-btn" onclick="temasFilter('upcoming',this)">🔜 Próximamente</button>
-  </div>
-
-  <!-- Grid de temas -->
-  <div id="temasGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:12px;"></div>
-</div>
-
-<!-- Toast temas -->
-<div id="temasToast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2ec4b6;color:#fff;padding:10px 20px;border-radius:100px;font-size:.8rem;font-weight:700;z-index:9999;opacity:0;transition:opacity .25s;pointer-events:none;font-family:'Exo 2',sans-serif;"></div>
-
-<!-- Modal de tema -->
-<div id="temasModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9998;align-items:center;justify-content:center;padding:16px;">
-  <div style="background:#161b22;border:1px solid #30363d;border-radius:16px;padding:20px;max-width:340px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,.7);">
-    <div id="temasModalPreview" style="height:130px;border-radius:10px;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:10px;"></div>
-    <div id="temasModalName" style="font-family:'Orbitron',monospace;font-size:.9rem;font-weight:900;color:#e6edf3;margin-bottom:4px;"></div>
-    <div id="temasModalDesc" style="font-size:.75rem;color:#8b949e;margin-bottom:14px;line-height:1.5;"></div>
-    <div style="display:flex;align-items:center;justify-content:space-between;">
-      <button onclick="temasCloseModal()" style="background:none;border:none;color:#8b949e;cursor:pointer;font-size:.8rem;font-family:'Exo 2',sans-serif;">Cancelar</button>
-      <button id="temasModalBtn" style="background:#2ec4b6;color:#fff;border:none;border-radius:100px;padding:8px 20px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;"></button>
-    </div>
-  </div>
-</div>
-
-<script>
-(function(){
-'use strict';
-
-var TEMAS = [
-  { id:'navidad', name:'Navidad RF4', season:'Diciembre', desc:'Borde nevado y fondo oscuro invernal. Solo disponible en diciembre.',
-    bg:'linear-gradient(135deg,#0a1a2e,#122040)', accent:'#a8d8f0', price:0, available:true, owned:true, limited:true, daysLeft:null, upcoming:false, isNew:false },
-  { id:'verano', name:'Verano Tropical', season:'Dic–Mar', desc:'Tonos turquesa y arena. Exclusivo del 15 dic al 15 mar.',
-    bg:'linear-gradient(135deg,#0d2b1f,#0f3a28)', accent:'#5ecfa0', price:200, available:true, owned:false, limited:true, daysLeft:21, upcoming:false, isNew:true },
-  { id:'halloween', name:'Noche Oscura', season:'Octubre', desc:'Borde naranja y fondo muy oscuro. Disponible solo en octubre.',
-    bg:'linear-gradient(135deg,#1a0d00,#2d1500)', accent:'#ff6b00', price:150, available:false, owned:false, limited:true, daysLeft:null, upcoming:false, isNew:false },
-  { id:'primavera', name:'Primavera Verde', season:'Sep–Nov', desc:'Bordes verdes frescos. Próximamente disponible.',
-    bg:'linear-gradient(135deg,#0a1f0a,#0f2b10)', accent:'#5ec95e', price:180, available:false, owned:false, limited:true, daysLeft:null, upcoming:true, isNew:false },
-  { id:'galaxia', name:'Galaxia RF4', season:'Permanente', desc:'Tema espacial oscuro con bordes morados. Sin vencimiento.',
-    bg:'linear-gradient(135deg,#0c0820,#150d30)', accent:'#9b6fff', price:300, available:true, owned:false, limited:false, daysLeft:null, upcoming:false, isNew:false },
-  { id:'campeon', name:'Campeón Dorado', season:'Permanente', desc:'Exclusivo para ganadores del ranking. Bordes dorados.',
-    bg:'linear-gradient(135deg,#1a1400,#261e00)', accent:'#ffd700', price:null, available:true, owned:false, limited:false, daysLeft:null, upcoming:false, isNew:false }
-];
-
-var currentFilter = 'all';
-
-function miniPost(bg, accent){
-  return '<div style="width:46px;height:58px;border-radius:6px;background:'+bg+';border:1.5px solid '+accent+'55;padding:5px;display:flex;flex-direction:column;gap:3px;">'
-    +'<div style="height:3px;border-radius:2px;background:'+accent+'99;"></div>'
-    +'<div style="height:3px;border-radius:2px;background:'+accent+'66;width:65%;"></div>'
-    +'<div style="height:3px;border-radius:2px;background:'+accent+'44;"></div>'
-    +'</div>';
-}
-
-function temasRender(){
-  var grid = document.getElementById('temasGrid');
-  if(!grid) return;
-  var list = TEMAS.filter(function(t){
-    if(currentFilter==='active') return t.available && !t.upcoming;
-    if(currentFilter==='owned') return t.owned;
-    if(currentFilter==='upcoming') return t.upcoming;
-    return true;
-  });
-  grid.innerHTML = list.map(function(t){
-    var badgeHTML = '';
-    if(t.owned) badgeHTML += '<span style="background:rgba(46,196,182,.85);color:#fff;font-size:.58rem;font-weight:900;padding:2px 7px;border-radius:100px;">Equipado</span> ';
-    if(t.isNew) badgeHTML += '<span style="background:rgba(212,160,23,.85);color:#fff;font-size:.58rem;font-weight:900;padding:2px 7px;border-radius:100px;">Nuevo</span> ';
-    if(t.limited && t.daysLeft) badgeHTML += '<span style="background:rgba(248,81,73,.85);color:#fff;font-size:.58rem;font-weight:900;padding:2px 7px;border-radius:100px;">'+t.daysLeft+'d restantes</span>';
-    if(t.upcoming) badgeHTML += '<span style="background:rgba(46,100,196,.85);color:#fff;font-size:.58rem;font-weight:900;padding:2px 7px;border-radius:100px;">Próximamente</span>';
-    if(!t.available && !t.upcoming) badgeHTML += '<span style="background:rgba(0,0,0,.55);color:#8b949e;font-size:.58rem;font-weight:900;padding:2px 7px;border-radius:100px;">Fuera de temporada</span>';
-
-    var priceHTML = t.owned ? '<span style="font-size:.72rem;font-weight:700;color:#2ec4b6;">Equipado</span>'
-      : t.price===null ? '<span style="font-size:.72rem;font-weight:700;color:#d4a017;">Solo ganadores</span>'
-      : t.price===0 ? '<span style="font-size:.72rem;font-weight:700;color:#3fb950;">Gratis</span>'
-      : '<span style="font-size:.72rem;font-weight:700;color:#d4a017;">⬤ '+t.price+' monedas</span>';
-
-    var btnHTML = t.owned
-      ? '<button onclick="event.stopPropagation();" style="background:rgba(46,196,182,.12);border:1px solid rgba(46,196,182,.3);color:#2ec4b6;font-size:.65rem;font-weight:700;padding:4px 10px;border-radius:8px;cursor:default;font-family:\'Exo 2\',sans-serif;">Equipado</button>'
-      : (!t.available && !t.upcoming)
-        ? '<button disabled style="background:rgba(139,148,158,.08);border:1px solid rgba(139,148,158,.2);color:#8b949e;font-size:.65rem;font-weight:700;padding:4px 10px;border-radius:8px;cursor:not-allowed;font-family:\'Exo 2\',sans-serif;">No disponible</button>'
-        : t.price===null
-          ? '<button disabled style="background:rgba(139,148,158,.08);border:1px solid rgba(139,148,158,.2);color:#8b949e;font-size:.65rem;font-weight:700;padding:4px 10px;border-radius:8px;cursor:not-allowed;font-family:\'Exo 2\',sans-serif;">Bloqueado</button>'
-          : '<button onclick="event.stopPropagation();temasOpenModal(\''+t.id+'\')" style="background:linear-gradient(135deg,#2ec4b6,#25a99d);color:#fff;border:none;font-size:.65rem;font-weight:700;padding:4px 10px;border-radius:8px;cursor:pointer;font-family:\'Exo 2\',sans-serif;">Ver tema</button>';
-
-    return '<div style="background:#1a1e24;border:1px solid #2a313a;border-radius:10px;overflow:hidden;cursor:pointer;transition:border-color .2s,transform .15s;" onmouseover="this.style.borderColor=\''+t.accent+'66\';this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.borderColor=\'#2a313a\';this.style.transform=\'\'" onclick="temasOpenModal(\''+t.id+'\')">'
-      +'<div style="height:100px;background:'+t.bg+';display:flex;align-items:center;justify-content:center;gap:8px;position:relative;padding:8px;">'
-        +'<div style="position:absolute;top:7px;right:7px;display:flex;flex-direction:column;align-items:flex-end;gap:3px;">'+badgeHTML+'</div>'
-        +miniPost(t.bg, t.accent)
-        +'<div style="margin-top:10px;">'+miniPost(t.bg, t.accent)+'</div>'
-      +'</div>'
-      +'<div style="padding:9px 11px 11px;">'
-        +'<div style="font-size:.78rem;font-weight:700;color:#e6edf3;margin-bottom:2px;">'+t.name+'</div>'
-        +'<div style="font-size:.65rem;color:#2ec4b6;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:7px;">'+t.season+'</div>'
-        +'<div style="display:flex;align-items:center;justify-content:space-between;">'
-          +priceHTML+btnHTML
-        +'</div>'
-      +'</div>'
-    +'</div>';
-  }).join('');
-}
-
-window.temasFilter = function(f, btn){
-  currentFilter = f;
-  document.querySelectorAll('#temasFilterRow .shop-cat-btn').forEach(function(b){ b.classList.remove('active'); });
-  btn.classList.add('active');
-  temasRender();
-};
-
-window.temasOpenModal = function(id){
-  var t = TEMAS.find(function(x){ return x.id===id; });
-  if(!t) return;
-  document.getElementById('temasModalName').textContent = t.name;
-  document.getElementById('temasModalDesc').textContent = t.desc + (t.limited ? ' Edición limitada.' : '');
-  var prev = document.getElementById('temasModalPreview');
-  prev.style.background = t.bg;
-  prev.innerHTML = miniPost(t.bg, t.accent) + '<div style="margin-top:14px;">' + miniPost(t.bg, t.accent) + '</div>' + miniPost(t.bg, t.accent);
-  var btn = document.getElementById('temasModalBtn');
-  btn.disabled = false;
-  btn.style.opacity = '1';
-  btn.style.cursor = 'pointer';
-  if(t.owned){ btn.textContent = 'Ya equipado'; btn.disabled = true; btn.style.opacity = '.5'; }
-  else if(!t.available && !t.upcoming){ btn.textContent = 'No disponible'; btn.disabled = true; btn.style.opacity = '.4'; }
-  else if(t.price===null){ btn.textContent = 'Requiere ranking'; btn.disabled = true; btn.style.opacity = '.4'; }
-  else if(t.price===0){ btn.textContent = 'Obtener gratis'; btn.onclick = function(){ temasBuy(id); }; }
-  else { btn.textContent = 'Comprar · '+t.price+' monedas'; btn.onclick = function(){ temasBuy(id); }; }
-  var modal = document.getElementById('temasModal');
-  modal.style.display = 'flex';
-};
-
-window.temasCloseModal = function(){
-  document.getElementById('temasModal').style.display = 'none';
-};
-document.getElementById('temasModal').addEventListener('click', function(e){
-  if(e.target === this) temasCloseModal();
-});
-
-function temasBuy(id){
-  var t = TEMAS.find(function(x){ return x.id===id; });
-  var coinsEl = document.getElementById('rf4UserCoins');
-  var coins = parseInt(coinsEl.textContent) || 0;
-  if(t.price > 0 && coins < t.price){ temasToast('Monedas insuficientes ❌'); return; }
-  if(t.price > 0) coinsEl.textContent = coins - t.price;
-  t.owned = true;
-  temasCloseModal();
-  temasRender();
-  temasToast('Tema "'+t.name+'" activado ✅');
-}
-
-function temasToast(msg){
-  var el = document.getElementById('temasToast');
-  el.textContent = msg;
-  el.style.opacity = '1';
-  setTimeout(function(){ el.style.opacity = '0'; }, 2500);
-}
-
-// Simular monedas del usuario (reemplazar con lógica real de Firestore)
-window.addEventListener('load', function(){
-  setTimeout(function(){
-    document.getElementById('rf4UserCoins').textContent = '450';
-  }, 1000);
-});
-
-temasRender();
-})();
-</script>
-<!-- ===== FIN TEMAS DE TEMPORADA ===== -->
-
-<hr style="border:none;border-top:1px solid #21262d;margin-bottom:24px;">
-<div style="font-family:'Orbitron',monospace;font-size:.82rem;font-weight:900;color:#ffd700;margin-bottom:14px;">⚙️ CATÁLOGO DE EQUIPO</div>
 
 <!-- Barra de búsqueda y filtros -->
 <div class="tienda-header">
@@ -27514,7 +27328,7 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
 
   function tiendaCheckAdmin(){
     var btn = document.getElementById('slTiendaBtn');
-    if(btn) btn.style.display = 'flex';
+    if(btn) btn.style.display = _isAdmin() ? 'flex' : 'none';
   }
   setInterval(tiendaCheckAdmin, 1200);
 
