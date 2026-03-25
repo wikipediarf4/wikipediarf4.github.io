@@ -13106,7 +13106,7 @@ const SHOP_ITEMS = [
   { id:'efecto_burbujas',  cat:'efecto', name:'Burbujas',         preview:'🫧', emoji:'🫧', price:400,  desc:'Burbujas acuáticas subiendo' },
   { id:'efecto_lightning', cat:'efecto', name:'Rayos',            preview:'⚡', emoji:'⚡', price:800,  desc:'Rayos eléctricos en tu perfil', exclusive:true },
   { id:'efecto_hojas',     cat:'efecto', name:'Hojas Otoñales',   preview:'🍂', emoji:'🍁', price:450,  desc:'Hojas cayendo suavemente' },
-  { id:'efecto_dragones',  cat:'efecto', name:'Dragones',         preview:'🐉', emoji:'🐉', price:2500, desc:'Dragones volando alrededor de tu perfil', exclusive:true, soloVerificado:true },
+  { id:'efecto_dragones',  cat:'efecto', name:'Dragones',         preview:'🐉', emoji:'🐉', price:2500, desc:'Dragones volando alrededor de tu perfil', exclusive:true },
   // ── TÍTULOS ──
   { id:'titulo_jefe',     cat:'titulo', name:'El Jefe',           preview:'😎', emoji:'😎', price:800,  desc:'Título "El Jefe" bajo tu nombre' },
   { id:'titulo_legend',   cat:'titulo', name:'Leyenda Viva',      preview:'⚡', emoji:'⚡', price:1200, desc:'Título dorado animado', exclusive:true },
@@ -13127,14 +13127,14 @@ const SHOP_ITEMS = [
   { id:'post_rosa',     cat:'postcolor', name:'Rosa Oscuro',       preview:'🌸', emoji:'🌸', price:550,  desc:'Fondo rosa profundo',                     theme:'post-theme-rosa' },
   { id:'post_carbon',   cat:'postcolor', name:'Carbono',           preview:'⚫', emoji:'⚫', price:400,  desc:'Gris oscuro premium minimalista',         theme:'post-theme-carbon' },
   { id:'post_sunset',   cat:'postcolor', name:'Atardecer',         preview:'🌅', emoji:'🌅', price:700,  desc:'Fondo sunset naranja cálido',             theme:'post-theme-sunset' },
-  // ── EFECTOS FOTO DE PERFIL (solo verificados) ──
-  { id:'avfx_niebla',   cat:'avfx', name:'Niebla Mágica',      preview:'🌫️', emoji:'🌫️', price:1800, desc:'Niebla etérea que envuelve tu foto de perfil',        effect:'avfx-niebla',   soloVerificado:true, exclusive:true },
-  { id:'avfx_remolino', cat:'avfx', name:'Remolino Infinito',   preview:'🌀', emoji:'🌀', price:2000, desc:'Tu foto gira suavemente en un remolino hipnótico',     effect:'avfx-remolino', soloVerificado:true, exclusive:true },
-  { id:'avfx_prisma',   cat:'avfx', name:'Prisma Arcoíris',     preview:'🌈', emoji:'🌈', price:1600, desc:'Todos los colores del arcoíris pasan por tu foto',     effect:'avfx-prisma',   soloVerificado:true, exclusive:true },
-  { id:'avfx_sombra',   cat:'avfx', name:'Aura Oscura',         preview:'💜', emoji:'💜', price:1500, desc:'Aura violeta pulsante de poder oscuro',                effect:'avfx-sombra',   soloVerificado:true, exclusive:true },
-  { id:'avfx_oro',      cat:'avfx', name:'Toque Dorado',        preview:'✨', emoji:'✨', price:2200, desc:'Tu foto brilla con destellos de oro puro',             effect:'avfx-oro',      soloVerificado:true, exclusive:true },
-  { id:'avfx_glitch',   cat:'avfx', name:'Glitch Cibernético',  preview:'⚡', emoji:'⚡', price:1700, desc:'Efecto glitch digital que distorsiona tu foto',        effect:'avfx-glitch',   soloVerificado:true, exclusive:true },
-  { id:'avfx_cristal',  cat:'avfx', name:'Cristal de Agua',     preview:'💎', emoji:'💎', price:1900, desc:'Brillo de cristal de agua sobre tu foto de perfil',   effect:'avfx-cristal',  soloVerificado:true, exclusive:true },
+  // ── EFECTOS FOTO DE PERFIL ──
+  { id:'avfx_niebla',   cat:'avfx', name:'Niebla Mágica',      preview:'🌫️', emoji:'🌫️', price:1800, desc:'Niebla etérea que envuelve tu foto de perfil',        effect:'avfx-niebla',   exclusive:true },
+  { id:'avfx_remolino', cat:'avfx', name:'Remolino Infinito',   preview:'🌀', emoji:'🌀', price:2000, desc:'Tu foto gira suavemente en un remolino hipnótico',     effect:'avfx-remolino', exclusive:true },
+  { id:'avfx_prisma',   cat:'avfx', name:'Prisma Arcoíris',     preview:'🌈', emoji:'🌈', price:1600, desc:'Todos los colores del arcoíris pasan por tu foto',     effect:'avfx-prisma',   exclusive:true },
+  { id:'avfx_sombra',   cat:'avfx', name:'Aura Oscura',         preview:'💜', emoji:'💜', price:1500, desc:'Aura violeta pulsante de poder oscuro',                effect:'avfx-sombra',   exclusive:true },
+  { id:'avfx_oro',      cat:'avfx', name:'Toque Dorado',        preview:'✨', emoji:'✨', price:2200, desc:'Tu foto brilla con destellos de oro puro',             effect:'avfx-oro',      exclusive:true },
+  { id:'avfx_glitch',   cat:'avfx', name:'Glitch Cibernético',  preview:'⚡', emoji:'⚡', price:1700, desc:'Efecto glitch digital que distorsiona tu foto',        effect:'avfx-glitch',   exclusive:true },
+  { id:'avfx_cristal',  cat:'avfx', name:'Cristal de Agua',     preview:'💎', emoji:'💎', price:1900, desc:'Brillo de cristal de agua sobre tu foto de perfil',   effect:'avfx-cristal',  exclusive:true },
   // ── BANNERS ANIMADOS DE PORTADA ──
   { id:'banner_fuego',  cat:'banner', name:'Fuego Vivo',         preview:'🔥', emoji:'🔥', price:1200, desc:'Llamas y brasas animadas en tu portada',    exclusive:false, bannerFn:'bannerFuego'  },
   { id:'banner_flores', cat:'banner', name:'Pétalo Oscuro',      preview:'🌸', emoji:'🌸', price:1000, desc:'Pétalos violetas flotando en la oscuridad', exclusive:false, bannerFn:'bannerFlores' },
@@ -13392,111 +13392,182 @@ function renderShopGrid(){
   const grid = document.getElementById('shopItemsGrid');
   const gridProfile = document.getElementById('shopItemsGridProfile');
   if(!grid && !gridProfile) return;
+
   const items = _shopFilter === 'all' ? SHOP_ITEMS : SHOP_ITEMS.filter(i=>i.cat===_shopFilter);
-  const CAT_LABEL = {marco:'🖼 Marco',badge:'🏅 Badge',efecto:'✨ Efecto',titulo:'📛 Título',postcolor:'🎨 Color de Post',banner:'🖼 Banner Animado',tema:'🎭 Tema de Perfil'};
-  const _shopHTML = items.map(item => {
+
+  const CAT_META = {
+    marco:     { label:'🖼 Marcos de Avatar',          desc:'Bordes animados que rodean tu foto de perfil',   color:'#ffd700' },
+    badge:     { label:'🏅 Badges',                    desc:'Íconos exclusivos junto a tu nombre',             color:'#2ec4b6' },
+    titulo:    { label:'📛 Títulos',                   desc:'Texto especial que aparece bajo tu nombre',       color:'#b400ff' },
+    postcolor: { label:'🎨 Temas de Publicación',      desc:'Dale un estilo único a tus posts en el feed',     color:'#ff6400' },
+    banner:    { label:'🎬 Banners de Portada',        desc:'Fondos animados en tu perfil',                    color:'#ff4080' },
+    avfx:      { label:'⭐ Efectos de Avatar',         desc:'Efectos visuales sobre tu foto de perfil',        color:'#00c6ff' },
+    tema:      { label:'🎭 Temas de Perfil',           desc:'Cambia todo el estilo visual de tu perfil',       color:'#ff8c00' },
+    efecto:    { label:'✨ Efectos Especiales',        desc:'Partículas y animaciones sobre tu perfil',        color:'#3fb950' },
+  };
+
+  const RARITY = { 300:'Común', 400:'Común', 450:'Común', 500:'Común', 550:'Raro', 600:'Raro', 650:'Raro', 700:'Raro', 750:'Épico', 800:'Épico', 900:'Épico', 1000:'Épico', 1100:'Legendario', 1200:'Legendario', 1300:'Legendario', 1400:'Legendario', 1500:'Legendario', 1600:'Legendario', 1700:'Legendario', 1800:'Legendario', 1900:'Legendario', 2000:'Mítico', 2200:'Mítico', 2500:'Mítico' };
+  const RARITY_COLOR = { Común:'#8b949e', Raro:'#2ec4b6', Épico:'#b400ff', Legendario:'#ffd700', Mítico:'#ff4080' };
+
+  function getRarity(price){ if(price>=2000) return 'Mítico'; if(price>=1100) return 'Legendario'; if(price>=750) return 'Épico'; if(price>=550) return 'Raro'; return 'Común'; }
+
+  function renderItem(item){
     const isEquipped = _equippedItems[item.cat] === item.id;
-    const postPreview = item.cat==='postcolor' ? `<div class="${item.theme}" style="border-radius:8px;padding:8px 10px;margin-bottom:8px;font-size:.63rem;color:#ddd;line-height:1.5;text-align:left;"><div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;"><div style="width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.2);flex-shrink:0;"></div><span style="font-weight:700;">ruizgustavo12</span></div><div>🎣 ¡Gran pesca hoy!</div></div>` : '';
-    const bannerPreview = item.cat==='banner' ? `<div style="width:100%;height:60px;border-radius:8px;margin-bottom:8px;overflow:hidden;position:relative;background:${item.id==='banner_fuego'?'linear-gradient(180deg,#0a0000,#2d0800)':item.id==='banner_flores'?'linear-gradient(180deg,#0d0018,#2d0060)':item.id==='banner_ocean'?'linear-gradient(180deg,#00050f,#002050)':item.id==='banner_aurora'?'linear-gradient(180deg,#000508,#001a15)':item.id==='banner_galaxy'?'linear-gradient(180deg,#000005,#0a0020)':'linear-gradient(180deg,#050507,#101018)'};display:flex;align-items:center;justify-content:center;font-size:1.8rem;">${item.preview}</div>` : '';
-    const temaPreview = item.cat==='tema' ? (()=>{
+    const rarity = getRarity(item.price);
+    const rarityColor = RARITY_COLOR[rarity] || '#8b949e';
+    const userCoins = window.CU?.coins || 0;
+    const canAfford = userCoins >= item.price;
+    const isDiscountActive = window._shopDiscountActive;
+
+    // Preview content
+    let previewHTML = '';
+    if(item.cat === 'postcolor'){
+      previewHTML = `<div class="${item.theme}" style="border-radius:10px;padding:10px 12px;margin:0 0 8px;font-size:.63rem;color:#ddd;line-height:1.5;text-align:left;min-height:54px;">
+        <div style="display:flex;align-items:center;gap:5px;margin-bottom:4px;">
+          <div style="width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.2);flex-shrink:0;"></div>
+          <span style="font-weight:800;font-size:.7rem;">TuNick</span>
+        </div>
+        <div>🎣 ¡Gran pesca hoy en RF4!</div>
+      </div>`;
+    } else if(item.cat === 'banner'){
+      const bgGrad = item.id==='banner_fuego'?'#1a0000,#3d0800':item.id==='banner_flores'?'#0d0018,#350075':item.id==='banner_ocean'?'#00050f,#002a70':item.id==='banner_aurora'?'#000508,#001a15':item.id==='banner_galaxy'?'#000005,#0a0025':'#050507,#101028';
+      previewHTML = `<div style="width:100%;height:64px;border-radius:10px;margin-bottom:8px;overflow:hidden;background:linear-gradient(135deg,${bgGrad});display:flex;align-items:center;justify-content:center;font-size:2rem;">${item.preview}</div>`;
+    } else if(item.cat === 'tema'){
       const bgMap = {
         'tema_admin':    'linear-gradient(135deg,#1a0300,#2d0800)',
         'tema_aries':    'linear-gradient(135deg,#0d0000,#300008)',
         'tema_galaxy':   'linear-gradient(135deg,#020008,#0a0025)',
-        'tema_neon':     'linear-gradient(135deg,#040008,#0a001e)',
-        'tema_ocean':    'linear-gradient(135deg,#000510,#001a40)',
-        'tema_gold':     'linear-gradient(135deg,#0a0800,#1a1200)',
-        'tema_shadow':   'linear-gradient(135deg,#050005,#100010)',
-        'tema_ice':      'linear-gradient(135deg,#000d14,#002030)',
-        'tema_poseidon': 'linear-gradient(135deg,#000a14,#002244)',
-        'tema_sirena':   'linear-gradient(135deg,#000814,#001e3c)',
-        'tema_pulpo':    'linear-gradient(135deg,#050005,#120020)',
-        'tema_ballena':  'linear-gradient(135deg,#000308,#001030)',
-        'tema_pirana':   'linear-gradient(135deg,#0d0000,#250000)',
-        'tema_catfish':  'linear-gradient(135deg,#080500,#1a1000)',
-        'tema_kraken':   'linear-gradient(135deg,#020008,#080025)',
-        'tema_tiburon':  'linear-gradient(135deg,#050810,#0d1428)',
-        'tema_dragon':   'linear-gradient(135deg,#0d0200,#2d0800)',
-        'tema_lobo':     'linear-gradient(135deg,#050508,#0f0f18)',
+        'tema_ocean':    'linear-gradient(135deg,#000d1a,#001840)',
+        'tema_forest':   'linear-gradient(135deg,#010a00,#002000)',
+        'tema_neon':     'linear-gradient(135deg,#0a000d,#1a0030)',
+        'tema_gold':     'linear-gradient(135deg,#1a1000,#2d1e00)',
+        'tema_carbon':   'linear-gradient(135deg,#080808,#161616)',
+        'tema_sangre':   'linear-gradient(135deg,#1a0000,#3d0000)',
+        'tema_cristal':  'linear-gradient(135deg,#000a12,#001a28)',
+        'tema_lobo':     'linear-gradient(135deg,#0a0a0a,#1a1a1a)',
       };
-      const ringMap = {
-        'tema_admin':    'box-shadow:0 0 0 3px rgba(255,180,0,.9),0 0 12px rgba(255,80,0,.7);',
-        'tema_aries':    'box-shadow:0 0 0 3px #ff1744,0 0 12px rgba(255,23,68,.7);',
-        'tema_galaxy':   'box-shadow:0 0 0 3px #b388ff,0 0 12px rgba(179,136,255,.6);',
-        'tema_neon':     'box-shadow:0 0 0 3px #e040fb,0 0 12px rgba(0,229,255,.6);',
-        'tema_ocean':    'box-shadow:0 0 0 3px #00b4d8,0 0 12px rgba(0,180,216,.6);',
-        'tema_gold':     'box-shadow:0 0 0 3px #ffd700,0 0 14px rgba(255,215,0,.7);',
-        'tema_shadow':   'box-shadow:0 0 0 3px #9c27b0,0 0 12px rgba(156,39,176,.6);',
-        'tema_ice':      'box-shadow:0 0 0 3px #80deea,0 0 12px rgba(128,222,234,.6);',
-        'tema_poseidon': 'box-shadow:0 0 0 3px #00cfff,0 0 14px rgba(0,207,255,.8);',
-        'tema_sirena':   'box-shadow:0 0 0 3px #e91e8c,0 0 12px rgba(233,30,140,.6);',
-        'tema_pulpo':    'box-shadow:0 0 0 4px #e040fb,0 0 14px rgba(224,64,251,.8);',
-        'tema_ballena':  'box-shadow:0 0 0 2px #0288d1,0 0 16px rgba(79,195,247,.5);',
-        'tema_pirana':   'box-shadow:0 0 0 4px #f44336,0 0 14px rgba(244,67,54,.9);',
-        'tema_catfish':  'box-shadow:0 0 0 3px #795548,0 0 12px rgba(121,85,72,.6);',
-        'tema_kraken':   'box-shadow:0 0 0 4px #7c4dff,0 0 16px rgba(124,77,255,.8);',
-        'tema_tiburon':  'box-shadow:0 0 0 3px #546e7a,0 0 12px rgba(84,110,122,.6);',
-        'tema_dragon':   'box-shadow:0 0 0 4px #ff6f00,0 0 16px rgba(255,111,0,.9);',
-        'tema_lobo':     'box-shadow:0 0 0 3px #9e9e9e,0 0 12px rgba(245,245,245,.4);',
-      };
-      const textMap = {
-        'tema_admin':    'background:linear-gradient(90deg,#ff4500,#ffd700,#ff8c00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;',
-        'tema_aries':    'background:linear-gradient(90deg,#ff1744,#ff6b35);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;',
-        'tema_galaxy':   'background:linear-gradient(90deg,#b388ff,#00e5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;',
-        'tema_neon':     'background:linear-gradient(90deg,#e040fb,#00e5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;',
-        'tema_ocean':    'background:linear-gradient(90deg,#00b4d8,#90e0ef);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;',
-        'tema_gold':     'background:linear-gradient(90deg,#ffd700,#fffde7,#ffd700);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;',
-        'tema_shadow':   'background:linear-gradient(90deg,#ce93d8,#9c27b0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;',
-        'tema_ice':      'background:linear-gradient(90deg,#e0f7fa,#80deea);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;',
-        'tema_poseidon': 'background:linear-gradient(90deg,#00cfff,#7fffff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;',
-        'tema_sirena':   'background:linear-gradient(90deg,#e91e8c,#00bcd4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;',
-        'tema_pulpo':    'background:linear-gradient(90deg,#e040fb,#7b1fa2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;',
-        'tema_ballena':  'background:linear-gradient(90deg,#0288d1,#4fc3f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;',
-        'tema_pirana':   'background:linear-gradient(90deg,#f44336,#ff8a80);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;',
-        'tema_catfish':  'background:linear-gradient(90deg,#795548,#d7ccc8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;',
-        'tema_kraken':   'background:linear-gradient(90deg,#7c4dff,#e040fb);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;',
-        'tema_tiburon':  'background:linear-gradient(90deg,#546e7a,#eceff1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;',
-        'tema_dragon':   'background:linear-gradient(90deg,#ff6f00,#ffca28);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;',
-        'tema_lobo':     'background:linear-gradient(90deg,#9e9e9e,#f5f5f5);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;',
-      };
-      const bg = bgMap[item.id]||'linear-gradient(135deg,#111,#222)';
-      const ring = ringMap[item.id]||'';
-      const txt = textMap[item.id]||'color:#fff;';
-      return `<div style="width:100%;height:70px;border-radius:10px;margin-bottom:8px;overflow:hidden;position:relative;background:${bg};display:flex;align-items:center;justify-content:center;gap:8px;padding:0 8px;">
-        <div style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.15);flex-shrink:0;${ring}"></div>
-        <div style="font-size:.78rem;font-weight:800;font-family:'Exo 2',sans-serif;${txt}">${item.id==='tema_admin'?'ruizgustavo12':'ruizgustav…'}</div>
-        ${item.id==='tema_admin'?'<span style="font-size:.8rem;filter:drop-shadow(0 0 4px gold);">👑</span>':''}
+      const bg = bgMap[item.id] || 'linear-gradient(135deg,#111,#222)';
+      previewHTML = `<div style="width:100%;height:66px;border-radius:10px;margin-bottom:8px;overflow:hidden;background:${bg};display:flex;align-items:center;justify-content:center;gap:8px;padding:0 10px;">
+        <div style="width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.2);flex-shrink:0;border:2px solid rgba(255,255,255,.3);"></div>
+        <div style="font-size:.75rem;font-weight:800;font-family:'Exo 2',sans-serif;color:rgba(255,255,255,.9);">${item.emoji} Vista previa</div>
       </div>`;
-    })() : '';
+    } else if(item.cat === 'marco'){
+      const ringStyles = {
+        'ring-gold':    'box-shadow:0 0 0 3px gold,0 0 12px rgba(255,200,0,.7)',
+        'ring-fire':    'box-shadow:0 0 0 3px #ff4500,0 0 14px rgba(255,69,0,.8)',
+        'ring-ice':     'box-shadow:0 0 0 3px #00cfff,0 0 12px rgba(0,207,255,.7)',
+        'ring-fish':    'box-shadow:0 0 0 3px #00ff88,0 0 10px rgba(0,255,136,.6)',
+        'ring-legend':  'box-shadow:0 0 0 4px gold,0 0 0 7px rgba(255,200,0,.3),0 0 20px rgba(255,200,0,.8)',
+        'ring-neon':    'box-shadow:0 0 0 3px #b400ff,0 0 14px rgba(180,0,255,.7)',
+        'ring-galaxy':  'box-shadow:0 0 0 3px #7b2fff,0 0 0 6px rgba(123,47,255,.3),0 0 18px rgba(123,47,255,.7)',
+        'ring-red':     'box-shadow:0 0 0 3px #e00,0 0 12px rgba(220,0,0,.7)',
+        'ring-rainbow': 'box-shadow:0 0 0 3px red,0 0 12px rgba(255,0,0,.5)',
+        'ring-platinum':'box-shadow:0 0 0 4px #c0c0c0,0 0 0 7px rgba(192,192,192,.25),0 0 16px rgba(192,192,192,.6)',
+      };
+      const rs = ringStyles[item.effect] || '';
+      previewHTML = `<div style="display:flex;justify-content:center;padding:8px 0 10px;">
+        <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--bg4),var(--bg3));display:flex;align-items:center;justify-content:center;font-size:1.6rem;${rs};">${item.preview}</div>
+      </div>`;
+    } else {
+      previewHTML = `<div style="display:flex;justify-content:center;padding:8px 0 6px;"><span style="font-size:2.6rem;line-height:1;">${item.preview}</span></div>`;
+    }
+
+    // Price display
+    const priceHTML = isDiscountActive
+      ? `<div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:8px;">
+           <span style="color:var(--muted);text-decoration:line-through;font-size:.62rem;">🪙 ${item.price.toLocaleString()}</span>
+           <span style="background:linear-gradient(135deg,#00c853,#00e676);color:#000;font-size:.65rem;font-weight:900;padding:2px 8px;border-radius:100px;">GRATIS</span>
+         </div>`
+      : `<div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:8px;">
+           <span style="font-size:.9rem;">🪙</span>
+           <span style="font-family:'Orbitron',monospace;font-size:.8rem;font-weight:900;color:${canAfford?'#ffd700':'#f85149'};">${item.price.toLocaleString()}</span>
+         </div>`;
+
+    // Action button
+    let btnHTML;
+    if(item.soloAdmin && !(window.CU?.nick==='ruizgustavo12'||window.CU?.role==='admin')){
+      btnHTML = `<button class="shop-item-btn" style="background:rgba(255,180,0,.1);border:1px solid rgba(255,180,0,.3);color:#ffd700;font-size:.65rem;" onclick="toast('👑 Este tema es exclusivo para administradores','err')">👑 Solo Admins</button>`;
+    } else if(isEquipped){
+      btnHTML = `<button class="shop-item-btn unequip" onclick="toggleEquipItem('${item.id}')">✕ Desequipar</button>`;
+    } else if(isDiscountActive){
+      btnHTML = `<button class="shop-item-btn equip" onclick="toggleEquipItem('${item.id}')">▶ Equipar Gratis</button>`;
+    } else if(canAfford){
+      btnHTML = `<button class="shop-item-btn buy" onclick="buyAndEquipItem('${item.id}')">🪙 Comprar · ${item.price.toLocaleString()}</button>`;
+    } else {
+      btnHTML = `<button class="shop-item-btn" style="background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.3);color:#f85149;font-size:.65rem;cursor:not-allowed;" disabled>🚫 Sin monedas</button>`;
+    }
+
     return `
-    <div class="shop-item${isEquipped?' equipped':''}${item.soloVerificado&&!window.CU?.verified?' shop-item-locked':''}" id="sitem_${item.id}">
-      ${isEquipped ? '<div class="shop-item-equipped-badge">✓ ACTIVO</div>' : ''}
-      ${item.exclusive ? '<div style="position:absolute;top:6px;left:6px;background:linear-gradient(135deg,gold,#ff8c00);color:#000;font-size:.5rem;font-weight:900;border-radius:100px;padding:2px 6px;">✦ EXCL.</div>' : ''}
-      ${item.soloVerificado ? '<div style="position:absolute;top:6px;left:6px;background:linear-gradient(135deg,#00c6ff,#0072ff);color:#fff;font-size:.5rem;font-weight:900;border-radius:100px;padding:2px 6px;">✅ SOLO VERIFICADOS</div>' : ''}
-      ${postPreview}
-      ${bannerPreview}
-      ${temaPreview}
-      ${!item.theme && !item.bannerFn && !item.temaCSS ? `<span style="font-size:2.2rem;display:block;margin-bottom:6px;">${item.preview}</span>` : ''}
-      <div class="shop-item-name">${item.name}</div>
-      <div class="shop-item-type">${CAT_LABEL[item.cat]||item.cat}</div>
-      <div style="font-size:.62rem;color:var(--muted);margin-bottom:8px;line-height:1.35;">${item.desc}</div>
-      <div class="shop-item-price" style="text-decoration:line-through;color:var(--muted);font-size:.63rem;">🪙 ${item.price.toLocaleString()} coins</div>
-      <div style="display:flex;align-items:center;justify-content:center;gap:5px;margin:3px 0 4px;">
-        <span style="background:linear-gradient(135deg,#00c853,#00e676);color:#000;font-size:.65rem;font-weight:900;padding:2px 8px;border-radius:100px;">✦ GRATIS</span>
-        <span style="font-size:.58rem;color:var(--muted);">30 días</span>
+    <div class="shop-item${isEquipped?' equipped':''}" id="sitem_${item.id}" style="border-top:3px solid ${rarityColor};">
+      ${isEquipped ? `<div class="shop-item-equipped-badge">✓ ACTIVO</div>` : ''}
+      ${item.exclusive ? `<div style="position:absolute;top:10px;left:8px;background:linear-gradient(135deg,gold,#ff8c00);color:#000;font-size:.5rem;font-weight:900;border-radius:100px;padding:2px 7px;z-index:2;">✦ EXCL.</div>` : ''}
+      <div style="position:absolute;top:6px;right:${isEquipped?'68px':'8px'};font-size:.52rem;font-weight:700;color:${rarityColor};opacity:.85;">${rarity}</div>
+      <div style="padding:10px 10px 0;">
+        ${previewHTML}
+        <div class="shop-item-name" style="padding:0;margin-bottom:2px;">${item.name}</div>
+        <div style="font-size:.6rem;color:var(--muted);margin-bottom:6px;line-height:1.4;">${item.desc}</div>
       </div>
-      ${item.soloAdmin && !(window.CU?.nick==='ruizgustavo12'||window.CU?.role==='admin')
-        ? `<button class="shop-item-btn" style="background:rgba(255,180,0,.1);border:1px solid rgba(255,180,0,.3);color:#ffd700;" onclick="toast('👑 Este tema es exclusivo para administradores','err')">👑 Solo Admins</button>`
-        : item.soloVerificado && !window.CU?.verified
-        ? `<button class="shop-item-btn" style="background:rgba(0,114,255,.12);border:1px solid rgba(0,114,255,.3);color:#0072ff;" onclick="toast('🔒 Este efecto es solo para usuarios verificados ✅','err')">🔒 Solo Verificados</button>`
-        : `<button class="shop-item-btn ${isEquipped?'unequip':'equip'}" onclick="toggleEquipItem('${item.id}')">${isEquipped ? '✕ Desequipar' : '▶ Equipar'}</button>`
-      }
+      <div style="padding:0 10px;">
+        ${priceHTML}
+        ${btnHTML}
+      </div>
+      <div style="height:10px;"></div>
     </div>`;
-  }).join('');
-  if(grid) grid.innerHTML = _shopHTML;
-  if(gridProfile) gridProfile.innerHTML = _shopHTML;
+  }
+
+  // Build HTML — by category sections when "all", or flat grid for single cat
+  let html = '';
+  if(_shopFilter === 'all'){
+    const catOrder = ['marco','titulo','postcolor','banner','tema','badge','avfx','efecto'];
+    catOrder.forEach(cat => {
+      const catItems = SHOP_ITEMS.filter(i=>i.cat===cat);
+      if(!catItems.length) return;
+      const meta = CAT_META[cat] || { label:cat, desc:'', color:'#fff' };
+      html += `
+      <div style="margin-bottom:24px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.06);">
+          <div>
+            <div style="font-family:'Orbitron',monospace;font-size:.9rem;font-weight:900;background:linear-gradient(135deg,${meta.color},rgba(255,255,255,.7));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${meta.label}</div>
+            <div style="font-size:.65rem;color:var(--muted);">${meta.desc}</div>
+          </div>
+          <div style="margin-left:auto;font-size:.65rem;color:var(--muted);background:rgba(255,255,255,.05);border-radius:100px;padding:3px 10px;">${catItems.length} items</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px;">
+          ${catItems.map(renderItem).join('')}
+        </div>
+      </div>`;
+    });
+  } else {
+    html = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px;">${items.map(renderItem).join('')}</div>`;
+  }
+
+  if(grid) grid.innerHTML = html;
+  if(gridProfile) gridProfile.innerHTML = html;
 }
 
+async function buyAndEquipItem(itemId){
+  const item = SHOP_ITEMS.find(i=>i.id===itemId);
+  if(!item || !window.CU?.id) return;
+  const coins = window.CU.coins || 0;
+  if(coins < item.price){ toast('🚫 No tenés suficientes monedas','err'); return; }
+
+  // Deduct coins & equip
+  try{
+    const newCoins = coins - item.price;
+    const firestoreUpdate = { coins: newCoins };
+    firestoreUpdate[`shopEquipped.${item.cat}`] = itemId;
+    await updateDoc(doc(db,'users',window.CU.id), firestoreUpdate);
+    window.CU.coins = newCoins;
+    _equippedItems[item.cat] = itemId;
+    window.CU.shopEquipped = { ..._equippedItems };
+    if(window._usersShop) window._usersShop[window.CU.id] = { ..._equippedItems };
+    // Update coin display
+    const coinEl = document.getElementById('shopCoinAmount');
+    if(coinEl) coinEl.textContent = newCoins.toLocaleString('es');
+    toast(`${item.emoji} "${item.name}" ¡comprado y equipado! -🪙${item.price.toLocaleString()}`,'ok');
+    renderShopGrid();
+    applyShopEffects();
+  }catch(e){ console.warn('buy error',e); toast('Error al comprar','err'); }
 async function toggleEquipItem(itemId){
   const item = SHOP_ITEMS.find(i=>i.id===itemId);
   if(!item) return;
@@ -24399,6 +24470,8 @@ window.wkSaveEdit = async (id) => {
 
 
 
+
+}
 </script>
 <!-- ===== FOOTER ===== -->
 <!-- ===== MODALES FOOTER ===== -->
