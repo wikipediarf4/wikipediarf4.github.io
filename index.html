@@ -28729,176 +28729,149 @@ setTimeout(function(){
 </script>
 <!-- ===== FIN PANEL COMUNIDAD JS ===== -->
 
-<!-- ===== MOTOR LOTTIE REACCIONES RF4 ===== -->
+<!-- ===== REACCIONES RF4 CSS ANIMADO ===== -->
 <style>
-/* Contenedor del personaje Lottie en cada botón de reacción */
-.rxn-lottie-wrap {
-  width: 56px;
-  height: 56px;
-  overflow: hidden;
+/* ── Animaciones únicas por reacción ── */
+@keyframes rxn-bounce   { 0%,100%{transform:scale(1) translateY(0)}  40%{transform:scale(1.35) translateY(-8px)} 70%{transform:scale(.92) translateY(-2px)} }
+@keyframes rxn-fire     { 0%,100%{transform:scale(1) rotate(-3deg)}  25%{transform:scale(1.2) rotate(4deg)}  75%{transform:scale(1.15) rotate(-4deg)} }
+@keyframes rxn-heart    { 0%,100%{transform:scale(1)}  20%{transform:scale(1.4)}  40%{transform:scale(1.1)}  60%{transform:scale(1.35)}  80%{transform:scale(1.05)} }
+@keyframes rxn-thumbs   { 0%,100%{transform:scale(1) rotate(0)}  30%{transform:scale(1.3) rotate(-15deg)}  60%{transform:scale(1.2) rotate(10deg)} }
+@keyframes rxn-spin     { 0%{transform:scale(1) rotate(0)}  50%{transform:scale(1.25) rotate(180deg)}  100%{transform:scale(1) rotate(360deg)} }
+@keyframes rxn-clover   { 0%,100%{transform:scale(1) rotate(0)}  50%{transform:scale(1.3) rotate(20deg)} }
+@keyframes rxn-laugh    { 0%,100%{transform:scale(1) translateY(0)}  25%{transform:scale(1.3) translateY(-6px) rotate(-5deg)}  75%{transform:scale(1.2) translateY(-4px) rotate(5deg)} }
+@keyframes rxn-skull    { 0%,100%{transform:scale(1) rotate(0) translateY(0)}  20%{transform:scale(1.1) rotate(-8deg) translateY(-3px)}  40%{transform:scale(.9) rotate(8deg) translateY(2px)}  60%{transform:scale(1.1) rotate(-5deg) translateY(-2px)} }
+@keyframes rxn-party    { 0%{transform:scale(1) rotate(-10deg)}  25%{transform:scale(1.35) rotate(15deg)}  50%{transform:scale(1.1) rotate(-8deg)}  75%{transform:scale(1.3) rotate(12deg)}  100%{transform:scale(1) rotate(-10deg)} }
+@keyframes rxn-wow      { 0%,100%{transform:scale(1)}  15%{transform:scale(1.4)}  35%{transform:scale(.85)}  55%{transform:scale(1.25)}  75%{transform:scale(.95)} }
+
+/* ── Botón base ── */
+.rxn-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  transition: transform .13s;
   position: relative;
-  pointer-events: none;
-  flex-shrink: 0;
-}
-/* El SVG de Lottie es 1267x808 — lo escalamos y centramos con clip */
-.rxn-lottie-wrap svg {
-  position: absolute;
-  width: 340px !important;
-  height: auto !important;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-/* Emoji fallback visible mientras Lottie no cargó */
-.rxn-emoji-fallback {
-  font-size: 1.6rem;
-  line-height: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  width: 56px;
-  height: 56px;
-  transition: opacity .2s;
+  gap: 2px;
+  width: 60px;
 }
-.rxn-lottie-wrap.lottie-ready + .rxn-emoji-fallback {
-  display: none;
+.rxn-btn:hover .rxn-emoji-icon { animation-play-state: running !important; }
+.rxn-btn .rxn-emoji-icon { animation-play-state: paused; }
+.rxn-btn.rxn-active { background: rgba(46,196,182,.18); }
+.rxn-btn:hover { transform: scale(1.12) translateY(-4px); }
+
+/* ── Icono emoji ── */
+.rxn-emoji-icon {
+  font-size: 1.9rem;
+  line-height: 1;
+  display: block;
+  animation-duration: .7s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+  will-change: transform;
 }
-/* Botón de reacción principal con mini Lottie */
-.rxn-main-lottie {
-  display: inline-block;
-  width: 22px;
-  height: 22px;
-  overflow: hidden;
-  position: relative;
-  vertical-align: middle;
-  flex-shrink: 0;
-}
-.rxn-main-lottie svg {
+.rxn-emoji-icon.anim-bounce  { animation-name: rxn-bounce; }
+.rxn-emoji-icon.anim-fire    { animation-name: rxn-fire;   animation-duration:.5s; }
+.rxn-emoji-icon.anim-heart   { animation-name: rxn-heart;  animation-duration:.6s; }
+.rxn-emoji-icon.anim-thumbs  { animation-name: rxn-thumbs; animation-duration:.6s; }
+.rxn-emoji-icon.anim-spin    { animation-name: rxn-spin;   animation-duration:.8s; }
+.rxn-emoji-icon.anim-clover  { animation-name: rxn-clover; animation-duration:.9s; }
+.rxn-emoji-icon.anim-laugh   { animation-name: rxn-laugh;  animation-duration:.5s; }
+.rxn-emoji-icon.anim-skull   { animation-name: rxn-skull;  animation-duration:.6s; }
+.rxn-emoji-icon.anim-party   { animation-name: rxn-party;  animation-duration:.5s; }
+.rxn-emoji-icon.anim-wow     { animation-name: rxn-wow;    animation-duration:.5s; }
+
+/* ── Tooltip ── */
+.rxn-btn .rxn-tooltip {
   position: absolute;
-  width: 120px !important;
-  height: auto !important;
-  top: 50%;
+  bottom: calc(100% + 4px);
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
+  background: rgba(0,0,0,.85);
+  color: #fff;
+  font-size: .58rem;
+  white-space: nowrap;
+  padding: 2px 6px;
+  border-radius: 4px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .15s;
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 700;
+}
+.rxn-btn:hover .rxn-tooltip { opacity: 1; }
+
+/* ── Mini emoji en botón principal después de reaccionar ── */
+.rxn-main-emoji {
+  font-size: 1.1rem;
+  line-height: 1;
+  vertical-align: middle;
+  margin-right: 2px;
+  display: inline-block;
+  animation: rxn-bounce .6s ease-in-out 3;
 }
 </style>
 <script>
 (function(){
   'use strict';
 
-  const LOTTIE_JSON_URL = '/Interactive_Mood_Selector_UI.json';
+  // Mapa emoji → clase de animación
+  const RXN_ANIM = {
+    '🎣': 'anim-bounce',
+    '🔥': 'anim-fire',
+    '❤️': 'anim-heart',
+    '👍': 'anim-thumbs',
+    '💰': 'anim-spin',
+    '🍀': 'anim-clover',
+    '😂': 'anim-laugh',
+    '💀': 'anim-skull',
+    '🎉': 'anim-party',
+    '😮': 'anim-wow',
+  };
 
-  let _lottieData = null;
-  let _lottieLoadPromise = null;
-
-  function loadLottieData(){
-    if(_lottieData) return Promise.resolve(_lottieData);
-    if(_lottieLoadPromise) return _lottieLoadPromise;
-    _lottieLoadPromise = fetch(LOTTIE_JSON_URL)
-      .then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
-      .then(data=>{ _lottieData=data; return data; })
-      .catch(err=>{ console.warn('[RF4 Lottie] No se pudo cargar el JSON:',err); return null; });
-    return _lottieLoadPromise;
-  }
-
-  window.addEventListener('DOMContentLoaded', loadLottieData);
-
-  function getMarkerRange(data, markerName){
-    if(!data||!data.markers) return null;
-    const m = data.markers.find(mk=>mk.cm===markerName);
-    return m ? {start:m.tm, end:m.tm+m.dr} : null;
-  }
-
-  function mountLottie(container, markerName, autoplay){
-    if(!window.lottie||!_lottieData) return null;
-    const range = getMarkerRange(_lottieData, markerName);
-    if(!range) return null;
-    const inst = window.lottie.loadAnimation({
-      container,
-      renderer:'svg',
-      loop:true,
-      autoplay:!!autoplay,
-      animationData: JSON.parse(JSON.stringify(_lottieData)),
-      initialSegment:[range.start, range.end],
-    });
-    // Marcar wrap como listo para ocultar el emoji fallback
-    inst.addEventListener('DOMLoaded', function(){
-      container.classList.add('lottie-ready');
-    });
-    return inst;
-  }
-
-  // ── Genera los botones Lottie para el popup ──
+  // Genera los botones de reacción
   window._buildRxnBtns = function(pid, myRxn){
     const _reactions = window.REACTIONS || [];
-    return _reactions.map(r=>{
-      const isActive = myRxn===r.emoji;
+    return _reactions.map(r => {
+      const isActive = myRxn === r.emoji;
+      const animClass = RXN_ANIM[r.emoji] || 'anim-bounce';
       return `<button
-        class="rxn-btn${isActive?' rxn-active':''}"
+        class="rxn-btn${isActive ? ' rxn-active' : ''}"
         data-emoji="${r.emoji}"
-        data-segment="${r.lottieSegment||'Idle'}"
         onclick="doReact('${pid}','${r.emoji}');schedHideRxnPop('${pid}')"
         title="${r.label}"
-        style="display:flex;flex-direction:column;align-items:center;gap:2px;position:relative;"
-      ><div class="rxn-lottie-wrap" id="lrxn_${pid}_${r.emoji.codePointAt(0)}"></div
-      ><div class="rxn-emoji-fallback">${r.emoji}</div
+      ><span class="rxn-emoji-icon ${animClass}">${r.emoji}</span
       ><span class="rxn-tooltip">${r.label}</span></button>`;
     }).join('');
   };
 
-  // ── Inicializa Lottie en los botones cuando se abre el popup ──
-  window._initRxnPopupLottie = function(popupEl){
-    if(!_lottieData){
-      loadLottieData().then(data=>{ if(data) window._initRxnPopupLottie(popupEl); });
-      return;
-    }
-    popupEl.querySelectorAll('.rxn-btn[data-segment]').forEach(btn=>{
-      const wrap = btn.querySelector('.rxn-lottie-wrap');
-      if(!wrap||wrap._lottieInited) return;
-      wrap._lottieInited = true;
-      mountLottie(wrap, btn.dataset.segment, true);
-    });
-  };
-
-  // ── Hook showRxnPop para montar Lottie al abrir ──
-  function hookShowRxnPop(){
-    const orig = window.showRxnPop;
-    if(typeof orig!=='function'){ setTimeout(hookShowRxnPop,500); return; }
-    window.showRxnPop = function(id){
-      orig(id);
-      const popup = document.getElementById('rxnp_'+id);
-      if(popup) window._initRxnPopupLottie(popup);
-    };
-  }
-  hookShowRxnPop();
-
-  // ── Mini-lottie en el botón principal después de reaccionar ──
+  // Mini emoji animado en el botón principal después de reaccionar
   function upgradePrimaryBtn(pid, emoji){
-    const btn = document.getElementById('rxnt_'+pid);
-    if(!btn||!_lottieData) return;
-    const _reactions = window.REACTIONS || [];
-    const rxnDef = _reactions.find(r=>r.emoji===emoji);
-    if(!rxnDef) return;
-    const old = btn.querySelector('.rxn-main-lottie');
-    if(old){ if(old._inst) old._inst.destroy(); old.remove(); }
-    const wrap = document.createElement('span');
-    wrap.className = 'rxn-main-lottie';
-    btn.insertBefore(wrap, btn.firstChild);
-    wrap._inst = mountLottie(wrap, rxnDef.lottieSegment||'Idle', true);
+    const btn = document.getElementById('rxnt_' + pid);
+    if(!btn) return;
+    const old = btn.querySelector('.rxn-main-emoji');
+    if(old) old.remove();
+    const span = document.createElement('span');
+    span.className = 'rxn-main-emoji';
+    span.textContent = emoji;
+    btn.insertBefore(span, btn.firstChild);
   }
 
   function patchDoReact(){
     const orig = window.doReact;
-    if(typeof orig!=='function'){ setTimeout(patchDoReact,600); return; }
+    if(typeof orig !== 'function'){ setTimeout(patchDoReact, 600); return; }
     window.doReact = async function(pid, emoji){
       await orig(pid, emoji);
       const myRxn = window.CU ? (window._posts?.find(p=>p.id===pid)?.reactions?.[window.CU.id]||null) : null;
-      const btn = document.getElementById('rxnt_'+pid);
+      const btn = document.getElementById('rxnt_' + pid);
       if(myRxn){
         upgradePrimaryBtn(pid, myRxn);
       } else if(btn){
-        const w = btn.querySelector('.rxn-main-lottie');
-        if(w){ if(w._inst) w._inst.destroy(); w.remove(); }
+        const w = btn.querySelector('.rxn-main-emoji');
+        if(w) w.remove();
       }
     };
   }
@@ -28906,7 +28879,7 @@ setTimeout(function(){
 
 })();
 </script>
-<!-- ===== FIN MOTOR LOTTIE REACCIONES RF4 ===== -->
+<!-- ===== FIN REACCIONES RF4 CSS ANIMADO ===== -->
 
 </body>
 </html>
