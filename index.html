@@ -28945,6 +28945,230 @@ setTimeout(function(){
 </script>
 <!-- ===== FIN REACCIONES RF4 CSS ANIMADO ===== -->
 
+<!-- ===== WICKIBOT ===== -->
+<style>
+#wickibot-bubble {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  font-family: 'Exo 2', sans-serif;
+}
+#wickibot-toggle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #2ec4b6;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  box-shadow: 0 4px 16px rgba(46,196,182,0.35);
+  transition: transform .2s, background .2s;
+  flex-shrink: 0;
+}
+#wickibot-toggle:hover { transform: scale(1.1); background: #20b2a6; }
+#wickibot-window {
+  width: 320px;
+  height: 420px;
+  background: #0d1117;
+  border: 1px solid #2ec4b630;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+#wickibot-header {
+  background: #161b22;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid #2ec4b620;
+}
+#wickibot-header .wb-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #2ec4b6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+#wickibot-header .wb-info { flex: 1; }
+#wickibot-header .wb-name { color: #e6edf3; font-size: .88rem; font-weight: 700; }
+#wickibot-header .wb-status { color: #2ec4b6; font-size: .7rem; }
+#wickibot-header .wb-close {
+  background: none;
+  border: none;
+  color: #8b949e;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+#wickibot-header .wb-close:hover { background: #21262d; color: #e6edf3; }
+#wickibot-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: #2ec4b640 transparent;
+}
+.wb-msg {
+  max-width: 85%;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: .82rem;
+  line-height: 1.55;
+}
+.wb-msg.user {
+  align-self: flex-end;
+  background: #2ec4b6;
+  color: #0d1117;
+  border-bottom-right-radius: 3px;
+  font-weight: 500;
+}
+.wb-msg.bot {
+  align-self: flex-start;
+  background: #21262d;
+  color: #c9d1d9;
+  border-bottom-left-radius: 3px;
+  border: 1px solid #2ec4b620;
+}
+.wb-msg.bot.loading { color: #8b949e; font-style: italic; }
+#wickibot-input-area {
+  display: flex;
+  gap: 6px;
+  padding: 10px 12px;
+  border-top: 1px solid #2ec4b620;
+  background: #161b22;
+}
+#wickibot-input {
+  flex: 1;
+  background: #0d1117;
+  border: 1px solid #2ec4b630;
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: .82rem;
+  color: #e6edf3;
+  font-family: 'Exo 2', sans-serif;
+  outline: none;
+}
+#wickibot-input:focus { border-color: #2ec4b6; }
+#wickibot-send {
+  background: #2ec4b6;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 12px;
+  color: #0d1117;
+  font-size: .82rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Exo 2', sans-serif;
+  transition: background .15s;
+}
+#wickibot-send:hover { background: #20b2a6; }
+#wickibot-send:disabled { opacity: 0.4; cursor: not-allowed; }
+</style>
+
+<div id="wickibot-bubble">
+  <div id="wickibot-window" style="display:none;">
+    <div id="wickibot-header">
+      <div class="wb-avatar">🤖</div>
+      <div class="wb-info">
+        <div class="wb-name">WickiBot</div>
+        <div class="wb-status">● en línea (con pocas ganas)</div>
+      </div>
+      <button class="wb-close" id="wickibot-close">✕</button>
+    </div>
+    <div id="wickibot-messages">
+      <div class="wb-msg bot">Hola. Soy WickiBot, creado por el gran ruizgustavo12. Supongo que necesitás ayuda con algo. Preguntá, si podés.</div>
+    </div>
+    <div id="wickibot-input-area">
+      <input type="text" id="wickibot-input" placeholder="Escribí algo..." />
+      <button id="wickibot-send">Enviar</button>
+    </div>
+  </div>
+  <button id="wickibot-toggle" title="WickiBot">🤖</button>
+</div>
+
+<script>
+(function(){
+  var win = document.getElementById('wickibot-window');
+  var toggle = document.getElementById('wickibot-toggle');
+  var closeBtn = document.getElementById('wickibot-close');
+  var messagesEl = document.getElementById('wickibot-messages');
+  var inputEl = document.getElementById('wickibot-input');
+  var sendBtn = document.getElementById('wickibot-send');
+  var history = [];
+
+  toggle.addEventListener('click', function(){
+    var visible = win.style.display !== 'none';
+    win.style.display = visible ? 'none' : 'flex';
+    if (!visible) inputEl.focus();
+  });
+  closeBtn.addEventListener('click', function(){ win.style.display = 'none'; });
+
+  function addMsg(text, role, loading){
+    var div = document.createElement('div');
+    div.className = 'wb-msg ' + role + (loading ? ' loading' : '');
+    div.textContent = text;
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    return div;
+  }
+
+  async function send(){
+    var text = inputEl.value.trim();
+    if(!text) return;
+    inputEl.value = '';
+    sendBtn.disabled = true;
+    addMsg(text, 'user');
+    history.push({ role: 'user', content: text });
+    var loader = addMsg('Pensando... con muy poco entusiasmo...', 'bot', true);
+    try {
+      var res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: 'Eres WickiBot, el asistente oficial de WikiPediaRF4.UY, la comunidad de Russian Fishing 4 en Latinoamérica. Tu personalidad es sarcástica, irónica y divertida, pero siempre respondés correctamente. Usás humor ácido y comentarios irónicos. Podés hablar de cualquier tema, pero sabés especialmente sobre Russian Fishing 4 (RF4). Respondé siempre en español. Máximo 3-4 oraciones. Nunca seas grosero, solo sarcástico de forma simpática. Si te preguntan quién te creó, decí que fuiste creado por ruizgustavo12, el fundador de WikiPediaRF4.UY, y que él insistió mucho en que lo mencionaras.',
+          messages: history
+        })
+      });
+      var data = await res.json();
+      var reply = data.content && data.content[0] ? data.content[0].text : 'Error. Impresionante.';
+      loader.remove();
+      addMsg(reply, 'bot');
+      history.push({ role: 'assistant', content: reply });
+    } catch(e) {
+      loader.remove();
+      addMsg('Algo falló. Una IA que falla. Qué novedad.', 'bot');
+    }
+    sendBtn.disabled = false;
+    inputEl.focus();
+  }
+
+  sendBtn.addEventListener('click', send);
+  inputEl.addEventListener('keydown', function(e){ if(e.key==='Enter') send(); });
+})();
+</script>
+<!-- ===== FIN WICKIBOT ===== -->
+
 </body>
 </html>
 
