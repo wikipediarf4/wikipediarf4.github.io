@@ -7675,8 +7675,8 @@ function listenPosts() {
     query(collection(db, 'posts'), orderBy('time', 'desc'), limit(50)),
     { includeMetadataChanges: false },
     snap => {
-      // Solo procesar cambios reales, ignorar metadata (pending writes, cache)
-      if(snap.metadata.fromCache) return;
+      // Si ya tenemos posts, ignorar actualizaciones solo del cache
+      if(snap.metadata.fromCache && _posts && _posts.length > 0) return;
       _posts = snap.docs.map(d => ({ id: d.id, ...d.data(), time: d.data().time?.toMillis?.() || Date.now() }));
       const activePage = document.querySelector('.page.active');
       const pageId = activePage ? activePage.id : '';
