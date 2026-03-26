@@ -13237,6 +13237,7 @@ const SHOP_ITEMS = [
   // ── BANNERS LOTTIE ──
   { id:'banner_tiger', cat:'banner', name:'Tigre Animado',       preview:'🐯', emoji:'🐯', price:1800, desc:'Un tigre animado Lottie como fondo de tu perfil',          exclusive:true, bannerFn:'bannerTiger', isNew:true },
   { id:'banner_crab',  cat:'banner', name:'Cangrejo Caminante', preview:'🦀', emoji:'🦀', price:1600, desc:'Un cangrejo animado Lottie desfilando por tu portada', exclusive:true, bannerFn:'bannerCrab',  isNew:true },
+  { id:'banner_mage',  cat:'banner', name:'Mago Interactivo',   preview:'🧙', emoji:'🧙', price:2000, desc:'Mago animado con estados Idle, Habilidad y Ultimate en tu portada', exclusive:true, bannerFn:'bannerMage', isNew:true },
   // ── TEMAS DE PERFIL (estilo Discord) ──
   { id:'tema_admin',    cat:'tema', name:'Fuego del Admin',     preview:'👑', emoji:'👑', price:0,    desc:'Borde giratorio rojo→naranja→dorado, nombre con fuego animado, corona con rebote y glow pulsante', temaCSS:'tema-admin-fire',    exclusive:true, soloAdmin:true },
   { id:'tema_aries',    cat:'tema', name:'Aries en Llamas',     preview:'♈', emoji:'♈', price:2000, desc:'Borde rojo escarlata pulsante, fondo oscuro rojo, nombre con gradiente carmesí animado',           temaCSS:'tema-aries',         exclusive:true },
@@ -13391,6 +13392,66 @@ function bannerCrab(cv, resize){
   tryMount();
 }
 
+// ── BANNER MAGO INTERACTIVO LOTTIE ──
+function bannerMage(cv, resize){
+  cv.style.display = 'none';
+  const cover = document.getElementById('profCover');
+  if(!cover) return;
+
+  // Fondo oscuro mágico púrpura
+  cover.style.background = 'linear-gradient(160deg,#050008,#0d001a,#08000f)';
+
+  if(document.getElementById('mageLottieBanner')) return;
+
+  const wrap = document.createElement('div');
+  wrap.id = 'mageLottieBanner';
+  wrap.style.cssText = [
+    'position:absolute','inset:0','z-index:2',
+    'display:flex','align-items:center','justify-content:flex-end',
+    'pointer-events:none','overflow:hidden',
+    'padding-right:10px'
+  ].join(';');
+
+  const lottieEl = document.createElement('div');
+  lottieEl.style.cssText = 'width:320px;height:200px;flex-shrink:0;filter:drop-shadow(0 0 22px rgba(160,80,255,.6));';
+  wrap.appendChild(lottieEl);
+
+  // Partículas mágicas decorativas a la izquierda
+  const magic = document.createElement('div');
+  magic.style.cssText = [
+    'position:absolute','left:0','top:0','bottom:0','width:60%',
+    'background:repeating-linear-gradient(120deg,transparent,transparent 24px,rgba(160,80,255,.03) 24px,rgba(160,80,255,.03) 28px)',
+    'pointer-events:none'
+  ].join(';');
+  wrap.appendChild(magic);
+
+  cover.style.position = 'relative';
+  cover.appendChild(wrap);
+
+  function tryMount(){
+    if(window.lottie){
+      fetch('/Interactive_Mage_animation.json')
+        .then(r=>{ if(!r.ok) throw new Error('404'); return r.json(); })
+        .then(data=>{
+          window._mageLottieInst = window.lottie.loadAnimation({
+            container: lottieEl,
+            renderer: 'svg',
+            loop: true,
+            autoplay: true,
+            animationData: data,
+          });
+        })
+        .catch(()=>{
+          lottieEl.style.cssText += 'font-size:7rem;display:flex;align-items:center;justify-content:center;';
+          lottieEl.textContent = '🧙';
+        });
+    } else {
+      setTimeout(tryMount, 500);
+    }
+  }
+  tryMount();
+}
+
 // Limpiar Lottie al cambiar banner
 const _origStopBanner = window.stopBannerAnim;
 function stopBannerAnim(){
@@ -13408,6 +13469,13 @@ function stopBannerAnim(){
   }
   const crabEl = document.getElementById('crabLottieBanner');
   if(crabEl) crabEl.remove();
+  // Mago
+  if(window._mageLottieInst){
+    try{ window._mageLottieInst.destroy(); }catch(e){}
+    window._mageLottieInst = null;
+  }
+  const mageEl = document.getElementById('mageLottieBanner');
+  if(mageEl) mageEl.remove();
   const cover = document.getElementById('profCover');
   if(cover){ cover.style.background = ''; cover.style.overflow = ''; }
   // canvas
@@ -21877,6 +21945,7 @@ window.filterShopCat = filterShopCat;
 window.toggleEquipItem = toggleEquipItem;
 window.bannerTiger = bannerTiger;
 window.bannerCrab = bannerCrab;
+window.bannerMage = bannerMage;
 window.bannerFuego = bannerFuego;
 window.bannerFlores = bannerFlores;
 window.bannerOcean = bannerOcean;
