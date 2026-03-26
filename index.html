@@ -769,10 +769,13 @@ img[title="Verificado"]:hover{
 @keyframes rxnPop{from{opacity:0;transform:translateY(calc(-100% - 6px)) scale(.7)}to{opacity:1;transform:translateY(calc(-100% - 6px)) scale(1)}}
 .rxn-cats{display:none;}
 .rxn-grid{display:flex;gap:2px;}
-.rxn-btn{background:none;border:none;font-size:1.5rem;cursor:pointer;padding:2px 3px;border-radius:50%;transition:transform .13s;line-height:1;position:relative;}
-.rxn-btn:hover{transform:scale(1.6) translateY(-5px);}
+.rxn-btn{background:none;border:none;cursor:pointer;padding:4px;border-radius:50%;transition:transform .13s;position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;width:56px;}
+.rxn-btn:hover{transform:scale(1.5) translateY(-6px);}
 .rxn-btn:hover .rxn-tooltip{opacity:1!important;}
-.rxn-btn.rxn-active{background:rgba(46,196,182,.2);}
+.rxn-btn.rxn-active{background:rgba(46,196,182,.18);}
+.rxn-lottie-wrap{width:40px;height:40px;pointer-events:none;}
+.rxn-main-lottie{width:22px;height:22px;display:inline-block;pointer-events:none;vertical-align:middle;}
+.rxn-popup.show{display:flex;gap:0;align-items:flex-end;padding:8px 12px;border-radius:50px;animation:rxnPop .18s ease;}
 
 /* ===== COMMENTS - FACEBOOK STYLE ===== */
 .comments-section{display:none;padding:0 12px 8px;border-top:1px solid #ced0d4;}
@@ -2043,6 +2046,7 @@ document.addEventListener('DOMContentLoaded', function(){
   }, 2000);
 });
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 </head>
 <body>
 <!-- SW Update Toast -->
@@ -7470,16 +7474,16 @@ let _unsubPosts = null;
 let _unsubStories = null;
 
 const REACTIONS = [
-  {emoji:'🎣', label:'¡A pescar!', color:'#2ec4b6'},
-  {emoji:'🔥', label:'¡Fuego!',    color:'#ff6b35'},
-  {emoji:'❤️', label:'Me encanta', color:'#f33e58'},
-  {emoji:'👍', label:'N1',         color:'#4ade80'},
-  {emoji:'💰', label:'Monedas',    color:'#f7b125'},
-  {emoji:'🍀', label:'Suerte',     color:'#4ade80'},
-  {emoji:'😂', label:'Jajaja',     color:'#f7b125'},
-  {emoji:'💀', label:'F',          color:'#8b949e'},
-  {emoji:'🎉', label:'GZ',         color:'#a78bfa'},
-  {emoji:'😮', label:'Wow',        color:'#60a5fa'},
+  {emoji:'🎣', label:'¡A pescar!', color:'#2ec4b6', lottieSegment:'Idle'    },
+  {emoji:'🔥', label:'¡Fuego!',    color:'#ff6b35', lottieSegment:'Happy'   },
+  {emoji:'❤️', label:'Me encanta', color:'#f33e58', lottieSegment:'Romantic'},
+  {emoji:'👍', label:'N1',         color:'#4ade80', lottieSegment:'Happy'   },
+  {emoji:'💰', label:'Monedas',    color:'#f7b125', lottieSegment:'Naughty' },
+  {emoji:'🍀', label:'Suerte',     color:'#4ade80', lottieSegment:'Romantic'},
+  {emoji:'😂', label:'Jajaja',     color:'#f7b125', lottieSegment:'Naughty' },
+  {emoji:'💀', label:'F',          color:'#8b949e', lottieSegment:'Angry'   },
+  {emoji:'🎉', label:'GZ',         color:'#a78bfa', lottieSegment:'Happy'   },
+  {emoji:'😮', label:'Wow',        color:'#60a5fa', lottieSegment:'Scared'  },
 ];
 const REACTION_CATEGORIES = [{ cat:'', emojis: REACTIONS }];
 const REACTION_EMOJIS = REACTIONS.map(r=>r.emoji);
@@ -10780,7 +10784,7 @@ function postHTML(p){
   const totalRxn = Object.values(p.reactionCounts||{}).reduce((a,b)=>a+b,0);
   const topRxn = Object.entries(p.reactionCounts||{}).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([e])=>e).join('');
   const myRxnObj = REACTIONS.find(r=>r.emoji===myRxn);
-  const rxnBtns = REACTIONS.map(r=>`<button class="rxn-btn${myRxn===r.emoji?' rxn-active':''}" onclick="doReact('${p.id}','${r.emoji}');schedHideRxnPop('${p.id}')" title="${r.label}">${r.emoji}<span style="position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;font-size:.58rem;white-space:nowrap;padding:2px 6px;border-radius:4px;pointer-events:none;opacity:0;transition:opacity .15s;" class="rxn-tooltip">${r.label}</span></button>`).join('');
+  const rxnBtns = window._buildRxnBtns ? window._buildRxnBtns(p.id, myRxn) : REACTIONS.map(r=>`<button class="rxn-btn${myRxn===r.emoji?' rxn-active':''}" onclick="doReact('${p.id}','${r.emoji}');schedHideRxnPop('${p.id}')" title="${r.label}">${r.emoji}<span style="position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;font-size:.58rem;white-space:nowrap;padding:2px 6px;border-radius:4px;pointer-events:none;opacity:0;transition:opacity .15s;" class="rxn-tooltip">${r.label}</span></button>`).join('');
   const fishTag = p.fish ? `<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(0,198,255,.08);border:1px solid rgba(0,198,255,.2);border-radius:100px;padding:4px 12px;font-size:.78rem;margin-bottom:10px;margin-left:14px"><span>🎣</span><strong>${p.fish}</strong>${p.weight?` · ${fmtKg(p.weight)}`:''} ${p.map?`· ${p.map}`:''} ${p.tech?`· ${p.tech}`:''}</div>` : '';
   // Store images globally for lightbox
   window._postImgsMap = window._postImgsMap || {};
@@ -28723,6 +28727,124 @@ setTimeout(function(){
 })();
 </script>
 <!-- ===== FIN PANEL COMUNIDAD JS ===== -->
+
+<!-- ===== MOTOR LOTTIE REACCIONES RF4 ===== -->
+<script>
+(function(){
+  'use strict';
+
+  const LOTTIE_JSON_URL = '/Interactive_Mood_Selector_UI.json';
+
+  let _lottieData = null;
+  let _lottieLoadPromise = null;
+
+  function loadLottieData(){
+    if(_lottieData) return Promise.resolve(_lottieData);
+    if(_lottieLoadPromise) return _lottieLoadPromise;
+    _lottieLoadPromise = fetch(LOTTIE_JSON_URL)
+      .then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+      .then(data=>{ _lottieData=data; return data; })
+      .catch(err=>{ console.warn('[RF4 Lottie] No se pudo cargar el JSON:',err); return null; });
+    return _lottieLoadPromise;
+  }
+
+  window.addEventListener('DOMContentLoaded', loadLottieData);
+
+  function getMarkerRange(data, markerName){
+    if(!data||!data.markers) return null;
+    const m = data.markers.find(mk=>mk.cm===markerName);
+    return m ? {start:m.tm, end:m.tm+m.dr} : null;
+  }
+
+  function mountLottie(container, markerName, autoplay){
+    if(!window.lottie||!_lottieData) return null;
+    const range = getMarkerRange(_lottieData, markerName);
+    if(!range) return null;
+    return window.lottie.loadAnimation({
+      container,
+      renderer:'svg',
+      loop:true,
+      autoplay:!!autoplay,
+      animationData: JSON.parse(JSON.stringify(_lottieData)),
+      initialSegment:[range.start, range.end],
+    });
+  }
+
+  // ── Genera los botones Lottie para el popup ──
+  window._buildRxnBtns = function(pid, myRxn){
+    return REACTIONS.map(r=>{
+      const isActive = myRxn===r.emoji;
+      return `<button
+        class="rxn-btn${isActive?' rxn-active':''}"
+        data-emoji="${r.emoji}"
+        data-segment="${r.lottieSegment||'Idle'}"
+        onclick="doReact('${pid}','${r.emoji}');schedHideRxnPop('${pid}')"
+        title="${r.label}"
+      ><div class="rxn-lottie-wrap" id="lrxn_${pid}_${r.emoji.codePointAt(0)}"></div
+      ><span class="rxn-tooltip">${r.label}</span></button>`;
+    }).join('');
+  };
+
+  // ── Inicializa Lottie en los botones cuando se abre el popup ──
+  window._initRxnPopupLottie = function(popupEl){
+    if(!_lottieData){
+      loadLottieData().then(data=>{ if(data) window._initRxnPopupLottie(popupEl); });
+      return;
+    }
+    popupEl.querySelectorAll('.rxn-btn[data-segment]').forEach(btn=>{
+      const wrap = btn.querySelector('.rxn-lottie-wrap');
+      if(!wrap||wrap._lottieInited) return;
+      wrap._lottieInited = true;
+      mountLottie(wrap, btn.dataset.segment, true);
+    });
+  };
+
+  // ── Hook showRxnPop para montar Lottie al abrir ──
+  function hookShowRxnPop(){
+    const orig = window.showRxnPop;
+    if(typeof orig!=='function'){ setTimeout(hookShowRxnPop,500); return; }
+    window.showRxnPop = function(id){
+      orig(id);
+      const popup = document.getElementById('rxnp_'+id);
+      if(popup) window._initRxnPopupLottie(popup);
+    };
+  }
+  hookShowRxnPop();
+
+  // ── Mini-lottie en el botón principal después de reaccionar ──
+  function upgradePrimaryBtn(pid, emoji){
+    const btn = document.getElementById('rxnt_'+pid);
+    if(!btn||!_lottieData) return;
+    const rxnDef = REACTIONS.find(r=>r.emoji===emoji);
+    if(!rxnDef) return;
+    const old = btn.querySelector('.rxn-main-lottie');
+    if(old){ if(old._inst) old._inst.destroy(); old.remove(); }
+    const wrap = document.createElement('span');
+    wrap.className = 'rxn-main-lottie';
+    btn.insertBefore(wrap, btn.firstChild);
+    wrap._inst = mountLottie(wrap, rxnDef.lottieSegment||'Idle', true);
+  }
+
+  function patchDoReact(){
+    const orig = window.doReact;
+    if(typeof orig!=='function'){ setTimeout(patchDoReact,600); return; }
+    window.doReact = async function(pid, emoji){
+      await orig(pid, emoji);
+      const myRxn = window.CU ? (window._posts?.find(p=>p.id===pid)?.reactions?.[window.CU.id]||null) : null;
+      const btn = document.getElementById('rxnt_'+pid);
+      if(myRxn){
+        upgradePrimaryBtn(pid, myRxn);
+      } else if(btn){
+        const w = btn.querySelector('.rxn-main-lottie');
+        if(w){ if(w._inst) w._inst.destroy(); w.remove(); }
+      }
+    };
+  }
+  patchDoReact();
+
+})();
+</script>
+<!-- ===== FIN MOTOR LOTTIE REACCIONES RF4 ===== -->
 
 </body>
 </html>
