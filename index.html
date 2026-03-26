@@ -4747,10 +4747,6 @@ function initShopCoinsDisplay(){
     if(el) el.textContent = coins.toLocaleString('es');
   }).catch(function(){});
 }
-function renderShopPage(){
-  setTimeout(initShopCoinsDisplay, 400);
-  if(typeof renderShopItems === 'function') renderShopItems();
-}
 </script>
 
 <!-- Banner countdown descuento -->
@@ -8324,8 +8320,9 @@ function updateNavUI(){
 }
 
 function renderShopPage(){
-  // Re-render the shop grid into the standalone page
   renderShopGrid();
+  setTimeout(initShopCoinsDisplay, 400);
+  if(typeof renderShopItems === 'function') renderShopItems();
 }
 
 function showReg(){ document.getElementById('authForm').style.display='none'; document.getElementById('regForm').style.display='block'; }
