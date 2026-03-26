@@ -7485,6 +7485,7 @@ const REACTIONS = [
   {emoji:'🎉', label:'GZ',         color:'#a78bfa', lottieSegment:'Happy'   },
   {emoji:'😮', label:'Wow',        color:'#60a5fa', lottieSegment:'Scared'  },
 ];
+window.REACTIONS = REACTIONS;
 const REACTION_CATEGORIES = [{ cat:'', emojis: REACTIONS }];
 const REACTION_EMOJIS = REACTIONS.map(r=>r.emoji);
 const FISH_EMOJIS = {'Pike':'🐟','Catfish':'🦈','Bream':'🐡','Perch':'🐠','Carp':'🐟','Trout':'🐟','Salmon':'🐟','Burbot':'🐟','Ruffe':'🐟','Tench':'🐟'};
@@ -28772,7 +28773,8 @@ setTimeout(function(){
 
   // ── Genera los botones Lottie para el popup ──
   window._buildRxnBtns = function(pid, myRxn){
-    return REACTIONS.map(r=>{
+    const _reactions = window.REACTIONS || [];
+    return _reactions.map(r=>{
       const isActive = myRxn===r.emoji;
       return `<button
         class="rxn-btn${isActive?' rxn-active':''}"
