@@ -28730,6 +28730,58 @@ setTimeout(function(){
 <!-- ===== FIN PANEL COMUNIDAD JS ===== -->
 
 <!-- ===== MOTOR LOTTIE REACCIONES RF4 ===== -->
+<style>
+/* Contenedor del personaje Lottie en cada botón de reacción */
+.rxn-lottie-wrap {
+  width: 56px;
+  height: 56px;
+  overflow: hidden;
+  position: relative;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+/* El SVG de Lottie es 1267x808 — lo escalamos y centramos con clip */
+.rxn-lottie-wrap svg {
+  position: absolute;
+  width: 340px !important;
+  height: auto !important;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+/* Emoji fallback visible mientras Lottie no cargó */
+.rxn-emoji-fallback {
+  font-size: 1.6rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  transition: opacity .2s;
+}
+.rxn-lottie-wrap.lottie-ready + .rxn-emoji-fallback {
+  display: none;
+}
+/* Botón de reacción principal con mini Lottie */
+.rxn-main-lottie {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  overflow: hidden;
+  position: relative;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.rxn-main-lottie svg {
+  position: absolute;
+  width: 120px !important;
+  height: auto !important;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+</style>
 <script>
 (function(){
   'use strict';
@@ -28761,7 +28813,7 @@ setTimeout(function(){
     if(!window.lottie||!_lottieData) return null;
     const range = getMarkerRange(_lottieData, markerName);
     if(!range) return null;
-    return window.lottie.loadAnimation({
+    const inst = window.lottie.loadAnimation({
       container,
       renderer:'svg',
       loop:true,
@@ -28769,6 +28821,11 @@ setTimeout(function(){
       animationData: JSON.parse(JSON.stringify(_lottieData)),
       initialSegment:[range.start, range.end],
     });
+    // Marcar wrap como listo para ocultar el emoji fallback
+    inst.addEventListener('DOMLoaded', function(){
+      container.classList.add('lottie-ready');
+    });
+    return inst;
   }
 
   // ── Genera los botones Lottie para el popup ──
@@ -28782,7 +28839,9 @@ setTimeout(function(){
         data-segment="${r.lottieSegment||'Idle'}"
         onclick="doReact('${pid}','${r.emoji}');schedHideRxnPop('${pid}')"
         title="${r.label}"
+        style="display:flex;flex-direction:column;align-items:center;gap:2px;position:relative;"
       ><div class="rxn-lottie-wrap" id="lrxn_${pid}_${r.emoji.codePointAt(0)}"></div
+      ><div class="rxn-emoji-fallback">${r.emoji}</div
       ><span class="rxn-tooltip">${r.label}</span></button>`;
     }).join('');
   };
@@ -28817,7 +28876,8 @@ setTimeout(function(){
   function upgradePrimaryBtn(pid, emoji){
     const btn = document.getElementById('rxnt_'+pid);
     if(!btn||!_lottieData) return;
-    const rxnDef = REACTIONS.find(r=>r.emoji===emoji);
+    const _reactions = window.REACTIONS || [];
+    const rxnDef = _reactions.find(r=>r.emoji===emoji);
     if(!rxnDef) return;
     const old = btn.querySelector('.rxn-main-lottie');
     if(old){ if(old._inst) old._inst.destroy(); old.remove(); }
