@@ -339,7 +339,14 @@
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<!-- Firebase modulepreload: descarga los módulos ESM en paralelo antes de ejecutar el script -->
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js">
 <noscript></noscript>
 <style>
 :root{
@@ -2215,7 +2222,21 @@ document.addEventListener('DOMContentLoaded', function(){
   }, 2000);
 });
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" defer></script>
+<script>
+// Lottie lazy load — se carga solo después de que la página ya es interactiva
+(function(){
+  function loadLottie(){
+    var s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js';
+    document.head.appendChild(s);
+  }
+  if(document.readyState === 'complete'){
+    setTimeout(loadLottie, 1500);
+  } else {
+    window.addEventListener('load', function(){ setTimeout(loadLottie, 1500); });
+  }
+})();
+</script>
 </head>
 <body>
 
@@ -8020,17 +8041,17 @@ function listenStories() {
 
 // ===== INIT =====
 function init(){
-  // Mostrar splash 2 segundos
+  // Mostrar splash 1 segundo (reducido de 2s)
   setTimeout(()=>{
     const s = document.getElementById('splash');
     if(s){ s.classList.add('hide'); setTimeout(()=>s.remove(), 500); }
-  }, 2000);
+  }, 1000);
   // Cargar cuentas guardadas en pantalla de login
   loadSavedAccounts();
 
   // Persistence is set via top-level IIFE below
 
-  // Safety timeout — if Firebase takes too long, show login anyway
+  // Safety timeout — if Firebase takes too long, show login anyway (reducido de 4s a 2.5s)
   const _splashTimeout = setTimeout(()=>{
     const splash = document.getElementById('splashScreen');
     if(splash && splash.style.display !== 'none'){
@@ -8038,7 +8059,7 @@ function init(){
       document.getElementById('mAuth').style.display = 'block';
       setTimeout(loadAuthTrofeos, 1000);
     }
-  }, 4000);
+  }, 2500);
 
   // Escuchar estado de auth
   onAuthStateChanged(auth, async user => {
@@ -8344,9 +8365,8 @@ async function doLogin(){
   }
 
   try {
-    // Apply persistence based on checkbox
+    // Apply persistence based on checkbox (ya establecida al init del módulo)
     const remember = document.getElementById('rememberMe')?.checked !== false;
-    await setPersistence(auth, browserLocalPersistence);
     const cred = await signInWithEmailAndPassword(auth, input, pw);
     const snap = await getDoc(doc(db, 'users', cred.user.uid));
     if(!snap.exists()){
@@ -8411,9 +8431,11 @@ function onLogin(){
     }
   }, 2000);
   updateNavUI();
-  // ── CARGA SERIALIZADA: evitar 21 llamadas simultáneas a Firebase ──────────
-  // Fase 1 (inmediata): listeners críticos para mostrar contenido principal
-  listenVerifiedUsers().then(()=>{ listenPosts(); listenStories(); }).catch(()=>{ listenPosts(); listenStories(); });
+  // ── CARGA PARALELA: feed arranca de inmediato, datos de usuarios en paralelo ──
+  // listenPosts y listenStories no esperan a listenVerifiedUsers para mostrar contenido
+  listenPosts();
+  listenStories();
+  listenVerifiedUsers().catch(e => console.warn('listenVerifiedUsers error:', e));
   startPresence().then(()=>{ if(typeof updatePresenceActivity==='function') updatePresenceActivity('home'); });
   listenNotifs();
 
