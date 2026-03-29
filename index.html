@@ -7583,7 +7583,7 @@ function _stub(name){ return function(){ _q.push([name, arguments]); }; }
 // ===== FIREBASE SETUP (modular ESM — sin eval, compatible con CSP) =====
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, GoogleAuthProvider, signInWithPopup } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, addDoc, deleteDoc, onSnapshot, query, orderBy, limit, serverTimestamp, increment, where, deleteField, Timestamp, arrayUnion, arrayRemove } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, addDoc, deleteDoc, onSnapshot, query, orderBy, limit, startAfter, serverTimestamp, increment, where, deleteField, Timestamp, arrayUnion, arrayRemove } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging.js';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
 
@@ -7679,8 +7679,8 @@ const db = getFirestore(app);
 window.db = db;
 window._fsImports = { collection, query, where, orderBy, onSnapshot, addDoc };
 // Exponer funciones Firestore para módulos externos (cebos, chat global, etc.)
-window._fsLib = { getDocs, query, collection, where, orderBy, limit, onSnapshot, addDoc, serverTimestamp, doc, updateDoc, deleteDoc };
-window.firebaseFirestore = { getDocs, query, collection, where, orderBy, limit, onSnapshot, addDoc, serverTimestamp, doc, updateDoc, deleteDoc };
+window._fsLib = { getDocs, query, collection, where, orderBy, limit, startAfter, onSnapshot, addDoc, serverTimestamp, doc, updateDoc, deleteDoc };
+window.firebaseFirestore = { getDocs, query, collection, where, orderBy, limit, startAfter, onSnapshot, addDoc, serverTimestamp, doc, updateDoc, deleteDoc };
 
 // ===== STATE =====
 window.CU = null;
@@ -7938,9 +7938,103 @@ async function listenVerifiedUsers(){
 
 let _postsUnsub = null;
 let _postsRetryTimer = null;
+// Límite de posts reducido a 20 en todos los dispositivos para ahorrar memoria
+const _postsLimit = 20;
+
+// ── Paginación infinite scroll ──────────────────────────────────────────────
+let _lastPostDoc = null;      // cursor Firestore para el siguiente bloque
+let _loadingMore  = false;    // evitar cargas simultáneas
+let _noMorePosts  = false;    // ya no hay más posts en Firestore
+let _infiniteObserver = null; // IntersectionObserver del sentinel
+
+function _setupInfiniteScroll(){
+  if(_infiniteObserver){ _infiniteObserver.disconnect(); _infiniteObserver = null; }
+  if(!('IntersectionObserver' in window)) return;
+
+  // Crear o reusar el sentinel (div al final del feed)
+  var sentinel = document.getElementById('_feedSentinel');
+  if(!sentinel){
+    sentinel = document.createElement('div');
+    sentinel.id = '_feedSentinel';
+    sentinel.style.cssText = 'height:1px;width:100%;';
+  }
+  const feedEl = document.getElementById('feedPosts');
+  if(feedEl) feedEl.appendChild(sentinel);
+
+  _infiniteObserver = new IntersectionObserver(function(entries){
+    if(entries[0].isIntersecting && !_loadingMore && !_noMorePosts){
+      _loadMorePosts();
+    }
+  }, { rootMargin: '300px' });
+  _infiniteObserver.observe(sentinel);
+}
+
+async function _loadMorePosts(){
+  if(_loadingMore || _noMorePosts || !_lastPostDoc) return;
+  _loadingMore = true;
+
+  // Mostrar spinner al final
+  const sentinel = document.getElementById('_feedSentinel');
+  if(sentinel) sentinel.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.82rem;">⏳ Cargando más...</div>';
+
+  try {
+    const { getDocs: _gd, query: _q, collection: _col, orderBy: _ob, limit: _lim, startAfter: _sa } = window._fsLib || {};
+    if(!_gd) throw new Error('fsLib no disponible');
+
+    const snap = await _gd(_q(_col(db,'posts'), _ob('time','desc'), _sa(_lastPostDoc), _lim(_postsLimit)));
+    if(snap.empty || snap.docs.length === 0){
+      _noMorePosts = true;
+      if(sentinel) sentinel.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.75rem;">— No hay más posts —</div>';
+      _loadingMore = false;
+      return;
+    }
+
+    _lastPostDoc = snap.docs[snap.docs.length - 1];
+    const newPosts = snap.docs.map(d => ({ id: d.id, ...d.data(), time: d.data().time?.toMillis?.() || Date.now() }));
+
+    // Agregar al array global sin duplicados
+    const existingIds = new Set(_posts.map(p => p.id));
+    const toAdd = newPosts.filter(p => !existingIds.has(p.id));
+    _posts = _posts.concat(toAdd);
+
+    // Insertar HTML al final del feed (antes del sentinel)
+    const feedEl = document.getElementById('feedPosts');
+    const isPremium = window.CU && window.CU.role === 'premium';
+    const adHTML = isPremium ? '' : `<div class="adsense-unit ad-between-posts" style="margin:12px 0;text-align:center;min-height:0;"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6245611726363291" data-ad-slot="8227722498" data-ad-format="fluid" data-ad-layout-key="-fb+5w+4e-db+86"></ins></div>`;
+
+    if(feedEl){
+      toAdd.forEach(function(p, i){
+        const tmp = document.createElement('div');
+        tmp.innerHTML = postHTML(p);
+        const node = tmp.firstElementChild;
+        if(node) feedEl.insertBefore(node, sentinel);
+        if(!isPremium && (i + 1) % 5 === 0){
+          const adDiv = document.createElement('div');
+          adDiv.innerHTML = adHTML;
+          feedEl.insertBefore(adDiv.firstElementChild, sentinel);
+        }
+      });
+      // Activar ads nuevos
+      if(!isPremium){
+        try{ feedEl.querySelectorAll('.adsbygoogle:not([data-adsbygoogle-status])').forEach(function(){ (adsbygoogle=window.adsbygoogle||[]).push({}); }); }catch(e){}
+      }
+      // Registrar vistas
+      toAdd.forEach(function(p){ if(p.id){ registerPostView(p.id); subscribePostViews(p.id); } });
+    }
+
+    if(sentinel) sentinel.innerHTML = '<div style="height:1px;"></div>';
+  } catch(e){
+    console.warn('loadMorePosts error:', e);
+    if(sentinel) sentinel.innerHTML = '';
+  }
+  _loadingMore = false;
+}
+
 function listenPosts() {
   if(_postsUnsub){ _postsUnsub(); _postsUnsub = null; }
   if(_postsRetryTimer){ clearTimeout(_postsRetryTimer); _postsRetryTimer = null; }
+  // Reset paginación
+  _lastPostDoc = null; _loadingMore = false; _noMorePosts = false;
 
   const feedEl = document.getElementById('feedPosts');
   if(feedEl && feedEl.innerHTML.includes('Cargando feed')){
@@ -7948,11 +8042,14 @@ function listenPosts() {
   }
 
   _postsUnsub = onSnapshot(
-    query(collection(db, 'posts'), orderBy('time', 'desc'), limit(50)),
+    query(collection(db, 'posts'), orderBy('time', 'desc'), limit(_postsLimit)),
     { includeMetadataChanges: false },
     snap => {
       // Si ya tenemos posts, ignorar actualizaciones solo del cache
       if(snap.metadata.fromCache && _posts && _posts.length > 0) return;
+      // Guardar cursor para paginación
+      if(snap.docs.length > 0) _lastPostDoc = snap.docs[snap.docs.length - 1];
+      _noMorePosts = snap.docs.length < _postsLimit;
       _posts = snap.docs.map(d => ({ id: d.id, ...d.data(), time: d.data().time?.toMillis?.() || Date.now() }));
       const activePage = document.querySelector('.page.active');
       const pageId = activePage ? activePage.id : '';
@@ -7965,15 +8062,19 @@ function listenPosts() {
           if(banner) banner.remove();
         }
         renderFeed();
+        // Activar infinite scroll después del primer render
+        setTimeout(_setupInfiniteScroll, 300);
       }
     },
     err => {
       console.warn('listenPosts error:', err);
       // Fallback: intentar getDocs sin orderBy (evita error de índice faltante)
-      getDocs(query(collection(db, 'posts'), orderBy('time','desc'), limit(50))).then(snap => {
+      getDocs(query(collection(db, 'posts'), orderBy('time','desc'), limit(_postsLimit))).then(snap => {
+        if(snap.docs.length > 0) _lastPostDoc = snap.docs[snap.docs.length - 1];
         _posts = snap.docs.map(d => ({ id: d.id, ...d.data(), time: d.data().time?.toMillis?.() || Date.now() }))
-          .sort((a,b) => b.time - a.time).slice(0, 50);
+          .sort((a,b) => b.time - a.time).slice(0, _postsLimit);
         renderFeed();
+        setTimeout(_setupInfiniteScroll, 300);
       }).catch(e2 => {
         console.error('listenPosts fallback error:', e2);
         const el2 = document.getElementById('feedPosts');
@@ -29286,6 +29387,71 @@ setTimeout(function(){
 })();
 </script>
 
+
+
+<script>
+// ── PAUSAR ANIMACIONES EN POSTS FUERA DE PANTALLA ────────────────────────────
+// En móvil, tener 20-50 posts con animaciones infinitas corriendo al mismo tiempo
+// consume mucha memoria y CPU. Este observer pausa las animaciones cuando el post
+// sale de pantalla y las reanuda cuando vuelve a ser visible.
+(function(){
+  if(!('IntersectionObserver' in window)) return;
+
+  var _animObserver = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      var el = entry.target;
+      // Buscar todos los elementos con animación dentro del post
+      var animated = el.querySelectorAll('*');
+      var playState = entry.isIntersecting ? 'running' : 'paused';
+      for(var i = 0; i < animated.length; i++){
+        var style = animated[i].style;
+        if(style.animation || getComputedStyle(animated[i]).animationName !== 'none'){
+          style.animationPlayState = playState;
+        }
+      }
+    });
+  }, {
+    rootMargin: '200px 0px', // margen generoso para no pausar demasiado pronto
+    threshold: 0
+  });
+
+  // Observar posts existentes y nuevos
+  function observePosts(){
+    document.querySelectorAll('[id^="post_"]').forEach(function(post){
+      if(!post._animObserved){
+        post._animObserved = true;
+        _animObserver.observe(post);
+      }
+    });
+  }
+
+  // Enganchar con renderFeed para observar posts nuevos automáticamente
+  var _origRenderFeed = window.renderFeed;
+  if(typeof _origRenderFeed === 'function'){
+    window.renderFeed = function(){
+      _origRenderFeed.apply(this, arguments);
+      setTimeout(observePosts, 100);
+    };
+  } else {
+    // renderFeed todavía no existe, esperar
+    var _waitRender = setInterval(function(){
+      if(typeof window.renderFeed === 'function'){
+        clearInterval(_waitRender);
+        var orig = window.renderFeed;
+        window.renderFeed = function(){
+          orig.apply(this, arguments);
+          setTimeout(observePosts, 100);
+        };
+      }
+    }, 500);
+  }
+
+  // También observar al hacer scroll manual por si se agregan posts
+  window.addEventListener('scroll', function(){
+    observePosts();
+  }, { passive: true });
+})();
+</script>
 
 </body>
 </html>
