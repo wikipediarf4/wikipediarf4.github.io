@@ -388,6 +388,7 @@ button{font-family:'Exo 2',sans-serif;cursor:pointer;}
 /* ===== LAYOUT ===== */
 .layout{display:grid;grid-template-columns:240px 1fr 260px;gap:0;padding-top:48px;min-height:100vh;}
 @media(max-width:1100px){.layout{grid-template-columns:200px 1fr;}}
+@media(max-width:1100px) and (min-width:769px){#homeTrofeosGrid{grid-template-columns:repeat(2,1fr) !important;}}
 /* Elementos mobile ocultos en desktop */
 .tb-mobile-logo{display:none;}
 .bottom-nav{display:none;}
@@ -407,6 +408,9 @@ button{font-family:'Exo 2',sans-serif;cursor:pointer;}
   .sidebar-left{display:none;}
   .sidebar-right{display:none !important;}
   .feed{padding:8px;max-width:100%;}
+
+  /* Trofeos home: 1 columna en mobile */
+  #homeTrofeosGrid{grid-template-columns:1fr !important;}
 
   /* Bottom nav mobile */
   .bottom-nav{
@@ -2605,7 +2609,7 @@ document.addEventListener('DOMContentLoaded', function(){
           </div>
           <div id="homeTrofMapSuggestions" style="display:none;position:absolute;z-index:200;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);max-height:200px;overflow-y:auto;min-width:200px;box-shadow:0 4px 16px rgba(0,0,0,.5);"></div>
         </div>
-        <div id="homeTrofeosGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;">
+        <div id="homeTrofeosGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
           <div style="text-align:center;padding:40px;color:var(--muted);font-size:.85rem;">🏆 Cargando trofeos...</div>
         </div>
         <div id="homeTrofeosPager" style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:20px;flex-wrap:wrap;"></div>
@@ -29472,7 +29476,7 @@ setTimeout(function(){
 <script>
 // ── HOME TROFEOS RECIENTES CON PAGINACIÓN ────────────────────────────────────
 (function(){
-  var HOME_PER_PAGE = 12;
+  var HOME_PER_PAGE = 9;
   var _homeTrofPage = 1;
   var _homeTrofMapFilter = '';
 
