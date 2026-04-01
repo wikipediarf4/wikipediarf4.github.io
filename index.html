@@ -6705,6 +6705,14 @@ function init(){
               }catch(e){ console.warn('Expiry check error:',e); }
             }
           }
+          // Chequear baneo primero
+          if(window.CU.banned){
+            await signOut(auth);
+            hideSplash();
+            _showBanScreen(window.CU.banReason, window.CU.banNote);
+            return;
+          }
+
           if(window._userInfoCache) window._userInfoCache[user.uid] = {nick: window.CU.nick||'', av: window.CU.av||'', gender: window.CU.gender||'', country: window.CU.country||''};
 
           // Chequear si es admin
@@ -6995,7 +7003,15 @@ async function doLogin(){
       if(btn){ btn.disabled=false; btn.textContent='Iniciar sesión'; }
       return;
     }
-    window.CU = {id: cred.user.uid, ...snap.data()};
+    const userData = snap.data();
+    // Chequear baneo
+    if(userData.banned){
+      await signOut(auth);
+      _showBanScreen(userData.banReason, userData.banNote);
+      if(btn){ btn.disabled=false; btn.textContent='Iniciar sesión'; }
+      return;
+    }
+    window.CU = {id: cred.user.uid, ...userData};
     saveAccountLocally(input, window.CU.nick, pw, window.CU.av||'');
     document.getElementById('mAuth').style.display='none';
     if(window._hideConstruction) window._hideConstruction();
@@ -7029,6 +7045,15 @@ async function doReg(){
   if(!nick||!em||!pw){ document.getElementById('rErr').textContent='Completa los campos obligatorios'; return; }
   if(pw.length<6){ document.getElementById('rErr').textContent='Mínimo 6 caracteres'; return; }
   if(!document.getElementById('acceptTerms')?.checked){ document.getElementById('rErr').textContent='Debés aceptar los Términos y Condiciones'; return; }
+  // Verificar si el email está baneado
+  try {
+    const banSnap = await getDoc(doc(db,'bannedEmails', em.toLowerCase().replace(/\./g,'_')));
+    if(banSnap.exists()){
+      rErrEl.textContent = '⛔ Este email no puede ser usado para crear una cuenta.';
+      rErrEl.style.display='block';
+      return;
+    }
+  } catch(e){}
   try {
     const cred = await createUserWithEmailAndPassword(auth, em, pw);
     window.CU = {id:cred.user.uid, nick, nickLower:nick.toLowerCase(), email:em, country, av:'', cover:'', bio:'', favFish:'', favMap:'', social_yt:'', social_dc:'', joined:new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}), posts:0, friends:0, likes:0};
@@ -14360,6 +14385,7 @@ async function loadAdminUsers(){
         <div style="font-size:.85rem;font-weight:700;display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
           ${esc(u.nick||'?')}
           ${u.nick==='ruizgustavo12'?'<span style="font-size:.6rem;background:rgba(255,68,68,.1);color:var(--red);padding:1px 6px;border-radius:100px;">ADMIN</span>':''}
+          ${u.banned?'<span style="font-size:.6rem;background:rgba(248,81,73,.15);color:#f85149;padding:1px 6px;border-radius:100px;border:1px solid rgba(248,81,73,.3);">🔨 BANEADO</span>':''}
           
           ${getCountryFlag(u.country)?`<span style="font-size:.8rem;">${getCountryFlag(u.country)}</span>`:''}
         </div>
@@ -14368,6 +14394,10 @@ async function loadAdminUsers(){
       <div style="display:flex;gap:5px;flex-shrink:0;">
         ${!u.verified?`<button onclick="adminApproveVerif('${u.id}','${(u.nick||'').replace(/'/g,"\\'")}','${u.id}')" title="Verificar" style="background:rgba(255,215,0,.07);border:1px solid rgba(255,215,0,.25);color:gold;padding:5px 8px;border-radius:var(--rs);font-size:.72rem;cursor:pointer;font-family:'Exo 2',sans-serif;">✅</button>`:''}
         <button onclick="adminEditUser('${u.id}')" title="Editar usuario" style="background:rgba(46,196,182,.08);border:1px solid rgba(46,196,182,.3);color:var(--accent);padding:5px 10px;border-radius:var(--rs);font-size:.72rem;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700;">✏️ Editar</button>
+        ${u.banned
+          ? `<button onclick="unbanUser('${u.id}','${esc(u.nick||'?')}')" title="Desbanear" style="background:rgba(0,230,118,.07);border:1px solid rgba(0,230,118,.3);color:#3fb950;padding:5px 10px;border-radius:var(--rs);font-size:.72rem;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700;">✅ Desbanear</button>`
+          : `<button onclick="banUser('${u.id}','${esc(u.nick||'?')}')" title="Banear usuario" style="background:rgba(248,81,73,.07);border:1px solid rgba(248,81,73,.3);color:#f85149;padding:5px 10px;border-radius:var(--rs);font-size:.72rem;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700;">🔨 Banear</button>`
+        }
         <button onclick="adminDeleteUser('${u.id}','${esc(u.nick||'?')}')" title="Eliminar usuario" style="background:rgba(255,68,68,.07);border:1px solid rgba(255,68,68,.25);color:var(--red);padding:5px 10px;border-radius:var(--rs);font-size:.72rem;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700;">🗑️ Eliminar</button>
       </div>
     </div>`).join('')}
@@ -14479,6 +14509,21 @@ window.adminDeleteUser = async function(uid, nick){
   document.body.appendChild(m);
 };
 
+// ── Desbanear usuario ──
+window.unbanUser = async function(uid, nick){
+  if(!confirm('¿Desbanear a ' + nick + '?')) return;
+  try {
+    const snap = await getDoc(doc(db,'users',uid));
+    const email = snap.exists() ? (snap.data().email||'') : '';
+    await updateDoc(doc(db,'users',uid), { banned: false, bannedAt: null, banReason: null, banNote: null });
+    if(email){
+      try { await deleteDoc(doc(db,'bannedEmails', email.toLowerCase().replace(/\./g,'_'))); } catch(e){}
+    }
+    toast('✅ ' + nick + ' desbaneado','ok');
+    loadAdminData();
+  } catch(e){ toast('Error: '+e.message,'err'); }
+};
+
 window.adminConfirmDelete = async function(uid, nick){
   try {
     await deleteDoc(doc(db,'users',uid));
@@ -14489,11 +14534,72 @@ window.adminConfirmDelete = async function(uid, nick){
 };
 
 async function banUser(uid, nick){
-  if(!confirm(`¿Banear a ${nick}?`)) return;
-  await deleteDoc(doc(db,'users',uid));
-  toast(`Usuario ${nick} eliminado`,'ok');
-  loadAdminData();
+  const old = document.getElementById('_banModal');
+  if(old) old.remove();
+  const m = document.createElement('div');
+  m.id = '_banModal';
+  m.style.cssText = 'position:fixed;inset:0;z-index:10020;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:16px;';
+  m.innerHTML = `
+    <div style="background:var(--bg2);border:1px solid rgba(255,68,68,.4);border-radius:16px;width:100%;max-width:420px;padding:28px;animation:mIn .2s ease;text-align:center;">
+      <div style="font-size:2.5rem;margin-bottom:10px;">🔨</div>
+      <div style="font-family:'Orbitron',monospace;font-size:1rem;font-weight:900;color:#f85149;margin-bottom:6px;">Banear Usuario</div>
+      <div style="font-size:.85rem;color:var(--muted);margin-bottom:18px;">Vas a banear a <strong style="color:var(--text);">${esc(nick)}</strong>.<br><span style="font-size:.75rem;">No podrá iniciar sesión ni crear nuevas cuentas con el mismo email.</span></div>
+      <div style="text-align:left;margin-bottom:14px;">
+        <label style="font-size:.78rem;color:var(--muted);margin-bottom:4px;display:block;">Motivo del baneo *</label>
+        <select id="_banReason" class="fi" style="width:100%;margin-bottom:8px;">
+          <option value="spam">🚫 Spam / Publicidad</option>
+          <option value="acoso">😤 Acoso o insultos</option>
+          <option value="contenido_inapropiado">🔞 Contenido inapropiado</option>
+          <option value="cuentas_multiples">👥 Cuentas múltiples</option>
+          <option value="trampa">🎮 Trampa / Cheating</option>
+          <option value="otro">📝 Otro</option>
+        </select>
+        <textarea id="_banNote" class="fi" placeholder="Nota adicional (opcional)..." style="width:100%;min-height:60px;font-size:.8rem;resize:vertical;"></textarea>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="document.getElementById('_banModal').remove()" style="flex:1;padding:10px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:var(--rs);font-family:'Exo 2',sans-serif;font-size:.85rem;cursor:pointer;font-weight:700;">Cancelar</button>
+        <button onclick="_confirmBan('${uid}','${esc(nick)}')" style="flex:1;padding:10px;background:#f85149;color:#fff;border:none;border-radius:var(--rs);font-family:'Exo 2',sans-serif;font-size:.85rem;font-weight:800;cursor:pointer;">🔨 Banear</button>
+      </div>
+    </div>`;
+  m.addEventListener('click', e=>{ if(e.target===m) m.remove(); });
+  document.body.appendChild(m);
 }
+
+window._confirmBan = async function(uid, nick){
+  const reason = document.getElementById('_banReason')?.value || 'otro';
+  const note   = document.getElementById('_banNote')?.value.trim() || '';
+  try {
+    // Primero obtener el email del usuario para guardarlo en bannedEmails
+    const snap = await getDoc(doc(db,'users',uid));
+    const email = snap.exists() ? (snap.data().email||'') : '';
+
+    // Marcar como baneado en el doc del usuario
+    await updateDoc(doc(db,'users',uid), {
+      banned: true,
+      bannedAt: serverTimestamp(),
+      bannedBy: window.CU?.nick || 'admin',
+      banReason: reason,
+      banNote: note,
+    });
+
+    // Guardar en colección bannedEmails para bloquear registro
+    if(email){
+      await setDoc(doc(db,'bannedEmails', email.toLowerCase().replace(/\./g,'_')), {
+        email: email.toLowerCase(),
+        uid,
+        nick,
+        reason,
+        note,
+        bannedAt: serverTimestamp(),
+        bannedBy: window.CU?.nick || 'admin',
+      });
+    }
+
+    document.getElementById('_banModal')?.remove();
+    toast(`🔨 ${nick} fue baneado correctamente`,'ok');
+    loadAdminData();
+  } catch(e){ toast('Error al banear: '+e.message,'err'); }
+};
 
 async function deleteAdminPost(postId, reportId){
   if(!confirm('¿Borrar esta publicación?')) return;
@@ -26459,6 +26565,70 @@ setTimeout(function(){
 
 
 
+
+
+<!-- ── PANTALLA DE BANEO ─────────────────────────────────────── -->
+<style>
+#banScreen {
+  display:none;
+  position:fixed;inset:0;z-index:999999;
+  background:#0d1117;
+  align-items:center;justify-content:center;
+  flex-direction:column;
+  font-family:'Exo 2',sans-serif;
+}
+#banScreen.show { display:flex; }
+@keyframes banPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.7;transform:scale(.96)} }
+@keyframes banShake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)} }
+</style>
+<div id="banScreen">
+  <div style="max-width:420px;width:100%;margin:0 auto;padding:32px 24px;text-align:center;">
+    <div style="font-size:4rem;animation:banPulse 2s ease-in-out infinite;margin-bottom:16px;">🔨</div>
+    <div style="font-family:'Orbitron',monospace;font-size:1.15rem;font-weight:900;color:#f85149;letter-spacing:.04em;margin-bottom:8px;">CUENTA SUSPENDIDA</div>
+    <div style="color:#8b949e;font-size:.88rem;margin-bottom:20px;line-height:1.7;">Tu cuenta ha sido suspendida por el equipo de moderación de <span style="color:#2ec4b6;font-weight:700;">WikiPediaRF4.UY</span>.</div>
+    <div id="banReasonBox" style="background:#1c1218;border:1px solid rgba(248,81,73,.3);border-radius:12px;padding:16px 20px;margin-bottom:24px;text-align:left;display:none;">
+      <div style="font-size:.72rem;color:#f85149;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Motivo</div>
+      <div id="banReasonText" style="color:#e6edf3;font-size:.88rem;line-height:1.5;"></div>
+      <div id="banNoteText" style="color:#8b949e;font-size:.78rem;margin-top:6px;line-height:1.5;"></div>
+    </div>
+    <div style="font-size:.78rem;color:#6b6f75;line-height:1.7;margin-bottom:28px;">Si creés que es un error, podés contactar a un administrador a través de Discord o por email.</div>
+    <div style="background:#161b22;border:1px solid #30363d;border-radius:12px;padding:16px;font-size:.75rem;color:#6b6f75;">
+      ⚠️ Crear una nueva cuenta para evadir el baneo puede resultar en un baneo permanente de tu IP.
+    </div>
+  </div>
+</div>
+
+<script>
+function _showBanScreen(reason, note){
+  // Ocultar login y todo lo demás
+  const auth = document.getElementById('mAuth');
+  if(auth) auth.style.display = 'none';
+  const splash = document.getElementById('splashScreen');
+  if(splash) splash.style.display = 'none';
+  const construction = document.getElementById('constructionScreen');
+  if(construction) construction.style.display = 'none';
+
+  const banScreen = document.getElementById('banScreen');
+  if(!banScreen) return;
+  banScreen.classList.add('show');
+
+  // Mostrar motivo si existe
+  const reasonMap = {
+    spam: '🚫 Spam o publicidad no deseada',
+    acoso: '😤 Acoso, insultos o conducta abusiva',
+    contenido_inapropiado: '🔞 Publicación de contenido inapropiado',
+    cuentas_multiples: '👥 Uso de múltiples cuentas',
+    trampa: '🎮 Trampa o uso de hacks',
+    otro: '📝 Violación de los Términos y Condiciones',
+  };
+  if(reason){
+    document.getElementById('banReasonBox').style.display = 'block';
+    document.getElementById('banReasonText').textContent = reasonMap[reason] || reason;
+    if(note) document.getElementById('banNoteText').textContent = '📝 ' + note;
+  }
+}
+window._showBanScreen = _showBanScreen;
+</script>
 
 </body>
 </html>
