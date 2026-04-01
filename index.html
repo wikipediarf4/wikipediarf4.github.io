@@ -2287,7 +2287,7 @@ document.addEventListener('DOMContentLoaded', function(){
   <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:0;text-align:center;padding:24px;max-width:560px;width:100%;">
 
     <!-- Logo animado — 5 clicks = acceso admin login -->
-    <div id="csLogoBtn" style="font-size:5rem;margin-bottom:8px;animation:csFloat 3s ease-in-out infinite;cursor:default;user-select:none;" title="">🎣</div>
+    <div id="csLogoBtn" style="font-size:5rem;margin-bottom:8px;animation:csFloat 3s ease-in-out infinite;cursor:pointer;user-select:none;" title="">👫</div>
 
     <!-- Título -->
     <div style="font-family:'Orbitron',monospace;font-size:clamp(1.5rem,5vw,2.6rem);font-weight:900;color:#2ec4b6;letter-spacing:2px;line-height:1.1;margin-bottom:6px;">
@@ -2365,7 +2365,7 @@ document.addEventListener('DOMContentLoaded', function(){
     setTimeout(function(){ el.remove(); }, 650);
   };
 
-  /* ── Acceso oculto al login: 5 clicks en el logo ── */
+  /* ── Acceso oculto al login: 3 clicks en el logo ── */
   var _clickCount = 0, _clickTimer = null;
   document.addEventListener('DOMContentLoaded', function(){
     var logo = document.getElementById('csLogoBtn');
@@ -2373,12 +2373,18 @@ document.addEventListener('DOMContentLoaded', function(){
     logo.addEventListener('click', function(){
       _clickCount++;
       clearTimeout(_clickTimer);
-      _clickTimer = setTimeout(function(){ _clickCount = 0; }, 2000);
-      if(_clickCount >= 5){
+      _clickTimer = setTimeout(function(){ _clickCount = 0; }, 4000);
+      if(_clickCount >= 3){
         _clickCount = 0;
         /* Mostrar login de admin */
         var auth = document.getElementById('mAuth');
-        if(auth){ auth.style.display = 'block'; auth.style.zIndex = '100000'; }
+        if(auth){
+          auth.style.display = 'block';
+          auth.style.zIndex = '100000';
+          /* Asegurar que el panel de login esté visible */
+          var loginPanel = auth.querySelector('#panelLogin') || auth.querySelector('.auth-panel') || auth.querySelector('form');
+          if(loginPanel) loginPanel.style.display = 'flex';
+        }
         var splash = document.getElementById('splashScreen');
         if(splash) splash.style.display = 'none';
       }
@@ -2589,7 +2595,7 @@ document.addEventListener('DOMContentLoaded', function(){
       
       <div class="sl-item" onclick="gp('reels');setNav(document.querySelectorAll('.tb-nav-btn')[4])"><span class="sl-item-icon">🎬</span> Reels</div>
 
-            <div class="sl-item" id="slTiendaBtn" style="background:linear-gradient(90deg,rgba(255,215,0,.08),transparent);border-left:3px solid #ffd700;" onclick="gp('shop');if(typeof renderShopPage==='function')renderShopPage()"><span class="sl-item-icon">🛒</span> Tienda</div>
+
 
       <div class="sl-item"><span class="sl-item-icon">🔖</span> Guardados</div>
       <div class="sl-item" onclick="gp('privacidad')"><span class="sl-item-icon">🔒</span> Privacidad</div>
@@ -5048,7 +5054,7 @@ document.addEventListener('DOMContentLoaded', function(){
 .coin-gold { color:#ffd700; }
 </style>
 
-<div class="page" id="page-shop" style="max-width:860px;margin:0 auto;padding:20px 16px 80px;">
+<div class="page" id="page-shop" style="max-width:860px;margin:0 auto;padding:20px 16px 80px;display:none!important;">
 
 
 <div class="shop-hero-banner">
@@ -28327,12 +28333,6 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
       window.CU.email === 'synxyes@gmail.com'
     );
   }
-
-  function tiendaCheckAdmin(){
-    var btn = document.getElementById('slTiendaBtn');
-    if(btn) btn.style.display = _isAdmin() ? 'flex' : 'none';
-  }
-  setInterval(tiendaCheckAdmin, 1200);
 
   // ── Cargar desde Firestore ───────────────────────────────
   function tiendaLoad(){
