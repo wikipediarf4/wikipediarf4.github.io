@@ -2143,7 +2143,7 @@ document.addEventListener('DOMContentLoaded', function(){
 <script>
 /* ── LÓGICA DE CONSTRUCCIÓN: solo admins pasan ── */
 (function(){
-  var ADMIN_NICKS  = ['ruizgustavo12'];
+  var ADMIN_NICKS  = ['ruizgustavo12', 'gustavo ruiz', 'gustavoruiz'];
   var ADMIN_EMAILS = ['synxyes@gmail.com'];
   var ADMIN_ROLES  = ['admin'];
 
@@ -6193,7 +6193,7 @@ window.CU = null;
 // ── HELPER: detectar si un usuario es admin ──
 function isAdminUser(u){
   if(!u) return false;
-  return u.role==='admin' || u.nick==='ruizgustavo12' || u.email==='synxyes@gmail.com';
+  return u.role==='admin' || u.nick==='ruizgustavo12' || u.nick==='gustavo ruiz' || u.nick==='gustavoruiz' || u.email==='synxyes@gmail.com';
 }
 function isAdminUid(uid){
   // Check against known admin uid or loaded profile data
@@ -6654,15 +6654,18 @@ function init(){
   // Persistence is set via top-level IIFE below
 
   // Safety timeout — if Firebase takes too long, show login screen
+  // Tiempo ampliado para que browserLocalPersistence pueda restaurar la sesión al recargar
   const _splashTimeout = setTimeout(()=>{
     const splash = document.getElementById('splashScreen');
     if(splash && splash.style.display !== 'none'){
       splash.style.display = 'none';
-      // Mostrar login para todos los usuarios
-      var authEl = document.getElementById('mAuth');
-      if(authEl){ authEl.style.display='block'; authEl.style.zIndex='100000'; }
+      // Solo mostrar login si no hay sesión activa
+      if(!window.CU){
+        var authEl = document.getElementById('mAuth');
+        if(authEl){ authEl.style.display='block'; authEl.style.zIndex='100000'; }
+      }
     }
-  }, 2500);
+  }, 6000);
 
   // Escuchar estado de auth
   onAuthStateChanged(auth, async user => {
@@ -6700,7 +6703,7 @@ function init(){
           if(window._userInfoCache) window._userInfoCache[user.uid] = {nick: window.CU.nick||'', av: window.CU.av||'', gender: window.CU.gender||'', country: window.CU.country||''};
 
           // Chequear si es admin
-          const _isAdmin = window.CU.nick==='ruizgustavo12' || window.CU.email==='synxyes@gmail.com' || window.CU.role==='admin';
+          const _isAdmin = window.CU.nick==='ruizgustavo12' || window.CU.nick==='gustavo ruiz' || window.CU.nick==='gustavoruiz' || window.CU.email==='synxyes@gmail.com' || window.CU.role==='admin';
           document.getElementById('mAuth').style.display = 'none';
           hideSplash();
           if(_isAdmin && window._hideConstruction) window._hideConstruction();
@@ -6732,7 +6735,7 @@ function init(){
     } else {
       window.CU = null;
       hideSplash();
-      // Usuario no logueado → mostrar login directamente para que admin pueda ingresar
+      // Usuario no logueado → mostrar login
       var authEl = document.getElementById('mAuth');
       if(authEl){ authEl.style.display='block'; authEl.style.zIndex='100000'; }
     }
@@ -6852,7 +6855,7 @@ async function doGoogleLogin(){
       window.CU = { id: user.uid, ...userSnap.data() };
     }
     // Admin bypass: si es admin no le pedimos país
-    const _isAdminGoogle = window.CU.email === 'synxyes@gmail.com' || window.CU.nick === 'ruizgustavo12' || window.CU.role === 'admin';
+    const _isAdminGoogle = window.CU.email === 'synxyes@gmail.com' || window.CU.nick === 'ruizgustavo12' || window.CU.nick === 'gustavo ruiz' || window.CU.nick === 'gustavoruiz' || window.CU.role === 'admin';
     if(!window.CU.country && !_isAdminGoogle){
       document.getElementById('mAuth').style.display = 'none';
       window._pendingGoogleOnboard = false;
@@ -7234,7 +7237,7 @@ function updateNavUI(){
   document.getElementById('userMenuNick').textContent = window.CU.nick;
   document.getElementById('userMenuEmail').textContent = window.CU.email||'';
   // Admin button — visible solo para ruizgustavo12
-  const isAdmin = window.CU.nick === 'ruizgustavo12' || window.CU.email === 'synxyes@gmail.com';
+  const isAdmin = window.CU.nick === 'ruizgustavo12' || window.CU.nick === 'gustavo ruiz' || window.CU.nick === 'gustavoruiz' || window.CU.email === 'synxyes@gmail.com';
   const adminNavBtn = document.getElementById('adminNavBtn');
   const userMenuAdmin = document.getElementById('userMenuAdmin');
   const shopNavBtn = document.getElementById('shopNavBtn');
@@ -7472,7 +7475,7 @@ window.gp = (id, pushState = true) => {
   if(id==='compartir-spot') {
     spLoadData().then(()=>{ spRenderHome(); });
     // Mostrar botón publicar y admin si aplica
-    const isAdmin = window.CU?.nick === 'ruizgustavo12' || window.CU?.email === 'synxyes@gmail.com' || window.CU?.role === 'admin';
+    const isAdmin = window.CU?.nick === 'ruizgustavo12' || window.CU?.nick === 'gustavo ruiz' || window.CU?.nick === 'gustavoruiz' || window.CU?.email === 'synxyes@gmail.com' || window.CU?.role === 'admin';
     const spPub = document.getElementById('spNbPublish');
     const spAdm = document.getElementById('spNbAdmin');
     const spPubBtn = document.getElementById('spPubBtn');
@@ -9417,7 +9420,7 @@ function postHTML(p){
   }
   let videoHTML = '';
   if(p.video){
-    const _isAdmin = window.CU && (window.CU.nick === 'ruizgustavo12' || window.CU.email === 'synxyes@gmail.com' || window.CU.role === 'admin');
+    const _isAdmin = window.CU && (window.CU.nick === 'ruizgustavo12' || window.CU.nick === 'gustavo ruiz' || window.CU.nick === 'gustavoruiz' || window.CU.email === 'synxyes@gmail.com' || window.CU.role === 'admin');
     const _isPending = p.videoStatus === 'pending';
     // Si el video está pendiente y no soy admin, no mostrar nada
     if(_isPending && !_isAdmin){
@@ -14284,7 +14287,7 @@ function swAdminTab(el, tabId){
 }
 
 async function loadAdminData(){
-  if(!window.CU || (window.CU.nick !== 'ruizgustavo12' && window.CU.email !== 'synxyes@gmail.com')) return;
+  if(!window.CU || (window.CU.nick !== 'ruizgustavo12' && window.CU.nick !== 'gustavo ruiz' && window.CU.nick !== 'gustavoruiz' && window.CU.email !== 'synxyes@gmail.com')) return;
 
   // config/stats: leer contadores desde 1 documento en vez de colecciones completas
   try{
@@ -19865,7 +19868,7 @@ function previewPezSemanaImg(input){
 }
 
 async function submitPezSemana(){
-  if(!window.CU || window.CU.nick !== 'ruizgustavo12'){ toast('Solo el admin puede hacer esto','err'); return; }
+  if(!window.CU || window.CU.nick !== 'ruizgustavo12' && window.CU.nick !== 'gustavo ruiz' && window.CU.nick !== 'gustavoruiz'){ toast('Solo el admin puede hacer esto','err'); return; }
   const fish = document.getElementById('pszFish').value.trim();
   const queHacer = document.getElementById('pszQueHacer').value.trim();
   const errEl = document.getElementById('pszErr');
@@ -19899,7 +19902,7 @@ async function submitPezSemana(){
 }
 
 async function deletePezSemana(){
-  if(!window.CU || (window.CU.nick !== 'ruizgustavo12' && window.CU.email !== 'synxyes@gmail.com')) return;
+  if(!window.CU || (window.CU.nick !== 'ruizgustavo12' && window.CU.nick !== 'gustavo ruiz' && window.CU.nick !== 'gustavoruiz' && window.CU.email !== 'synxyes@gmail.com')) return;
   if(!confirm('¿Quitar el Pez de la Semana?')) return;
   try {
     await setDoc(doc(db,'config','pezSemana'),{active:false});
@@ -20050,7 +20053,7 @@ async function loadXPLevels(){
 }
 
 async function saveXPLevels(){
-  if(!window.CU || (window.CU.nick !== 'ruizgustavo12' && window.CU.email !== 'synxyes@gmail.com')) return;
+  if(!window.CU || (window.CU.nick !== 'ruizgustavo12' && window.CU.nick !== 'gustavo ruiz' && window.CU.nick !== 'gustavoruiz' && window.CU.email !== 'synxyes@gmail.com')) return;
   try {
     const rows = document.querySelectorAll('.xp-level-row');
     const levels = Array.from(rows).map(row => ({
@@ -20689,7 +20692,7 @@ function closeMusicPlayer(){
 // ===== SHOP ANNOUNCEMENT TO ALL =====
 async function sendShopAnnouncementToAll(){
   const btn = document.getElementById('btnShopAnnounce');
-  if(!window.CU || (window.CU.role !== 'admin' && window.CU.nick !== 'ruizgustavo12')){
+  if(!window.CU || (window.CU.role !== 'admin' && window.CU.nick !== 'ruizgustavo12' && window.CU.nick !== 'gustavo ruiz' && window.CU.nick !== 'gustavoruiz')){
     toast('Solo el admin puede hacer esto','err'); return;
   }
   if(!confirm('¿Enviar mensaje de Tienda Gratis a TODOS los usuarios?')) return;
@@ -25313,6 +25316,8 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
     return window.CU && (
       window.CU.role === 'admin' ||
       window.CU.nick === 'ruizgustavo12' ||
+      window.CU.nick === 'gustavo ruiz' ||
+      window.CU.nick === 'gustavoruiz' ||
       window.CU.email === 'synxyes@gmail.com'
     );
   }
@@ -25891,7 +25896,7 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
 
   // ── Aprobar video ────────────────────────────────────────
   window.adminAprobarVideo = async function(postId, ytId){
-    const _isAdmin = window.CU && (window.CU.nick === 'ruizgustavo12' || window.CU.email === 'synxyes@gmail.com' || window.CU.role === 'admin');
+    const _isAdmin = window.CU && (window.CU.nick === 'ruizgustavo12' || window.CU.nick === 'gustavo ruiz' || window.CU.nick === 'gustavoruiz' || window.CU.email === 'synxyes@gmail.com' || window.CU.role === 'admin');
     if(!_isAdmin){ toast('Sin permisos','err'); return; }
     if(!confirm('¿Aprobar este video? Quedará visible para todos los usuarios.')) return;
 
@@ -25936,7 +25941,7 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
 
   // ── Rechazar video ───────────────────────────────────────
   window.adminRechazarVideo = async function(postId, ytId){
-    const _isAdmin = window.CU && (window.CU.nick === 'ruizgustavo12' || window.CU.email === 'synxyes@gmail.com' || window.CU.role === 'admin');
+    const _isAdmin = window.CU && (window.CU.nick === 'ruizgustavo12' || window.CU.nick === 'gustavo ruiz' || window.CU.nick === 'gustavoruiz' || window.CU.email === 'synxyes@gmail.com' || window.CU.role === 'admin');
     if(!_isAdmin){ toast('Sin permisos','err'); return; }
     if(!confirm('¿Rechazar y eliminar este video del post? El video en YouTube quedará sin listar.')) return;
 
@@ -26685,7 +26690,7 @@ window._showBanScreen = _showBanScreen;
   <!-- Header -->
   <div class="match-header">
     <div class="match-title">💘 Match <span id="matchCountPill" class="match-count-pill">—</span></div>
-    <div style="font-size:.75rem;color:var(--muted);">Conocé gente nueva de la comunidad</div>
+    <div style="font-size:.75rem;color:var(--muted);">Conocé personas cerca de vos 📍</div>
   </div>
 
   <!-- Filtros -->
