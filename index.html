@@ -3180,7 +3180,7 @@ document.addEventListener('DOMContentLoaded', function(){
       <div style="margin-top:18px;background:#161b22;border-top:1px solid #30363d;border-radius:0 0 12px 12px;padding:14px 18px 16px;">
         
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-          <img src="https://wikipediarf4.github.io/blob/main/enamorate.png" alt="WikiPediaRF4.UY" style="width:44px;height:44px;border-radius:10px;object-fit:cover;box-shadow:0 0 12px rgba(46,196,182,.5);" onerror="this.src='icon-192.png'">
+          <img src="https://raw.githubusercontent.com/wikipediarf4/wikipediarf4.github.io/main/enamorate.png" alt="WikiPediaRF4.UY" style="width:80px;height:auto;border-radius:12px;object-fit:contain;box-shadow:0 0 16px rgba(46,196,182,.6);" onerror="this.src='icon-192.png'">
           <span style="font-family:'Orbitron',monospace;font-size:.8rem;font-weight:900;color:var(--text);">Wikipedia<span style="color:var(--accent);">RF4</span></span>
         </div>
         
@@ -6823,11 +6823,28 @@ async function doGoogleLogin(){
   errEl.textContent = ''; errEl.style.display = 'none';
   try {
     const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
     const cred = await signInWithPopup(auth, provider);
     const user = cred.user;
+
+    const _adminEmails = ['synxyes@gmail.com'];
+    const _isAdminEmail = _adminEmails.includes(user.email);
+
     const userRef = doc(db, 'users', user.uid);
-    const userSnap = await getDoc(userRef);
-    if(!userSnap.exists()){
+    let userSnap = null;
+    try { userSnap = await getDoc(userRef); } catch(fe){}
+
+    if(!userSnap || !userSnap.exists()){
+      // Admin sin doc en Firestore → entrada directa
+      if(_isAdminEmail){
+        window.CU = { id: user.uid, email: user.email, nick: 'ruizgustavo12', role: 'admin', country: 'UY', av: user.photoURL||'' };
+        document.getElementById('mAuth').style.display = 'none';
+        if(window._hideConstruction) window._hideConstruction();
+        onLogin();
+        toast('¡Bienvenido Admin! 🛡️', 'ok');
+        return;
+      }
+      // Nuevo usuario Google → crear doc y pedir país
       const nick = (user.displayName?.replace(/\s+/g,'') || 'User' + Date.now().toString().slice(-4));
       const newUser = {
         nick, nickLower: nick.toLowerCase(),
@@ -6840,41 +6857,52 @@ async function doGoogleLogin(){
         posts: 0, friends: 0, likes: 0,
         createdAt: serverTimestamp()
       };
-      await setDoc(userRef, newUser);
+      try { await setDoc(userRef, newUser); } catch(se){}
       window.CU = { id: user.uid, ...newUser };
       document.getElementById('mAuth').style.display = 'none';
       window._pendingGoogleOnboard = true;
       const cpModal = document.getElementById('mCountryPick');
       if(cpModal){ cpModal.style.display='flex'; }
       return;
-    } else {
-      window.CU = { id: user.uid, ...userSnap.data() };
     }
-    // Admin bypass: si es admin no le pedimos país
-    const _isAdminGoogle = window.CU.email === 'synxyes@gmail.com' || window.CU.nick === 'ruizgustavo12' || window.CU.role === 'admin';
-    if(!window.CU.country && !_isAdminGoogle){
+
+    // Usuario existente
+    window.CU = { id: user.uid, ...userSnap.data() };
+    const _isAdmin = _isAdminEmail || window.CU.nick==='ruizgustavo12' || window.CU.role==='admin';
+
+    // Admin → entrada directa sin pedir país
+    if(_isAdmin){
+      document.getElementById('mAuth').style.display = 'none';
+      if(window._hideConstruction) window._hideConstruction();
+      onLogin();
+      toast('¡Bienvenido ' + (window.CU.nick||'Admin') + '! 🛡️', 'ok');
+      return;
+    }
+
+    // Sin país → pedir país
+    if(!window.CU.country){
       document.getElementById('mAuth').style.display = 'none';
       window._pendingGoogleOnboard = false;
       const cpModal = document.getElementById('mCountryPick');
       if(cpModal){ cpModal.style.display='flex'; }
       return;
     }
+
     document.getElementById('mAuth').style.display = 'none';
-    if(_isAdminGoogle && window._hideConstruction) window._hideConstruction();
     onLogin();
-    toast('¡Bienvenido ' + (window.CU.nick||'Admin') + '! ' + (_isAdminGoogle ? '🛡️' : '🎣'), 'ok');
+    toast('¡Bienvenido ' + window.CU.nick + '! 🎣', 'ok');
+
   } catch(e) {
     if(e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') return;
     let gMsg = e.message || 'Error desconocido';
-    if(e.code === 'auth/unauthorized-domain'){
-      gMsg = '⚠️ Dominio no autorizado en Firebase. Agregá este dominio en Firebase Console → Authentication → Settings → Authorized domains.';
-    } else if(e.code === 'auth/operation-not-allowed'){
+    if(e.code === 'auth/unauthorized-domain')
+      gMsg = '⚠️ Dominio no autorizado. Agregalo en Firebase Console → Authentication → Authorized domains.';
+    else if(e.code === 'auth/operation-not-allowed')
       gMsg = '⚠️ Google Sign-In no está habilitado. Activalo en Firebase Console → Authentication → Sign-in methods → Google.';
-    } else if(e.code === 'auth/popup-blocked'){
-      gMsg = '⚠️ El navegador bloqueó la ventana emergente. Permití popups para este sitio e intentá de nuevo.';
-    } else if(e.code === 'auth/network-request-failed'){
-      gMsg = '⚠️ Error de red. Verificá tu conexión a internet.';
-    }
+    else if(e.code === 'auth/popup-blocked')
+      gMsg = '⚠️ El navegador bloqueó el popup. Permití ventanas emergentes para este sitio.';
+    else if(e.code === 'auth/network-request-failed')
+      gMsg = '⚠️ Error de red. Verificá tu conexión.';
     errEl.style.display = 'block';
     errEl.textContent = gMsg;
     console.error('Google login error:', e.code, e.message);
@@ -6967,14 +6995,25 @@ async function doLogin(){
   }
 
   try {
-    // Apply persistence based on checkbox (ya establecida al init del módulo)
+    // Aplicar persistencia según el checkbox antes de autenticar
     const remember = document.getElementById('rememberMe')?.checked !== false;
+    try {
+      const { browserLocalPersistence: _blp, browserSessionPersistence: _bsp, inMemoryPersistence: _imp } =
+        await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js');
+      await setPersistence(auth, remember ? _blp : _bsp);
+    } catch(pe){ console.warn('setPersistence error:', pe); }
+
     const cred = await signInWithEmailAndPassword(auth, input, pw);
-    const snap = await getDoc(doc(db, 'users', cred.user.uid));
-    if(!snap.exists()){
-      // Fallback admin: si el email es el del admin, permitir entrada aunque no tenga doc en Firestore
-      const _adminEmails = ['synxyes@gmail.com'];
-      if(_adminEmails.includes(cred.user.email)){
+
+    // Fallback admin: si es admin por email, no depender del doc de Firestore
+    const _adminEmails = ['synxyes@gmail.com'];
+    const _isAdminEmail = _adminEmails.includes(cred.user.email);
+
+    let snap = null;
+    try { snap = await getDoc(doc(db, 'users', cred.user.uid)); } catch(fe){}
+
+    if(!snap || !snap.exists()){
+      if(_isAdminEmail){
         window.CU = { id: cred.user.uid, email: cred.user.email, nick: 'ruizgustavo12', role: 'admin', country: 'UY' };
         document.getElementById('mAuth').style.display='none';
         if(window._hideConstruction) window._hideConstruction();
@@ -6986,23 +7025,29 @@ async function doLogin(){
       if(btn){ btn.disabled=false; btn.textContent='Iniciar sesión'; }
       return;
     }
+
     window.CU = {id: cred.user.uid, ...snap.data()};
+
+    // Detectar admin también por datos del doc
+    const _isAdmin = _isAdminEmail || window.CU.nick==='ruizgustavo12' || window.CU.role==='admin';
     saveAccountLocally(input, window.CU.nick, pw, window.CU.av||'');
     document.getElementById('mAuth').style.display='none';
+    if(_isAdmin && window._hideConstruction) window._hideConstruction();
     onLogin();
-    toast('¡Bienvenido '+window.CU.nick+'! 🎣','ok');
+    toast('¡Bienvenido ' + window.CU.nick + '! ' + (_isAdmin ? '🛡️' : '🎣'), 'ok');
+
   } catch(e) {
     let msg = 'Error: ' + (e.code || e.message || 'desconocido');
-    if(e.code === 'auth/invalid-email') msg = 'Email inválido';
-    else if(e.code === 'auth/user-not-found') msg = 'Usuario no encontrado. Verificá el email.';
-    else if(e.code === 'auth/wrong-password') msg = 'Contraseña incorrecta';
-    else if(e.code === 'auth/invalid-credential') msg = 'Email o contraseña incorrectos. Verificá bien los datos.';
-    else if(e.code === 'auth/invalid-login-credentials') msg = 'Email o contraseña incorrectos. Verificá bien los datos o usá ¿Olvidaste tu contraseña?';
-    else if(e.code === 'auth/user-disabled') msg = 'Esta cuenta fue deshabilitada.';
-    else if(e.code === 'auth/too-many-requests') msg = 'Demasiados intentos. Esperá unos minutos.';
-    else if(e.code === 'auth/network-request-failed') msg = 'Error de red. Verificá tu conexión.';
-    else if(e.code === 'auth/operation-not-allowed') msg = '⚠️ Login con email no está habilitado en Firebase. Activalo en Firebase Console → Authentication → Sign-in methods.';
-    else if(e.code === 'auth/configuration-not-found') msg = '⚠️ Firebase no está configurado para email/contraseña. Activalo en Firebase Console.';
+    if(e.code === 'auth/invalid-email')              msg = 'Email inválido.';
+    else if(e.code === 'auth/user-not-found')        msg = 'Usuario no encontrado. Verificá el email.';
+    else if(e.code === 'auth/wrong-password')        msg = 'Contraseña incorrecta.';
+    else if(e.code === 'auth/invalid-credential' ||
+            e.code === 'auth/invalid-login-credentials') msg = 'Email o contraseña incorrectos.';
+    else if(e.code === 'auth/user-disabled')         msg = 'Esta cuenta fue deshabilitada.';
+    else if(e.code === 'auth/too-many-requests')     msg = 'Demasiados intentos. Esperá unos minutos.';
+    else if(e.code === 'auth/network-request-failed')msg = 'Error de red. Verificá tu conexión.';
+    else if(e.code === 'auth/operation-not-allowed') msg = '⚠️ Login con email/contraseña no está habilitado en Firebase Console → Authentication → Sign-in methods.';
+    else if(e.code === 'auth/configuration-not-found')msg = '⚠️ Firebase no configurado para email/contraseña. Activalo en Firebase Console.';
     errEl.textContent = msg;
     errEl.style.display='block';
     console.error('Login error:', e.code, e.message);
@@ -22079,7 +22124,7 @@ window.responderSoporte    = responderSoporte;
   <div style="max-width:980px;margin:0 auto;padding:18px 24px 20px;">
     
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-      <img width="34" height="34" src="icon-192.png" alt="WikiPediaRF4.UY" style="width:34px;height:34px;border-radius:50%;object-fit:cover;box-shadow:0 0 12px rgba(46,196,182,.4);">
+      <img src="https://raw.githubusercontent.com/wikipediarf4/wikipediarf4.github.io/main/enamorate.png" alt="WikiPediaRF4.UY" style="width:80px;height:auto;border-radius:12px;object-fit:contain;box-shadow:0 0 16px rgba(46,196,182,.6);" onerror="this.src='icon-192.png'">
       <span style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:900;color:var(--text);">Wikipedia<span style="color:var(--accent);">RF4</span></span>
     </div>
     
