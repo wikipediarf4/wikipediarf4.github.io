@@ -2262,7 +2262,7 @@ document.addEventListener('DOMContentLoaded', function(){
   <div class="tb-nav">
     <button class="tb-nav-btn on" onclick="gp('home');setNav(this)" title="Inicio">🏠</button>
     <button class="tb-nav-btn" onclick="gp('amigos');setNav(this);renderAmigosPage();" title="Amigos">👥</button>
-    <button class="tb-nav-btn" onclick="gp('match');setNav(this);initMatchPage();" title="Conocé personas cerca de vos">📍 Conocé personas cerca de vos 📍</button>
+
     
 
 
@@ -2420,6 +2420,118 @@ document.addEventListener('DOMContentLoaded', function(){
           </div>
         </div>
       </div>
+
+      <!-- ═══════════ MATCH WIDGET SIDEBAR ═══════════ -->
+      <style>
+        .sw-match-widget{margin:10px 6px 6px;background:linear-gradient(135deg,rgba(243,62,88,.09),rgba(243,62,88,.04));border:1px solid rgba(243,62,88,.28);border-radius:14px;overflow:hidden;}
+        .sw-match-header{display:flex;align-items:center;justify-content:space-between;padding:9px 11px 6px;}
+        .sw-match-title{font-size:.7rem;font-weight:900;color:#f33e58;text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;gap:5px;}
+        .sw-match-see-all{font-size:.62rem;color:var(--accent);font-weight:700;cursor:pointer;background:none;border:none;padding:0;font-family:'Exo 2',sans-serif;}
+        .sw-match-see-all:hover{text-decoration:underline;}
+        .sw-match-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;padding:0 7px 8px;}
+        .sw-match-card{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:2/3;cursor:pointer;background:linear-gradient(135deg,#1a2030,#0d1117);border:1px solid rgba(255,255,255,.06);transition:transform .18s,box-shadow .18s;}
+        .sw-match-card:hover{transform:scale(1.04);box-shadow:0 6px 18px rgba(243,62,88,.25);border-color:rgba(243,62,88,.4);}
+        .sw-match-card img{width:100%;height:100%;object-fit:cover;display:block;}
+        .sw-match-ini{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:900;color:var(--accent);}
+        .sw-match-grad{position:absolute;bottom:0;left:0;right:0;height:60%;background:linear-gradient(to top,rgba(0,0,0,.85),transparent);pointer-events:none;}
+        .sw-match-info{position:absolute;bottom:0;left:0;right:0;padding:4px 5px 5px;}
+        .sw-match-name{font-size:.58rem;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;}
+        .sw-match-age{font-size:.52rem;color:rgba(255,255,255,.72);}
+        .sw-match-online{position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:#3fb950;border:1.5px solid rgba(0,0,0,.5);box-shadow:0 0 5px #3fb950;}
+        .sw-match-like-btn{position:absolute;bottom:4px;right:4px;width:20px;height:20px;border-radius:50%;background:rgba(243,62,88,.85);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.65rem;transition:transform .15s;z-index:3;}
+        .sw-match-like-btn:hover{transform:scale(1.2);}
+        .sw-match-footer{padding:0 7px 9px;}
+        .sw-match-open-btn{width:100%;padding:7px 0;background:linear-gradient(135deg,#f33e58,#e8174e);border:none;border-radius:9px;color:#fff;font-size:.75rem;font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;letter-spacing:.03em;transition:opacity .15s;}
+        .sw-match-open-btn:hover{opacity:.88;}
+        .sw-match-empty{text-align:center;padding:14px 8px;font-size:.72rem;color:var(--muted);}
+        @keyframes swSkPulse{0%,100%{opacity:.4}50%{opacity:.7}}
+        .sw-sk{background:var(--bg3);border-radius:10px;animation:swSkPulse 1.4s infinite;}
+      </style>
+
+      <div class="sw-match-widget">
+        <div class="sw-match-header">
+          <div class="sw-match-title">💘 Match</div>
+          <button class="sw-match-see-all" onclick="gp('match');initMatchPage();">Ver todos &rarr;</button>
+        </div>
+        <div class="sw-match-grid" id="sidebarMatchGrid">
+          <div class="sw-sk" style="aspect-ratio:2/3;"></div>
+          <div class="sw-sk" style="aspect-ratio:2/3;"></div>
+          <div class="sw-sk" style="aspect-ratio:2/3;"></div>
+          <div class="sw-sk" style="aspect-ratio:2/3;"></div>
+          <div class="sw-sk" style="aspect-ratio:2/3;"></div>
+          <div class="sw-sk" style="aspect-ratio:2/3;"></div>
+        </div>
+        <div class="sw-match-footer">
+          <button class="sw-match-open-btn" onclick="gp('match');initMatchPage();">&#10084;&#65039; Conocé personas</button>
+        </div>
+      </div>
+
+      <script>
+      (function(){
+        var _swTries = 0;
+        function _esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+        function _fillSidebarMatch(){
+          var grid = document.getElementById('sidebarMatchGrid');
+          if(!grid) return;
+          var users = window._matchAllUsers || [];
+          var online = window._matchOnlineSet || new Set();
+          if(!users.length){
+            if(_swTries++ < 30){ setTimeout(_fillSidebarMatch, 800); return; }
+            grid.innerHTML = '<div class="sw-match-empty">Sin perfiles disponibles</div>';
+            return;
+          }
+          var myCountry = ((window.CU&&window.CU.country)||'').replace(/^[^\s]+\s/,'').trim().toLowerCase();
+          var sorted = users.filter(function(u){ return u.id !== ((window.CU&&window.CU.id)||''); }).sort(function(a,b){
+            var ac=(a.country||'').replace(/^[^\s]+\s/,'').trim().toLowerCase();
+            var bc=(b.country||'').replace(/^[^\s]+\s/,'').trim().toLowerCase();
+            var aN=myCountry&&ac===myCountry?2:0, bN=myCountry&&bc===myCountry?2:0;
+            var ao=online.has(a.id)?1:0, bo=online.has(b.id)?1:0;
+            return (bN+bo)-(aN+ao);
+          }).slice(0,6);
+          if(!sorted.length){ grid.innerHTML='<div class="sw-match-empty">Sin perfiles disponibles</div>'; return; }
+          grid.innerHTML = sorted.map(function(u){
+            var isOnline = online.has(u.id);
+            var av = u.av||'';
+            var ini = (u.nick||'?')[0].toUpperCase();
+            var age = u.age ? u.age+'a' : '';
+            var nick = (u.nick||'?').slice(0,12);
+            var safeNick = _esc(nick);
+            var safeId = _esc(u.id);
+            var photoHTML = av
+              ? '<img src="'+_esc(av)+'" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="sw-match-ini" style="display:none;">'+ini+'</div>'
+              : '<div class="sw-match-ini">'+ini+'</div>';
+            return '<div class="sw-match-card" onclick="openUserProfile(\''+safeId+'\',\''+safeNick+'\')">'
+              + photoHTML
+              + '<div class="sw-match-grad"></div>'
+              + (isOnline ? '<div class="sw-match-online"></div>' : '')
+              + '<div class="sw-match-info"><div class="sw-match-name">'+safeNick+'</div>'
+              + (age ? '<div class="sw-match-age">'+age+'</div>' : '')
+              + '</div>'
+              + '<button class="sw-match-like-btn" onclick="event.stopPropagation();if(typeof matchToggleLike===\'function\')matchToggleLike(\''+safeId+'\',this)" title="Me gusta">&#10084;</button>'
+              + '</div>';
+          }).join('');
+        }
+        function _hookAndFill(){
+          if(typeof window.initMatchPage === 'function'){
+            var _orig = window.initMatchPage;
+            window.initMatchPage = function(){
+              _orig.apply(this, arguments);
+              setTimeout(_fillSidebarMatch, 1500);
+            };
+          }
+          setTimeout(_fillSidebarMatch, 2500);
+        }
+        if(document.readyState==='loading'){
+          document.addEventListener('DOMContentLoaded', _hookAndFill);
+        } else {
+          _hookAndFill();
+        }
+        setTimeout(_fillSidebarMatch, 5000);
+        window._refreshSidebarMatch = _fillSidebarMatch;
+      })();
+      </script>
+      <!-- ═══════════ FIN MATCH WIDGET SIDEBAR ═══════════ -->
+
     </div>
 
     
@@ -26845,6 +26957,7 @@ window._showBanScreen = _showBanScreen;
     // Online set
     if(window._sidebarAllOnline){
       _onlineSet = new Set((window._sidebarAllOnline||[]).map(u=>u.id));
+      window._matchOnlineSet = _onlineSet;
     }
   };
 
@@ -26858,7 +26971,9 @@ window._showBanScreen = _showBanScreen;
       collection(db, 'users'),
       snap => {
         _allUsers = snap.docs.map(d=>({id:d.id,...d.data()})).filter(u=>!u.banned && u.nick);
+        window._matchAllUsers = _allUsers;
         _applyFilters();
+        if(typeof window._refreshSidebarMatch === 'function') window._refreshSidebarMatch();
       },
       err => console.warn('match users error:', err)
     );
