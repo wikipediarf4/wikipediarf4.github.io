@@ -8251,6 +8251,13 @@ function openStoryChooser(){
   window._storyTextStyle = 'normal';
   window._storyGif = null;
   window._scMode = 'chooser';
+  _storyImgData = null;
+  _storyVideoData = null;
+  // Limpiar previews de imagen
+  const prevImg = document.getElementById('_scPreviewImg');
+  if(prevImg){ prevImg.src = ''; prevImg.style.display = 'none'; }
+  const storyImgPrev = document.getElementById('storyImgPrev');
+  if(storyImgPrev) storyImgPrev.innerHTML = '';
   // Set user info
   if(window.CU){
     const av = document.getElementById('_scUserAv');
@@ -8290,7 +8297,19 @@ function _scSetMode(mode){
     setTimeout(()=>document.getElementById('storyTextText')?.focus(), 200);
   } else if(mode === 'photo'){
     if(placeholder) placeholder.style.display = 'none';
-    document.getElementById('_scPreviewBg').style.background = '#111';
+    // Reset preview image — si hay una ya seleccionada, mostrarla; si no, fondo oscuro neutro
+    const previewImg = document.getElementById('_scPreviewImg');
+    if(_storyImgData && previewImg && previewImg.src){
+      previewImg.style.display = 'block';
+      document.getElementById('_scPreviewBg').style.background = 'transparent';
+    } else {
+      if(previewImg) previewImg.style.display = 'none';
+      document.getElementById('_scPreviewBg').style.background = '#1a1f2a';
+      if(placeholder){
+        placeholder.style.display = 'flex';
+        placeholder.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,.4);font-size:.8rem;"><div style="font-size:2rem;margin-bottom:8px;">🖼️</div>Seleccioná una imagen</div>';
+      }
+    }
   }
 }
 
@@ -8355,10 +8374,22 @@ function _scUpdatePreview(){
     if(el){ el.textContent = txt || ''; _applyTextStyleToEl(el, color, style); }
     const bg = window._storyBg || 'linear-gradient(160deg,#1877f2,#0a3d7c)';
     document.getElementById('_scPreviewBg').style.background = bg;
+    // En modo texto, ocultar imagen de foto si había
+    const previewImg = document.getElementById('_scPreviewImg');
+    if(previewImg && !_storyImgData){ previewImg.style.display = 'none'; }
   } else if(mode === 'photo'){
     const txt = document.getElementById('storyText')?.value || '';
     const el = document.getElementById('_scPreviewText');
     if(el){ el.textContent = txt || ''; _applyTextStyleToEl(el, color, style); }
+    // Mostrar imagen si hay una seleccionada
+    const previewImg = document.getElementById('_scPreviewImg');
+    if(previewImg && _storyImgData){
+      previewImg.style.display = 'block';
+      const previewBg = document.getElementById('_scPreviewBg');
+      if(previewBg) previewBg.style.background = 'transparent';
+      const placeholder = document.getElementById('_scPreviewPlaceholder');
+      if(placeholder) placeholder.style.display = 'none';
+    }
   }
 }
 
@@ -9129,6 +9160,17 @@ function previewStoryImg(input){
   _storyImgData = f;
   const url = URL.createObjectURL(f);
   document.getElementById('storyImgPrev').innerHTML=`<img src="${url}" style="width:100%;border-radius:var(--rs);max-height:160px;object-fit:cover">`;
+  // Actualizar preview de la carta de historia
+  const previewImg = document.getElementById('_scPreviewImg');
+  if(previewImg){
+    previewImg.src = url;
+    previewImg.style.display = 'block';
+  }
+  const previewBg = document.getElementById('_scPreviewBg');
+  if(previewBg) previewBg.style.background = 'transparent';
+  const placeholder = document.getElementById('_scPreviewPlaceholder');
+  if(placeholder) placeholder.style.display = 'none';
+  _scUpdatePreview();
 }
 
 let _storyVideoData = null;
@@ -26823,12 +26865,21 @@ window._showBanScreen = _showBanScreen;
     _unsubMatch = onSnapshot(
       collection(db, 'users'),
       snap => {
-        _allUsers = snap.docs.map(d=>({id:d.id,...d.data()})).filter(u=>!u.banned && u.nick);
+        _allUsers = snap.docs.map(d=>({id:d.id,...d.data()})).filter(u=>!u.banned);
         window._matchAllUsers = _allUsers;
         _applyFilters();
         if(typeof window._refreshSidebarMatch==='function') window._refreshSidebarMatch();
       },
-      err => console.warn('match users error:', err)
+      err => {
+        console.warn('match onSnapshot error, fallback getDocs:', err);
+        // Fallback: carga única con getDocs si falla el stream
+        getDocs(collection(db, 'users')).then(snap => {
+          _allUsers = snap.docs.map(d=>({id:d.id,...d.data()})).filter(u=>!u.banned);
+          window._matchAllUsers = _allUsers;
+          _applyFilters();
+          if(typeof window._refreshSidebarMatch==='function') window._refreshSidebarMatch();
+        }).catch(e => console.warn('match getDocs fallback error:', e));
+      }
     );
   }
 
