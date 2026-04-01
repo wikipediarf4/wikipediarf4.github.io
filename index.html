@@ -2273,6 +2273,151 @@ document.addEventListener('DOMContentLoaded', function(){
 </head>
 <body>
 
+<!-- ══════════════════════════════════════════════════════════
+     PANTALLA DE SITIO EN CONSTRUCCIÓN
+     Visible para todos. Solo admins (ruizgustavo12 / synxyes@gmail.com)
+     la saltan automáticamente tras autenticarse con Firebase.
+     ══════════════════════════════════════════════════════════ -->
+<div id="constructionScreen" style="display:flex;position:fixed;inset:0;z-index:99999;background:#0d1117;align-items:center;justify-content:center;flex-direction:column;overflow:hidden;">
+
+  <!-- Fondo animado de partículas -->
+  <canvas id="constructionCanvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.35;"></canvas>
+
+  <!-- Contenido centrado -->
+  <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:0;text-align:center;padding:24px;max-width:560px;width:100%;">
+
+    <!-- Logo animado — 5 clicks = acceso admin login -->
+    <div id="csLogoBtn" style="font-size:5rem;margin-bottom:8px;animation:csFloat 3s ease-in-out infinite;cursor:default;user-select:none;" title="">🎣</div>
+
+    <!-- Título -->
+    <div style="font-family:'Orbitron',monospace;font-size:clamp(1.5rem,5vw,2.6rem);font-weight:900;color:#2ec4b6;letter-spacing:2px;line-height:1.1;margin-bottom:6px;">
+      Wikipedia<span style="color:#d4a017;">RF4</span>.UY
+    </div>
+
+    <!-- Badge "En construcción" -->
+    <div style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,rgba(255,165,0,.18),rgba(255,215,0,.10));border:1.5px solid rgba(255,165,0,.5);border-radius:100px;padding:6px 20px;margin:14px 0 20px;">
+      <span style="font-size:1.1rem;">🚧</span>
+      <span style="font-family:'Orbitron',monospace;font-size:.78rem;font-weight:900;color:#ffa500;letter-spacing:2px;">SITIO EN CONSTRUCCIÓN</span>
+      <span style="font-size:1.1rem;">🚧</span>
+    </div>
+
+    <!-- Mensaje -->
+    <p style="font-family:'Exo 2',sans-serif;font-size:1rem;color:#8b949e;line-height:1.7;max-width:420px;margin-bottom:28px;">
+      Estamos trabajando para traerte una experiencia aún mejor.<br>
+      <strong style="color:#e6edf3;">¡Volvemos pronto con novedades!</strong>
+    </p>
+
+    <!-- Barra de progreso animada -->
+    <div style="width:100%;max-width:340px;background:#161b22;border-radius:100px;height:6px;overflow:hidden;border:1px solid #21262d;margin-bottom:28px;">
+      <div style="height:100%;border-radius:100px;background:linear-gradient(90deg,#2ec4b6,#d4a017,#2ec4b6);background-size:200% 100%;animation:csBar 2.5s linear infinite;width:75%;"></div>
+    </div>
+
+    <!-- Redes / contacto (opcional, podés editar) -->
+    <div style="font-family:'Exo 2',sans-serif;font-size:.78rem;color:#8b949e;">
+      Seguinos en Discord y redes para estar al tanto 🎮
+    </div>
+
+  </div>
+</div>
+
+<style>
+@keyframes csFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes csBar{0%{background-position:0% 0}100%{background-position:200% 0}}
+</style>
+
+<script>
+/* ── LÓGICA DE CONSTRUCCIÓN: solo admins pasan ── */
+(function(){
+  var ADMIN_NICKS  = ['ruizgustavo12'];
+  var ADMIN_EMAILS = ['synxyes@gmail.com'];
+  var ADMIN_ROLES  = ['admin'];
+
+  /* Partículas en canvas */
+  (function initCanvas(){
+    var c = document.getElementById('constructionCanvas');
+    if(!c) return;
+    var ctx = c.getContext('2d');
+    var pts = [];
+    function resize(){ c.width = window.innerWidth; c.height = window.innerHeight; }
+    window.addEventListener('resize', resize); resize();
+    for(var i=0;i<55;i++) pts.push({x:Math.random()*1920,y:Math.random()*1080,r:Math.random()*2+.5,vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4,a:Math.random()});
+    (function loop(){
+      requestAnimationFrame(loop);
+      ctx.clearRect(0,0,c.width,c.height);
+      pts.forEach(function(p){
+        p.x+=p.vx; p.y+=p.vy; p.a+=.005;
+        if(p.x<0)p.x=c.width; if(p.x>c.width)p.x=0;
+        if(p.y<0)p.y=c.height; if(p.y>c.height)p.y=0;
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fillStyle='rgba(46,196,182,'+(0.4+Math.sin(p.a)*0.3)+')';
+        ctx.fill();
+      });
+    })();
+  })();
+
+  /* Ocultar pantalla de construcción y mostrar el sitio */
+  window._hideConstruction = function(){
+    var el = document.getElementById('constructionScreen');
+    if(!el) return;
+    el.style.transition='opacity .6s';
+    el.style.opacity='0';
+    setTimeout(function(){ el.remove(); }, 650);
+  };
+
+  /* ── Acceso oculto al login: 5 clicks en el logo ── */
+  var _clickCount = 0, _clickTimer = null;
+  document.addEventListener('DOMContentLoaded', function(){
+    var logo = document.getElementById('csLogoBtn');
+    if(!logo) return;
+    logo.addEventListener('click', function(){
+      _clickCount++;
+      clearTimeout(_clickTimer);
+      _clickTimer = setTimeout(function(){ _clickCount = 0; }, 2000);
+      if(_clickCount >= 5){
+        _clickCount = 0;
+        /* Mostrar login de admin */
+        var auth = document.getElementById('mAuth');
+        if(auth){ auth.style.display = 'block'; auth.style.zIndex = '100000'; }
+        var splash = document.getElementById('splashScreen');
+        if(splash) splash.style.display = 'none';
+      }
+    });
+  });
+
+  /* Esperar a que Firebase inicialice y chequear si es admin */
+  function waitForFirebase(){
+    /* onAuthStateChanged se llama tras el login; si el usuario es admin, ocultamos */
+    if(window._constructionHooked) return;
+
+    /* Enganchar con el flujo existente de onAuthStateChanged del sitio */
+    /* El sitio usa window.CU para almacenar el usuario actual */
+    var _checkInterval = setInterval(function(){
+      var cu = window.CU;
+      if(!cu) return; /* aún no hay usuario logueado */
+
+      var isAdmin = false;
+      if(ADMIN_NICKS.indexOf(cu.nick) !== -1) isAdmin = true;
+      if(ADMIN_EMAILS.indexOf(cu.email) !== -1) isAdmin = true;
+      if(ADMIN_ROLES.indexOf(cu.role) !== -1) isAdmin = true;
+
+      if(isAdmin){
+        clearInterval(_checkInterval);
+        window._hideConstruction();
+      }
+    }, 800);
+
+    window._constructionHooked = true;
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', waitForFirebase);
+  } else {
+    waitForFirebase();
+  }
+})();
+</script>
+
 <div id="swUpdateToast" style="display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1e2a38;border:1px solid var(--accent);border-radius:12px;padding:12px 18px;z-index:99999;align-items:center;gap:12px;box-shadow:0 4px 24px rgba(0,0,0,.5);font-family:'Exo 2',sans-serif;">
   <span style="font-size:.85rem;color:var(--text);">🔄 Nueva versión disponible</span>
   <button onclick="if(window._pendingSW){window._pendingSW.postMessage({type:'SKIP_WAITING'});}" style="background:var(--accent);color:#000;border:none;border-radius:8px;padding:6px 14px;font-weight:700;cursor:pointer;font-size:.82rem;font-family:'Exo 2',sans-serif;">Actualizar</button>
@@ -2297,13 +2442,7 @@ document.addEventListener('DOMContentLoaded', function(){
     <button class="tb-nav-btn on" onclick="gp('home');setNav(this)" title="Inicio">🏠</button>
     <button class="tb-nav-btn" onclick="gp('amigos');setNav(this);renderAmigosPage();" title="Amigos">👥</button>
     
-    <button class="tb-nav-btn" onclick="gp('ranking-semanal');setNav(this)" title="Ranking Semanal" style="font-size:.75rem;font-weight:700;">🏅 Ranking</button>
-    <button class="tb-nav-btn" onclick="gp('trofeos-feed');setNav(this)" title="Trofeos Recientes" style="font-size:.75rem;font-weight:700;">🥇 Trofeos Recientes</button>
-    <button class="tb-nav-btn" onclick="gp('rf4-records');setNav(this)" title="Records RF4" style="font-size:.75rem;font-weight:700;">🎣 Records RF4</button>
-    <button class="tb-nav-btn" onclick="gp('lagos-rf4');setNav(this)" title="Mapas RF4" style="font-size:.75rem;font-weight:700;">🗺️ Lagos RF4</button>
-    <button class="tb-nav-btn" onclick="openPremiumModal()" title="Premium" style="font-size:.75rem;font-weight:800;background:linear-gradient(135deg,rgba(255,215,0,.15),rgba(255,165,0,.08));border-bottom:2px solid #ffd700;color:#ffd700;">⭐ Premium</button>
-    <button class="tb-nav-btn" id="pezSemanalNavBtn" onclick="openPezSemanalModal();setNav(this)" title="Pez de la Semana" style="font-size:.75rem;font-weight:700;">🐟 Pez Semanal</button>
-    <button class="tb-nav-btn" onclick="gp('peso-del-trofeo');setNav(this)" title="Peso del Trofeo" style="font-size:.75rem;font-weight:700;">🏆 Peso del Trofeo</button>
+
 
     <button class="tb-nav-btn" id="adminNavBtn" style="display:none;font-size:.75rem;font-weight:700;" onclick="gp('admin');setNav(this)" title="Panel Admin">🛡️ Admin</button>
   </div>
@@ -5740,38 +5879,22 @@ function initShopCoinsDisplay(){
 </script>
 
 
-<div class="page" id="page-trofeos-feed" style="max-width:760px;margin:0 auto;padding:0 0 80px;">
-
-  <!-- Discord-style channel header -->
-  <div style="position:sticky;top:48px;z-index:100;background:#161b22;border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
-    <div style="display:flex;align-items:center;gap:10px;">
-      <span style="font-size:1.2rem;color:var(--muted);">#</span>
-      <div>
-        <div style="font-family:'Orbitron',monospace;font-size:.95rem;font-weight:900;color:var(--text);">trophies</div>
-        <div style="font-size:.68rem;color:var(--muted);">Trofeos aprobados en WikiPediaRF4.UY · tiempo real</div>
-      </div>
+<div class="page" id="page-trofeos-feed" style="max-width:760px;margin:0 auto;padding:24px 16px 80px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:10px;">
+    <div>
+      <div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:var(--gold);">🥇 Trofeos Recientes</div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:3px;">Trofeos aprobados en <a href="#" onclick="gp('wiki-trofeos')" target="_blank" style="color:var(--accent);">WikiPediaRF4.UY</a> · actualización en tiempo real</div>
     </div>
-    <div style="display:flex;align-items:center;gap:8px;">
-      <div id="trofeoFeedBadge" style="display:none;background:rgba(255,215,0,.12);border:1px solid rgba(255,215,0,.35);color:var(--gold);padding:3px 10px;border-radius:4px;font-size:.7rem;font-weight:700;">
-        🔴 En vivo
-      </div>
-      <a href="#" onclick="gp('wiki-trofeos')" style="background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.3);color:var(--gold);padding:4px 10px;border-radius:4px;font-size:.72rem;font-weight:700;text-decoration:none;">↗ Publicar</a>
+    <div id="trofeoFeedBadge" style="display:none;background:rgba(255,215,0,.12);border:1px solid rgba(255,215,0,.35);color:var(--gold);padding:4px 12px;border-radius:100px;font-size:.72rem;font-weight:700;">
+      🔴 En vivo
     </div>
   </div>
-
-  <!-- Channel pinned info -->
-  <div style="margin:0;padding:10px 16px 8px;background:rgba(255,215,0,.04);border-bottom:1px solid rgba(255,215,0,.1);font-size:.72rem;color:var(--muted);line-height:1.6;">
-    📌 <strong style="color:var(--gold);">Cuando publiques tu trofeo, incluí la información mínima requerida:</strong> · Screenshot del pez trofeo · Setup (caña, carrete, señuelo) · Peso · Mapa y coordenadas
+  
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;margin-top:14px;" id="trofeoFeedFilters">
+    <button class="btn btn-s" id="tff-all" style="font-size:.78rem;background:rgba(255,215,0,.15);border-color:var(--gold);color:var(--gold);" onclick="filterTrofeoFeed('all',this)">🥇 Todos</button>
+    <button class="btn btn-s" id="tff-mine" style="font-size:.78rem;" onclick="filterTrofeoFeed('mine',this)">👤 Mis trofeos</button>
   </div>
-
-  <!-- Filters row -->
-  <div style="display:flex;gap:6px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.05);" id="trofeoFeedFilters">
-    <button class="btn btn-s" id="tff-all" style="font-size:.75rem;background:rgba(255,215,0,.15);border-color:var(--gold);color:var(--gold);border-radius:4px;" onclick="filterTrofeoFeed('all',this)">🥇 Todos</button>
-    <button class="btn btn-s" id="tff-mine" style="font-size:.75rem;border-radius:4px;" onclick="filterTrofeoFeed('mine',this)">👤 Mis trofeos</button>
-  </div>
-
-  <!-- Feed messages -->
-  <div id="trofeosFeed" style="padding:4px 0;">
+  <div id="trofeosFeed">
     <div style="text-align:center;padding:40px;color:var(--muted);">
       <div style="font-size:2rem;margin-bottom:8px;">🏆</div>
       <div>Cargando trofeos aprobados...</div>
@@ -8238,13 +8361,13 @@ function init(){
 
   // Persistence is set via top-level IIFE below
 
-  // Safety timeout — if Firebase takes too long, show login anyway (reducido de 4s a 2.5s)
+  // Safety timeout — if Firebase takes too long, keep showing construction screen (no login for non-admins)
   const _splashTimeout = setTimeout(()=>{
     const splash = document.getElementById('splashScreen');
     if(splash && splash.style.display !== 'none'){
       splash.style.display = 'none';
-      document.getElementById('mAuth').style.display = 'block';
-      setTimeout(loadAuthTrofeos, 1000);
+      // NO mostrar login — la pantalla de construcción queda visible para todos
+      // Solo admins pueden pasar (manejado por el script de construcción)
     }
   }, 2500);
 
@@ -8274,8 +8397,12 @@ function init(){
             }
           }
           if(window._userInfoCache) window._userInfoCache[user.uid] = {nick: window.CU.nick||'', av: window.CU.av||'', gender: window.CU.gender||'', country: window.CU.country||''};
+
+          // Chequear si es admin
+          const _isAdmin = window.CU.nick==='ruizgustavo12' || window.CU.email==='synxyes@gmail.com' || window.CU.role==='admin';
           document.getElementById('mAuth').style.display = 'none';
           hideSplash();
+          if(_isAdmin && window._hideConstruction) window._hideConstruction();
           if(!window.CU.country){
             window._pendingGoogleOnboard = false;
             const cpModal = document.getElementById('mCountryPick');
@@ -8285,18 +8412,23 @@ function init(){
           }
         } else {
           hideSplash();
-          document.getElementById('mAuth').style.display = 'block';
+          // Solo mostrar login si es admin (el non-admin ve la pantalla de construcción)
+          // No tenemos info del rol aún, así que mostramos el login oculto para que
+          // el admin pueda hacer login desde la pantalla de construcción.
+          // La pantalla de construcción NO tiene botón de login visible, pero el mAuth
+          // está detrás disponible para el admin si navega a /#admin-login (futuro).
+          // Por ahora simplemente no mostramos mAuth a nadie sin cuenta en DB.
         }
       } catch(e) {
         console.error('Auth error:', e);
         hideSplash();
-        document.getElementById('mAuth').style.display = 'block';
+        // No mostrar login en error — construcción sigue visible
       }
     } else {
       window.CU = null;
       hideSplash();
-      document.getElementById('mAuth').style.display = 'block';
-      setTimeout(loadAuthTrofeos, 1000);
+      // Usuario no logueado → construcción visible, NO mostrar login público
+      // El admin puede logearse haciendo click en el logo (ver abajo)
     }
   });
 }
@@ -22347,72 +22479,60 @@ function trofeoFeedCardHTML(t){
   const bait = esc(t.bait||t.carnada||'');
   const spot = esc(t.spot||t.coords||t.coordenadas||'');
   const description = esc(t.description||t.notes||t.nota||'');
+  const notes = esc(t.notes||t.nota||t.description||'');
+
   const tid = t.id||"";
-
-  // Render nick with role styles (same logic as before)
-  const nickHTML = (()=>{
-    const _tVerif=!!t.userVerified,_tXp=t.userXp||0,_isAdmT=t.userNick==='ruizgustavo12'||t.userRole==='admin',_isLegT=_tXp>=2000,_isHiT=_tXp>=500,_plvlT=getLevel(_tXp);
-    if(_isAdmT) return '<span class="admin-name">'+nick+'</span><span class="admin-crown">👑</span>';
-    if(_tVerif) return '<span style="font-weight:800;background:linear-gradient(90deg,#f5a623,#ffe082,#f5a623);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:_vShine 2s linear infinite">'+nick+'</span><span style="-webkit-text-fill-color:initial;filter:drop-shadow(0 0 3px gold)">✅</span>';
-    if(_isLegT) return '<span style="font-weight:800;background:linear-gradient(90deg,#ce93d8,#f48fb1,#b39ddb,#ce93d8);background-size:250% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:_legShine 2.5s linear infinite">'+nick+'</span><span style="-webkit-text-fill-color:initial;filter:drop-shadow(0 0 3px #b39ddb)">⚡</span>';
-    if(_isHiT) return '<span style="font-weight:700;color:'+_plvlT.color+';text-shadow:0 0 6px '+_plvlT.color+'44">'+nick+'</span>';
-    return '<span class="user-name">'+nick+'</span>';
-  })();
-
-  // Build trophy tag chips — like Discord trophy tags in the message
-  const trophyTags = [];
-  if(fish) trophyTags.push(`<span style="background:rgba(255,215,0,.13);border:1px solid rgba(255,215,0,.35);color:var(--gold);font-size:.72rem;font-weight:700;padding:2px 9px;border-radius:4px;white-space:nowrap;">⭐ ${fish} Trophy</span>`);
-  if(map) trophyTags.push(`<span style="background:rgba(46,196,182,.1);border:1px solid rgba(46,196,182,.3);color:var(--accent);font-size:.72rem;font-weight:700;padding:2px 9px;border-radius:4px;white-space:nowrap;">🗺️ ${map}</span>`);
-  if(weight) trophyTags.push(`<span style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:var(--text);font-size:.72rem;font-weight:700;padding:2px 9px;border-radius:4px;white-space:nowrap;">⚖️ ${fmtKg(weight)}</span>`);
-  if(technique) trophyTags.push(`<span style="background:rgba(0,198,255,.08);border:1px solid rgba(0,198,255,.2);color:var(--accent);font-size:.72rem;font-weight:700;padding:2px 9px;border-radius:4px;white-space:nowrap;">🎣 ${technique}</span>`);
-  if(bait) trophyTags.push(`<span style="background:rgba(255,170,0,.08);border:1px solid rgba(255,170,0,.2);color:var(--warn);font-size:.72rem;font-weight:700;padding:2px 9px;border-radius:4px;white-space:nowrap;">🪱 ${bait}</span>`);
-
-  // image block
-  const imageBlock = images.length>1
-    ? `<div style="display:grid;grid-template-columns:${images.length===2?'1fr 1fr':'1fr 1fr'};gap:3px;margin-top:10px;border-radius:var(--rs);overflow:hidden;max-width:420px;">${images.slice(0,4).map((img,ii)=>`<div style="position:relative;overflow:hidden;"><img src="${img}" style="width:100%;aspect-ratio:1;object-fit:cover;cursor:pointer;display:block;" onclick="(function(){window._postImgsMap=window._postImgsMap||{};window._postImgsMap['trofeo_${tid}']=[${images.map(x=>"'"+x+"'").join(',')}];openImgLightboxById('trofeo_${tid}',${ii});})()" loading="lazy"><div style="position:absolute;bottom:5px;right:5px;background:rgba(0,0,0,.55);color:#fff;font-size:.55rem;font-weight:700;padding:2px 6px;border-radius:3px;pointer-events:none;">wikipediarf4.uy</div></div>`).join('')}</div>`
-    : imgUrl
-      ? `<div style="position:relative;overflow:hidden;margin-top:10px;border-radius:var(--rs);max-width:420px;border:1px solid rgba(255,215,0,.18);"><img src="${imgUrl}" style="width:100%;max-height:360px;object-fit:cover;display:block;cursor:pointer;" onclick="(function(){window._postImgsMap=window._postImgsMap||{};window._postImgsMap['trofeo_${tid}']=['${imgUrl}'];openImgLightbox('${imgUrl}',['${imgUrl}'],'trofeo_${tid}');})()" loading="lazy"><div style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.55);color:#fff;font-size:.62rem;font-weight:700;padding:2px 8px;border-radius:3px;pointer-events:none;letter-spacing:.03em;">wikipediarf4.uy</div></div>`
-      : '';
-
-  return `<div id="trofeo_${tid}" style="display:flex;gap:12px;padding:10px 14px 12px;margin-bottom:2px;border-bottom:1px solid rgba(255,255,255,.04);transition:background .15s;border-radius:var(--rs);" onmouseover="this.style.background='rgba(255,215,0,.03)'" onmouseout="this.style.background=''">
-
-    <!-- Avatar column -->
-    <div style="flex-shrink:0;cursor:pointer;" onclick="openUserProfile('${userId}','${nick.replace(/'/g,"\'")}')">
-      <div style="width:40px;height:40px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,215,0,.45);background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:var(--gold);">
-        ${userAv?`<img src="${userAv}" style="width:100%;height:100%;object-fit:cover;">`:(nick[0]||'?').toUpperCase()}
-      </div>
+  return `<div id="trofeo_${tid}" style="background:var(--bg2);border:1px solid rgba(255,215,0,.25);border-radius:var(--r);margin-bottom:18px;overflow:hidden;transition:border-color .2s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='rgba(255,215,0,.25)'">
+    
+    <div style="background:linear-gradient(135deg,rgba(255,215,0,.12),rgba(255,215,0,.04));border-bottom:1px solid rgba(255,215,0,.15);padding:8px 14px;display:flex;align-items:center;gap:6px;">
+      <span style="font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--gold);">🥇 TROFEO APROBADO</span>
+      <span style="font-size:.7rem;color:var(--muted);margin-left:auto;">${fmtT(approvedAt)}</span>
     </div>
-
-    <!-- Content column -->
-    <div style="flex:1;min-width:0;">
-
-      <!-- Header row: nick + time -->
-      <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:3px;">
-        <span style="font-size:.92rem;cursor:pointer;" onclick="openUserProfile('${userId}','${nick.replace(/'/g,"\\'")}')">
-          ${nickHTML}
-        </span>
-        <span style="font-size:.7rem;font-weight:700;padding:1px 7px;border-radius:3px;background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.3);color:var(--gold);">🥇 RF4</span>
-        <span style="font-size:.65rem;color:var(--muted);margin-left:2px;">${fmtT(approvedAt)}</span>
+    
+    <div class="post-header">
+      <div class="post-av" style="cursor:pointer;border-color:var(--gold);" onclick="openUserProfile('${userId}','${nick.replace(/'/g,"\'")}')">
+        ${userAv?`<img src="${userAv}">`:(nick[0]||'?').toUpperCase()}
       </div>
-
-      <!-- Trophy tag chips — like Discord trophy message tags -->
-      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:${imageBlock||description?'8px':'0'};">
-        ${trophyTags.join('')}
+      <div class="post-meta" style="cursor:pointer;" onclick="openUserProfile('${userId}','${nick.replace(/'/g,"\'")}')">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <div class="post-author">${(()=>{ const _tVerif=!!t.userVerified,_tXp=t.userXp||0,_isAdmT=t.userNick==='ruizgustavo12'||t.userRole==='admin',_isLegT=_tXp>=2000,_isHiT=_tXp>=500,_plvlT=getLevel(_tXp); if(_isAdmT) return '<span class=\"admin-name\">'+ nick +'</span><span class=\"admin-crown\">👑</span>'; if(_tVerif) return '<span style=\"font-weight:800;background:linear-gradient(90deg,#f5a623,#ffe082,#f5a623);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:_vShine 2s linear infinite\">'+ nick +'</span><span style=\"-webkit-text-fill-color:initial;filter:drop-shadow(0 0 3px gold)\">✅</span>'; if(_isLegT) return '<span style=\"font-weight:800;background:linear-gradient(90deg,#ce93d8,#f48fb1,#b39ddb,#ce93d8);background-size:250% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:_legShine 2.5s linear infinite\">'+ nick +'</span><span style=\"-webkit-text-fill-color:initial;filter:drop-shadow(0 0 3px #b39ddb)\">⚡</span>'; if(_isHiT) return '<span style=\"font-weight:700;color:'+ _plvlT.color +';text-shadow:0 0 6px '+ _plvlT.color +'44\">'+ nick +'</span>'; return '<span class=\"user-name\">'+ nick +'</span>'; })()}</div>
+          <span style="font-size:.62rem;font-weight:700;padding:1px 8px;border-radius:100px;border:1px solid rgba(255,215,0,.4);color:var(--gold);background:rgba(255,215,0,.08);">🥇 Trofeo</span>
+        </div>
+        <div class="post-time">🌐 ${fmtT(approvedAt)} · WikiPediaRF4.UY</div>
       </div>
-
-      ${description?`<div style="font-size:.82rem;color:#c9d1d9;line-height:1.55;margin-bottom:8px;">${description}</div>`:''}
-
-      ${imageBlock}
-
-      ${spot?`<div style="margin-top:8px;font-size:.7rem;color:var(--muted);">📐 ${spot}</div>`:''}
-
-      <!-- Views footer -->
-      <div style="margin-top:8px;">
-        <button class="act-btn" style="gap:6px;color:var(--muted);font-size:.75rem;padding:4px 10px;border-radius:4px;border:1px solid rgba(255,215,0,.15);background:rgba(255,215,0,.03);transition:all .2s;" onmouseover="this.style.background='rgba(255,215,0,.08)'" onmouseout="this.style.background='rgba(255,215,0,.03)'" onclick="openTrofeoViewers('${tid}')">
-          👁 <span id="trofeo_views_${tid}" style="font-weight:800;color:var(--gold);font-family:'Orbitron',monospace;">${t.views||0}</span>
-          <span>visitas</span>
-        </button>
+      <a href="#" onclick="gp('wiki-trofeos')" target="_blank" style="background:none;border:1px solid rgba(255,215,0,.3);color:var(--gold);padding:4px 10px;border-radius:var(--rs);font-size:.7rem;font-weight:700;cursor:pointer;text-decoration:none;font-family:'Exo 2',sans-serif;">↗ Wiki</a>
+    </div>
+    
+    <div style="margin:0 14px 12px;background:linear-gradient(135deg,rgba(255,215,0,.1),rgba(255,165,0,.05));border:1px solid rgba(255,215,0,.25);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+      <div style="font-size:2.4rem;">🏆</div>
+      <div style="flex:1;min-width:120px;">
+        <div style="font-family:'Orbitron',monospace;font-size:1rem;font-weight:900;color:var(--gold);">${fish}</div>
+        ${weight?`<div style="font-size:1.3rem;font-weight:800;color:var(--text);margin-top:2px;">${fmtKg(weight)}</div>`:''}
+        ${map?`<div style="font-size:.75rem;color:var(--muted);margin-top:2px;">📍 ${map}</div>`:''}
       </div>
+      ${technique?`<div style="font-size:.72rem;background:rgba(0,198,255,.1);color:var(--accent);padding:3px 10px;border-radius:100px;white-space:nowrap;">🎣 ${technique}</div>`:''}
+    </div>
+    
+    ${images.length>1
+      ? `<div style="display:grid;grid-template-columns:${images.length===2?'1fr 1fr':'1fr 1fr 1fr'};gap:2px;margin-bottom:0;">${images.slice(0,4).map((img,ii)=>`<div style="position:relative;overflow:hidden;display:block;"><img src="${img}" style="width:100%;aspect-ratio:1;object-fit:cover;cursor:pointer;" onclick="(function(){window._postImgsMap=window._postImgsMap||{};window._postImgsMap['trofeo_${tid}']=[${images.map(x=>"'"+x+"'").join(',')}];openImgLightboxById('trofeo_${tid}',${ii});})()" loading="lazy"><div style="position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.5);color:#fff;font-size:.58rem;font-weight:700;padding:2px 7px;border-radius:100px;pointer-events:none;letter-spacing:.03em;border:1px solid rgba(255,255,255,.18);">wikipediarf4.uy</div></div>`).join('')}</div>`
+      : imgUrl?`<div style="position:relative;overflow:hidden;"><img src="${imgUrl}" style="width:100%;max-height:440px;object-fit:cover;display:block;cursor:pointer;" onclick="(function(){window._postImgsMap=window._postImgsMap||{};window._postImgsMap['trofeo_${tid}']=['${imgUrl}'];openImgLightbox('${imgUrl}',['${imgUrl}'],'trofeo_${tid}');})()" loading="lazy"><div style="position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,.5);color:#fff;font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:100px;pointer-events:none;letter-spacing:.04em;border:1px solid rgba(255,255,255,.18);">wikipediarf4.uy</div></div>`:''}
+    
+    ${bait||spot?`<div style="padding:10px 14px 4px;display:flex;flex-wrap:wrap;gap:6px;">
+      ${bait?`<span style="background:rgba(255,170,0,.08);color:var(--warn);padding:3px 10px;border-radius:100px;font-size:.72rem;">🪱 ${bait}</span>`:''}
+      ${spot?`<span style="background:rgba(0,198,255,.08);color:var(--accent);padding:3px 10px;border-radius:100px;font-size:.72rem;">📐 ${spot}</span>`:''}
+    </div>`:''}
+    ${description?`<div style="padding:4px 14px 12px;font-size:.85rem;color:var(--muted);line-height:1.5;">${description}</div>`:''}
+    
+    <div style="display:flex;align-items:center;justify-content:center;border-top:1px solid rgba(255,215,0,.12);padding:8px 4px;">
+      <button class="act-btn" style="gap:8px;color:var(--muted);font-size:.85rem;padding:6px 18px;border-radius:100px;border:1px solid rgba(255,215,0,.2);background:rgba(255,215,0,.04);transition:all .2s;" onmouseover="this.style.background='rgba(255,215,0,.1)'" onmouseout="this.style.background='rgba(255,215,0,.04)'" onclick="openTrofeoViewers('${tid}')">
+        👁 <span id="trofeo_views_${tid}" style="font-weight:800;color:var(--gold);font-family:'Orbitron',monospace;font-size:.9rem;">${t.views||0}</span>
+        <span style="font-size:.75rem;">visitas · ver quién lo vio</span>
+      </button>
+    </div>
+    
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-top:1px solid rgba(255,215,0,.08);">
+      <div style="font-size:.72rem;color:var(--muted);">Verificado en WikiPediaRF4.UY</div>
+      <a href="#" onclick="gp('wiki-trofeos')" target="_blank" style="font-size:.72rem;color:var(--accent);text-decoration:none;font-weight:600;">Ver registro completo ↗</a>
     </div>
   </div>`;
 }
