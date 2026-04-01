@@ -6219,16 +6219,12 @@ let _unsubPosts = null;
 let _unsubStories = null;
 
 const REACTIONS = [
-  {emoji:'🎣', label:'¡A pescar!', color:'#2ec4b6', lottieSegment:'Idle'    },
-  {emoji:'🔥', label:'¡Fuego!',    color:'#ff6b35', lottieSegment:'Happy'   },
-  {emoji:'❤️', label:'Me encanta', color:'#f33e58', lottieSegment:'Romantic'},
-  {emoji:'👍', label:'N1',         color:'#4ade80', lottieSegment:'Happy'   },
-  {emoji:'💰', label:'Monedas',    color:'#f7b125', lottieSegment:'Naughty' },
-  {emoji:'🍀', label:'Suerte',     color:'#4ade80', lottieSegment:'Romantic'},
-  {emoji:'😂', label:'Jajaja',     color:'#f7b125', lottieSegment:'Naughty' },
-  {emoji:'💀', label:'F',          color:'#8b949e', lottieSegment:'Angry'   },
-  {emoji:'🎉', label:'GZ',         color:'#a78bfa', lottieSegment:'Happy'   },
-  {emoji:'😮', label:'Wow',        color:'#60a5fa', lottieSegment:'Scared'  },
+  {emoji:'👍', label:'Me gusta',      color:'#1877f2', lottieSegment:'Happy'   },
+  {emoji:'❤️', label:'Me encanta',    color:'#f33e58', lottieSegment:'Romantic'},
+  {emoji:'🤣', label:'Me divierte',   color:'#f7b125', lottieSegment:'Naughty' },
+  {emoji:'😮', label:'Me sorprende',  color:'#f7b125', lottieSegment:'Scared'  },
+  {emoji:'😢', label:'Me entristece', color:'#60a5fa', lottieSegment:'Sad'     },
+  {emoji:'😡', label:'Me enoja',      color:'#e85d4a', lottieSegment:'Angry'   },
 ];
 window.REACTIONS = REACTIONS;
 window.REACTIONS = REACTIONS;
@@ -13251,7 +13247,7 @@ async function _runSearch(q){
 
     // ── TROFEOS RECIENTES ──
     html += _searchSection('🥇','Trofeos Recientes', R.trofeos, t=>`
-      <div onclick="_closeSearchDrop();gp('trofeos-feed');listenTrofeosFeed();setTimeout(()=>{const el=document.getElementById('trofeo_${t.id}');if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.style.outline='2px solid var(--gold)';setTimeout(()=>{if(el)el.style.outline='';},2200);}},650);"
+      <div onclick="_closeSearchDrop();"
         style="display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:10px;cursor:pointer;transition:background .13s;"
         onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
         <div style="width:48px;height:48px;border-radius:8px;overflow:hidden;flex-shrink:0;background:var(--bg3);border:1px solid rgba(255,215,0,.25);display:flex;align-items:center;justify-content:center;font-size:1.4rem;">
@@ -20672,7 +20668,6 @@ const _expose = {
   previewPezSemanaImg, submitPezSemana, deletePezSemana, loadPezSemana, buildPezSemanaCard, openPezSemanalModal, openReactionsModal, buildRxnLabel,
   addXP, renderXPUI, checkDailyStreak, getLevel, getXpProgress,
   loadXPLevels, saveXPLevels, addXPLevelRow, renderXPLevelsAdmin,
-  listenTrofeosFeed, filterTrofeoFeed, renderTrofeosFeed, trofeoFeedCardHTML, renderTrofeoSidebar
 };
 
 
@@ -26313,16 +26308,13 @@ setTimeout(function(){
 
 <style>
 /* ── Animaciones únicas por reacción ── */
-@keyframes rxn-bounce   { 0%,100%{transform:scale(1) translateY(0)}  40%{transform:scale(1.35) translateY(-8px)} 70%{transform:scale(.92) translateY(-2px)} }
-@keyframes rxn-fire     { 0%,100%{transform:scale(1) rotate(-3deg)}  25%{transform:scale(1.2) rotate(4deg)}  75%{transform:scale(1.15) rotate(-4deg)} }
-@keyframes rxn-heart    { 0%,100%{transform:scale(1)}  20%{transform:scale(1.4)}  40%{transform:scale(1.1)}  60%{transform:scale(1.35)}  80%{transform:scale(1.05)} }
-@keyframes rxn-thumbs   { 0%,100%{transform:scale(1) rotate(0)}  30%{transform:scale(1.3) rotate(-15deg)}  60%{transform:scale(1.2) rotate(10deg)} }
-@keyframes rxn-spin     { 0%{transform:scale(1) rotate(0)}  50%{transform:scale(1.25) rotate(180deg)}  100%{transform:scale(1) rotate(360deg)} }
-@keyframes rxn-clover   { 0%,100%{transform:scale(1) rotate(0)}  50%{transform:scale(1.3) rotate(20deg)} }
-@keyframes rxn-laugh    { 0%,100%{transform:scale(1) translateY(0)}  25%{transform:scale(1.3) translateY(-6px) rotate(-5deg)}  75%{transform:scale(1.2) translateY(-4px) rotate(5deg)} }
-@keyframes rxn-skull    { 0%,100%{transform:scale(1) rotate(0) translateY(0)}  20%{transform:scale(1.1) rotate(-8deg) translateY(-3px)}  40%{transform:scale(.9) rotate(8deg) translateY(2px)}  60%{transform:scale(1.1) rotate(-5deg) translateY(-2px)} }
-@keyframes rxn-party    { 0%{transform:scale(1) rotate(-10deg)}  25%{transform:scale(1.35) rotate(15deg)}  50%{transform:scale(1.1) rotate(-8deg)}  75%{transform:scale(1.3) rotate(12deg)}  100%{transform:scale(1) rotate(-10deg)} }
-@keyframes rxn-wow      { 0%,100%{transform:scale(1)}  15%{transform:scale(1.4)}  35%{transform:scale(.85)}  55%{transform:scale(1.25)}  75%{transform:scale(.95)} }
+/* ── Animaciones Facebook-style ── */
+@keyframes rxn-like     { 0%{transform:scale(1) rotate(0) translateY(0)} 20%{transform:scale(1.5) rotate(-20deg) translateY(-6px)} 45%{transform:scale(1.3) rotate(12deg) translateY(-3px)} 70%{transform:scale(1.4) rotate(-8deg) translateY(-4px)} 100%{transform:scale(1) rotate(0) translateY(0)} }
+@keyframes rxn-love     { 0%,100%{transform:scale(1)} 15%{transform:scale(1.55)} 30%{transform:scale(1.15)} 50%{transform:scale(1.5)} 70%{transform:scale(1.1)} 85%{transform:scale(1.4)} }
+@keyframes rxn-haha     { 0%,100%{transform:scale(1) rotate(0)} 20%{transform:scale(1.4) rotate(-12deg)} 40%{transform:scale(1.1) rotate(10deg)} 60%{transform:scale(1.35) rotate(-8deg)} 80%{transform:scale(1.15) rotate(6deg)} }
+@keyframes rxn-wow-fb   { 0%,100%{transform:scale(1) translateY(0)} 25%{transform:scale(1.45) translateY(-8px)} 50%{transform:scale(0.9) translateY(2px)} 75%{transform:scale(1.3) translateY(-5px)} }
+@keyframes rxn-sad      { 0%,100%{transform:scale(1) translateY(0) rotate(0)} 30%{transform:scale(1.1) translateY(5px) rotate(-5deg)} 60%{transform:scale(1.05) translateY(3px) rotate(4deg)} 80%{transform:scale(1.1) translateY(4px) rotate(-3deg)} }
+@keyframes rxn-angry    { 0%,100%{transform:scale(1) rotate(0)} 15%{transform:scale(1.3) rotate(-15deg)} 35%{transform:scale(1.1) rotate(12deg)} 55%{transform:scale(1.25) rotate(-10deg)} 75%{transform:scale(1.1) rotate(8deg)} }
 
 /* ── Botón base ── */
 .rxn-btn {
@@ -26354,16 +26346,12 @@ setTimeout(function(){
   animation-timing-function: ease-in-out;
   will-change: transform;
 }
-.rxn-emoji-icon.anim-bounce  { animation-name: rxn-bounce; }
-.rxn-emoji-icon.anim-fire    { animation-name: rxn-fire;   animation-duration:.5s; }
-.rxn-emoji-icon.anim-heart   { animation-name: rxn-heart;  animation-duration:.6s; }
-.rxn-emoji-icon.anim-thumbs  { animation-name: rxn-thumbs; animation-duration:.6s; }
-.rxn-emoji-icon.anim-spin    { animation-name: rxn-spin;   animation-duration:.8s; }
-.rxn-emoji-icon.anim-clover  { animation-name: rxn-clover; animation-duration:.9s; }
-.rxn-emoji-icon.anim-laugh   { animation-name: rxn-laugh;  animation-duration:.5s; }
-.rxn-emoji-icon.anim-skull   { animation-name: rxn-skull;  animation-duration:.6s; }
-.rxn-emoji-icon.anim-party   { animation-name: rxn-party;  animation-duration:.5s; }
-.rxn-emoji-icon.anim-wow     { animation-name: rxn-wow;    animation-duration:.5s; }
+.rxn-emoji-icon.anim-like    { animation-name: rxn-like;   animation-duration:.65s; }
+.rxn-emoji-icon.anim-love    { animation-name: rxn-love;   animation-duration:.6s;  }
+.rxn-emoji-icon.anim-haha    { animation-name: rxn-haha;   animation-duration:.55s; }
+.rxn-emoji-icon.anim-wow-fb  { animation-name: rxn-wow-fb; animation-duration:.6s;  }
+.rxn-emoji-icon.anim-sad     { animation-name: rxn-sad;    animation-duration:.7s;  }
+.rxn-emoji-icon.anim-angry   { animation-name: rxn-angry;  animation-duration:.5s;  }
 
 /* ── Tooltip ── */
 .rxn-btn .rxn-tooltip {
@@ -26401,16 +26389,12 @@ setTimeout(function(){
 
   // Mapa emoji → clase de animación
   const RXN_ANIM = {
-    '🎣': 'anim-bounce',
-    '🔥': 'anim-fire',
-    '❤️': 'anim-heart',
-    '👍': 'anim-thumbs',
-    '💰': 'anim-spin',
-    '🍀': 'anim-clover',
-    '😂': 'anim-laugh',
-    '💀': 'anim-skull',
-    '🎉': 'anim-party',
-    '😮': 'anim-wow',
+    '👍': 'anim-like',
+    '❤️': 'anim-love',
+    '🤣': 'anim-haha',
+    '😮': 'anim-wow-fb',
+    '😢': 'anim-sad',
+    '😡': 'anim-angry',
   };
 
   // Genera los botones de reacción
