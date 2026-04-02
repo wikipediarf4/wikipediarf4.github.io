@@ -2082,7 +2082,7 @@ input:focus, textarea:focus {
 </div>
 
 <div id="splash">
-  <img src="https://milatido.uy/og-image.png" style="width:min(320px,80vw);height:auto;object-fit:contain;filter:drop-shadow(0 0 30px rgba(0,198,255,.4));animation:pulse 1.5s infinite;" alt="MiLatido" onerror="this.style.display='none'">
+  <img src="https://milatido.github.io/enamorate.png" style="width:min(320px,80vw);height:auto;object-fit:contain;filter:drop-shadow(0 0 30px rgba(0,198,255,.4));animation:pulse 1.5s infinite;" alt="MiLatido">
   <div style="display:flex;align-items:center;gap:10px;font-size:.85rem;letter-spacing:3px;color:var(--muted)"><span style="font-size:1.6rem">👫</span><span>RED SOCIAL DE CITAS</span><span style="font-size:1.6rem">❤️</span></div>
   <div class="splash-bar"><div class="splash-fill"></div></div>
 </div>
@@ -2335,38 +2335,35 @@ input:focus, textarea:focus {
       
 
       
-      <!-- ═══════════ MATCH WIDGET SIDEBAR ═══════════ -->
+      <!-- ═══════════ NUEVOS USUARIOS WIDGET SIDEBAR ═══════════ -->
       <style>
-        .sw-match-widget{margin:0 0 12px;background:linear-gradient(135deg,rgba(243,62,88,.09),rgba(243,62,88,.04));border:1px solid rgba(243,62,88,.28);border-radius:14px;overflow:hidden;}
-        .sw-match-header{display:flex;align-items:center;justify-content:space-between;padding:9px 11px 6px;}
-        .sw-match-title{font-size:.7rem;font-weight:900;color:#f33e58;text-transform:uppercase;letter-spacing:.05em;}
-        .sw-match-see-all{font-size:.62rem;color:var(--accent);font-weight:700;cursor:pointer;background:none;border:none;padding:0;font-family:'Exo 2',sans-serif;}
-        .sw-match-see-all:hover{text-decoration:underline;}
-        .sw-match-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;padding:0 7px 8px;}
-        .sw-match-card{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:2/3;cursor:pointer;background:linear-gradient(135deg,#1a2030,#0d1117);border:1px solid rgba(255,255,255,.06);transition:transform .18s,box-shadow .18s;}
-        .sw-match-card:hover{transform:scale(1.04);box-shadow:0 6px 18px rgba(243,62,88,.25);border-color:rgba(243,62,88,.4);}
-        .sw-match-card img{width:100%;height:100%;object-fit:cover;display:block;}
-        .sw-match-ini{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:900;color:var(--accent);}
-        .sw-match-grad{position:absolute;bottom:0;left:0;right:0;height:60%;background:linear-gradient(to top,rgba(0,0,0,.85),transparent);pointer-events:none;}
-        .sw-match-info{position:absolute;bottom:0;left:0;right:0;padding:4px 5px 5px;}
-        .sw-match-name{font-size:.58rem;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;}
-        .sw-match-age{font-size:.52rem;color:rgba(255,255,255,.72);}
-        .sw-match-online{position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:#3fb950;border:1.5px solid rgba(0,0,0,.5);box-shadow:0 0 5px #3fb950;}
-        .sw-match-like-btn{position:absolute;bottom:4px;right:4px;width:20px;height:20px;border-radius:50%;background:rgba(243,62,88,.85);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.65rem;transition:transform .15s;z-index:3;}
-        .sw-match-like-btn:hover{transform:scale(1.2);}
-        .sw-match-footer{padding:0 7px 9px;}
-        .sw-match-open-btn{width:100%;padding:7px 0;background:linear-gradient(135deg,#f33e58,#e8174e);border:none;border-radius:9px;color:#fff;font-size:.75rem;font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;letter-spacing:.03em;transition:opacity .15s;}
-        .sw-match-open-btn:hover{opacity:.88;}
-        .sw-match-empty{text-align:center;padding:14px 8px;font-size:.72rem;color:var(--muted);}
         @keyframes swSkPulse{0%,100%{opacity:.4}50%{opacity:.7}}
         .sw-sk{background:var(--bg3);border-radius:10px;animation:swSkPulse 1.4s infinite;}
+        .sw-nu-widget{margin:0 0 12px;background:linear-gradient(135deg,rgba(46,196,182,.09),rgba(46,196,182,.04));border:1px solid rgba(46,196,182,.28);border-radius:14px;overflow:hidden;}
+        .sw-nu-header{display:flex;align-items:center;justify-content:space-between;padding:9px 11px 6px;}
+        .sw-nu-title{font-size:.7rem;font-weight:900;color:var(--accent);text-transform:uppercase;letter-spacing:.05em;}
+        .sw-nu-see-all{font-size:.62rem;color:var(--accent);font-weight:700;cursor:pointer;background:none;border:none;padding:0;font-family:'Exo 2',sans-serif;}
+        .sw-nu-see-all:hover{text-decoration:underline;}
+        .sw-nu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;padding:0 7px 8px;}
+        .sw-nu-card{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:2/3;cursor:pointer;background:linear-gradient(135deg,var(--bg3),var(--bg2));border:1px solid rgba(46,196,182,.15);transition:transform .18s,box-shadow .18s;}
+        .sw-nu-card:hover{transform:scale(1.04);box-shadow:0 6px 18px rgba(46,196,182,.25);border-color:rgba(46,196,182,.4);}
+        .sw-nu-card img{width:100%;height:100%;object-fit:cover;display:block;position:absolute;top:0;left:0;}
+        .sw-nu-ini{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:900;color:var(--accent);}
+        .sw-nu-grad{position:absolute;bottom:0;left:0;right:0;height:60%;background:linear-gradient(to top,rgba(0,0,0,.85),transparent);pointer-events:none;}
+        .sw-nu-info{position:absolute;bottom:0;left:0;right:0;padding:4px 5px 5px;}
+        .sw-nu-name{font-size:.58rem;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;}
+        .sw-nu-badge{position:absolute;top:4px;left:4px;background:var(--accent);color:#000;font-size:.42rem;font-weight:900;border-radius:4px;padding:1px 4px;text-transform:uppercase;letter-spacing:.04em;z-index:2;}
+        .sw-nu-footer{padding:0 7px 9px;}
+        .sw-nu-open-btn{width:100%;padding:7px 0;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:9px;color:#000;font-size:.75rem;font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;letter-spacing:.03em;transition:opacity .15s;}
+        .sw-nu-open-btn:hover{opacity:.88;}
+        .sw-nu-empty{text-align:center;padding:14px 8px;font-size:.72rem;color:var(--muted);}
       </style>
-      <div class="sw-match-widget">
-        <div class="sw-match-header">
-          <div class="sw-match-title">💘 Match</div>
-          <button class="sw-match-see-all" onclick="gp('match');initMatchPage();">Ver todos &rarr;</button>
+      <div class="sw-nu-widget">
+        <div class="sw-nu-header">
+          <div class="sw-nu-title">&#10024; Nuevos Usuarios</div>
+          <button class="sw-nu-see-all" id="swNuSeeAll">Ver todos &rarr;</button>
         </div>
-        <div class="sw-match-grid" id="sidebarMatchGrid">
+        <div class="sw-nu-grid" id="sidebarNuGrid">
           <div class="sw-sk" style="aspect-ratio:2/3;"></div>
           <div class="sw-sk" style="aspect-ratio:2/3;"></div>
           <div class="sw-sk" style="aspect-ratio:2/3;"></div>
@@ -2374,63 +2371,123 @@ input:focus, textarea:focus {
           <div class="sw-sk" style="aspect-ratio:2/3;"></div>
           <div class="sw-sk" style="aspect-ratio:2/3;"></div>
         </div>
-        <div class="sw-match-footer">
-          <button class="sw-match-open-btn" onclick="gp('match');initMatchPage();">&#10084;&#65039; Conocé personas</button>
+        <div class="sw-nu-footer">
+          <button class="sw-nu-open-btn" id="swNuOpenBtn">&#127828; Ver nuevos registros</button>
         </div>
       </div>
       <script>
       (function(){
-        var _swTries=0;
-        var _swLoading=false;
-        function _esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+        var _tries = 0;
+        var _loading = false;
+        var _allLoaded = [];
 
-        function _loadFromFirebase(){
-          if(_swLoading||!window.db)return;
-          _swLoading=true;
-          import('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js').then(function(m){
-            return m.getDocs(m.collection(window.db,'users'));
-          }).then(function(snap){
-            var users=snap.docs.map(function(d){return Object.assign({id:d.id},d.data());}).filter(function(u){return !u.banned;});
-            if(users.length){window._matchAllUsers=users;}
-            _swLoading=false;
-            _fill();
-          }).catch(function(){_swLoading=false;setTimeout(_fill,2000);});
+        // Botones: navegar a página Gente
+        function _goGente() {
+          if (typeof gp === 'function') gp('gente');
+          else if (typeof rf4SwitchTab === 'function') rf4SwitchTab('gente');
+          else if (typeof swUpTab === 'function') swUpTab(null, 'upTabGente');
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+          var btnAll = document.getElementById('swNuSeeAll');
+          var btnOpen = document.getElementById('swNuOpenBtn');
+          if (btnAll) btnAll.onclick = _goGente;
+          if (btnOpen) btnOpen.onclick = _goGente;
+        });
+
+        function _esc(s) {
+          return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
         }
 
-        function _fill(){
-          var grid=document.getElementById('sidebarMatchGrid');
-          if(!grid)return;
-          var users=window._matchAllUsers||[];
-          var online=window._matchOnlineSet||new Set();
-          if(!users.length){
-            if(_swTries++<5){setTimeout(_fill,900);return;}
-            if(!_swLoading){_loadFromFirebase();return;}
-            if(_swTries<40){setTimeout(_fill,900);return;}
-            grid.innerHTML='<div class="sw-match-empty">Sin perfiles</div>';return;
+        function _myId() { return (window.CU && window.CU.id) || ''; }
+
+        function _sortNew(arr) {
+          return arr.slice().sort(function(a, b) {
+            var ta = a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : (typeof a.createdAt === 'number' ? a.createdAt : 0);
+            var tb = b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : (typeof b.createdAt === 'number' ? b.createdAt : 0);
+            return tb - ta;
+          });
+        }
+
+        function _buildCard(u) {
+          var id   = _esc(u.id);
+          var nick = _esc((u.nick || '?').slice(0, 12));
+          var ini  = (u.nick || '?')[0].toUpperCase();
+          var av   = u.av || '';
+          var imgHtml = av
+            ? '<img src="' + _esc(av) + '" loading="lazy" onerror="this.remove();">'
+              + '<div class="sw-nu-ini" style="display:none;">' + ini + '</div>'
+            : '<div class="sw-nu-ini">' + ini + '</div>';
+          return '<div class="sw-nu-card" onclick="openUserProfile(' + "'" + id + "','" + nick + "')" + '>'
+            + imgHtml
+            + '<div class="sw-nu-grad"></div>'
+            + '<div class="sw-nu-badge">NEW</div>'
+            + '<div class="sw-nu-info"><div class="sw-nu-name">' + nick + '</div></div>'
+            + '</div>';
+        }
+
+        function _render(users) {
+          var grid = document.getElementById('sidebarNuGrid');
+          if (!grid) return;
+          if (!users || !users.length) {
+            grid.innerHTML = '<div class="sw-nu-empty">Sin usuarios nuevos</div>';
+            return;
           }
-          var myC=((window.CU&&window.CU.country)||'').replace(/^[^\s]+\s/,'').trim().toLowerCase();
-          var s=users.filter(function(u){return u.id!==((window.CU&&window.CU.id)||'');}).sort(function(a,b){
-            var ac=(a.country||'').replace(/^[^\s]+\s/,'').trim().toLowerCase();
-            var bc=(b.country||'').replace(/^[^\s]+\s/,'').trim().toLowerCase();
-            return ((myC&&bc===myC?2:0)+(online.has(b.id)?1:0))-((myC&&ac===myC?2:0)+(online.has(a.id)?1:0));
-          }).slice(0,6);
-          if(!s.length){grid.innerHTML='<div class="sw-match-empty">Sin perfiles</div>';return;}
-          grid.innerHTML=s.map(function(u){
-            var on=online.has(u.id),av=u.av||'',ini=(u.nick||'?')[0].toUpperCase(),age=u.age?u.age+'a':'',nick=_esc((u.nick||'?').slice(0,12)),id=_esc(u.id);
-            var ph=av?'<img src="'+_esc(av)+'" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="sw-match-ini" style="display:none;">'+ini+'</div>':'<div class="sw-match-ini">'+ini+'</div>';
-            return '<div class="sw-match-card" onclick="openUserProfile(\''+id+'\',\''+nick+'\')">'+ph+'<div class="sw-match-grad"></div>'+(on?'<div class="sw-match-online"></div>':'')+'<div class="sw-match-info"><div class="sw-match-name">'+nick+'</div>'+(age?'<div class="sw-match-age">'+age+'</div>':'')+'</div><button class="sw-match-like-btn" onclick="event.stopPropagation();if(typeof matchToggleLike===\'function\')matchToggleLike(\''+id+'\',this)" title="Me gusta">&#10084;</button></div>';
-          }).join('');
+          var html = '';
+          for (var i = 0; i < users.length; i++) html += _buildCard(users[i]);
+          grid.innerHTML = html;
         }
-        function _hook(){
-          if(typeof window.initMatchPage==='function'){var o=window.initMatchPage;window.initMatchPage=function(){o.apply(this,arguments);setTimeout(_fill,1200);};}
-          setTimeout(_fill,3000);
+
+        function _fromCache() {
+          var base = (window._matchAllUsers || []).filter(function(u) {
+            return !u.banned && u.id !== _myId();
+          });
+          return _sortNew(base).slice(0, 6);
         }
-        if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',_hook);}else{_hook();}
-        setTimeout(_fill,6000);
-        window._refreshSidebarMatch=_fill;
+
+        function _loadFirestore() {
+          if (_loading || !window.db) return;
+          _loading = true;
+          import('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js').then(function(m) {
+            var q = m.query(
+              m.collection(window.db, 'users'),
+              m.orderBy('createdAt', 'desc'),
+              m.limit(15)
+            );
+            return m.getDocs(q);
+          }).then(function(snap) {
+            _loading = false;
+            var users = snap.docs
+              .map(function(d) { return Object.assign({ id: d.id }, d.data()); })
+              .filter(function(u) { return !u.banned && u.id !== _myId(); })
+              .slice(0, 6);
+            _allLoaded = users;
+            _render(users);
+          }).catch(function() {
+            _loading = false;
+            var cached = _fromCache();
+            if (cached.length) _render(cached);
+            else setTimeout(_fill, 2000);
+          });
+        }
+
+        function _fill() {
+          var cached = _fromCache();
+          if (cached.length) { _render(cached); return; }
+          if (window.db) { _loadFirestore(); return; }
+          if (_tries++ < 30) setTimeout(_fill, 700);
+          else _render([]);
+        }
+
+        // Arrancar con retraso para que Firebase esté listo
+        var _check = setInterval(function() {
+          if (window.db) { clearInterval(_check); setTimeout(_fill, 500); }
+        }, 400);
+        setTimeout(_fill, 4000);
+
+        window._refreshSidebarNuevos = _fill;
       })();
       </script>
-      <!-- ═══════════ FIN MATCH WIDGET SIDEBAR ═══════════ -->
+      <!-- ═══════════ FIN NUEVOS USUARIOS WIDGET SIDEBAR ═══════════ -->
 
 
 
@@ -3097,7 +3154,7 @@ input:focus, textarea:focus {
         <div style="font-family:'Orbitron',monospace;font-size:1.05rem;font-weight:900;color:var(--accent);letter-spacing:.04em;margin-bottom:6px;line-height:1.3;">La red social de los pescadores</div>
         <div style="font-size:.82rem;color:#8b949e;line-height:1.6;">Conocé nuevas personas, seguí a tus amigos<br>y encontrá tu match perfecto ❤️</div>
       </div>
-      <img src="https://milatido.uy/og-image.png" alt="MiLatido - Conecta, Chatea, Enamórate" style="width:100%;max-width:400px;display:block;border-radius:16px;" onerror="this.style.display='none'">
+      <img src="https://milatido.github.io/menu.png" alt="MiLatido - Conecta, Chatea, Enamórate" style="width:100%;max-width:400px;display:block;border-radius:16px;">
     </div>
 
     
