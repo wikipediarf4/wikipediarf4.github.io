@@ -6948,7 +6948,7 @@ function load(k,def){try{const v=localStorage.getItem('crf4_'+k);return v?JSON.p
 // ===== UPLOAD IMAGE TO IMGBB =====
 // ── Cloudinary config ──
 const CLOUDINARY_CLOUD = 'da0n5tg3g';
-const CLOUDINARY_PRESET = 'milatido';
+const CLOUDINARY_PRESET = 'wikipediarf4';
 const CLOUDINARY_VIDEO_PRESET = 'milatido_video';
 
 /* ===== ADMIN: Sin restricciones en uploads ===== */
@@ -6988,14 +6988,6 @@ function applyAdminUploadUnlock(){
 /* ===== FIN ADMIN UPLOAD UNLOCK ===== */
 
 async function uploadImage(fileOrBase64, folder) {
-  // ── Bypass completo para admin ─────────────────────────────
-  const _isAdminUpload = window.CU && (
-    window.CU.role === 'admin' ||
-    window.CU.nick === 'ruizgustavo12' ||
-    window.CU.nick === 'gustavo ruiz' ||
-    window.CU.nick === 'gustavoruiz' ||
-    window.CU.email === 'synxyes@gmail.com'
-  );
   // Convertir a blob si es base64 o URL
   let blob;
   if (typeof fileOrBase64 === 'string' && fileOrBase64.startsWith('data:')) {
@@ -7018,31 +7010,43 @@ async function uploadImage(fileOrBase64, folder) {
     blob = await _addWatermark(blob);
   }
 
-  const formData = new FormData();
-  formData.append('file', blob);
-  formData.append('upload_preset', CLOUDINARY_PRESET);
-  formData.append('folder', 'rf4/' + (folder || 'general'));
-
-  let res;
+  // ── Intentar Cloudinary primero ────────────────────────────
   try {
-    res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, {
+    const formData = new FormData();
+    formData.append('file', blob);
+    formData.append('upload_preset', CLOUDINARY_PRESET);
+    formData.append('folder', 'rf4/' + (folder || 'general'));
+
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, {
       method: 'POST',
       body: formData
     });
-  } catch(netErr) {
-    throw new Error('Sin conexión a internet. Verificá tu red e intentá de nuevo.');
+    const data = await res.json();
+    if (res.ok && data.secure_url) return data.secure_url;
+    // Si el error es de preset, loguear y caer al fallback silenciosamente
+    const errMsg = data.error?.message || '';
+    console.warn('[Cloudinary] fallo:', errMsg, '— usando Firebase Storage como fallback');
+  } catch(cloudErr) {
+    console.warn('[Cloudinary] error de red:', cloudErr, '— usando Firebase Storage como fallback');
   }
-  let data;
+
+  // ── Fallback: Firebase Storage ─────────────────────────────
   try {
-    data = await res.json();
-  } catch(jsonErr) {
-    throw new Error('Respuesta inválida del servidor. Intentá de nuevo.');
+    const ext   = blob.type === 'image/webp' ? 'webp'
+                : blob.type === 'image/png'  ? 'png'
+                : blob.type === 'image/gif'  ? 'gif'
+                : 'jpg';
+    const uid   = window.CU?.id || 'anon';
+    const ts    = Date.now();
+    const path  = `uploads/${folder || 'general'}/${uid}_${ts}.${ext}`;
+    const ref   = storageRef(storage, path);
+    await uploadBytes(ref, blob, { contentType: blob.type });
+    const url   = await getDownloadURL(ref);
+    return url;
+  } catch(fbErr) {
+    console.error('[Firebase Storage] error:', fbErr);
+    throw new Error('No se pudo subir la imagen. Verificá tu conexión e intentá de nuevo.');
   }
-  if (!res.ok || !data.secure_url) {
-    const msg = data.error?.message || `Error del servidor (${res.status})`;
-    throw new Error(msg);
-  }
-  return data.secure_url;
 }
 
 // Agregar marca de agua www.milatido.uy
