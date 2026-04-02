@@ -2208,7 +2208,7 @@ input:focus, textarea:focus {
       <div class="sl-item" onclick="gp('profile')"><span class="sl-item-icon">👤</span> Mi Perfil</div>
       <div class="sl-item" onclick="gp('amigos');renderAmigosPage()"><span class="sl-item-icon">👥</span> Amigos</div>
       <div class="sl-item" onclick="gp('match');initMatchPage()"><span class="sl-item-icon">💘</span> Match</div>
-      <div class="sl-item"><span class="sl-item-icon">📸</span> Fotos</div>
+      <div class="sl-item" onclick="gp('fotos');initFotosPage()"><span class="sl-item-icon">📸</span> Fotos</div>
       
       <div class="sl-item" onclick="gp('reels');setNav(document.querySelectorAll('.tb-nav-btn')[4])"><span class="sl-item-icon">🎬</span> Reels</div>
 
@@ -8262,6 +8262,7 @@ window.gp = (id, pushState = true) => {
   }
   navigateTo(id, pushState);
   if(id==='profile') renderProfile();
+  if(id==='fotos') { if(typeof window.initFotosPage==='function') setTimeout(window.initFotosPage, 50); }
   if(id==='admin') { loadAdminData(); loadPezSemana(); loadSoporteBadge(); }
   // Show video button in posts only for verified users
   const pvBtn = document.getElementById('postVideoBtn');
@@ -27643,6 +27644,139 @@ window._showBanScreen = _showBanScreen;
 
 .match-empty-state { text-align:center;padding:60px 20px;color:var(--muted); }
 </style>
+
+<!-- ═══════════════════════════ FOTOS ════════════════════════════ -->
+<div class="page" id="page-fotos" style="max-width:1000px;margin:0 auto;padding:20px 16px 80px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+    <div style="font-family:Orbitron,monospace;font-size:1.1rem;font-weight:900;color:var(--text);">📸 Fotos de la comunidad</div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <input id="fotosSearch" type="text" placeholder="Buscar por usuario…" oninput="fotosFilterByUser(this.value)" style="padding:6px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;color:var(--text);font-size:.82rem;outline:none;width:180px;">
+      <select id="fotosSort" onchange="fotosRender()" style="padding:6px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;color:var(--text);font-size:.82rem;outline:none;cursor:pointer;">
+        <option value="new">Más recientes</option>
+        <option value="old">Más antiguas</option>
+      </select>
+    </div>
+  </div>
+  <div id="fotosStats" style="font-size:.78rem;color:var(--muted);margin-bottom:14px;"></div>
+  <div id="fotosGrid" style="columns:3 180px;gap:6px;"></div>
+  <div id="fotosLoadMore" style="text-align:center;margin-top:24px;display:none;">
+    <button onclick="fotosLoadMore()" style="padding:10px 28px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;color:var(--text);font-size:.85rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">Ver más fotos</button>
+  </div>
+  <div id="fotosEmpty" style="display:none;text-align:center;padding:60px 20px;color:var(--muted);">
+    <div style="font-size:2.5rem;margin-bottom:10px;">📷</div>
+    <div>No hay fotos aún en la comunidad.</div>
+  </div>
+  <div id="fotosLoading" style="text-align:center;padding:60px;color:var(--muted);">
+    <div style="font-size:2rem;margin-bottom:10px;">⏳</div>
+    <div>Cargando fotos…</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var _fotosAllItems = [];
+  var _fotosPage = 0;
+  var _fotosPer = 30;
+  var _fotosLoaded = false;
+  var _fotosSearchVal = "";
+
+  window.initFotosPage = async function(){
+    if(_fotosLoaded){ fotosRender(); return; }
+    var loading = document.getElementById("fotosLoading");
+    var grid = document.getElementById("fotosGrid");
+    var empty = document.getElementById("fotosEmpty");
+    if(loading) loading.style.display = "block";
+    if(grid) grid.innerHTML = "";
+    if(empty) empty.style.display = "none";
+    try{
+      var fsLib = window._fsLib || {};
+      var gd = fsLib.getDocs, q = fsLib.query, col = fsLib.collection, ob = fsLib.orderBy, lim = fsLib.limit;
+      if(!gd || !window.db){ if(loading) loading.style.display="none"; return; }
+      var snap = await gd(q(col(window.db,"posts"), ob("time","desc"), lim(300)));
+      _fotosAllItems = [];
+      snap.forEach(function(d){
+        var p = d.data();
+        if(p.images && p.images.length){
+          p.images.forEach(function(src){
+            _fotosAllItems.push({
+              src: src,
+              nick: p.userNick || "Usuario",
+              av: p.userAv || "",
+              uid: p.uid || "",
+              postId: d.id,
+              time: p.time || 0
+            });
+          });
+        }
+      });
+      _fotosLoaded = true;
+      if(loading) loading.style.display = "none";
+      fotosRender();
+    } catch(e){
+      console.warn("fotos error:",e);
+      if(loading) loading.style.display = "none";
+      var g = document.getElementById("fotosGrid");
+      if(g) g.innerHTML = "<div style=\"text-align:center;padding:40px;color:var(--muted)\">&#9888; Error cargando fotos.</div>";
+    }
+  };
+
+  window.fotosFilterByUser = function(val){
+    _fotosSearchVal = val.toLowerCase().trim();
+    _fotosPage = 0;
+    fotosRender();
+  };
+
+  window.fotosRender = function(){
+    var sortEl = document.getElementById("fotosSort");
+    var sort = sortEl ? sortEl.value : "new";
+    var items = _fotosAllItems.slice();
+    if(_fotosSearchVal){
+      items = items.filter(function(x){ return x.nick.toLowerCase().indexOf(_fotosSearchVal) !== -1; });
+    }
+    if(sort === "old") items.sort(function(a,b){ return a.time - b.time; });
+    else items.sort(function(a,b){ return b.time - a.time; });
+    var stats = document.getElementById("fotosStats");
+    var uniqueUsers = new Set(items.map(function(x){return x.uid;})).size;
+    if(stats) stats.textContent = items.length + " foto" + (items.length!==1?"s":"") + " de " + uniqueUsers + " usuario" + (uniqueUsers!==1?"s":"");
+    var page0 = items.slice(0, (_fotosPage+1)*_fotosPer);
+    var grid = document.getElementById("fotosGrid");
+    var empty = document.getElementById("fotosEmpty");
+    var more = document.getElementById("fotosLoadMore");
+    if(!grid) return;
+    if(!items.length){
+      grid.innerHTML="";
+      if(empty) empty.style.display="block";
+      if(more) more.style.display="none";
+      return;
+    }
+    if(empty) empty.style.display="none";
+    var allSrcs = JSON.stringify(page0.map(function(i){return i.src;}));
+    grid.innerHTML = page0.map(function(item, idx){
+      var avHtml;
+      if(item.av && item.av.indexOf("http") === 0){
+        avHtml = "<img src=\""+_fe(item.av)+"\" style=\"width:22px;height:22px;border-radius:50%;object-fit:cover;flex-shrink:0;\" onerror=\"this.style.display='none'\">";
+      } else {
+        avHtml = "<div style=\"width:22px;height:22px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:.7rem;flex-shrink:0;font-weight:700;\">"+_fe((item.nick||"?")[0].toUpperCase())+"</div>";
+      }
+      return "<div style=\"break-inside:avoid;margin-bottom:6px;border-radius:10px;overflow:hidden;background:var(--bg2);box-shadow:0 1px 4px rgba(0,0,0,.18);\">"
+        + "<img src=\""+_fe(item.src)+"\" loading=\"lazy\" style=\"width:100%;display:block;cursor:pointer;transition:opacity .18s;\" onmouseover=\"this.style.opacity=.82\" onmouseout=\"this.style.opacity=1\" onclick=\"openImgLightbox(this.src,"+allSrcs+")\" onerror=\"this.closest('div').style.display='none'\">"
+        + "<div style=\"padding:5px 8px;display:flex;align-items:center;gap:6px;\">"
+        + avHtml
+        + "<span onclick=\"openUserProfile('"+_fe(item.uid)+"','"+_fe(item.nick)+"')\" style=\"font-size:.75rem;color:var(--muted);cursor:pointer;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:calc(100% - 32px)\" onmouseover=\"this.style.color='var(--accent)'\" onmouseout=\"this.style.color='var(--muted)'\">"+_fe(item.nick)+"</span>"
+        + "</div></div>";
+    }).join("");
+    if(more) more.style.display = ((_fotosPage+1)*_fotosPer < items.length) ? "block" : "none";
+  };
+
+  window.fotosLoadMore = function(){
+    _fotosPage++;
+    fotosRender();
+  };
+
+  function _fe(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
+})();
+</script>
+<!-- ════════════════════════════════════════════════════════════ -->
 
 <div class="page" id="page-match">
   <!-- Header estilo Badoo "Encuentros" -->
