@@ -7392,11 +7392,32 @@ function init(){
           // Escuchar cambios en tiempo real del doc del usuario para actualizar avatar al recargar
           if(window._cuDocUnsub) window._cuDocUnsub();
           window._cuDocUnsub = onSnapshot(doc(db,'users',user.uid), dsnap => {
-            if(!dsnap.exists()) return;
+            if(!dsnap.exists() || !window.CU) return;
             const data = dsnap.data();
-            if(data.av && window.CU) {
+            // ── Avatar en tiempo real ──
+            if(data.av && data.av !== window.CU.av) {
               window.CU.av = data.av;
+              _applyAvatarToDOM(data.av);
               if(typeof window._updateStoryCard==='function') window._updateStoryCard();
+            }
+            // ── Portada en tiempo real ──
+            const newCover = data.cover || '';
+            if(newCover !== (window.CU.cover || '')) {
+              window.CU.cover = newCover;
+              const profCoverEl = document.getElementById('profCover');
+              if(profCoverEl) {
+                if(newCover) {
+                  profCoverEl.style.backgroundImage = 'url('+newCover+')';
+                  profCoverEl.style.backgroundSize = 'cover';
+                  profCoverEl.style.backgroundPosition = 'center';
+                  const inner = document.getElementById('profCoverInner');
+                  if(inner) inner.style.display = 'none';
+                } else {
+                  profCoverEl.style.backgroundImage = '';
+                  const inner = document.getElementById('profCoverInner');
+                  if(inner) inner.style.display = '';
+                }
+              }
             }
           });
           if(window.CU.role === 'premium' && window.CU.premiumReason === 'auto_5trofeos' && window.CU.premiumExpiry){
@@ -8010,18 +8031,36 @@ async function loadRealFriends(){
   if(typeof listenUnreadMsgsBadge === 'function') listenUnreadMsgsBadge();
 }
 
+// ── Aplica avatar a todos los elementos del DOM ───────────────────────────
+function _applyAvatarToDOM(url){
+  if(!window.CU) return;
+  const safe = url || (typeof getDefaultAv==='function' ? getDefaultAv(window.CU.gender||'') : '');
+  const imgTag = '<img src="'+safe+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="if(typeof getDefaultAv===\'function\'){this.src=getDefaultAv();}">';
+  const ids = ['navAv','slAv','pbAv','pbAv2','cpAv'];
+  ids.forEach(function(id){ const el=document.getElementById(id); if(el) el.innerHTML=imgTag; });
+  // Avatar grande perfil
+  const profAvBig = document.getElementById('profAvBig');
+  if(profAvBig) profAvBig.innerHTML = '<img src="'+safe+'" style="pointer-events:none;width:100%;height:100%;object-fit:cover;" onerror="if(typeof getDefaultAv===\'function\'){this.src=getDefaultAv();}">';
+  // Post avatars del usuario en el feed
+  if(window.CU.id && safe){
+    document.querySelectorAll('.post-av[data-uid="'+window.CU.id+'"]').forEach(function(el){
+      var img = el.querySelector('img'); if(img) img.src = safe;
+    });
+  }
+  if(window._userInfoCache && window.CU.id){
+    if(!window._userInfoCache[window.CU.id]) window._userInfoCache[window.CU.id]={};
+    window._userInfoCache[window.CU.id].av = safe;
+  }
+}
+window._applyAvatarToDOM = _applyAvatarToDOM;
+
 function updateNavUI(){
   // Show footer when logged in
   const footer = document.getElementById('siteFooter');
   if(footer) footer.style.display='block';
   if(!window.CU) return;
-  const av = `<img src="${window.CU.av||getDefaultAv(window.CU.gender||'')}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-  document.getElementById('navAv').innerHTML = av;
-  document.getElementById('slAv').innerHTML = av;
+  _applyAvatarToDOM(window.CU.av || getDefaultAv(window.CU.gender||''));
   document.getElementById('slName').textContent = window.CU.nick;
-  document.getElementById('pbAv').innerHTML = av;
-  if(document.getElementById('pbAv2')) document.getElementById('pbAv2').innerHTML = av;
-  document.getElementById('cpAv').innerHTML = av;
   document.getElementById('cpName').textContent = window.CU.nick;
   // User menu
   document.getElementById('userMenuNick').textContent = window.CU.nick;
@@ -12497,8 +12536,26 @@ function calcAgeFromBirthdate(){
 async function changeCover(input){
   const f = input.files[0]; if(!f) return;
   toast('Subiendo portada...','inf');
-  const url = await uploadImage(f, 'covers');
+  // Preview local inmediato
+  const _prevCover = window.CU.cover || '';
+  const _localUrl = URL.createObjectURL(f);
+  const _setCover = function(u){
+    var el = document.getElementById('profCover');
+    if(!el) return;
+    if(u){ el.style.backgroundImage='url('+u+')'; el.style.backgroundSize='cover'; el.style.backgroundPosition='center'; var inn=document.getElementById('profCoverInner'); if(inn) inn.style.display='none'; }
+    else { el.style.backgroundImage=''; var inn=document.getElementById('profCoverInner'); if(inn) inn.style.display=''; }
+  };
+  _setCover(_localUrl);
+  let url;
+  try {
+    url = await uploadImage(f, 'covers');
+  } catch(e) {
+    toast('Error al subir portada ❌','err');
+    _setCover(_prevCover);
+    return;
+  }
   window.CU.cover = url;
+  _setCover(url);
   await updateDoc(doc(db, 'users', window.CU.id), {cover: url});
   // Publicar post automático
   try {
@@ -12517,15 +12574,26 @@ async function changeCover(input){
       likes:0, comments:[], reactions:{}, reactionCounts:{}
     });
   } catch(e){ console.warn('cover post err',e); }
-  renderProfile(); toast('Portada actualizada ✅','ok');
+  toast('Portada actualizada ✅','ok');
 }
 async function changeAvatar(input){
   const f = input.files[0]; if(!f) return;
   toast('Subiendo foto...','inf');
-  const url = await uploadImage(f, 'avatars');
+  // Preview local inmediato
+  const _prevAv = window.CU.av || '';
+  const _localUrl = URL.createObjectURL(f);
+  _applyAvatarToDOM(_localUrl);
+  let url;
+  try {
+    url = await uploadImage(f, 'avatars');
+  } catch(e) {
+    toast('Error al subir foto ❌','err');
+    _applyAvatarToDOM(_prevAv);
+    return;
+  }
   window.CU.av = url;
+  _applyAvatarToDOM(url);
   await updateDoc(doc(db, 'users', window.CU.id), {av: url});
-  // Update "Crear historia" card y todos los avatares de la UI
   if(typeof window._updateStoryCard === 'function') window._updateStoryCard();
   // Publicar post automático
   try {
@@ -12544,7 +12612,7 @@ async function changeAvatar(input){
       likes:0, comments:[], reactions:{}, reactionCounts:{}
     });
   } catch(e){ console.warn('avatar post err',e); }
-  updateNavUI(); renderProfile(); toast('Foto actualizada ✅','ok');
+  renderProfile(); toast('Foto actualizada ✅','ok');
 }
 
 // ===== TABS =====
