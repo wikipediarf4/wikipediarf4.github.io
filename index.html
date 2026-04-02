@@ -7010,43 +7010,27 @@ async function uploadImage(fileOrBase64, folder) {
     blob = await _addWatermark(blob);
   }
 
-  // ── Intentar Cloudinary primero ────────────────────────────
-  try {
-    const formData = new FormData();
-    formData.append('file', blob);
-    formData.append('upload_preset', CLOUDINARY_PRESET);
-    formData.append('folder', 'rf4/' + (folder || 'general'));
+  const formData = new FormData();
+  formData.append('file', blob);
+  formData.append('upload_preset', CLOUDINARY_PRESET);
+  formData.append('folder', 'rf4/' + (folder || 'general'));
 
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, {
-      method: 'POST',
-      body: formData
-    });
-    const data = await res.json();
-    if (res.ok && data.secure_url) return data.secure_url;
-    // Si el error es de preset, loguear y caer al fallback silenciosamente
-    const errMsg = data.error?.message || '';
-    console.warn('[Cloudinary] fallo:', errMsg, '— usando Firebase Storage como fallback');
-  } catch(cloudErr) {
-    console.warn('[Cloudinary] error de red:', cloudErr, '— usando Firebase Storage como fallback');
+  let res, data;
+  try {
+    res  = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method:'POST', body:formData });
+    data = await res.json();
+  } catch(netErr) {
+    throw new Error('Sin conexión. Verificá tu red e intentá de nuevo.');
   }
 
-  // ── Fallback: Firebase Storage ─────────────────────────────
-  try {
-    const ext   = blob.type === 'image/webp' ? 'webp'
-                : blob.type === 'image/png'  ? 'png'
-                : blob.type === 'image/gif'  ? 'gif'
-                : 'jpg';
-    const uid   = window.CU?.id || 'anon';
-    const ts    = Date.now();
-    const path  = `uploads/${folder || 'general'}/${uid}_${ts}.${ext}`;
-    const ref   = storageRef(storage, path);
-    await uploadBytes(ref, blob, { contentType: blob.type });
-    const url   = await getDownloadURL(ref);
-    return url;
-  } catch(fbErr) {
-    console.error('[Firebase Storage] error:', fbErr);
-    throw new Error('No se pudo subir la imagen. Verificá tu conexión e intentá de nuevo.');
+  if (res.ok && data.secure_url) return data.secure_url;
+
+  // Error descriptivo según respuesta de Cloudinary
+  const errMsg = data?.error?.message || '';
+  if (errMsg.toLowerCase().includes('preset')) {
+    throw new Error('El preset de Cloudinary no está configurado como Unsigned. Entrá a Settings → Upload → Upload presets → "' + CLOUDINARY_PRESET + '" → cambiá Signing mode a Unsigned.');
   }
+  throw new Error(errMsg || 'Error al subir imagen. Intentá de nuevo.');
 }
 
 // Agregar marca de agua www.milatido.uy
