@@ -26645,7 +26645,7 @@ window._showBanScreen = _showBanScreen;
 #page-match {
   max-width:480px;margin:0 auto;padding:0 0 80px;
   flex-direction:column;align-items:center;
-  background:transparent;
+  background:#000;
 }
 #page-match.active { display:flex; }
 @keyframes heartbeat { 0%,100%{transform:scale(1)} 15%{transform:scale(1.25)} 30%{transform:scale(1)} 45%{transform:scale(1.15)} 60%{transform:scale(1)} }
@@ -26733,7 +26733,7 @@ window._showBanScreen = _showBanScreen;
 /* Info overlay sobre la foto */
 .mc-photo-info {
   position:absolute;bottom:0;left:0;right:0;
-  padding:90px 18px 18px;  /* espacio para los botones */
+  padding:60px 18px 18px;
   z-index:2;
 }
 .mc-name {
@@ -26751,11 +26751,12 @@ window._showBanScreen = _showBanScreen;
 .mc-tags { display:flex;flex-wrap:wrap;gap:5px;padding:6px 18px 0;position:relative;z-index:3; }
 .mc-tag { font-size:.68rem;padding:3px 10px;border-radius:100px;background:rgba(255,255,255,.15);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.2);color:#fff;font-weight:600; }
 
-/* Botones Badoo — círculos blancos superpuestos en la foto */
+/* Botones Badoo — debajo de la foto */
 .mc-actions {
   display:flex;align-items:center;justify-content:center;gap:20px;
-  position:absolute;bottom:22px;left:0;right:0;z-index:10;
+  width:100%;padding:16px 0 10px;z-index:10;
   pointer-events:none;
+  background:transparent;
 }
 .mc-actions button { pointer-events:auto; }
 
@@ -27160,14 +27161,14 @@ window._showBanScreen = _showBanScreen;
           ${bio ? `<div class="mc-desc" style="margin-top:6px;">${_esc(bio)}</div>` : ''}
           ${tags.length ? `<div class="mc-tags" style="margin-top:6px;">${tags.map(t=>`<span class="mc-tag">${_esc(t)}</span>`).join('')}</div>` : ''}
         </div>
-        <!-- Botones Badoo superpuestos en la foto -->
-        <div class="mc-actions">
-          <button class="mc-btn-nope" onclick="matchNope()" title="Siguiente">✕</button>
-          <button id="mcLikeBtn" class="mc-btn-like${liked?' liked':''}" onclick="matchToggleLike('${_esc(u.id)}')" title="${liked?'Quitá el like':'Me gusta'}">
-            ${liked ? '💖' : '❤️'}
-          </button>
-          <button class="mc-btn-profile" onclick="openUserProfile('${_esc(u.id)}','${_esc(nick)}')" title="Ver perfil">👤</button>
-        </div>
+      </div>
+      <!-- Botones debajo de la foto -->
+      <div class="mc-actions">
+        <button class="mc-btn-nope" onclick="matchNope()" title="Siguiente">✕</button>
+        <button id="mcLikeBtn" class="mc-btn-like${liked?' liked':''}" onclick="matchToggleLike('${_esc(u.id)}')" title="${liked?'Quitá el like':'Me gusta'}">
+          ${liked ? '💖' : '❤️'}
+        </button>
+        <button class="mc-btn-profile" onclick="openUserProfile('${_esc(u.id)}','${_esc(nick)}')" title="Ver perfil">👤</button>
       </div>
       <div class="mc-body"></div>`;
 
