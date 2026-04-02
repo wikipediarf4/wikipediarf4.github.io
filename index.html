@@ -7023,12 +7023,25 @@ async function uploadImage(fileOrBase64, folder) {
   formData.append('upload_preset', CLOUDINARY_PRESET);
   formData.append('folder', 'rf4/' + (folder || 'general'));
 
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, {
-    method: 'POST',
-    body: formData
-  });
-  const data = await res.json();
-  if (!data.secure_url) throw new Error(data.error?.message || 'Error subiendo imagen a Cloudinary');
+  let res;
+  try {
+    res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, {
+      method: 'POST',
+      body: formData
+    });
+  } catch(netErr) {
+    throw new Error('Sin conexión a internet. Verificá tu red e intentá de nuevo.');
+  }
+  let data;
+  try {
+    data = await res.json();
+  } catch(jsonErr) {
+    throw new Error('Respuesta inválida del servidor. Intentá de nuevo.');
+  }
+  if (!res.ok || !data.secure_url) {
+    const msg = data.error?.message || `Error del servidor (${res.status})`;
+    throw new Error(msg);
+  }
   return data.secure_url;
 }
 
@@ -12496,10 +12509,35 @@ function calcAgeFromBirthdate(){
 
 async function changeCover(input){
   const f = input.files[0]; if(!f) return;
+  // Validar tipo
+  if(!f.type.startsWith('image/')){
+    toast('Solo se permiten imágenes (JPG, PNG, WEBP)','err');
+    input.value = ''; return;
+  }
+  // Validar tamaño máximo 15MB
+  if(f.size > 15 * 1024 * 1024){
+    toast('La imagen es demasiado grande. Máximo 15MB','err');
+    input.value = ''; return;
+  }
   toast('Subiendo portada...','inf');
-  const url = await uploadImage(f, 'covers');
-  window.CU.cover = url;
-  await updateDoc(doc(db, 'users', window.CU.id), {cover: url});
+  let url;
+  try {
+    url = await uploadImage(f, 'covers');
+  } catch(e) {
+    console.error('changeCover error:', e);
+    toast('Error al subir la portada: ' + (e.message || 'Intentá de nuevo'), 'err');
+    input.value = '';
+    return;
+  }
+  try {
+    window.CU.cover = url;
+    await updateDoc(doc(db, 'users', window.CU.id), {cover: url});
+  } catch(e) {
+    console.error('changeCover updateDoc error:', e);
+    toast('Error al guardar la portada en tu perfil','err');
+    input.value = '';
+    return;
+  }
   // Publicar post automático
   try {
     await addDoc(collection(db,'posts'),{
@@ -12517,14 +12555,40 @@ async function changeCover(input){
       likes:0, comments:[], reactions:{}, reactionCounts:{}
     });
   } catch(e){ console.warn('cover post err',e); }
+  input.value = '';
   renderProfile(); toast('Portada actualizada ✅','ok');
 }
 async function changeAvatar(input){
   const f = input.files[0]; if(!f) return;
+  // Validar tipo
+  if(!f.type.startsWith('image/')){
+    toast('Solo se permiten imágenes (JPG, PNG, WEBP)','err');
+    input.value = ''; return;
+  }
+  // Validar tamaño máximo 10MB
+  if(f.size > 10 * 1024 * 1024){
+    toast('La imagen es demasiado grande. Máximo 10MB','err');
+    input.value = ''; return;
+  }
   toast('Subiendo foto...','inf');
-  const url = await uploadImage(f, 'avatars');
-  window.CU.av = url;
-  await updateDoc(doc(db, 'users', window.CU.id), {av: url});
+  let url;
+  try {
+    url = await uploadImage(f, 'avatars');
+  } catch(e) {
+    console.error('changeAvatar error:', e);
+    toast('Error al subir la foto de perfil: ' + (e.message || 'Intentá de nuevo'), 'err');
+    input.value = '';
+    return;
+  }
+  try {
+    window.CU.av = url;
+    await updateDoc(doc(db, 'users', window.CU.id), {av: url});
+  } catch(e) {
+    console.error('changeAvatar updateDoc error:', e);
+    toast('Error al guardar la foto en tu perfil','err');
+    input.value = '';
+    return;
+  }
   // Update "Crear historia" card y todos los avatares de la UI
   if(typeof window._updateStoryCard === 'function') window._updateStoryCard();
   // Publicar post automático
@@ -12544,6 +12608,7 @@ async function changeAvatar(input){
       likes:0, comments:[], reactions:{}, reactionCounts:{}
     });
   } catch(e){ console.warn('avatar post err',e); }
+  input.value = '';
   updateNavUI(); renderProfile(); toast('Foto actualizada ✅','ok');
 }
 
