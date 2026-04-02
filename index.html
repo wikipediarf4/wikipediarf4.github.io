@@ -28289,57 +28289,86 @@ window._showBanScreen = _showBanScreen;
   window.matchToggleLike = async function(uid){
     if(!window.CU){ toast('Iniciá sesión para dar likes','err'); return; }
     const btn = document.getElementById('mcLikeBtn');
+    // Evitar doble clic
+    if(btn && btn.dataset.processing === 'true') return;
+    if(btn) btn.dataset.processing = 'true';
+
     const already = !!_likes[uid];
-    try {
-      const likeRef = doc(db,'users',window.CU.id,'matchLikes',uid);
-      if(already){
-        // Quitar like — no avanzar, solo actualizar botón
+    const likeRef = doc(db,'users',window.CU.id,'matchLikes',uid);
+
+    if(already){
+      // ── Quitar like: solo actualizar UI, no avanzar ──
+      try {
+        _likes[uid] = false;
+        if(btn){ btn.classList.remove('liked'); btn.innerHTML='❤️'; btn.title='Me gusta'; }
         await deleteDoc(likeRef);
         delete _likes[uid];
-        if(btn){ btn.classList.remove('liked'); btn.innerHTML='❤️'; btn.title='Me gusta'; }
-      } else {
-        // Dar like: guardar, notificar y avanzar al siguiente
-        if(btn){ btn.classList.add('liked'); btn.innerHTML='💖'; btn.disabled=true; }
-        await setDoc(likeRef, { ts: Date.now(), nick: window.CU.nick||'', av: window.CU.av||'' });
+      } catch(e){
+        console.warn('unlike error:', e);
         _likes[uid] = true;
-        if(btn) btn.disabled=false;
-
-        // Notificación a la otra persona
-        if(uid !== window.CU.id){
-          try {
-            if(typeof sendNotifToUser === 'function'){
-              sendNotifToUser(uid, '💘 ¡A ' + (window.CU.nick||'alguien') + ' le interesó tu perfil! Entrá a Match para verlo.');
-            } else if(typeof sendNotifToUserWithPost === 'function'){
-              sendNotifToUserWithPost(uid, '💘 ¡A ' + (window.CU.nick||'alguien') + ' le interesó tu perfil!', null);
-            }
-          } catch(ne){ console.warn('notif error:', ne); }
-        }
-
-        // Verificar match mutuo
-        try {
-          const theirLike = await getDoc(doc(db,'users',uid,'matchLikes',window.CU.id));
-          if(theirLike.exists()){
-            _showMutualMatch(uid);
-            // Notificar match mutuo a los dos
-            if(uid !== window.CU.id && typeof sendNotifToUser === 'function'){
-              sendNotifToUser(uid, '🎉 ¡Es un match con ' + (window.CU.nick||'alguien') + '! Los dos se dieron like 💖');
-            }
-          }
-        } catch(e){}
-
-        // Avanzar al siguiente con animación
-        const card = document.querySelector('.mc-single-card');
-        if(card){ card.style.transition='transform .3s ease,opacity .3s ease'; card.style.transform='translateX(120%) rotate(12deg)'; card.style.opacity='0'; }
-        setTimeout(function(){
-          if(_idx < _filtered.length - 1){
-            _idx++;
-            _renderCard('next');
-          } else {
-            _renderCard(null);
-          }
-        }, 280);
+        if(btn){ btn.classList.add('liked'); btn.innerHTML='💖'; }
       }
-    } catch(e){ console.warn('like error:', e); toast('Error al guardar like','err'); if(btn){ btn.disabled=false; } }
+      if(btn) btn.dataset.processing = 'false';
+      return;
+    }
+
+    // ── Dar like: animación inmediata + guardar + notificar + avanzar ──
+
+    // 1. Actualizar UI del botón inmediatamente
+    _likes[uid] = true;
+    if(btn){ btn.classList.add('liked'); btn.innerHTML='💖'; btn.title='Like dado'; }
+
+    // 2. Animar tarjeta hacia la derecha INMEDIATAMENTE (no esperar Firestore)
+    const card = document.querySelector('.mc-single-card');
+    if(card){
+      card.style.transition = 'transform .35s ease, opacity .35s ease';
+      card.style.transform  = 'translateX(130%) rotate(14deg)';
+      card.style.opacity    = '0';
+      card.style.pointerEvents = 'none';
+    }
+
+    // 3. Avanzar al siguiente después de la animación (320ms)
+    setTimeout(function(){
+      if(_idx < _filtered.length - 1){
+        _idx++;
+        _renderCard('next');
+      } else {
+        _renderCard(null);
+      }
+    }, 320);
+
+    // 4. Guardar en Firestore + notificar + verificar match (en paralelo, no bloquea UI)
+    try {
+      await setDoc(likeRef, { ts: Date.now(), nick: window.CU.nick||'', av: window.CU.av||'' });
+    } catch(e){
+      console.warn('like setDoc error:', e);
+      // El like visualmente ya se dio y avanzó; si falla Firestore sólo lo notificamos
+      toast('No se pudo guardar el like, verificá tu conexión','err');
+      if(btn) btn.dataset.processing = 'false';
+      return;
+    }
+
+    // 5. Notificación a la otra persona
+    if(uid !== window.CU.id){
+      try {
+        if(typeof sendNotifToUser === 'function'){
+          sendNotifToUser(uid, '💘 ¡A ' + (window.CU.nick||'alguien') + ' le interesó tu perfil! Entrá a Match para verlo.');
+        }
+      } catch(ne){ console.warn('notif error:', ne); }
+    }
+
+    // 6. Verificar match mutuo
+    try {
+      const theirLike = await getDoc(doc(db,'users',uid,'matchLikes',window.CU.id));
+      if(theirLike.exists()){
+        _showMutualMatch(uid);
+        if(uid !== window.CU.id && typeof sendNotifToUser === 'function'){
+          sendNotifToUser(uid, '🎉 ¡Es un match con ' + (window.CU.nick||'alguien') + '! Los dos se dieron like 💖');
+        }
+      }
+    } catch(e){ console.warn('mutual match check error:', e); }
+
+    if(btn) btn.dataset.processing = 'false';
   };
 
   function _showMutualMatch(uid){
