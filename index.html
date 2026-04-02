@@ -7495,6 +7495,8 @@ function renderStories(){
     row.appendChild(div);
   });
   setTimeout(applyVerifStoryRings,60);
+  // Restaurar foto de perfil en el card "Crear historia" después de re-renderizar
+  setTimeout(()=>{ if(typeof window._updateStoryCard==='function') window._updateStoryCard(); }, 80);
 }
 
 // Abrir historia por grupo y posición dentro del grupo
