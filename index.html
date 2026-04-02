@@ -27057,6 +27057,7 @@ window._showBanScreen = _showBanScreen;
       </div>`;
       return;
     }
+    const isOnline = _onlineSet.has(u.id);
     const liked    = !!_likes[u.id];
     const age      = u.age ? u.age + ' años' : '';
     const dept     = u.dept || u.city || '';
