@@ -2102,6 +2102,7 @@ input:focus, textarea:focus {
     
 
 
+    <button class="tb-nav-btn" onclick="gp('salas');setNav(this);initSalasPage();" title="Chat Salas" style="font-size:.75rem;font-weight:700;">💬 Chat</button>
     <button class="tb-nav-btn" id="adminNavBtn" style="display:none;font-size:.75rem;font-weight:700;" onclick="gp('admin');setNav(this)" title="Panel Admin">🛡️ Admin</button>
   </div>
   <div class="tb-right">
@@ -4190,6 +4191,651 @@ input:focus, textarea:focus {
   </div>
 </div>
 
+
+<!-- ═══════════════════════════ CHAT SALAS ════════════════════════════ -->
+<style>
+/* ── SALAS CSS ── */
+.salas-layout{display:flex;gap:0;height:calc(100vh - 48px);overflow:hidden;max-width:100%;margin:0 auto;}
+.salas-sidebar{width:260px;min-width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;}
+.salas-main{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg);}
+.salas-cat-header{padding:14px 14px 8px;border-bottom:1px solid var(--border);}
+.salas-cat-title{font-family:'Orbitron',monospace;font-size:.78rem;font-weight:900;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
+.salas-cat-btn{display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;color:var(--muted);font-size:.82rem;font-weight:600;padding:7px 10px;border-radius:var(--rs);cursor:pointer;transition:background .15s,color .15s;font-family:'Exo 2',sans-serif;text-align:left;}
+.salas-cat-btn:hover,.salas-cat-btn.active{background:rgba(46,196,182,.12);color:var(--accent);}
+.salas-cat-btn .cat-emoji{font-size:1rem;width:22px;text-align:center;}
+.salas-cat-btn .cat-badge{margin-left:auto;background:var(--accent);color:#0d1117;border-radius:100px;font-size:.6rem;font-weight:800;padding:1px 6px;display:none;}
+.salas-cat-btn.active .cat-badge{display:inline;}
+.salas-rooms-list{flex:1;overflow-y:auto;padding:8px;}
+.salas-rooms-list::-webkit-scrollbar{width:3px;}
+.sala-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--rs);cursor:pointer;transition:background .15s;margin-bottom:2px;}
+.sala-item:hover,.sala-item.active{background:rgba(46,196,182,.1);}
+.sala-item.active .sala-name{color:var(--accent);font-weight:800;}
+.sala-hash{font-size:1rem;color:var(--muted);flex-shrink:0;}
+.sala-info{flex:1;min-width:0;}
+.sala-name{font-size:.84rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sala-desc{font-size:.7rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sala-online{font-size:.65rem;color:var(--green);font-weight:700;margin-left:auto;flex-shrink:0;}
+/* Chat area */
+.sala-chat-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--bg2);}
+.sala-chat-header-icon{font-size:1.1rem;}
+.sala-chat-header-name{font-weight:800;font-size:.95rem;color:var(--text);}
+.sala-chat-header-desc{font-size:.72rem;color:var(--muted);}
+.sala-chat-header-online{margin-left:auto;font-size:.72rem;color:var(--green);font-weight:700;}
+.sala-msgs{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:2px;}
+.sala-msgs::-webkit-scrollbar{width:4px;}
+.sala-msg{display:flex;gap:10px;padding:4px 6px;border-radius:8px;transition:background .15s;position:relative;}
+.sala-msg:hover{background:rgba(255,255,255,.04);}
+.sala-msg-av{width:36px;height:36px;border-radius:50%;overflow:hidden;flex-shrink:0;background:#21262d;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;color:var(--accent);border:1.5px solid var(--border);cursor:pointer;margin-top:2px;}
+.sala-msg-av img{width:100%;height:100%;object-fit:cover;}
+.sala-msg-body{flex:1;min-width:0;}
+.sala-msg-top{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}
+.sala-msg-nick{font-size:.84rem;font-weight:800;color:var(--accent);cursor:pointer;}
+.sala-msg-nick:hover{text-decoration:underline;}
+.sala-msg-time{font-size:.65rem;color:var(--muted);}
+.sala-msg-text{font-size:.87rem;color:var(--text);line-height:1.5;word-break:break-word;margin-top:1px;}
+.sala-msg-reply-preview{background:rgba(46,196,182,.08);border-left:3px solid var(--accent);padding:4px 8px;border-radius:4px;margin-bottom:4px;font-size:.75rem;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.sala-msg-reactions{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;}
+.sala-msg-reaction{background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:100px;padding:2px 8px;font-size:.75rem;cursor:pointer;transition:background .15s;display:flex;align-items:center;gap:3px;}
+.sala-msg-reaction:hover,.sala-msg-reaction.active{background:rgba(46,196,182,.18);border-color:var(--accent);}
+.sala-msg-reaction-count{font-size:.7rem;color:var(--muted);font-weight:700;}
+.sala-msg-actions{position:absolute;right:8px;top:4px;display:none;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:3px 6px;}
+.sala-msg:hover .sala-msg-actions{display:flex;}
+.sala-msg-action-btn{background:none;border:none;font-size:.85rem;cursor:pointer;padding:2px 4px;border-radius:4px;transition:background .15s;}
+.sala-msg-action-btn:hover{background:rgba(255,255,255,.1);}
+/* Input */
+.sala-input-wrap{padding:10px 16px;border-top:1px solid var(--border);background:var(--bg2);}
+.sala-reply-bar{display:none;background:rgba(46,196,182,.08);border-left:3px solid var(--accent);padding:5px 10px;border-radius:4px;margin-bottom:6px;font-size:.75rem;color:var(--muted);align-items:center;gap:8px;}
+.sala-reply-bar.show{display:flex;}
+.sala-reply-bar-close{margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:.9rem;line-height:1;}
+.sala-input-row{display:flex;gap:8px;align-items:flex-end;}
+.sala-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:22px;padding:10px 16px;color:var(--text);font-size:.87rem;font-family:'Exo 2',sans-serif;resize:none;outline:none;max-height:120px;overflow-y:auto;line-height:1.4;transition:border-color .2s;}
+.sala-input:focus{border-color:var(--accent);}
+.sala-send-btn{width:40px;height:40px;border-radius:50%;background:var(--accent);border:none;color:#0d1117;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s,box-shadow .15s;flex-shrink:0;}
+.sala-send-btn:hover{transform:scale(1.08);box-shadow:0 0 12px rgba(46,196,182,.4);}
+/* Emoji picker */
+.sala-emoji-picker{position:absolute;bottom:70px;right:16px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:8px;display:none;gap:4px;flex-wrap:wrap;width:220px;box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:100;}
+.sala-emoji-picker.show{display:flex;}
+.sala-emoji-opt{font-size:1.3rem;cursor:pointer;padding:3px;border-radius:4px;transition:background .15s;}
+.sala-emoji-opt:hover{background:rgba(255,255,255,.1);}
+/* Empty state */
+.sala-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--muted);}
+.sala-empty-icon{font-size:3rem;opacity:.4;}
+/* Adultos lock */
+.sala-locked{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:14px;text-align:center;padding:30px;}
+.sala-locked-icon{font-size:3rem;}
+.sala-locked-title{font-size:1rem;font-weight:800;color:var(--text);}
+.sala-locked-desc{font-size:.82rem;color:var(--muted);max-width:280px;line-height:1.5;}
+.sala-locked-btn{background:linear-gradient(135deg,#ff6b6b,#ee5a24);color:#fff;border:none;border-radius:var(--rs);padding:10px 22px;font-size:.85rem;font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;}
+/* System msg */
+.sala-sys-msg{text-align:center;font-size:.72rem;color:var(--muted);padding:6px 0;font-style:italic;}
+/* Date separator */
+.sala-date-sep{display:flex;align-items:center;gap:8px;padding:8px 0;color:var(--muted);font-size:.7rem;}
+.sala-date-sep::before,.sala-date-sep::after{content:'';flex:1;height:1px;background:var(--border);}
+/* Mobile */
+@media(max-width:600px){
+  .salas-sidebar{width:220px;}
+  .salas-layout{height:calc(100vh - 48px);}
+}
+@media(max-width:480px){
+  .salas-sidebar{position:fixed;left:0;top:48px;bottom:0;z-index:500;transform:translateX(-100%);transition:transform .25s;width:260px;}
+  .salas-sidebar.mob-open{transform:translateX(0);}
+  .sala-mob-toggle{display:flex !important;}
+}
+.sala-mob-toggle{display:none;background:none;border:none;color:var(--accent);font-size:1.3rem;cursor:pointer;padding:4px;}
+.sala-overlay-mob{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:499;}
+.sala-overlay-mob.show{display:block;}
+/* Typing indicator */
+.sala-typing{font-size:.72rem;color:var(--muted);padding:2px 8px;font-style:italic;min-height:18px;}
+/* Reaction popup */
+.sala-react-popup{position:absolute;bottom:32px;right:8px;background:var(--bg2);border:1px solid var(--border);border-radius:100px;padding:4px 8px;display:none;gap:4px;box-shadow:0 4px 16px rgba(0,0,0,.4);z-index:50;}
+.sala-react-popup.show{display:flex;}
+.sala-react-opt{font-size:1.2rem;cursor:pointer;padding:2px;border-radius:50%;transition:transform .15s;line-height:1;}
+.sala-react-opt:hover{transform:scale(1.3);}
+/* Admin categoria adultos badge */
+.salas-cat-btn.adultos-cat{color:#ff6b6b;}
+.salas-cat-btn.adultos-cat:hover,.salas-cat-btn.adultos-cat.active{background:rgba(255,107,107,.1);color:#ff6b6b;}
+/* Verificado en chat */
+.sala-msg-verified{display:inline-flex;vertical-align:middle;width:14px;height:14px;margin-left:2px;}
+</style>
+
+<div class="page" id="page-salas" style="padding:0;overflow:hidden;">
+  <div class="salas-layout" id="salasLayout">
+    <!-- SIDEBAR CATEGORÍAS Y SALAS -->
+    <div class="salas-sidebar" id="salasSidebar">
+      <div class="salas-cat-header">
+        <div class="salas-cat-title">💬 Chat Salas</div>
+        <!-- Categorías -->
+        <div id="salasCatList"></div>
+      </div>
+      <div class="salas-rooms-list" id="salasRoomsList"></div>
+    </div>
+
+    <!-- OVERLAY MOBILE -->
+    <div class="sala-overlay-mob" id="salaMobOverlay" onclick="closeSalasSidebar()"></div>
+
+    <!-- MAIN: chat o pantalla de bienvenida -->
+    <div class="salas-main" id="salasMain">
+      <!-- Topbar del chat actual -->
+      <div class="sala-chat-header" id="salaChatHeader" style="display:none;">
+        <button class="sala-mob-toggle" id="salaMobToggleBtn" onclick="openSalasSidebar()">☰</button>
+        <span class="sala-chat-header-icon" id="salaChatIcon">💬</span>
+        <div>
+          <div class="sala-chat-header-name" id="salaChatName">Sala</div>
+          <div class="sala-chat-header-desc" id="salaChatDesc"></div>
+        </div>
+        <div class="sala-chat-header-online" id="salaChatOnline"></div>
+      </div>
+
+      <!-- Estado vacío (ninguna sala seleccionada) -->
+      <div class="sala-empty" id="salasEmptyState">
+        <div class="sala-empty-icon">💬</div>
+        <div style="font-weight:700;font-size:.95rem;color:var(--text);">Seleccioná una sala para chatear</div>
+        <div style="font-size:.8rem;color:var(--muted);">Elegí una categoría y una sala del panel izquierdo</div>
+      </div>
+
+      <!-- Sala bloqueada (adultos sin verificar) -->
+      <div class="sala-locked" id="salasLockedState" style="display:none;">
+        <div class="sala-locked-icon">🔞</div>
+        <div class="sala-locked-title">Zona solo para Adultos</div>
+        <div class="sala-locked-desc">Esta sala es solo para usuarios verificados mayores de 18 años. Verificá tu perfil para acceder al contenido adulto.</div>
+        <button class="sala-locked-btn" onclick="gp('profile')">✅ Verificar mi perfil</button>
+      </div>
+
+      <!-- Mensajes -->
+      <div class="sala-msgs" id="salaMsgs" style="display:none;"></div>
+
+      <!-- Typing -->
+      <div class="sala-typing" id="salaTyping"></div>
+
+      <!-- Input -->
+      <div class="sala-input-wrap" id="salaInputWrap" style="display:none;position:relative;">
+        <div class="sala-reply-bar" id="salaReplyBar">
+          <span style="font-weight:700;color:var(--accent);">↩️ Respondiendo a <span id="salaReplyNick"></span>:</span>
+          <span id="salaReplyText" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;"></span>
+          <button class="sala-reply-bar-close" onclick="cancelSalaReply()">✕</button>
+        </div>
+        <div class="sala-input-row">
+          <textarea class="sala-input" id="salaInputText" rows="1" placeholder="Escribí un mensaje..." onkeydown="handleSalaKey(event)" oninput="autoResizeSalaInput(this);onSalaTyping()"></textarea>
+          <button class="sala-send-btn" onclick="sendSalaMsg()" title="Enviar">➤</button>
+        </div>
+        <!-- Emoji picker inline -->
+        <div class="sala-emoji-picker" id="salaEmojiPicker">
+          <span class="sala-emoji-opt" onclick="insertSalaEmoji('😀')">😀</span>
+          <span class="sala-emoji-opt" onclick="insertSalaEmoji('😂')">😂</span>
+          <span class="sala-emoji-opt" onclick="insertSalaEmoji('❤️')">❤️</span>
+          <span class="sala-emoji-opt" onclick="insertSalaEmoji('🔥')">🔥</span>
+          <span class="sala-emoji-opt" onclick="insertSalaEmoji('😍')">😍</span>
+          <span class="sala-emoji-opt" onclick="insertSalaEmoji('🎉')">🎉</span>
+          <span class="sala-emoji-opt" onclick="insertSalaEmoji('👀')">👀</span>
+          <span class="sala-emoji-opt" onclick="insertSalaEmoji('😭')">😭</span>
+          <span class="sala-emoji-opt" onclick="insertSalaEmoji('🙏')">🙏</span>
+          <span class="sala-emoji-opt" onclick="insertSalaEmoji('💯')">💯</span>
+          <span class="sala-emoji-opt" onclick="insertSalaEmoji('😎')">😎</span>
+          <span class="sala-emoji-opt" onclick="insertSalaEmoji('🤣')">🤣</span>
+          <span class="sala-emoji-opt" onclick="insertSalaEmoji('👋')">👋</span>
+          <span class="sala-emoji-opt" onclick="insertSalaEmoji('🥰')">🥰</span>
+          <span class="sala-emoji-opt" onclick="insertSalaEmoji('😘')">😘</span>
+          <span class="sala-emoji-opt" onclick="insertSalaEmoji('🤔')">🤔</span>
+          <span class="sala-emoji-opt" onclick="insertSalaEmoji('😏')">😏</span>
+          <span class="sala-emoji-opt" onclick="insertSalaEmoji('💋')">💋</span>
+          <span class="sala-emoji-opt" onclick="insertSalaEmoji('🍷')">🍷</span>
+          <span class="sala-emoji-opt" onclick="insertSalaEmoji('🌹')">🌹</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+// ── DATOS DE CATEGORÍAS Y SALAS ─────────────────────────────────────────────
+const SALAS_DATA = [
+  {
+    id: 'general',
+    nombre: 'General',
+    emoji: '🌐',
+    adultos: false,
+    salas: [
+      { id: 'bienvenida',    nombre: 'Bienvenida',       emoji: '👋', desc: 'Presentate a la comunidad' },
+      { id: 'general',       nombre: 'General',           emoji: '💬', desc: 'Conversación libre' },
+      { id: 'uruguay',       nombre: 'Uruguay 🇺🇾',        emoji: '🌿', desc: 'Todo sobre Uruguay' },
+      { id: 'argentina',     nombre: 'Argentina 🇦🇷',      emoji: '🧉', desc: 'Todo sobre Argentina' },
+      { id: 'humor',         nombre: 'Humor & Memes',     emoji: '😂', desc: 'Para reírse un rato' },
+    ]
+  },
+  {
+    id: 'citas',
+    nombre: 'Citas & Amor',
+    emoji: '💕',
+    adultos: false,
+    salas: [
+      { id: 'flirteo',       nombre: 'Flirteo',           emoji: '😏', desc: 'Para los piropos' },
+      { id: 'consejos-amor', nombre: 'Consejos de Amor',  emoji: '💌', desc: 'Pedí o dá consejos' },
+      { id: 'solter@s',      nombre: 'Solter@s',          emoji: '💔', desc: 'Para los que están solteros' },
+      { id: 'relaciones',    nombre: 'Relaciones',        emoji: '💑', desc: 'En pareja y queriendo más' },
+    ]
+  },
+  {
+    id: 'hobbies',
+    nombre: 'Hobbies',
+    emoji: '🎨',
+    adultos: false,
+    salas: [
+      { id: 'musica',        nombre: 'Música',            emoji: '🎵', desc: 'Compartí lo que escuchás' },
+      { id: 'series-pelis',  nombre: 'Series & Pelis',    emoji: '🎬', desc: 'Recomendaciones y debates' },
+      { id: 'deportes',      nombre: 'Deportes',          emoji: '⚽', desc: 'Fútbol, básquet y más' },
+      { id: 'gaming',        nombre: 'Gaming',            emoji: '🎮', desc: 'Videojuegos y torneos' },
+      { id: 'cocina',        nombre: 'Cocina & Comida',   emoji: '🍕', desc: 'Recetas y antojos' },
+    ]
+  },
+  {
+    id: 'adultos',
+    nombre: 'Adultos',
+    emoji: '🔞',
+    adultos: true,
+    salas: [
+      { id: 'adultos-general',  nombre: 'General +18',       emoji: '🔥', desc: 'Conversación sin filtros' },
+      { id: 'adultos-flirteo',  nombre: 'Flirteo Caliente',  emoji: '💋', desc: 'Solo para mayores' },
+      { id: 'adultos-picante',  nombre: 'Zona Picante',      emoji: '🌶️', desc: 'Contenido para adultos' },
+      { id: 'adultos-fantasias',nombre: 'Fantasías',         emoji: '😈', desc: 'Contá tus fantasías' },
+      { id: 'adultos-rp',       nombre: 'Roleplay +18',      emoji: '🎭', desc: 'Juego de roles adultos' },
+    ]
+  }
+];
+
+// ── ESTADO ──────────────────────────────────────────────────────────────────
+let _curCatId = 'general';
+let _curSala = null;
+let _msgs = {}; // cache local de mensajes por sala
+let _listeners = {}; // Firestore unsubscribes
+let _replyTo = null;
+let _typingTimer = null;
+let _onlineCounts = {}; // sala -> count
+
+// ── HELPERS ─────────────────────────────────────────────────────────────────
+function _esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function _timeAgo(ts){
+  const d = Date.now()-ts;
+  if(d<60000) return 'ahora';
+  if(d<3600000) return Math.floor(d/60000)+'m';
+  if(d<86400000) return Math.floor(d/3600000)+'h';
+  return new Date(ts).toLocaleDateString('es-UY',{day:'2-digit',month:'2-digit'});
+}
+function _av(u){
+  if(u?.av && u.av.startsWith('http')) return `<img src="${_esc(u.av)}" alt="" onerror="this.style.display='none';this.parentNode.textContent='${_esc((u.nick||'?')[0].toUpperCase())}'">`;
+  return _esc((u?.nick||'?')[0].toUpperCase());
+}
+function _isAdultos(salaId){ return salaId && salaId.startsWith('adultos-'); }
+function _canAccessAdultos(){
+  // Puede acceder si está verificado o es admin
+  if(!window.CU) return false;
+  const isAdmin = window.CU.nick==='ruizgustavo12'||window.CU.email==='synxyes@gmail.com'||window.CU.role==='admin';
+  return isAdmin || window.CU.verified || window.CU.premium;
+}
+
+// ── INICIALIZAR PÁGINA ───────────────────────────────────────────────────────
+window.initSalasPage = function(){
+  renderSalasCats();
+  selectSalasCat('general');
+};
+
+// ── RENDER CATEGORÍAS ────────────────────────────────────────────────────────
+function renderSalasCats(){
+  const el = document.getElementById('salasCatList');
+  if(!el) return;
+  el.innerHTML = SALAS_DATA.map(cat=>`
+    <button class="salas-cat-btn${cat.id===_curCatId?' active':''}${cat.adultos?' adultos-cat':''}" 
+      onclick="selectSalasCat('${cat.id}')" id="catBtn_${cat.id}">
+      <span class="cat-emoji">${cat.emoji}</span>
+      <span>${cat.nombre}</span>
+      ${cat.adultos?'<span style="font-size:.65rem;background:rgba(255,107,107,.2);color:#ff6b6b;border-radius:4px;padding:1px 5px;margin-left:4px;">+18</span>':''}
+    </button>
+  `).join('');
+}
+
+// ── SELECCIONAR CATEGORÍA ────────────────────────────────────────────────────
+window.selectSalasCat = function(catId){
+  _curCatId = catId;
+  renderSalasCats();
+  const cat = SALAS_DATA.find(c=>c.id===catId);
+  if(!cat) return;
+  renderSalasRooms(cat);
+};
+
+// ── RENDER SALAS DE LA CATEGORÍA ─────────────────────────────────────────────
+function renderSalasRooms(cat){
+  const el = document.getElementById('salasRoomsList');
+  if(!el) return;
+  const seccTitle = `<div style="font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:6px 10px 4px;">${cat.emoji} ${cat.nombre}</div>`;
+  const items = cat.salas.map(s=>`
+    <div class="sala-item${_curSala?.id===s.id?' active':''}" id="salaItem_${s.id}" onclick="selectSala('${s.id}','${cat.id}')">
+      <span class="sala-hash">#</span>
+      <div class="sala-info">
+        <div class="sala-name">${_esc(s.nombre)}</div>
+        <div class="sala-desc">${_esc(s.desc)}</div>
+      </div>
+      <span class="sala-online" id="salaOnline_${s.id}">${_onlineCounts[s.id]?_onlineCounts[s.id]+'👤':''}</span>
+    </div>
+  `).join('');
+  el.innerHTML = seccTitle + items;
+}
+
+// ── SELECCIONAR SALA ──────────────────────────────────────────────────────────
+window.selectSala = function(salaId, catId){
+  const cat = SALAS_DATA.find(c=>c.id===catId);
+  const sala = cat?.salas.find(s=>s.id===salaId);
+  if(!sala) return;
+
+  // Quitar active anterior
+  document.querySelectorAll('.sala-item').forEach(i=>i.classList.remove('active'));
+  const item = document.getElementById('salaItem_'+salaId);
+  if(item) item.classList.add('active');
+
+  // Verificar acceso adultos
+  if(cat.adultos && !_canAccessAdultos()){
+    _showSalaLocked();
+    _curSala = sala;
+    // Header igual
+    _updateSalaChatHeader(sala);
+    // En mobile cerrar sidebar
+    closeSalasSidebar();
+    return;
+  }
+
+  _curSala = sala;
+  _showSalaChat();
+  _updateSalaChatHeader(sala);
+  _loadSalaMsgs(sala);
+  // En mobile cerrar sidebar
+  closeSalasSidebar();
+};
+
+function _updateSalaChatHeader(sala){
+  const h = document.getElementById('salaChatHeader');
+  if(h) h.style.display='flex';
+  const icon = document.getElementById('salaChatIcon');
+  const name = document.getElementById('salaChatName');
+  const desc = document.getElementById('salaChatDesc');
+  const online = document.getElementById('salaChatOnline');
+  if(icon) icon.textContent = sala.emoji;
+  if(name) name.textContent = '#'+sala.nombre;
+  if(desc) desc.textContent = sala.desc;
+  if(online) online.textContent = (_onlineCounts[sala.id]||'?')+' en línea';
+}
+
+function _showSalaChat(){
+  document.getElementById('salasEmptyState').style.display='none';
+  document.getElementById('salasLockedState').style.display='none';
+  document.getElementById('salaMsgs').style.display='flex';
+  document.getElementById('salaInputWrap').style.display='block';
+}
+
+function _showSalaLocked(){
+  document.getElementById('salasEmptyState').style.display='none';
+  document.getElementById('salasLockedState').style.display='flex';
+  document.getElementById('salaMsgs').style.display='none';
+  document.getElementById('salaInputWrap').style.display='none';
+}
+
+// ── CARGAR MENSAJES (Firestore real-time) ─────────────────────────────────────
+function _loadSalaMsgs(sala){
+  const msgsEl = document.getElementById('salaMsgs');
+  if(!msgsEl) return;
+  msgsEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.8rem;">Cargando mensajes...</div>';
+
+  // Desuscribir listener anterior si existe
+  if(_listeners[sala.id]){
+    try{ _listeners[sala.id](); }catch(e){}
+    delete _listeners[sala.id];
+  }
+
+  // Intentar con Firestore (si está disponible)
+  try {
+    const { collection, query, orderBy, limit, onSnapshot, doc, getFirestore } = window._fbModules || {};
+    const db = window.db || (typeof getFirestore==='function' ? getFirestore() : null);
+
+    if(db && collection && query && orderBy && limit && onSnapshot){
+      const q = query(
+        collection(db, 'chatSalas', sala.id, 'msgs'),
+        orderBy('ts','asc'),
+        limit(80)
+      );
+      const unsub = onSnapshot(q, snap=>{
+        const msgs = [];
+        snap.forEach(d=>msgs.push({id:d.id,...d.data()}));
+        _msgs[sala.id] = msgs;
+        if(_curSala?.id === sala.id) _renderMsgs(msgs);
+      }, err=>{
+        console.warn('Sala msgs error:', err);
+        _renderMsgsFallback(sala.id);
+      });
+      _listeners[sala.id] = unsub;
+    } else {
+      _renderMsgsFallback(sala.id);
+    }
+  } catch(e){
+    _renderMsgsFallback(sala.id);
+  }
+}
+
+function _renderMsgsFallback(salaId){
+  // Si no hay Firebase, mostrar mensajes de demo
+  const demos = [
+    { id:'d1', uid:'user1', nick:'Ana García', av:'', text:'¡Hola a todos! 👋', ts: Date.now()-300000, reactions:{} },
+    { id:'d2', uid:'user2', nick:'Carlos M.', av:'', text:'Bienvenid@s a la sala 🎉', ts: Date.now()-200000, reactions:{} },
+    { id:'d3', uid:'user3', nick:'MiLatido Bot', av:'', text:'Esta es una sala de chat en tiempo real. ¡Sé el primero en escribir!', ts: Date.now()-60000, reactions:{} },
+  ];
+  _msgs[salaId] = demos;
+  if(_curSala?.id === salaId) _renderMsgs(demos);
+}
+
+// ── RENDER MENSAJES ─────────────────────────────────────────────────────────────
+function _renderMsgs(msgs){
+  const el = document.getElementById('salaMsgs');
+  if(!el) return;
+  if(!msgs || !msgs.length){
+    el.innerHTML = `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--muted);">
+      <div style="font-size:2.5rem;opacity:.3;">💬</div>
+      <div style="font-size:.85rem;">Sé el primero en escribir en esta sala</div>
+    </div>`;
+    return;
+  }
+  const cu = window.CU;
+  let html = '';
+  let lastDate = '';
+  msgs.forEach((m,i)=>{
+    const d = new Date(m.ts);
+    const dateStr = d.toLocaleDateString('es-UY',{day:'2-digit',month:'2-digit',year:'numeric'});
+    if(dateStr !== lastDate){
+      html += `<div class="sala-date-sep">${dateStr}</div>`;
+      lastDate = dateStr;
+    }
+    if(m.system){
+      html += `<div class="sala-sys-msg">${_esc(m.text)}</div>`;
+      return;
+    }
+    const isMine = cu && m.uid === cu.id;
+    const avHtml = m.av && m.av.startsWith('http')
+      ? `<img src="${_esc(m.av)}" alt="" onerror="this.style.display='none';this.parentNode.textContent='${_esc((m.nick||'?')[0].toUpperCase())}'">` 
+      : _esc((m.nick||'?')[0].toUpperCase());
+    const reactions = m.reactions || {};
+    const reactHtml = Object.entries(reactions).map(([emoji, uids])=>`
+      <span class="sala-msg-reaction${cu&&uids[cu.id]?' active':''}" onclick="toggleSalaReaction('${_esc(m.id)}','${emoji}')">
+        ${emoji} <span class="sala-msg-reaction-count">${Object.keys(uids).length}</span>
+      </span>`).join('');
+    const replyHtml = m.replyTo ? `<div class="sala-msg-reply-preview">↩️ <strong>${_esc(m.replyTo.nick)}:</strong> ${_esc(m.replyTo.text?.slice(0,60)||'')}${(m.replyTo.text?.length||0)>60?'…':''}</div>` : '';
+    html += `
+      <div class="sala-msg" id="salaMsg_${_esc(m.id)}" data-uid="${_esc(m.uid||'')}">
+        <div class="sala-msg-av" onclick="openUserProfile('${_esc(m.uid||'')}','${_esc(m.nick||'')}')">${avHtml}</div>
+        <div class="sala-msg-body">
+          ${replyHtml}
+          <div class="sala-msg-top">
+            <span class="sala-msg-nick" onclick="openUserProfile('${_esc(m.uid||'')}','${_esc(m.nick||'')}')">${_esc(m.nick||'Anónimo')}</span>
+            ${m.verified?'<img class="sala-msg-verified" src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/2705.png" title="Verificado">':''}
+            <span class="sala-msg-time">${_timeAgo(m.ts)}</span>
+          </div>
+          <div class="sala-msg-text">${_esc(m.text)}</div>
+          ${reactHtml?`<div class="sala-msg-reactions">${reactHtml}</div>`:''}
+        </div>
+        <div class="sala-msg-actions">
+          <button class="sala-msg-action-btn" title="Reaccionar" onclick="showSalaReactPopup(event,'${_esc(m.id)}')">😊</button>
+          <button class="sala-msg-action-btn" title="Responder" onclick="setSalaReply('${_esc(m.id)}','${_esc(m.nick||'')}','${_esc((m.text||'').replace(/'/g,"\\'").slice(0,80))}')">↩️</button>
+          ${isMine?`<button class="sala-msg-action-btn" title="Eliminar" onclick="deleteSalaMsg('${_esc(m.id)}')">🗑️</button>`:''}
+        </div>
+        <!-- Reaction popup -->
+        <div class="sala-react-popup" id="reactPop_${_esc(m.id)}">
+          ${['❤️','😂','👍','🔥','😍','😮','😢','👏','🙏','💋'].map(e=>`<span class="sala-react-opt" onclick="toggleSalaReaction('${_esc(m.id)}','${e}');closeSalaReactPopups()">${e}</span>`).join('')}
+        </div>
+      </div>`;
+  });
+  el.innerHTML = html;
+  // Scroll al fondo
+  el.scrollTop = el.scrollHeight;
+}
+
+// ── ENVIAR MENSAJE ──────────────────────────────────────────────────────────────
+window.sendSalaMsg = async function(){
+  if(!window.CU){ toast('Iniciá sesión para chatear','err'); return; }
+  if(!_curSala){ toast('Seleccioná una sala primero','err'); return; }
+  const inp = document.getElementById('salaInputText');
+  const text = (inp?.value||'').trim();
+  if(!text) return;
+  inp.value = '';
+  inp.style.height = '';
+
+  const cu = window.CU;
+  const msg = {
+    uid: cu.id,
+    nick: cu.nick||'Usuario',
+    av: cu.av||'',
+    text,
+    ts: Date.now(),
+    verified: !!cu.verified,
+    reactions: {}
+  };
+  if(_replyTo){
+    msg.replyTo = { ..._replyTo };
+    cancelSalaReply();
+  }
+
+  // Agregar optimistamente
+  const localId = 'local_'+Date.now();
+  if(!_msgs[_curSala.id]) _msgs[_curSala.id] = [];
+  _msgs[_curSala.id].push({...msg, id: localId});
+  _renderMsgs(_msgs[_curSala.id]);
+
+  // Guardar en Firestore
+  try {
+    const { collection, addDoc, getFirestore } = window._fbModules || {};
+    const db = window.db || (typeof getFirestore==='function' ? getFirestore() : null);
+    if(db && collection && addDoc){
+      await addDoc(collection(db, 'chatSalas', _curSala.id, 'msgs'), msg);
+    }
+  } catch(e){ console.warn('No se pudo guardar mensaje:', e); }
+};
+
+window.handleSalaKey = function(e){
+  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendSalaMsg(); }
+};
+
+window.autoResizeSalaInput = function(el){
+  el.style.height='auto';
+  el.style.height = Math.min(el.scrollHeight,120)+'px';
+};
+
+// ── REPLY ──────────────────────────────────────────────────────────────────────
+window.setSalaReply = function(msgId, nick, text){
+  _replyTo = { msgId, nick, text };
+  document.getElementById('salaReplyBar').classList.add('show');
+  document.getElementById('salaReplyNick').textContent = nick;
+  document.getElementById('salaReplyText').textContent = text;
+  document.getElementById('salaInputText').focus();
+};
+
+window.cancelSalaReply = function(){
+  _replyTo = null;
+  document.getElementById('salaReplyBar').classList.remove('show');
+};
+
+// ── REACCIONES ──────────────────────────────────────────────────────────────────
+window.showSalaReactPopup = function(e, msgId){
+  e.stopPropagation();
+  closeSalaReactPopups();
+  const pop = document.getElementById('reactPop_'+msgId);
+  if(pop) pop.classList.add('show');
+  setTimeout(()=>document.addEventListener('click',closeSalaReactPopups,{once:true}), 10);
+};
+
+window.closeSalaReactPopups = function(){
+  document.querySelectorAll('.sala-react-popup.show').forEach(p=>p.classList.remove('show'));
+};
+
+window.toggleSalaReaction = async function(msgId, emoji){
+  if(!window.CU){ toast('Iniciá sesión para reaccionar','err'); return; }
+  try {
+    const { doc, updateDoc, getFirestore, getDoc } = window._fbModules || {};
+    const db = window.db;
+    if(!db||!doc||!updateDoc) return;
+    const msgRef = doc(db,'chatSalas',_curSala.id,'msgs',msgId);
+    const snap = await getDoc(msgRef);
+    if(!snap.exists()) return;
+    const reactions = snap.data().reactions || {};
+    if(!reactions[emoji]) reactions[emoji] = {};
+    const uid = window.CU.id;
+    if(reactions[emoji][uid]) delete reactions[emoji][uid];
+    else reactions[emoji][uid] = true;
+    // Limpiar emojis vacíos
+    if(Object.keys(reactions[emoji]).length===0) delete reactions[emoji];
+    await updateDoc(msgRef,{reactions});
+  } catch(e){ console.warn('Reaction error:',e); }
+};
+
+// ── ELIMINAR MENSAJE ───────────────────────────────────────────────────────────
+window.deleteSalaMsg = async function(msgId){
+  if(!confirm('¿Eliminar este mensaje?')) return;
+  try {
+    const { doc, deleteDoc, getFirestore } = window._fbModules || {};
+    const db = window.db;
+    if(!db||!doc||!deleteDoc) return;
+    await deleteDoc(doc(db,'chatSalas',_curSala.id,'msgs',msgId));
+  } catch(e){ console.warn('Delete error:',e); }
+};
+
+// ── TYPING INDICATOR ───────────────────────────────────────────────────────────
+window.onSalaTyping = function(){
+  // Simular "está escribiendo..." — en producción conectaría con Firestore
+  clearTimeout(_typingTimer);
+};
+
+// ── EMOJI ──────────────────────────────────────────────────────────────────────
+window.insertSalaEmoji = function(emoji){
+  const inp = document.getElementById('salaInputText');
+  if(!inp) return;
+  const start = inp.selectionStart||0;
+  const val = inp.value;
+  inp.value = val.slice(0,start)+emoji+val.slice(inp.selectionEnd||start);
+  inp.selectionStart = inp.selectionEnd = start+emoji.length;
+  inp.focus();
+};
+
+// ── MOBILE SIDEBAR ─────────────────────────────────────────────────────────────
+window.openSalasSidebar = function(){
+  document.getElementById('salasSidebar').classList.add('mob-open');
+  document.getElementById('salaMobOverlay').classList.add('show');
+};
+window.closeSalasSidebar = function(){
+  document.getElementById('salasSidebar').classList.remove('mob-open');
+  document.getElementById('salaMobOverlay').classList.remove('show');
+};
+
+// Exponer para gp()
+window.initSalasPage = window.initSalasPage;
+
+})();
+</script>
+<!-- ═══════════════════════════ FIN CHAT SALAS ════════════════════════════ -->
 
 <div class="page" id="page-admin" style="max-width:1000px;margin:0 auto;padding:24px 16px 80px;">
   <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
@@ -7587,6 +8233,7 @@ window.gp = (id, pushState = true) => {
   if(id==='soporte') initSoportePage();
   if(id==='torneos') loadTorneos();
   if(id==='ranking-semanal') loadRankingSemanal();
+  if(id==='salas') { if(typeof window.initSalasPage==='function') setTimeout(window.initSalasPage,50); }
   if(id==='userprofile') {} // cargado desde _loadUserProfilePage
   // Actualizar actividad en presencia Firebase
   if(typeof updatePresenceActivity === 'function') updatePresenceActivity(id);
