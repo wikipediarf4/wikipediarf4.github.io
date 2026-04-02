@@ -4786,16 +4786,6 @@ function _renderMsgs(msgs){
 }
 // ── ENVIAR MENSAJE ──────────────────────────────────────────────────────────────
 window.sendSalaMsg = async function(){
-  // Si CU todavía no cargó, esperar hasta 5 segundos
-  if(!window.CU){
-    let waited = 0;
-    await new Promise(resolve => {
-      const iv = setInterval(() => {
-        waited += 200;
-        if(window.CU || waited >= 5000){ clearInterval(iv); resolve(); }
-      }, 200);
-    });
-  }
   if(!window.CU){ toast('Iniciá sesión para chatear','err'); return; }
   if(!_curSala){ toast('Selección de sala requerida','err'); return; }
   var inp = document.getElementById('salaInputText');
@@ -27860,6 +27850,14 @@ window._showBanScreen = _showBanScreen;
   box-shadow:0 4px 18px rgba(0,0,0,.35);
 }
 .mc-btn-profile:hover { transform:scale(1.1);color:#f33e58; }
+.mc-btn-msg {
+  width:58px;height:58px;border-radius:50%;
+  border:none;
+  background:#fff;color:#2ec4b6;cursor:pointer;font-size:1.4rem;
+  display:flex;align-items:center;justify-content:center;transition:all .18s;flex-shrink:0;
+  box-shadow:0 4px 18px rgba(0,0,0,.35);
+}
+.mc-btn-msg:hover { transform:scale(1.1);box-shadow:0 6px 24px rgba(46,196,182,.45); }
 
 /* Nav prev/next */
 .mc-nav { display:flex;align-items:center;justify-content:space-between;width:100%;max-width:420px;padding:0 12px; }
@@ -28425,6 +28423,7 @@ window._showBanScreen = _showBanScreen;
           ${liked ? '💖' : '❤️'}
         </button>
         <button class="mc-btn-profile" onclick="openUserProfile('${_esc(u.id)}','${_esc(nick)}')" title="Ver perfil">👤</button>
+        <button class="mc-btn-msg" onclick="openChatWith('${_esc(u.id)}','${_esc(nick)}')" title="Enviar mensaje">💬</button>
       </div>
       <div class="mc-body"></div>`;
 
