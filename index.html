@@ -26689,7 +26689,7 @@ window._showBanScreen = _showBanScreen;
 .mfg-btn { padding:6px 12px;border-radius:20px;border:1.5px solid #30363d;background:transparent;color:var(--text);font-size:.78rem;font-weight:700;cursor:pointer;transition:all .15s; }
 
 /* Área de la card única */
-.match-swipe-area { width:100%;position:relative;display:flex;align-items:center;justify-content:center; }
+.match-swipe-area { width:100%;position:relative;display:flex;align-items:center;justify-content:center;min-height:480px; }
 
 /* Card estilo Tinder */
 .mc-single-card {
@@ -26846,11 +26846,17 @@ window._showBanScreen = _showBanScreen;
 
   <!-- Card única -->
   <div class="match-swipe-area" id="matchSwipeArea">
-    <!-- renderizado por JS -->
+    <div class="mc-skeleton-card">
+      <div style="width:100%;aspect-ratio:3/4;" class="match-skeleton"></div>
+      <div style="padding:14px 16px 16px;">
+        <div style="height:14px;border-radius:6px;margin-bottom:8px;" class="match-skeleton"></div>
+        <div style="height:10px;border-radius:6px;width:60%;" class="match-skeleton"></div>
+      </div>
+    </div>
   </div>
 
   <!-- Nav anterior / siguiente -->
-  <div class="mc-nav">
+  <div class="mc-nav" style="margin-top:18px;">
     <button class="mc-nav-btn" id="mcPrevBtn" onclick="matchNavPrev()" disabled>← Anterior</button>
     <span class="mc-nav-counter" id="mcNavCounter"></span>
     <button class="mc-nav-btn" id="mcNextBtn" onclick="matchNavNext()">Siguiente →</button>
@@ -27033,6 +27039,10 @@ window._showBanScreen = _showBanScreen;
 
   // ── Render card única ─────────────────────────────────────────────────────
   function _renderCard(direction){
+    try { _renderCardInner(direction); }
+    catch(e){ console.warn('_renderCard error:', e); _showError(); }
+  }
+  function _renderCardInner(direction){
     const area = document.getElementById('matchSwipeArea');
     if(!area) return;
 
