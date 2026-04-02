@@ -4395,8 +4395,8 @@ input:focus, textarea:focus {
       <div class="sala-locked" id="salasLockedState" style="display:none;">
         <div class="sala-locked-icon">🔞</div>
         <div class="sala-locked-title">Zona solo para Adultos</div>
-        <div class="sala-locked-desc">Esta sala es solo para usuarios verificados mayores de 18 años. Verificá tu perfil para acceder al contenido adulto.</div>
-        <button class="sala-locked-btn" onclick="gp('profile')">✅ Verificar mi perfil</button>
+        <div class="sala-locked-desc">Esta sala es solo para mayores de 18 años. Iniciá sesión para acceder.</div>
+        <button class="sala-locked-btn" onclick="gp('login')">Iniciar sesión</button>
       </div>
 
       <!-- Mensajes -->
@@ -4527,10 +4527,8 @@ function _av(u){
 }
 function _isAdultos(salaId){ return salaId && salaId.startsWith('adultos-'); }
 function _canAccessAdultos(){
-  // Puede acceder si está verificado o es admin
-  if(!window.CU) return false;
-  const isAdmin = window.CU.nick==='ruizgustavo12'||window.CU.email==='synxyes@gmail.com'||window.CU.role==='admin';
-  return isAdmin || window.CU.verified || window.CU.premium;
+  // Solo necesita estar registrado (logueado)
+  return !!window.CU;
 }
 
 // ── INICIALIZAR PÁGINA ───────────────────────────────────────────────────────
