@@ -3076,12 +3076,6 @@ input:focus, textarea:focus {
 
     
     <div class="fb-left">
-      <!-- Banderas UY y AR animadas -->
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;justify-content:center;">
-        <span style="font-size:2.6rem;filter:drop-shadow(0 2px 8px rgba(0,0,0,.4));animation:flagFloat 2.8s ease-in-out infinite;">🇺🇾</span>
-        <div style="height:2px;width:32px;background:linear-gradient(90deg,#009CDE,#fff,#009CDE);border-radius:2px;"></div>
-        <span style="font-size:2.6rem;filter:drop-shadow(0 2px 8px rgba(0,0,0,.4));animation:flagFloat 2.8s ease-in-out infinite 0.4s;">🇦🇷</span>
-      </div>
       <!-- Slogan red social -->
       <div style="text-align:center;margin-bottom:16px;padding:0 8px;">
         <div style="font-family:'Orbitron',monospace;font-size:1.05rem;font-weight:900;color:var(--accent);letter-spacing:.04em;margin-bottom:6px;line-height:1.3;">La red social de los pescadores</div>
@@ -26647,37 +26641,51 @@ window._showBanScreen = _showBanScreen;
 
 <!-- ═══════════════════════════ MATCH PAGE ═══════════════════════════ -->
 <style>
-#page-match { max-width:480px;margin:0 auto;padding:16px 12px 100px;flex-direction:column;align-items:center; }
+/* ══════════ MATCH — ESTILO BADOO ══════════ */
+#page-match {
+  max-width:480px;margin:0 auto;padding:0 0 80px;
+  flex-direction:column;align-items:center;
+  background:transparent;
+}
 #page-match.active { display:flex; }
 @keyframes heartbeat { 0%,100%{transform:scale(1)} 15%{transform:scale(1.25)} 30%{transform:scale(1)} 45%{transform:scale(1.15)} 60%{transform:scale(1)} }
 .match-heart-icon { display:inline-block;animation:heartbeat 1.4s ease-in-out infinite;transform-origin:center; }
 
-/* Header */
-.match-header { width:100%;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px; }
-.match-title  { font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:var(--accent);display:flex;align-items:center;gap:8px; }
-.match-count-pill { font-size:.72rem;background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:3px 10px;border-radius:100px; }
+/* Header estilo Badoo */
+.match-header {
+  width:100%;display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px 10px;flex-wrap:wrap;gap:8px;
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:10;
+}
+.match-title  { font-family:'Exo 2',sans-serif;font-size:1.15rem;font-weight:900;color:var(--text);display:flex;align-items:center;gap:8px; }
+.match-count-pill { font-size:.72rem;background:linear-gradient(135deg,#f33e58,#e8174e);color:#fff;padding:3px 10px;border-radius:100px;font-weight:700; }
 
 /* Filtros colapsables */
-.match-filters-wrap { width:100%;margin-bottom:10px; }
-.match-filters-toggle { width:100%;padding:8px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;color:var(--muted);font-family:'Exo 2',sans-serif;font-size:.8rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:border-color .15s; }
-.match-filters-toggle:hover { border-color:var(--accent);color:var(--accent); }
-.match-filters-body { display:none;margin-top:6px;padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;flex-wrap:wrap;gap:8px;align-items:flex-end; }
+.match-filters-wrap { width:100%;margin-bottom:0;border-bottom:1px solid var(--border); }
+.match-filters-toggle { width:100%;padding:8px 16px;background:var(--bg2);border:none;border-radius:0;color:var(--muted);font-family:'Exo 2',sans-serif;font-size:.8rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:color .15s; }
+.match-filters-toggle:hover { color:#f33e58; }
+.match-filters-body { display:none;padding:12px 14px;background:var(--bg2);border-top:1px solid var(--border);flex-wrap:wrap;gap:8px;align-items:flex-end; }
 .match-filters-body.open { display:flex; }
 .match-filter-group { display:flex;flex-direction:column;gap:4px;flex:1;min-width:120px; }
 .match-filter-label { font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted); }
 .match-filter-select { background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:7px 10px;font-family:'Exo 2',sans-serif;font-size:.82rem;outline:none;cursor:pointer;transition:border-color .15s; }
-.match-filter-select:focus { border-color:var(--accent); }
-.mfg-btn { padding:6px 12px;border-radius:20px;border:1.5px solid #30363d;background:transparent;color:var(--text);font-size:.78rem;font-weight:700;cursor:pointer;transition:all .15s; }
+.match-filter-select:focus { border-color:#f33e58; }
+.mfg-btn { padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);background:transparent;color:var(--text);font-size:.78rem;font-weight:700;cursor:pointer;transition:all .15s; }
+.mfg-btn:hover { border-color:#f33e58;color:#f33e58; }
 
-/* Área de la card única */
-.match-swipe-area { width:100%;position:relative;display:flex;align-items:center;justify-content:center;min-height:480px; }
+/* Área card — pantalla completa estilo Badoo */
+.match-swipe-area {
+  width:100%;position:relative;display:flex;align-items:center;
+  justify-content:center;min-height:520px;padding:12px;
+}
 
-/* Card estilo Tinder */
+/* Card estilo Badoo — foto grande, borde redondeado, sin fondo inferior */
 .mc-single-card {
-  width:100%;max-width:400px;border-radius:24px;overflow:hidden;
-  background:var(--bg2);border:1px solid var(--border);
-  box-shadow:0 16px 48px rgba(0,0,0,.45);
+  width:100%;max-width:420px;
+  border-radius:20px;overflow:hidden;
   position:relative;user-select:none;
+  box-shadow:0 8px 32px rgba(0,0,0,.35);
   transition:transform .35s cubic-bezier(.25,.8,.25,1), opacity .35s;
 }
 .mc-single-card.slide-left  { transform:translateX(-120%) rotate(-12deg);opacity:0; }
@@ -26687,70 +26695,114 @@ window._showBanScreen = _showBanScreen;
 @keyframes mcSlideInR { from{transform:translateX(80%);opacity:0} to{transform:translateX(0);opacity:1} }
 @keyframes mcSlideInL { from{transform:translateX(-80%);opacity:0} to{transform:translateX(0);opacity:1} }
 
-/* Foto */
-.mc-photo-wrap { position:relative;width:100%;aspect-ratio:4/3;overflow:hidden;background:linear-gradient(135deg,#1a2030,#0d1117); }
+/* Foto ocupa TODA la card — estilo Badoo */
+.mc-photo-wrap {
+  position:relative;width:100%;
+  aspect-ratio:3/4;  /* más alto que ancho como Badoo */
+  overflow:hidden;
+  background:linear-gradient(135deg,#2a1f3d,#1a0a2e);
+}
 .mc-photo-wrap img { width:100%;height:100%;object-fit:cover;display:block; }
-.mc-photo-initials { width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:6rem;font-weight:900;color:var(--accent);background:linear-gradient(135deg,#1a2030,#0d1117); }
-.mc-photo-grad { position:absolute;bottom:0;left:0;right:0;height:60%;background:linear-gradient(to top,rgba(0,0,0,.92) 0%,transparent 100%);pointer-events:none; }
+.mc-photo-initials { width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:6rem;font-weight:900;color:#f33e58;background:linear-gradient(135deg,#2a1f3d,#1a0a2e); }
+.mc-photo-grad {
+  position:absolute;bottom:0;left:0;right:0;height:65%;
+  background:linear-gradient(to top,rgba(0,0,0,.88) 0%,rgba(0,0,0,.3) 60%,transparent 100%);
+  pointer-events:none;
+}
 
-/* Online pip */
-.mc-online-pip { position:absolute;top:14px;right:14px;display:flex;align-items:center;gap:5px;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);border-radius:100px;padding:4px 10px 4px 7px; }
+/* Verificado badge estilo Badoo */
+.mc-online-pip {
+  position:absolute;top:14px;left:14px;display:flex;align-items:center;gap:5px;
+  background:rgba(0,0,0,.55);backdrop-filter:blur(6px);
+  border-radius:100px;padding:4px 10px 4px 7px;
+  border:1px solid rgba(255,255,255,.15);
+}
 .mc-online-dot { width:8px;height:8px;border-radius:50%;background:#3fb950;flex-shrink:0;box-shadow:0 0 6px #3fb950; }
-.mc-online-txt { font-size:.65rem;color:#3fb950;font-weight:700; }
+.mc-online-txt { font-size:.65rem;color:#fff;font-weight:700; }
 
-/* Info sobre foto */
-.mc-photo-info { position:absolute;bottom:0;left:0;right:0;padding:18px 18px 14px;z-index:2; }
-.mc-name { font-size:1.4rem;font-weight:900;color:#fff;line-height:1.2;text-shadow:0 2px 8px rgba(0,0,0,.7); }
-.mc-age-loc { font-size:.8rem;color:rgba(255,255,255,.85);margin-top:5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap; }
+/* "Nueva usuaria" tag estilo Badoo */
+.mc-new-badge {
+  position:absolute;top:14px;right:14px;
+  background:rgba(0,0,0,.55);backdrop-filter:blur(6px);
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:100px;padding:4px 10px;
+  font-size:.65rem;color:#fff;font-weight:700;
+  display:flex;align-items:center;gap:4px;
+}
 
-/* Bio y tags */
-.mc-body { padding:14px 16px 16px;display:flex;flex-direction:column;gap:9px; }
-.mc-desc { font-size:.82rem;color:var(--muted);line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden; }
-.mc-tags { display:flex;flex-wrap:wrap;gap:5px; }
-.mc-tag { font-size:.68rem;padding:3px 10px;border-radius:100px;background:rgba(46,196,182,.1);border:1px solid rgba(46,196,182,.25);color:var(--accent);font-weight:600; }
+/* Info overlay sobre la foto */
+.mc-photo-info {
+  position:absolute;bottom:0;left:0;right:0;
+  padding:90px 18px 18px;  /* espacio para los botones */
+  z-index:2;
+}
+.mc-name {
+  font-size:1.55rem;font-weight:900;color:#fff;line-height:1.2;
+  text-shadow:0 2px 10px rgba(0,0,0,.8);
+  display:flex;align-items:center;gap:8px;
+}
+/* tick azul verificado */
+.mc-name::after { content:'✓';display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#1877f2;border-radius:50%;font-size:.7rem;font-weight:900;color:#fff;flex-shrink:0; }
+.mc-age-loc { font-size:.82rem;color:rgba(255,255,255,.85);margin-top:5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap; }
 
-/* Botones de acción grandes */
+/* Botones de acción — superpuestos sobre la foto, parte inferior */
+.mc-body { padding:0;display:flex;flex-direction:column;gap:0;position:relative; }
+.mc-desc { font-size:.82rem;color:rgba(255,255,255,.75);line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;padding:0 18px;margin-top:-8px;position:relative;z-index:3;text-shadow:0 1px 4px rgba(0,0,0,.8); }
+.mc-tags { display:flex;flex-wrap:wrap;gap:5px;padding:6px 18px 0;position:relative;z-index:3; }
+.mc-tag { font-size:.68rem;padding:3px 10px;border-radius:100px;background:rgba(255,255,255,.15);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.2);color:#fff;font-weight:600; }
+
+/* Botones Badoo — círculos blancos superpuestos en la foto */
 .mc-actions {
-  display:flex;align-items:center;justify-content:center;gap:14px;
-  padding:10px 0 4px;
+  display:flex;align-items:center;justify-content:center;gap:20px;
+  position:absolute;bottom:22px;left:0;right:0;z-index:10;
+  pointer-events:none;
 }
+.mc-actions button { pointer-events:auto; }
+
 .mc-btn-nope {
-  width:60px;height:60px;border-radius:50%;border:2px solid rgba(255,100,100,.4);
-  background:var(--bg3);color:#ff6464;cursor:pointer;font-size:1.6rem;
+  width:58px;height:58px;border-radius:50%;
+  border:none;
+  background:#fff;
+  color:#ff4458;
+  cursor:pointer;font-size:1.7rem;
   display:flex;align-items:center;justify-content:center;transition:all .18s;flex-shrink:0;
-  box-shadow:0 4px 16px rgba(0,0,0,.25);
+  box-shadow:0 4px 18px rgba(0,0,0,.35);
 }
-.mc-btn-nope:hover { border-color:#ff6464;background:rgba(255,100,100,.12);transform:scale(1.1); }
+.mc-btn-nope:hover { transform:scale(1.1);box-shadow:0 6px 24px rgba(255,68,88,.4); }
+
 .mc-btn-like {
   width:72px;height:72px;border-radius:50%;border:none;cursor:pointer;
-  font-size:1.9rem;display:flex;align-items:center;justify-content:center;
+  font-size:2rem;display:flex;align-items:center;justify-content:center;
   transition:all .18s;flex-shrink:0;
-  background:linear-gradient(135deg,#f33e58,#e8174e);
-  box-shadow:0 6px 20px rgba(243,62,88,.5);
+  background:#fff;
+  color:#f33e58;
+  box-shadow:0 6px 24px rgba(0,0,0,.35);
 }
-.mc-btn-like:hover { transform:scale(1.12);box-shadow:0 8px 28px rgba(243,62,88,.65); }
-.mc-btn-like.liked { background:linear-gradient(135deg,#2ec4b6,#0077b6);box-shadow:0 6px 20px rgba(46,196,182,.5); }
+.mc-btn-like:hover { transform:scale(1.12);box-shadow:0 8px 30px rgba(243,62,88,.5); }
+.mc-btn-like.liked { background:linear-gradient(135deg,#f33e58,#c4164b);color:#fff;box-shadow:0 6px 20px rgba(243,62,88,.5); }
+
 .mc-btn-profile {
-  width:60px;height:60px;border-radius:50%;border:2px solid rgba(46,196,182,.35);
-  background:var(--bg3);color:var(--accent);cursor:pointer;font-size:1.4rem;
+  width:58px;height:58px;border-radius:50%;
+  border:none;
+  background:#fff;color:#888;cursor:pointer;font-size:1.4rem;
   display:flex;align-items:center;justify-content:center;transition:all .18s;flex-shrink:0;
-  box-shadow:0 4px 16px rgba(0,0,0,.25);
+  box-shadow:0 4px 18px rgba(0,0,0,.35);
 }
-.mc-btn-profile:hover { background:rgba(46,196,182,.15);transform:scale(1.1); }
+.mc-btn-profile:hover { transform:scale(1.1);color:#f33e58; }
 
 /* Nav prev/next */
-.mc-nav { display:flex;align-items:center;justify-content:space-between;width:100%;max-width:400px;margin-top:12px;padding:0 4px; }
+.mc-nav { display:flex;align-items:center;justify-content:space-between;width:100%;max-width:420px;padding:0 12px; }
 .mc-nav-btn {
   padding:6px 16px;border-radius:20px;border:1.5px solid var(--border);
   background:var(--bg2);color:var(--muted);font-family:'Exo 2',sans-serif;
   font-size:.8rem;font-weight:700;cursor:pointer;transition:all .18s;
   display:flex;align-items:center;gap:5px;
 }
-.mc-nav-btn:hover:not(:disabled) { border-color:var(--accent);color:var(--accent); }
+.mc-nav-btn:hover:not(:disabled) { border-color:#f33e58;color:#f33e58; }
 .mc-nav-btn:disabled { opacity:.3;cursor:default; }
 .mc-nav-counter { font-size:.78rem;color:var(--muted);font-weight:700; }
 
-/* Match mutuo toast */
+/* Match mutuo toast estilo Badoo */
 .match-mutual-toast {
   position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:99999;
   background:linear-gradient(135deg,#f33e58,#e8174e);color:#fff;
@@ -26760,8 +26812,8 @@ window._showBanScreen = _showBanScreen;
 }
 @keyframes mcToastIn { from{opacity:0;transform:translateX(-50%) translateY(-20px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
 
-/* Skeleton */
-.mc-skeleton-card { width:100%;max-width:400px;border-radius:24px;overflow:hidden;background:var(--bg2);border:1px solid var(--border); }
+/* Skeleton estilo Badoo */
+.mc-skeleton-card { width:100%;max-width:420px;border-radius:20px;overflow:hidden;background:var(--bg2);border:1px solid var(--border); }
 .match-skeleton { background:linear-gradient(90deg,var(--bg2) 25%,var(--bg3) 50%,var(--bg2) 75%);background-size:200% 100%;animation:matchSkel 1.4s infinite; }
 @keyframes matchSkel { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
@@ -26769,10 +26821,13 @@ window._showBanScreen = _showBanScreen;
 </style>
 
 <div class="page" id="page-match">
-  <!-- Header -->
+  <!-- Header estilo Badoo "Encuentros" -->
   <div class="match-header">
-    <div class="match-title"><span class="match-heart-icon">❤️</span> Match <span id="matchCountPill" class="match-count-pill">—</span></div>
-    <div style="font-size:.72rem;color:var(--muted);">Tu país aparece primero</div>
+    <div class="match-title">Encuentros <span id="matchCountPill" class="match-count-pill">—</span></div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button style="width:36px;height:36px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="Boost">⚡</button>
+      <button onclick="document.querySelector('.match-filters-body').classList.toggle('open')" style="width:36px;height:36px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="Filtros">⚙️</button>
+    </div>
   </div>
 
   <!-- Filtros colapsables -->
@@ -27102,11 +27157,10 @@ window._showBanScreen = _showBanScreen;
         <div class="mc-photo-info">
           <div class="mc-name">${_esc(nick)}${age ? '<span style="font-weight:400;opacity:.85;">, '+age+'</span>' : ''}${genderIcon ? ' <span style="font-size:.85em;opacity:.9;">'+genderIcon+'</span>' : ''}</div>
           ${loc ? `<div class="mc-age-loc">📍 ${_esc(loc)}</div>` : ''}
+          ${bio ? `<div class="mc-desc" style="margin-top:6px;">${_esc(bio)}</div>` : ''}
+          ${tags.length ? `<div class="mc-tags" style="margin-top:6px;">${tags.map(t=>`<span class="mc-tag">${_esc(t)}</span>`).join('')}</div>` : ''}
         </div>
-      </div>
-      <div class="mc-body">
-        ${bio ? `<div class="mc-desc">${_esc(bio)}</div>` : ''}
-        ${tags.length ? `<div class="mc-tags">${tags.map(t=>`<span class="mc-tag">${_esc(t)}</span>`).join('')}</div>` : ''}
+        <!-- Botones Badoo superpuestos en la foto -->
         <div class="mc-actions">
           <button class="mc-btn-nope" onclick="matchNope()" title="Siguiente">✕</button>
           <button id="mcLikeBtn" class="mc-btn-like${liked?' liked':''}" onclick="matchToggleLike('${_esc(u.id)}')" title="${liked?'Quitá el like':'Me gusta'}">
@@ -27114,7 +27168,8 @@ window._showBanScreen = _showBanScreen;
           </button>
           <button class="mc-btn-profile" onclick="openUserProfile('${_esc(u.id)}','${_esc(nick)}')" title="Ver perfil">👤</button>
         </div>
-      </div>`;
+      </div>
+      <div class="mc-body"></div>`;
 
     area.appendChild(card);
   }
