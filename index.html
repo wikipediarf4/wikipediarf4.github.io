@@ -1738,7 +1738,7 @@ select.fi option{background:var(--bg3);color:var(--text);}
 @keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
 
 /* ===== PAGES ===== */
-.page{display:none;padding-top:56px;}.page.active{display:block;}
+.page{display:none;padding-top:56px;}.page.active{display:block;}#page-amigos.active{display:flex !important;}
 
 /* SPLASH */
 #splash{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
@@ -2517,39 +2517,264 @@ input:focus, textarea:focus {
 </div>
 
 
-<div class="page" id="page-amigos" style="max-width:680px;margin:0 auto;padding:16px 16px 80px;">
+<div class="page" id="page-amigos" style="max-width:1100px;margin:0 auto;padding:0;display:flex;gap:0;min-height:100vh;">
 
-  
-  <div id="misAmigosSection" style="margin-bottom:24px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid rgba(255,255,255,.07);">
-      <span style="font-family:'Orbitron',monospace;font-size:1rem;font-weight:900;color:var(--text);">👥 Amigos</span>
-      <span id="misAmigosCount" style="font-size:.75rem;color:var(--accent);font-weight:700;background:rgba(0,120,255,.1);padding:3px 10px;border-radius:100px;"></span>
+  <!-- ═══════════════ SIDEBAR AMIGOS ESTILO FACEBOOK ═══════════════ -->
+  <style>
+    #amigos-sidebar {
+      width: 360px;
+      min-width: 280px;
+      max-width: 360px;
+      background: var(--bg1, #18191a);
+      border-right: 1px solid var(--border, #30363d);
+      padding: 16px 8px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+    #amigos-sidebar::-webkit-scrollbar { width: 4px; }
+    #amigos-sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .asb-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--text, #e6edf3);
+      padding: 4px 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .asb-gear {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--bg3, #21262d);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      color: var(--text, #e6edf3);
+      transition: background .15s;
+      flex-shrink: 0;
+    }
+    .asb-gear:hover { background: var(--bg4, #2d333b); }
+
+    .asb-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 8px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background .15s;
+      text-decoration: none;
+      color: var(--text, #e6edf3);
+      margin-bottom: 2px;
+    }
+    .asb-item:hover { background: var(--bg3, #21262d); }
+    .asb-item.active { background: var(--bg4, #2d333b); }
+
+    .asb-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--bg3, #21262d);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+    .asb-item.active .asb-icon {
+      background: rgba(var(--accent-rgb, 46,196,182), 0.18);
+    }
+
+    .asb-label {
+      font-size: .95rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .asb-badge {
+      margin-left: auto;
+      background: #e41e3f;
+      color: #fff;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: .7rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Contenido principal */
+    #amigos-main {
+      flex: 1;
+      min-width: 0;
+      padding: 20px 20px 80px;
+    }
+
+    /* Secciones del contenido */
+    .amigos-section { display: none; }
+    .amigos-section.active { display: block; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      #page-amigos { flex-direction: column !important; }
+      #amigos-sidebar {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        position: relative !important;
+        border-right: none !important;
+        border-bottom: 1px solid var(--border);
+        padding: 10px 8px;
+      }
+      .asb-label { display: none; }
+      #amigos-sidebar .asb-title span:first-child { font-size: 1rem; }
+      /* En móvil mostrar items como fila horizontal */
+      #asb-nav { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 4px; }
+      #asb-nav .asb-item { flex-direction: column; padding: 8px 12px; gap: 4px; min-width: 64px; text-align: center; border-radius: 10px; }
+      #asb-nav .asb-label { display: block; font-size: .62rem; }
+    }
+  </style>
+
+  <div id="amigos-sidebar">
+    <div class="asb-title">
+      <span>Amigos</span>
+      <button class="asb-gear" title="Configuración">⚙️</button>
     </div>
-    <div id="misAmigosList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;">
-      <div style="font-size:.8rem;color:var(--muted);padding:8px;">Cargando...</div>
-    </div>
+
+    <nav id="asb-nav">
+      <div class="asb-item active" id="asb-inicio" onclick="asbSwitch('inicio',this)">
+        <div class="asb-icon">🏠</div>
+        <span class="asb-label">Inicio</span>
+      </div>
+      <div class="asb-item" id="asb-solicitudes" onclick="asbSwitch('solicitudes',this)">
+        <div class="asb-icon">👤</div>
+        <span class="asb-label">Solicitudes de amistad</span>
+        <span class="asb-badge" id="asb-req-badge" style="display:none;"></span>
+      </div>
+      <div class="asb-item" id="asb-sugerencias" onclick="asbSwitch('sugerencias',this)">
+        <div class="asb-icon">💡</div>
+        <span class="asb-label">Sugerencias</span>
+      </div>
+      <div class="asb-item" id="asb-todos" onclick="asbSwitch('todos',this)">
+        <div class="asb-icon">👥</div>
+        <span class="asb-label">Todos los amigos</span>
+      </div>
+      <div class="asb-item" id="asb-cumpleanos" onclick="asbSwitch('cumpleanos',this)">
+        <div class="asb-icon">🎂</div>
+        <span class="asb-label">Cumpleaños</span>
+      </div>
+      <div class="asb-item" id="asb-listas" onclick="asbSwitch('listas',this)">
+        <div class="asb-icon">📋</div>
+        <span class="asb-label">Listas personalizadas</span>
+      </div>
+    </nav>
   </div>
 
-  
-  <div id="friendReqSection" style="margin-bottom:20px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-      <span style="font-size:1rem;font-weight:800;color:var(--text);">Solicitudes de amistad</span>
-      <span id="friendReqCount" style="font-size:.75rem;color:var(--accent);font-weight:700;"></span>
+  <!-- ═══════════════ CONTENIDO PRINCIPAL ═══════════════ -->
+  <div id="amigos-main">
+
+    <!-- INICIO -->
+    <div class="amigos-section active" id="asec-inicio">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+        <span style="font-size:1.25rem;font-weight:800;color:var(--text);">Personas que quizás conozcas</span>
+        <span style="font-size:.78rem;color:var(--accent);cursor:pointer;font-weight:700;" onclick="renderAmigosPage()">↻ Actualizar</span>
+      </div>
+      <div id="amigosSuggList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;"></div>
     </div>
-    <div id="friendReqList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px;">
-      <div style="font-size:.8rem;color:var(--muted);padding:8px;">Sin solicitudes pendientes</div>
+
+    <!-- SOLICITUDES -->
+    <div class="amigos-section" id="asec-solicitudes">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+        <span style="font-size:1.25rem;font-weight:800;color:var(--text);">Solicitudes de amistad</span>
+        <span id="friendReqCount" style="font-size:.78rem;color:var(--accent);font-weight:700;"></span>
+      </div>
+      <div id="friendReqList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;">
+        <div style="font-size:.85rem;color:var(--muted);padding:8px;">Sin solicitudes pendientes</div>
+      </div>
     </div>
-  </div>
-  <div style="border-top:1px solid var(--border);margin-bottom:20px;"></div>
-  
-  <div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-      <span style="font-size:1rem;font-weight:800;color:var(--text);">Personas que quizás conozcas</span>
-      <span style="font-size:.75rem;color:var(--accent);cursor:pointer;font-weight:700;" onclick="renderAmigosPage()">↻ Actualizar</span>
+
+    <!-- SUGERENCIAS -->
+    <div class="amigos-section" id="asec-sugerencias">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+        <span style="font-size:1.25rem;font-weight:800;color:var(--text);">Sugerencias para vos</span>
+        <span style="font-size:.78rem;color:var(--accent);cursor:pointer;font-weight:700;" onclick="renderSuggestedUsers()">↻ Actualizar</span>
+      </div>
+      <div id="asec-sugg-inner" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;">
+        <div style="font-size:.85rem;color:var(--muted);">Cargando sugerencias...</div>
+      </div>
     </div>
-    <div id="amigosSuggList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px;">
+
+    <!-- TODOS LOS AMIGOS -->
+    <div class="amigos-section" id="asec-todos">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+        <span style="font-size:1.25rem;font-weight:800;color:var(--text);">Todos los amigos</span>
+        <span id="misAmigosCount" style="font-size:.78rem;color:var(--accent);font-weight:700;background:rgba(0,120,255,.1);padding:3px 10px;border-radius:100px;"></span>
+      </div>
+      <div id="misAmigosList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;">
+        <div style="font-size:.85rem;color:var(--muted);padding:8px;">Cargando...</div>
+      </div>
     </div>
-  </div>
+
+    <!-- CUMPLEAÑOS -->
+    <div class="amigos-section" id="asec-cumpleanos">
+      <div style="margin-bottom:18px;">
+        <span style="font-size:1.25rem;font-weight:800;color:var(--text);">🎂 Cumpleaños</span>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:28px;text-align:center;color:var(--muted);font-size:.9rem;">
+        🎉 Próximamente — cumpleaños de tus amigos aparecerán acá
+      </div>
+    </div>
+
+    <!-- LISTAS -->
+    <div class="amigos-section" id="asec-listas">
+      <div style="margin-bottom:18px;">
+        <span style="font-size:1.25rem;font-weight:800;color:var(--text);">📋 Listas personalizadas</span>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:28px;text-align:center;color:var(--muted);font-size:.9rem;">
+        📝 Próximamente — podrás crear listas de amigos personalizadas
+      </div>
+    </div>
+
+  </div><!-- /amigos-main -->
+
+  <!-- Script de navegación del sidebar -->
+  <script>
+  function asbSwitch(section, el){
+    // Activar item del sidebar
+    document.querySelectorAll('#asb-nav .asb-item').forEach(i => i.classList.remove('active'));
+    if(el) el.classList.add('active');
+    // Mostrar sección correspondiente
+    document.querySelectorAll('#amigos-main .amigos-section').forEach(s => s.classList.remove('active'));
+    const sec = document.getElementById('asec-' + section);
+    if(sec) sec.classList.add('active');
+    // Acciones extra por sección
+    if(section === 'inicio' || section === 'sugerencias') renderSuggestedUsers();
+    if(section === 'todos') renderMisAmigos();
+  }
+  // Mostrar badge de solicitudes si hay
+  function _asbUpdateReqBadge(){
+    const badge = document.getElementById('asb-req-badge');
+    if(!badge) return;
+    const list = document.getElementById('friendReqList');
+    const items = list ? list.querySelectorAll('[data-req-item]') : [];
+    if(items.length > 0){ badge.textContent = items.length; badge.style.display='flex'; }
+    else badge.style.display='none';
+  }
+  </script>
+
 </div>
 
 
@@ -17674,7 +17899,8 @@ function renderMisAmigos(){
 async function renderSuggestedUsers(){
   const el = document.getElementById('amigosSuggList');
   const sidebarEl = document.getElementById('suggestedUsersList');
-  if(!el && !sidebarEl) return;
+  const suggSecEl = document.getElementById('asec-sugg-inner');
+  if(!el && !sidebarEl && !suggSecEl) return;
   try {
     const snap = await getDocs(query(collection(db,'users'), orderBy('createdAt','desc'), limit(30)));
     const myId = window.CU?.id;
@@ -17723,6 +17949,7 @@ async function renderSuggestedUsers(){
       ? users.map(u=>cardHTML(u, false)).join('')
       : '<div style="font-size:.8rem;color:var(--muted);padding:8px;">Sin sugerencias por ahora</div>';
     if(sidebarEl) sidebarEl.innerHTML = users.slice(0,4).map(u=>cardHTML(u, true)).join('');
+    if(suggSecEl) suggSecEl.innerHTML = users.length ? users.map(u=>cardHTML(u, false)).join('') : '<div style="font-size:.85rem;color:var(--muted);">Sin sugerencias por ahora</div>';
   } catch(e){
     if(el) el.innerHTML = '<div style="font-size:.8rem;color:var(--muted);padding:8px;"></div>';
   }
