@@ -3456,7 +3456,7 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
         <div style="flex:1;min-width:0;padding-top:12px;padding-bottom:2px;">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
             <div class="profile-name" id="profName" style="font-size:1.75rem;">Mi Perfil</div>
-            <img id="profVerifiedBadge" src="https://milatido.github.io/vereficado.png" style="display:none;width:26px;height:26px;object-fit:contain;flex-shrink:0;filter:drop-shadow(0 0 5px gold);" title="Usuario Verificado" draggable="false">
+            <img id="profVerifiedBadge" src="vereficado.png" style="display:none;width:26px;height:26px;object-fit:contain;flex-shrink:0;filter:drop-shadow(0 0 5px gold);" title="Usuario Verificado" draggable="false">
           </div>
 
           
@@ -8442,6 +8442,7 @@ async function listenVerifiedUsers(){
 
 let _postsUnsub = null;
 let _postsRetryTimer = null;
+let _upPostsUnsub = null; // listener en tiempo real para posts del perfil visitado
 // Límite de posts reducido a 20 en todos los dispositivos para ahorrar memoria
 const _postsLimit = 20;
 
@@ -9533,6 +9534,8 @@ window.gp = (id, pushState = true) => {
   if(currentPage && currentPage.id === 'page-userprofile' && id !== 'userprofile'){
     _stopShopParticles();
     if(_equippedItems?.efecto) setTimeout(()=>_startShopParticles(_equippedItems.efecto), 100);
+    // Cancelar listener en tiempo real de posts del perfil visitado
+    if(window._upPostsUnsub){ window._upPostsUnsub(); window._upPostsUnsub = null; }
   }
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   const pg = document.getElementById('page-'+id);
@@ -9697,7 +9700,7 @@ function renderStories(){
       <div class="story-user-av">${s.userAv ? `<img src="${s.userAv}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--accent),#0077b6);font-size:.9rem;border-radius:50%;">${(g.userNick||'?')[0].toUpperCase()}</div>`}</div>
       ${countBadge}
       <div class="story-gradient"></div>
-      <div class="story-bottom-name" style="display:flex;align-items:center;gap:3px;">${g.userNick}${g.userVerified ? `<img src="https://milatido.github.io/vereficado.png" title="Verificado" style="width:14px;height:14px;object-fit:contain;flex-shrink:0;filter:drop-shadow(0 0 2px gold);" draggable="false">` : ''}</div>`;
+      <div class="story-bottom-name" style="display:flex;align-items:center;gap:3px;">${g.userNick}${g.userVerified && s.userAv ? `<img src="vereficado.png" title="Verificado" style="width:14px;height:14px;object-fit:contain;flex-shrink:0;filter:drop-shadow(0 0 2px gold);" draggable="false">` : ''}</div>`;
     row.appendChild(div);
   });
   setTimeout(applyVerifStoryRings,60);
@@ -9962,9 +9965,9 @@ function renderSV(){
     const _svNickSpan = document.createElement('span');
     _svNickSpan.textContent = s.userNick;
     _svNameEl.appendChild(_svNickSpan);
-    if(s.userVerified){
+    if(s.userVerified && s.userAv){
       const _svBadge = document.createElement('img');
-      _svBadge.src = 'https://milatido.github.io/vereficado.png';
+      _svBadge.src = 'vereficado.png';
       _svBadge.title = 'Verificado';
       _svBadge.draggable = false;
       _svBadge.style.cssText = 'width:16px;height:16px;object-fit:contain;vertical-align:middle;margin-left:4px;flex-shrink:0;filter:drop-shadow(0 0 3px gold);';
@@ -11780,7 +11783,7 @@ function postHTML(p){
 
     }).join('');
   // Verificar estado en tiempo real desde el caché de usuarios verificados
-  const isVerif = !!(p.userVerified || (window._verifUsers && window._verifUsers[p.userId]));
+  const isVerif = false;
   const _isMyPost = window.CU && p.userId === window.CU.id;
   // Leer shopEquipped del autor desde el cache global _usersShop (tiempo real, visible para TODOS)
   const _authorShop = (window._usersShop && window._usersShop[p.userId]) || {};
@@ -11806,7 +11809,7 @@ function postHTML(p){
             const _plvl = getLevel(_uXp);
             const _nick = esc(p.userNick);
             if(_isAdm) return `<span class="admin-name">${_nick}</span><span class="admin-crown">👑</span>`;
-            if(_isVerif) return `<span style="font-weight:800;font-family:'Exo 2',sans-serif;background:linear-gradient(90deg,#f5a623,#ffe082,#f5a623);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:_vShine 2s linear infinite;">${_nick}</span><img src="https://milatido.github.io/vereficado.png" title="Verificado" style="-webkit-text-fill-color:initial;width:18px;height:18px;object-fit:contain;vertical-align:middle;margin-left:2px;flex-shrink:0;filter:drop-shadow(0 0 3px gold);" draggable="false">`;
+            if(_isVerif) return `<span style="font-weight:800;font-family:'Exo 2',sans-serif;background:linear-gradient(90deg,#f5a623,#ffe082,#f5a623);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:_vShine 2s linear infinite;">${_nick}</span>${p.userAv?`<img src="vereficado.png" title="Verificado" style="-webkit-text-fill-color:initial;width:18px;height:18px;object-fit:contain;vertical-align:middle;margin-left:2px;flex-shrink:0;filter:drop-shadow(0 0 3px gold);" draggable="false">`:`<span style="-webkit-text-fill-color:initial;filter:drop-shadow(0 0 3px gold);">✅</span>`}`;
             if(_isLegend) return `<span style="font-weight:800;font-family:'Exo 2',sans-serif;background:linear-gradient(90deg,#ce93d8,#f48fb1,#b39ddb,#ce93d8);background-size:250% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:_legShine 2.5s linear infinite;">${_nick}</span><span style="-webkit-text-fill-color:initial;filter:drop-shadow(0 0 3px #b39ddb);">⚡</span>`;
             if(_isHighLvl) return `<span style="font-weight:700;font-family:'Exo 2',sans-serif;color:${_plvl.color};text-shadow:0 0 6px ${_plvl.color}44;">${_nick}</span>`;
             return `<span class="user-name">${_nick}</span>`;
@@ -12714,7 +12717,7 @@ async function toggleComments(pid){
       const cRxnTotalM = Object.values(cRxnsM).reduce((a,b)=>a+b,0);
       const cTopRxnM = Object.entries(cRxnsM).filter(e=>e[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,2).map(e=>e[0]).join('');
       const nameColor = isVerified ? '#f5a623' : isAuthor ? '#1877f2' : '#e6edf3';
-      const verifiedBadge = isVerified ? `<img src="https://milatido.github.io/vereficado.png" title="Verificado" style="width:14px;height:14px;object-fit:contain;vertical-align:middle;margin-left:2px;flex-shrink:0;filter:drop-shadow(0 0 2px gold);" draggable="false">` : '';
+      const verifiedBadge = (isVerified && c.av) ? `<img src="vereficado.png" title="Verificado" style="width:14px;height:14px;object-fit:contain;vertical-align:middle;margin-left:2px;flex-shrink:0;filter:drop-shadow(0 0 2px gold);" draggable="false">` : '';
       const isAdminCmt = c.nick==='ruizgustavo12' || c.role==='admin';
       const adminNameHtml = isAdminCmt
         ? `<span class="admin-name" style="font-size:.82rem;">${esc(c.nick||'')}</span><span class="admin-crown" style="font-size:.72rem;">👑</span>`
@@ -13497,7 +13500,7 @@ function renderProfile(){
   if(badge){
     if(window.CU.verified && hasProfilePhoto){
       badge.style.display = 'inline-block';
-      badge.src = 'https://milatido.github.io/vereficado.png';
+      badge.src = 'vereficado.png';
       badge.title = 'Usuario Verificado';
     } else {
       badge.style.display = 'none';
@@ -18687,7 +18690,7 @@ function _stopVerifParticles(){
 }
 
 function verifiedHTML(nick, av){ 
-  if(av) return `<img src="https://milatido.github.io/vereficado.png" title="Usuario Verificado" style="width:20px;height:20px;object-fit:contain;vertical-align:middle;margin-left:4px;flex-shrink:0;filter:drop-shadow(0 0 4px gold);" draggable="false">`;
+  if(av) return `<img src="vereficado.png" title="Usuario Verificado" style="width:20px;height:20px;object-fit:contain;vertical-align:middle;margin-left:4px;flex-shrink:0;filter:drop-shadow(0 0 4px gold);" draggable="false">`;
   return `<span title="Usuario Verificado" style="display:inline-flex;align-items:center;">✅</span>`; 
 }
 
@@ -19615,13 +19618,13 @@ async function _loadUserProfilePage(uid, nick){
     if(isPremium){ nEl.classList.add('premium-name'); } else { nEl.classList.remove('premium-name'); }
     document.getElementById('upVerifBadge').style.display = 'none';
     document.getElementById('upVerifBanner').style.display = 'none';
-    // ── BADGE VERIFICADO: mostrar siempre que esté verificado ──
+    // ── BADGE VERIFICADO: solo si está verificado y tiene foto de perfil ──
     const uHasPhoto = !!(u.av && typeof u.av === 'string' && u.av.startsWith('http'));
     const upVerifBadgeEl = document.getElementById('upVerifBadge');
-    if(upVerifBadgeEl && u.verified){
+    if(upVerifBadgeEl && u.verified && uHasPhoto){
       upVerifBadgeEl.style.display = 'inline-block';
       upVerifBadgeEl.title = 'Usuario Verificado';
-      upVerifBadgeEl.innerHTML = `<img src="https://milatido.github.io/vereficado.png" title="Verificado" style="width:24px;height:24px;object-fit:contain;vertical-align:middle;filter:drop-shadow(0 0 5px gold);" draggable="false">`;
+      upVerifBadgeEl.innerHTML = `<img src="vereficado.png" title="Verificado" style="width:24px;height:24px;object-fit:contain;vertical-align:middle;filter:drop-shadow(0 0 5px gold);" draggable="false">`;
     }
     // Badge Premium
     let _upPremBadge = document.getElementById('_upPremiumBadge');
@@ -19675,36 +19678,115 @@ async function _loadUserProfilePage(uid, nick){
       } catch(e){ lastSeenEl.innerHTML=''; }
     }
 
-    // ── STATS ──
+    // ── STATS ── Cargar posts con onSnapshot (tiempo real: reacciones y comentarios actualizan al instante)
     let userPosts = [];
     const _upList = document.getElementById('upPostsList');
-    try {
-      const postsSnap = await getDocs(query(collection(db,'posts'), where('userId','==',uid)));
-      userPosts = postsSnap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>{
-        const ta = a.time?.toMillis?.() || a.time || 0;
-        const tb = b.time?.toMillis?.() || b.time || 0;
-        return tb - ta;
-      });
-      userPosts.forEach(p=>{ const idx=(_posts||[]).findIndex(x=>x.id===p.id); if(idx>=0) _posts[idx]=p; else (_posts||[]).unshift(p); });
-    } catch(e){
-      console.warn('Query posts perfil fallo, intentando fallback:', e);
-      userPosts = (_posts||[]).filter(p=>p.userId===uid);
-      if(!userPosts.length){
-        try {
-          const allSnap = await getDocs(query(collection(db,'posts'), orderBy('time','desc'), limit(200)));
-          const allPosts = allSnap.docs.map(d=>({id:d.id,...d.data()}));
-          userPosts = allPosts.filter(p=>p.userId===uid).sort((a,b)=>{
-            const ta = a.time?.toMillis?.() || a.time || 0;
-            const tb = b.time?.toMillis?.() || b.time || 0;
-            return tb - ta;
-          });
-          userPosts.forEach(p=>{ const idx=(_posts||[]).findIndex(x=>x.id===p.id); if(idx>=0) _posts[idx]=p; else (_posts||[]).unshift(p); });
-        } catch(e2){
-          console.warn('Fallback posts tambien fallo:', e2);
-          if(_upList) _upList.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">No se pudieron cargar las publicaciones</div>';
-        }
+
+    // Cancelar listener anterior si existe
+    if(window._upPostsUnsub){ window._upPostsUnsub(); window._upPostsUnsub = null; }
+
+    // Helper: renderiza upPostsList con los posts dados
+    function _renderUpPostsList(posts){
+      const listEl = document.getElementById('upPostsList');
+      if(!listEl) return;
+      if(!posts.length){
+        listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">Sin publicaciones aún</div>';
+        return;
       }
+      const scrollY = window.scrollY;
+      // Smart update: si ya hay posts en el DOM, actualizar stats/acciones/comentarios sin repintado total
+      const hasRendered = posts.some(p => document.getElementById('post_'+p.id));
+      if(!hasRendered){
+        const rendered = [];
+        for(const p of posts){
+          try { rendered.push(postHTML(p)); } catch(ex){ console.warn('postHTML error',p.id,ex); }
+        }
+        listEl.innerHTML = rendered.join('') || '<div style="text-align:center;padding:40px;color:var(--muted);">Sin publicaciones aún</div>';
+      } else {
+        posts.forEach(p=>{
+          const existing = document.getElementById('post_'+p.id);
+          if(!existing){
+            // Post nuevo — insertar al principio
+            const tmp0 = document.createElement('div');
+            try { tmp0.innerHTML = postHTML(p); } catch(ex){ return; }
+            if(tmp0.firstElementChild) listEl.insertBefore(tmp0.firstElementChild, listEl.firstChild);
+            return;
+          }
+          const tmp = document.createElement('div');
+          try { tmp.innerHTML = postHTML(p); } catch(ex){ return; }
+          const newPost = tmp.firstElementChild;
+          if(!newPost) return;
+          // Actualizar stats
+          const oldStats = existing.querySelector('.post-stats');
+          const newStats = newPost.querySelector('.post-stats');
+          if(oldStats && newStats && oldStats.outerHTML !== newStats.outerHTML)
+            oldStats.replaceWith(newStats.cloneNode(true));
+          // Actualizar acciones (botones de reacción)
+          const oldAct = existing.querySelector('.post-actions');
+          const newAct = newPost.querySelector('.post-actions');
+          if(oldAct && newAct && oldAct.outerHTML !== newAct.outerHTML)
+            oldAct.replaceWith(newAct.cloneNode(true));
+          // Actualizar comentarios (solo si no hay modal abierto ni input enfocado)
+          const modalOpen = !!document.getElementById('_cmtModal_'+p.id);
+          const inputFocused = document.activeElement && document.activeElement.id === 'cinp_'+p.id;
+          if(!modalOpen && !inputFocused){
+            const oldCmts = existing.querySelector('.comments-section');
+            const newCmts = newPost.querySelector('.comments-section');
+            if(oldCmts && newCmts && oldCmts.innerHTML !== newCmts.innerHTML){
+              const wasOpen = oldCmts.classList.contains('open');
+              const newCmtsClone = newCmts.cloneNode(true);
+              if(wasOpen) newCmtsClone.classList.add('open');
+              oldCmts.replaceWith(newCmtsClone);
+            }
+          }
+        });
+      }
+      window.scrollTo(0, scrollY);
+      document.getElementById('upPostCount').textContent = posts.length;
     }
+
+    // Iniciar listener en tiempo real
+    try {
+      window._upPostsUnsub = onSnapshot(
+        query(collection(db,'posts'), where('userId','==',uid), orderBy('time','desc')),
+        { includeMetadataChanges: false },
+        snap => {
+          userPosts = snap.docs.map(d=>({id:d.id,...d.data()}));
+          // Mergear al caché global _posts para que doReact/submitComment funcionen
+          userPosts.forEach(p=>{
+            const idx = (_posts||[]).findIndex(x=>x.id===p.id);
+            if(idx>=0) _posts[idx]=p; else (_posts||[]).unshift(p);
+          });
+          _renderUpPostsList(userPosts);
+        },
+        err => {
+          console.warn('onSnapshot posts perfil error:', err);
+          // Fallback: getDocs sin orderBy
+          getDocs(query(collection(db,'posts'), where('userId','==',uid))).then(snap=>{
+            userPosts = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>{
+              return (b.time?.toMillis?.()??b.time??0) - (a.time?.toMillis?.()??a.time??0);
+            });
+            userPosts.forEach(p=>{ const idx=(_posts||[]).findIndex(x=>x.id===p.id); if(idx>=0) _posts[idx]=p; else (_posts||[]).unshift(p); });
+            _renderUpPostsList(userPosts);
+          }).catch(()=>{
+            if(_upList) _upList.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">No se pudieron cargar las publicaciones</div>';
+          });
+        }
+      );
+    } catch(e){
+      console.warn('onSnapshot posts perfil setup error:', e);
+      // Fallback silencioso: cargar una vez
+      getDocs(query(collection(db,'posts'), where('userId','==',uid))).then(snap=>{
+        userPosts = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>{
+          return (b.time?.toMillis?.()??b.time??0) - (a.time?.toMillis?.()??a.time??0);
+        });
+        userPosts.forEach(p=>{ const idx=(_posts||[]).findIndex(x=>x.id===p.id); if(idx>=0) _posts[idx]=p; else (_posts||[]).unshift(p); });
+        _renderUpPostsList(userPosts);
+      }).catch(()=>{
+        if(_upList) _upList.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">No se pudieron cargar las publicaciones</div>';
+      });
+    }
+
     document.getElementById('upPostCount').textContent = userPosts.length;
     document.getElementById('upFriendCount').textContent = (u.friends||[]).length;
     const myFriends = window.CU?.friends || [];
@@ -19868,24 +19950,7 @@ async function _loadUserProfilePage(uid, nick){
       }
     });
 
-    // ── TAB POSTS ── Agregar posts al caché local para que doReact/submitComment funcionen
-    userPosts.forEach(p=>{
-      if(!(_posts||[]).find(x=>x.id===p.id)) _posts.unshift(p);
-    });
-    // Render posts en la columna derecha
-    const upPostsList = document.getElementById('upPostsList');
-    if(upPostsList){
-      if(!userPosts.length){
-        upPostsList.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">Sin publicaciones aún</div>';
-      } else {
-        const rendered = [];
-        for(const p of userPosts){
-          try { rendered.push(postHTML(p)); } catch(ex){ console.warn('postHTML error en post',p.id,ex); }
-        }
-        upPostsList.innerHTML = rendered.length ? rendered.join('') : '<div style="text-align:center;padding:40px;color:var(--muted);">Sin publicaciones aún</div>';
-      }
-    }
-    // También mantener el container original vacío (para swUpTab)
+    // ── TAB POSTS ── El listener onSnapshot ya mergeó los posts al caché y llamó _renderUpPostsList
     document.getElementById('upTabPosts').dataset.loaded = '1';
 
     // ── COLUMNA IZQUIERDA: Info personal (estilo Facebook) ──
@@ -23232,7 +23297,7 @@ function _reelCard(p, H){
 
       
       <div style="flex:1;min-width:0;overflow:hidden;">
-        <div style="font-size:.78rem;font-weight:800;color:#050505;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:3px;">${esc(nick)}${p.userVerified ? `<img src="https://milatido.github.io/vereficado.png" title="Verificado" style="width:15px;height:15px;object-fit:contain;flex-shrink:0;filter:drop-shadow(0 0 2px gold);" draggable="false">` : ''} ${badge}</div>
+        <div style="font-size:.78rem;font-weight:800;color:#050505;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:3px;">${esc(nick)}${p.userVerified && av && !av.includes('getDefaultAv') ? `<img src="vereficado.png" title="Verificado" style="width:15px;height:15px;object-fit:contain;flex-shrink:0;filter:drop-shadow(0 0 2px gold);" draggable="false">` : ''} ${badge}</div>
         ${text?`<div style="font-size:.68rem;color:#65676b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(text)}</div>`:''}
       </div>
 
