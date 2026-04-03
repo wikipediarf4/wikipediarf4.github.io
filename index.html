@@ -1927,11 +1927,31 @@ body {
   border-color: rgba(255,107,53,.3) !important;
 }
 
-/* Reaction popup — estilo RF4 */
+/* Reaction popup — estilo Facebook idéntico */
 .rxn-popup {
-  background: var(--bg2, #0d1117) !important;
-  border: 1px solid rgba(255,255,255,.12) !important;
-  box-shadow: 0 4px 20px rgba(0,0,0,.7) !important;
+  background: var(--bg2, #242526) !important;
+  border: 1px solid rgba(255,255,255,.15) !important;
+  box-shadow: 0 8px 28px rgba(0,0,0,.55), 0 2px 8px rgba(0,0,0,.35) !important;
+  border-radius: 50px !important;
+  padding: 8px 10px !important;
+}
+.rxn-btn {
+  transition: transform .18s cubic-bezier(.34,1.56,.64,1) !important;
+}
+.rxn-btn:hover {
+  transform: scale(1.55) translateY(-8px) !important;
+}
+.rxn-tooltip {
+  font-size: .68rem !important;
+  font-weight: 700 !important;
+  font-family: 'Exo 2', sans-serif !important;
+  background: rgba(0,0,0,.88) !important;
+  border-radius: 6px !important;
+  padding: 3px 8px !important;
+  white-space: nowrap !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  transition: opacity .15s !important;
 }
 
 /* ── STORIES ── */
@@ -7050,14 +7070,12 @@ let _unsubPosts = null;
 let _unsubStories = null;
 
 const REACTIONS = [
-  {emoji:'🔥', label:'Me calienta',   color:'#ff4500', lottieSegment:'Hot'     },
-  {emoji:'😍', label:'Me encanta',    color:'#f33e58', lottieSegment:'Romantic'},
-  {emoji:'💋', label:'Me excita',     color:'#e040fb', lottieSegment:'Kiss'    },
-  {emoji:'🥵', label:'Qué rico',      color:'#ff6b35', lottieSegment:'Naughty' },
-  {emoji:'💦', label:'Me derrite',    color:'#00b4d8', lottieSegment:'Wet'     },
-  {emoji:'❤️', label:'Me enamora',    color:'#e63946', lottieSegment:'Love'    },
-  {emoji:'😈', label:'Qué travieso',  color:'#9c27b0', lottieSegment:'Devil'   },
-  {emoji:'🤤', label:'Me babeo',      color:'#f7b125', lottieSegment:'Drool'   },
+  {emoji:'👍', label:'Me gusta',   color:'#1877f2', lottieSegment:'Like'  },
+  {emoji:'❤️', label:'Me encanta', color:'#f33e58', lottieSegment:'Love'  },
+  {emoji:'😂', label:'Ja ja',      color:'#f7b125', lottieSegment:'Haha'  },
+  {emoji:'😮', label:'Asombrado',  color:'#f7b125', lottieSegment:'Wow'   },
+  {emoji:'😢', label:'Triste',     color:'#f7b125', lottieSegment:'Sad'   },
+  {emoji:'😡', label:'Enojado',    color:'#e9710f', lottieSegment:'Angry' },
 ];
 window.REACTIONS = REACTIONS;
 window.REACTIONS = REACTIONS;
@@ -10641,11 +10659,12 @@ function postHTML(p){
       </div>
       <div style="position:relative;">
         <button class="post-menu" onclick="togglePostMenu('${p.id}', event, '${p.userId}')" style="font-size:1.3rem;line-height:1;">⋯</button>
-        <div id="pmenu_${p.id}" data-owner="${p.userId}" style="display:none;position:absolute;right:0;top:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);min-width:150px;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,.5);overflow:hidden;">
+        <div id="pmenu_${p.id}" data-owner="${p.userId}" style="display:none;position:absolute;right:0;top:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);min-width:160px;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,.5);overflow:hidden;">
           ${!p.sharedFrom ? `<button onclick="togglePostMenu('${p.id}', event); _openEditPostSafe('${p.id}')" data-owner-only="true" data-edit-pid="${p.id}" style="display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;color:var(--text);padding:12px 16px;cursor:pointer;font-size:.88rem;text-align:left;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">✏️ Editar</button>` : ''}
           ${window.CU?.verified&&p.userId===window.CU?.id?`<button onclick="togglePostMenu('${p.id}',event);${p.id===window.CU?.pinnedPostId?'unpinPost()':"pinPost('${p.id}')"};" style="display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;color:gold;padding:12px 16px;cursor:pointer;font-size:.88rem;text-align:left;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">${p.id===window.CU?.pinnedPostId?'📌 Desfijar':'📌 Fijar en perfil'}</button>`:''}
           <button onclick="togglePostMenu('${p.id}', event); deleteMyPost('${p.id}')" data-owner-only="true" style="display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;color:var(--red);padding:12px 16px;cursor:pointer;font-size:.88rem;text-align:left;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">🗑 Eliminar</button>
           <button onclick="togglePostMenu('${p.id}', event); reportPost('${p.id}','${esc(p.userNick)}')" data-other-only="true" style="display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;color:var(--warn);padding:12px 16px;cursor:pointer;font-size:.88rem;text-align:left;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">⚠️ Reportar</button>
+          <button onclick="togglePostMenu('${p.id}', event); deleteAdminPost('${p.id}',null)" class="admin-only-feed-del" style="display:none;align-items:center;gap:10px;width:100%;background:none;border:none;border-top:1px solid rgba(255,68,68,.25);color:#f85149;padding:12px 16px;cursor:pointer;font-size:.88rem;text-align:left;font-weight:700;transition:background .15s;" onmouseover="this.style.background='rgba(255,68,68,.08)'" onmouseout="this.style.background='none'">🛡️ Eliminar (Admin)</button>
         </div>
       </div>
     </div>
@@ -10668,9 +10687,15 @@ function postHTML(p){
     ${videoHTML}
     <div class="post-stats">
       <div class="post-rxn-summary" id="rxns_${p.id}" onclick="openReactionsModal('${p.id}')" style="${totalRxn>0?'cursor:pointer':'cursor:default'}">
-        <span style="display:flex;gap:2px;align-items:center;">
-          ${topRxn?`<span style="background:var(--bg3);border-radius:100px;padding:2px 8px;font-size:.82rem;">${topRxn}</span>`:''}
-          ${totalRxn>0?`<span style="font-size:.78rem;color:var(--muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${buildRxnLabel(p)}</span>`:''}
+        <span style="display:flex;gap:4px;align-items:center;">
+          ${(()=>{
+            /* FB-style: bolitas de emoji superpuestas */
+            const topArr = Object.entries(p.reactionCounts||{}).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([e])=>e);
+            const rxnColors = {'👍':'#1877f2','❤️':'#f33e58','😂':'#f7b125','😮':'#f7b125','😢':'#f7b125','😡':'#e9710f'};
+            const bubbles = topArr.map((em,i)=>`<span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:${rxnColors[em]||'#555'};font-size:.7rem;border:1.5px solid var(--bg2);margin-left:${i>0?'-5px':'0'};position:relative;z-index:${10-i};">${em}</span>`).join('');
+            return bubbles ? `<span style="display:inline-flex;align-items:center;">${bubbles}</span>` : '';
+          })()}
+          ${totalRxn>0?`<span style="font-size:.78rem;color:var(--muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-left:2px;">${buildRxnLabel(p)}</span>`:''}
         </span>
       </div>
       <div style="display:flex;gap:10px;align-items:center;">
@@ -10688,12 +10713,14 @@ function postHTML(p){
         <span class="tw-act-count">${(p.shares||0)>0?p.shares:''}</span>
       </button>
       <div class="rxn-wrap tw-rxn" onmouseenter="showRxnPop('${p.id}')" onmouseleave="schedHideRxnPop('${p.id}')">
-        <button class="tw-act-btn tw-like-btn ${myRxn?'tw-liked':''}" id="rxnt_${p.id}" onclick="quickReact('${p.id}')" style="${myRxn?`color:${REACTIONS.find(r=>r.emoji===myRxn)?.color||'#f91880'}`:''}">
+        <button class="tw-act-btn tw-like-btn ${myRxn?'tw-liked':''}" id="rxnt_${p.id}" onclick="quickReact('${p.id}')" style="${myRxn?`color:${REACTIONS.find(r=>r.emoji===myRxn)?.color||'#1877f2'};font-weight:800;`:''}">
           ${myRxn
-            ? `<span style="font-size:1.05rem;line-height:1;">${myRxn}</span>`
-            : `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`
+            ? `<span style="font-size:1.15rem;line-height:1;">${myRxn}</span>`
+            : `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>`
           }
-          <span class="tw-act-count">${myRxn?(REACTIONS.find(r=>r.emoji===myRxn)?.label||'Reaccionar'):'Reaccionar'}</span>
+          <span class="tw-act-count" style="${myRxn?`color:${REACTIONS.find(r=>r.emoji===myRxn)?.color||'#1877f2'};font-weight:800;`:''}">
+            ${myRxn?(REACTIONS.find(r=>r.emoji===myRxn)?.label||'Me gusta'):'Me gusta'}
+          </span>
         </button>
         <div class="rxn-popup" id="rxnp_${p.id}" onmouseenter="cancelHideRxnPop('${p.id}')" onmouseleave="schedHideRxnPop('${p.id}')">${rxnBtns}</div>
       </div>
@@ -15837,13 +15864,23 @@ window._confirmBan = async function(uid, nick){
 };
 
 async function deleteAdminPost(postId, reportId){
-  if(!confirm('¿Borrar esta publicación?')) return;
+  if(!window.CU || (window.CU.nick !== 'ruizgustavo12' && window.CU.email !== 'synxyes@gmail.com' && window.CU.role !== 'admin' && !window.CU.admin)){
+    toast('Sin permisos de admin','err'); return;
+  }
+  if(!confirm('¿Eliminar esta publicación?')) return;
   try {
     await deleteDoc(doc(db,'posts',postId));
     if(reportId) await updateDoc(doc(db,'reports',reportId),{status:'resuelto'});
     toast('Publicación eliminada ✅','ok');
-    loadAdminData();
-  } catch(e){ toast('Error al eliminar','err'); }
+    // Eliminar del DOM del feed inmediatamente
+    const postEl = document.getElementById('post_'+postId);
+    if(postEl){ postEl.style.transition='opacity .3s'; postEl.style.opacity='0'; setTimeout(()=>postEl.remove(),320); }
+    // Eliminar del array local
+    if(window._posts) window._posts = window._posts.filter(p=>p.id!==postId);
+    // Si estamos en el panel admin, recargar también
+    const adminPage = document.getElementById('page-admin');
+    if(adminPage && adminPage.classList.contains('active')) loadAdminData();
+  } catch(e){ toast('Error al eliminar: '+e.message,'err'); }
 }
 
 async function resolveReport(reportId){
@@ -18824,20 +18861,25 @@ function togglePostMenu(pid, e, ownerId){
 
   const menuOwner = (ownerId || menu.dataset.owner || '').trim();
   const myId = (window.CU?.id || '').trim();
-  const isAdmin = !!(window.CU?.admin || window.CU?.nick === 'ruizgustavo12');
-  const isOwner = !!(myId && (menuOwner === myId || isAdmin));
+  const isAdmin = !!(window.CU?.admin || window.CU?.nick === 'ruizgustavo12' || window.CU?.role === 'admin' || window.CU?.email === 'synxyes@gmail.com');
+  const isOwner = !!(myId && (menuOwner === myId));
 
-  // Always apply visibility based on ownership
+  // Botones de dueño (editar, eliminar propios)
   menu.querySelectorAll('[data-owner-only]').forEach(b => {
-    b.style.display = isOwner ? 'flex' : 'none';
+    b.style.display = (isOwner || isAdmin) ? 'flex' : 'none';
   });
+  // Botones de otros (reportar)
   menu.querySelectorAll('[data-other-only]').forEach(b => {
-    b.style.display = isOwner ? 'none' : 'flex';
+    b.style.display = (!isOwner && myId) ? 'flex' : 'none';
+  });
+  // Botón admin: visible en TODOS los posts si es admin
+  menu.querySelectorAll('.admin-only-feed-del').forEach(b => {
+    b.style.display = isAdmin ? 'flex' : 'none';
   });
 
   // If not logged in, show nothing sensitive
   if(!myId){
-    menu.querySelectorAll('[data-owner-only],[data-other-only]').forEach(b => b.style.display='none');
+    menu.querySelectorAll('[data-owner-only],[data-other-only],.admin-only-feed-del').forEach(b => b.style.display='none');
   }
   // Si el menu quedó vacío (sin botones visibles), ocultar el menú entero
   const visibleBtns = [...menu.querySelectorAll('button')].filter(b=>b.style.display!=='none');
@@ -21149,6 +21191,55 @@ async function openReactionsModal(pid){
   });
 
   renderList('Todas');
+
+  // ── Tiempo real con onSnapshot (actualiza la lista mientras el modal está abierto) ──
+  try {
+    const colName = window._currentFeedCol || 'posts';
+    const realId = p._realId || pid;
+    const unsub = onSnapshot(doc(db, colName, realId), async (snap) => {
+      if(!snap.exists()) return;
+      const data = snap.data();
+      const newReactions = data.reactions || {};
+      // Cachear nuevos usuarios desconocidos
+      const newIds = Object.keys(newReactions).filter(uid=>!userCache[uid]);
+      if(newIds.length){
+        try {
+          const s2 = await Promise.all(newIds.map(uid=>getDoc(doc(db,'users',uid))));
+          s2.forEach(s=>{ if(s.exists()) userCache[s.id]={nick:s.data().nick||'Usuario',av:s.data().av||'',gender:s.data().gender||''}; });
+        } catch(e){}
+      }
+      // Rebuild sorted
+      const newEntries = Object.entries(newReactions).filter(([,e])=>e);
+      const newSorted = [...newEntries].sort(([a],[b])=>{ const rank=id=>id===window.CU?.id?0:friendIds.has(id)?1:2; return rank(a)-rank(b); });
+      // Rebuild tabs
+      const allEmojis = [...new Set(newSorted.map(([,e])=>e))];
+      const tabDefs = [{key:'Todas',label:'Todas',count:newSorted.length},...allEmojis.map(e=>({key:e,label:e,count:newSorted.filter(([,x])=>x===e).length}))];
+      tabsRow.innerHTML='';
+      tabDefs.forEach(td=>{
+        const btn=document.createElement('button');
+        btn.dataset.tab=td.key;
+        const isAct=td.key===filter||(!filter&&td.key==='Todas');
+        btn.style.cssText=`background:none;border:none;border-bottom:3px solid ${isAct?'var(--accent)':'transparent'};padding:12px 14px;font-size:.9rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;white-space:nowrap;color:${isAct?'var(--accent)':'var(--muted)'};display:flex;align-items:center;gap:5px;transition:all .15s;`;
+        btn.innerHTML=`${td.label} <span style="font-size:.72rem;background:var(--bg3);padding:1px 7px;border-radius:100px;color:var(--muted);">${td.count}</span>`;
+        tabsRow.appendChild(btn);
+      });
+      // Rerender list
+      let curFilter='Todas';
+      const curActive=tabsRow.querySelector('[style*="var(--accent)"]');
+      if(curActive) curFilter=curActive.dataset.tab||'Todas';
+      const list=curFilter==='Todas'?newSorted:newSorted.filter(([,e])=>e===curFilter);
+      listWrap.innerHTML=list.length?list.map(([uid,emoji])=>renderRow(uid,emoji)).join(''):'<div style="text-align:center;padding:40px;color:var(--muted);font-size:.88rem;">Sin reacciones</div>';
+      // Actualizar post local
+      if(p){ p.reactions=newReactions; p.reactionCounts=data.reactionCounts||{}; }
+    });
+    modal._unsub = unsub;
+    // Desuscribir al cerrar
+    const closeBtn = modal.querySelector('button');
+    if(closeBtn){
+      const orig = closeBtn.onclick;
+      closeBtn.onclick = function(){ if(unsub) unsub(); modal._unsub=null; if(orig) orig.call(this); };
+    }
+  } catch(e){}
 }
 
 // ===== PEZ DE LA SEMANA =====
