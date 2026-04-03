@@ -4102,14 +4102,13 @@ input:focus, textarea:focus {
     </div>
     
     <div style="display:flex;border-top:1px solid #21262d;padding:0 4px;">
-      <button class="rf4-tab on" id="rf4TabChat"     onclick="rf4SwitchTab('chat')"     >💬 Chat</button>
-      <button class="rf4-tab"   id="rf4TabJugadores" onclick="rf4SwitchTab('jugadores')" >👥 Jugadores</button>
+      <button class="rf4-tab on" id="rf4TabJugadores" onclick="rf4SwitchTab('jugadores')" >👥 Usuarios conectados</button>
       <button class="rf4-tab"   id="rf4TabMensajes"  onclick="rf4SwitchTab('mensajes')"  >✉️ Mensajes <span id="unreadChatBadge" style="display:none;background:var(--red);color:#fff;border-radius:50%;padding:0 4px;font-size:.6rem;"></span></button>
     </div>
   </div>
 
   
-  <div id="rf4PanelChat" style="flex:1;display:flex;flex-direction:column;min-height:0;">
+  <div id="rf4PanelChat" style="flex:1;display:none;flex-direction:column;min-height:0;">
     
     <div id="globalChatMessages" style="flex:1;overflow-y:auto;padding:6px 0;" class="custom-scroll"></div>
     
@@ -4122,7 +4121,7 @@ input:focus, textarea:focus {
   </div>
 
   
-  <div id="rf4PanelJugadores" style="flex:1;display:none;flex-direction:column;min-height:0;overflow-y:auto;">
+  <div id="rf4PanelJugadores" style="flex:1;display:flex;flex-direction:column;min-height:0;overflow-y:auto;">
     
     <div style="padding:6px 8px;border-bottom:1px solid #21262d;background:#0d1117;flex-shrink:0;">
       <div style="background:#21262d;border-radius:6px;display:flex;align-items:center;gap:6px;padding:5px 10px;">
@@ -13865,7 +13864,7 @@ function renderNotifs(){
           <div style="display:flex;gap:8px;">
             <button data-action="accept-friend" data-idx="${i}" data-uid="${n.fromId||''}" data-nick="${safeNick}"
               style="flex:1;padding:8px;background:var(--accent);border:none;color:#000;border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">Confirmar</button>
-            <button data-action="reject-friend" data-idx="${i}"
+            <button data-action="reject-friend" data-idx="${i}" data-fromid="${n.fromId||''}"
               style="flex:1;padding:8px;background:var(--bg4);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">Eliminar</button>
           </div>
         </div>
@@ -13982,9 +13981,14 @@ function renderNotifs(){
       closeNotifDropdown(); openUserProfile(row.dataset.uid, row.dataset.nick);
     } else if(action==='accept-friend'){
       row.disabled=true; row.textContent='Aceptando...';
-      await acceptFriendRequest(row.dataset.uid, row.dataset.nick, parseInt(row.dataset.idx));
+      try {
+        await acceptFriendRequest(row.dataset.uid, row.dataset.nick, parseInt(row.dataset.idx));
+      } catch(e) {
+        row.disabled=false; row.textContent='Confirmar';
+        if(typeof toast==='function') toast('Error al aceptar, intentá de nuevo','err');
+      }
     } else if(action==='reject-friend'){
-      await rejectFriendRequest(parseInt(row.dataset.idx));
+      await rejectFriendRequest(parseInt(row.dataset.idx), row.dataset.fromid||'');
     } else if(action==='delete-notif'){
       const idx = parseInt(row.dataset.idx);
       const noMsg = _notifs.filter(n=>!(n.text&&n.text.startsWith('💬')));
@@ -18792,11 +18796,18 @@ async function acceptFriendRequest(fromId, fromNick, notifIndex){
   } catch(e){ console.error('acceptFriendRequest error:',e); toast('Error al aceptar: '+e.message,'err'); }
 }
 
-async function rejectFriendRequest(notifIndex){
+async function rejectFriendRequest(notifIndex, fromId){
   if(!window.CU) return;
   try {
-    const toRemove = notifIndex >= 0 && notifIndex < _notifs.length ? _notifs[notifIndex] : null;
-    if(notifIndex >= 0 && notifIndex < _notifs.length) _notifs.splice(notifIndex, 1);
+    let toRemove = null;
+    // Buscar por fromId primero (más confiable)
+    if(fromId){
+      const idx = _notifs.findIndex(n=>n.type==='friendRequest'&&n.fromId===fromId);
+      if(idx !== -1){ toRemove = _notifs[idx]; _notifs.splice(idx,1); }
+    } else {
+      toRemove = notifIndex >= 0 && notifIndex < _notifs.length ? _notifs[notifIndex] : null;
+      if(notifIndex >= 0 && notifIndex < _notifs.length) _notifs.splice(notifIndex, 1);
+    }
     if(toRemove){ await updateDoc(doc(db,'users',window.CU.id),{notifs: arrayRemove(toRemove)}); }
     else { await updateDoc(doc(db,'users',window.CU.id),{notifs:_notifs.slice(0,50)}); }
     renderNotifs();
@@ -19803,8 +19814,9 @@ function openChatWith(uid, nick){
   const safeNickUrl = (nick||'usuario').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
   history.pushState({ page: 'mensajes', chatUid: uid, chatNick: nick }, '', window.location.pathname + '#chat');
 
-  // Make sure messenger modal is open
+  // Make sure messenger modal is open and on mensajes tab
   om('mMessenger');
+  if(typeof rf4SwitchTab === 'function') rf4SwitchTab('mensajes');
 
   const list = document.getElementById('messengerList');
   const chatWin = document.getElementById('chatWindow');
@@ -25038,7 +25050,7 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
   }
 
   // ── Estado ───────────────────────────────────────────────────
-  var _rf4Tab        = 'chat';
+  var _rf4Tab        = 'jugadores';
   var _gcUnsub       = null;   // listener chat global
   var _gcMsgs        = [];     // mensajes del chat global en memoria
   var _jugadoresAll  = [];     // lista completa para filtrar
@@ -25048,7 +25060,7 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
   window.rf4SwitchTab = function(tab){
     _rf4Tab = tab;
     // Tabs highlight
-    ['chat','jugadores','mensajes'].forEach(function(t){
+    ['jugadores','mensajes'].forEach(function(t){
       var btn = document.getElementById('rf4Tab'+t.charAt(0).toUpperCase()+t.slice(1));
       if(btn) btn.classList.toggle('on', t===tab);
     });
@@ -25056,11 +25068,10 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
     var pChat = document.getElementById('rf4PanelChat');
     var pJug  = document.getElementById('rf4PanelJugadores');
     var pMsg  = document.getElementById('rf4PanelMensajes');
-    if(pChat) pChat.style.display = tab==='chat'      ? 'flex' : 'none';
+    if(pChat) pChat.style.display = 'none';
     if(pJug)  pJug.style.display  = tab==='jugadores' ? 'flex' : 'none';
     if(pMsg)  pMsg.style.display  = tab==='mensajes'  ? 'flex' : 'none';
 
-    if(tab==='chat'      && !_gcUnsub)  initGlobalChat();
     if(tab==='jugadores' && !_jLoaded)  loadJugadores();
     if(tab==='mensajes')                renderMessengerList();
   };
