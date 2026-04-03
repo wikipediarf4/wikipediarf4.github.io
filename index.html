@@ -6246,11 +6246,28 @@ window.initSalasPage = window.initSalasPage;
 
   
   <div id="admt-verif" style="display:none;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
       <span style="font-size:.9rem;font-weight:800;color:var(--text);">Solicitudes de Verificación</span>
-      <button onclick="loadVerifRequests()" style="background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:var(--rs);font-size:.75rem;cursor:pointer;font-family:'Exo 2',sans-serif;">🔄 Actualizar</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button onclick="loadVerifRequests()" style="background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:var(--rs);font-size:.75rem;cursor:pointer;font-family:'Exo 2',sans-serif;">🔄 Actualizar</button>
+        <button onclick="loadAllUsersForBulkVerif()" style="background:rgba(46,196,182,.12);border:1px solid rgba(46,196,182,.35);color:var(--accent);padding:5px 14px;border-radius:var(--rs);font-size:.75rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">🖼️ Verificar por fotos</button>
+      </div>
     </div>
     <div id="adminVerifList"><div style="text-align:center;padding:30px;color:var(--muted);">Cargando solicitudes...</div></div>
+
+    <!-- Panel verificación masiva por fotos -->
+    <div id="bulkVerifPanel" style="display:none;margin-top:18px;">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px;">
+        <div style="font-size:.82rem;font-weight:700;color:var(--accent);margin-bottom:4px;">🖼️ Verificación por fotos de perfil</div>
+        <div style="font-size:.72rem;color:var(--muted);">Revisá cada foto y decidí si el usuario tiene foto de persona real. ✅ Verificar = foto real · ❌ Omitir = dibujo/anime/logo/etc.</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+        <span id="bulkVerifProgress" style="font-size:.8rem;color:var(--muted);font-weight:700;"></span>
+        <button onclick="_bulkVerifApproveAll()" style="background:rgba(0,200,0,.1);border:1px solid rgba(0,200,0,.3);color:#00c853;padding:5px 14px;border-radius:var(--rs);font-size:.73rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">✅ Verificar todos los pendientes</button>
+        <button onclick="document.getElementById('bulkVerifPanel').style.display='none'" style="background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:var(--rs);font-size:.73rem;cursor:pointer;">✕ Cerrar</button>
+      </div>
+      <div id="bulkVerifGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;"></div>
+    </div>
   </div>
 
   
@@ -18792,6 +18809,125 @@ async function adminRevokeVerif(reqId, nick, userId){
     toast(`Verificación de ${nick} revocada`,'inf');
     loadVerifRequests();
   } catch(e){ toast('Error al revocar','err'); }
+}
+
+/* ===== VERIFICACIÓN MASIVA POR FOTOS ===== */
+let _bulkVerifUsers = [];
+
+async function loadAllUsersForBulkVerif(){
+  const panel = document.getElementById('bulkVerifPanel');
+  const grid  = document.getElementById('bulkVerifGrid');
+  const prog  = document.getElementById('bulkVerifProgress');
+  if(!panel||!grid) return;
+  panel.style.display = 'block';
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted);">⏳ Cargando usuarios...</div>';
+
+  try {
+    const snap = await getDocs(collection(db,'users'));
+    // Solo usuarios con foto de perfil real (URL http), sin importar si ya están verificados
+    _bulkVerifUsers = snap.docs
+      .map(d=>({id:d.id,...d.data()}))
+      .filter(u => u.av && typeof u.av==='string' && u.av.startsWith('http') && !u.banned)
+      .sort((a,b)=> (a.verified?1:0)-(b.verified?1:0)); // no verificados primero
+
+    prog.textContent = `${_bulkVerifUsers.filter(u=>!u.verified).length} sin verificar · ${_bulkVerifUsers.filter(u=>u.verified).length} ya verificados`;
+
+    grid.innerHTML = _bulkVerifUsers.map(u=>`
+      <div id="bvcard_${u.id}" style="background:var(--bg2);border:2px solid ${u.verified?'rgba(255,215,0,.5)':'var(--border)'};border-radius:14px;overflow:hidden;transition:border-color .2s;">
+        <!-- Foto -->
+        <div style="position:relative;width:100%;aspect-ratio:1/1;background:#111;overflow:hidden;">
+          <img src="${esc(u.av)}" style="width:100%;height:100%;object-fit:cover;display:block;"
+            onerror="this.closest('#bvcard_${u.id}').style.opacity='.4'">
+          ${u.verified?'<div style="position:absolute;top:6px;right:6px;background:gold;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:.85rem;">✓</div>':''}
+        </div>
+        <!-- Info -->
+        <div style="padding:8px 10px;">
+          <div style="font-size:.78rem;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(u.nick||'?')}</div>
+          <div style="font-size:.65rem;color:var(--muted);margin-bottom:6px;">${u.verified?'✅ Verificado':'Sin verificar'}</div>
+          <div style="display:flex;gap:5px;">
+            ${!u.verified
+              ? `<button onclick="_bulkApproveOne('${u.id}','${(u.nick||'').replace(/'/g,"\\'")}')" style="flex:1;background:rgba(0,200,0,.12);border:1px solid rgba(0,200,0,.3);color:#00c853;padding:5px 4px;border-radius:8px;font-size:.68rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">✅ Verificar</button>`
+              : `<button onclick="_bulkRevokeOne('${u.id}','${(u.nick||'').replace(/'/g,"\\'")}')" style="flex:1;background:rgba(255,200,0,.08);border:1px solid rgba(255,200,0,.25);color:gold;padding:5px 4px;border-radius:8px;font-size:.68rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">↩ Revocar</button>`
+            }
+          </div>
+        </div>
+      </div>`).join('');
+  } catch(e){
+    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--muted);">Error al cargar usuarios</div>';
+    console.error(e);
+  }
+}
+
+async function _bulkApproveOne(uid, nick){
+  const card = document.getElementById('bvcard_'+uid);
+  try {
+    await updateDoc(doc(db,'users',uid),{ verified:true, verifPending:false });
+    // Notificar al usuario
+    try {
+      await updateDoc(doc(db,'users',uid),{ notifs: arrayUnion({ type:'verifApproved', time:Date.now(), read:false, text:'¡Tu cuenta fue verificada! ✅' }) });
+    } catch(e){}
+    if(card){
+      card.style.borderColor = 'rgba(255,215,0,.5)';
+      card.querySelector('div[style*="padding:8px"]').innerHTML = `
+        <div style="font-size:.78rem;font-weight:800;color:var(--text);">${esc(nick)}</div>
+        <div style="font-size:.65rem;color:#00c853;margin-bottom:6px;">✅ Verificado</div>
+        <div style="display:flex;gap:5px;">
+          <button onclick="_bulkRevokeOne('${uid}','${nick.replace(/'/g,"\\'")}');event.stopPropagation();" style="flex:1;background:rgba(255,200,0,.08);border:1px solid rgba(255,200,0,.25);color:gold;padding:5px 4px;border-radius:8px;font-size:.68rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">↩ Revocar</button>
+        </div>`;
+      // Badge ✓ en la foto
+      const imgWrap = card.querySelector('div[style*="aspect-ratio"]');
+      if(imgWrap && !imgWrap.querySelector('div')) imgWrap.insertAdjacentHTML('beforeend','<div style="position:absolute;top:6px;right:6px;background:gold;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:.85rem;">✓</div>');
+    }
+    // Actualizar caché local
+    const u = _bulkVerifUsers.find(x=>x.id===uid); if(u) u.verified=true;
+    const prog = document.getElementById('bulkVerifProgress');
+    if(prog) prog.textContent = `${_bulkVerifUsers.filter(u=>!u.verified).length} sin verificar · ${_bulkVerifUsers.filter(u=>u.verified).length} ya verificados`;
+    toast(`✅ ${nick} verificado`,'ok');
+  } catch(e){ toast('Error al verificar','err'); console.error(e); }
+}
+
+async function _bulkRevokeOne(uid, nick){
+  if(!confirm(`¿Quitar verificación de ${nick}?`)) return;
+  const card = document.getElementById('bvcard_'+uid);
+  try {
+    await updateDoc(doc(db,'users',uid),{ verified:false });
+    if(card){
+      card.style.borderColor = 'var(--border)';
+      const badge = card.querySelector('div[style*="background:gold"]');
+      if(badge) badge.remove();
+      card.querySelector('div[style*="padding:8px"]').innerHTML = `
+        <div style="font-size:.78rem;font-weight:800;color:var(--text);">${esc(nick)}</div>
+        <div style="font-size:.65rem;color:var(--muted);margin-bottom:6px;">Sin verificar</div>
+        <div style="display:flex;gap:5px;">
+          <button onclick="_bulkApproveOne('${uid}','${nick.replace(/'/g,"\\'")}');event.stopPropagation();" style="flex:1;background:rgba(0,200,0,.12);border:1px solid rgba(0,200,0,.3);color:#00c853;padding:5px 4px;border-radius:8px;font-size:.68rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">✅ Verificar</button>
+        </div>`;
+    }
+    const u = _bulkVerifUsers.find(x=>x.id===uid); if(u) u.verified=false;
+    const prog = document.getElementById('bulkVerifProgress');
+    if(prog) prog.textContent = `${_bulkVerifUsers.filter(u=>!u.verified).length} sin verificar · ${_bulkVerifUsers.filter(u=>u.verified).length} ya verificados`;
+    toast(`Verificación de ${nick} revocada`,'inf');
+  } catch(e){ toast('Error al revocar','err'); }
+}
+
+async function _bulkVerifApproveAll(){
+  const pending = _bulkVerifUsers.filter(u=>!u.verified);
+  if(!pending.length){ toast('No hay usuarios sin verificar','inf'); return; }
+  if(!confirm(`¿Verificar a ${pending.length} usuarios con foto de perfil?`)) return;
+  let ok=0, fail=0;
+  for(const u of pending){
+    try {
+      await updateDoc(doc(db,'users',u.id),{ verified:true, verifPending:false });
+      try { await updateDoc(doc(db,'users',u.id),{ notifs: arrayUnion({ type:'verifApproved', time:Date.now(), read:false, text:'¡Tu cuenta fue verificada! ✅' }) }); } catch(e){}
+      u.verified = true;
+      const card = document.getElementById('bvcard_'+u.id);
+      if(card) card.style.borderColor='rgba(255,215,0,.5)';
+      ok++;
+    } catch(e){ fail++; }
+  }
+  const prog = document.getElementById('bulkVerifProgress');
+  if(prog) prog.textContent = `${_bulkVerifUsers.filter(u=>!u.verified).length} sin verificar · ${_bulkVerifUsers.filter(u=>u.verified).length} ya verificados`;
+  toast(`✅ ${ok} verificados${fail?` · ${fail} errores`:''}`, 'ok');
+  loadAllUsersForBulkVerif(); // refrescar grid
 }
 
 
