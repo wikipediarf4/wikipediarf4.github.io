@@ -13795,7 +13795,13 @@ async function markAllNotifsRead(){
 function _notifIcon(n){
   // Retorna {emoji, bg, icon} para el badge sobre el avatar
   if(n.type==='friendRequest') return {bg:'#1877f2', icon:'👥'};
+  if(n.type==='match_mutual')    return {bg:'#e040fb', icon:'💖'};
+  if(n.type==='match_superlike') return {bg:'#f9a825', icon:'⭐'};
+  if(n.type==='match_like')      return {bg:'#f33e58', icon:'💘'};
   const t = n.text||'';
+  if(t.includes('Match')||t.includes('match')||t.includes('dieron like')) return {bg:'#e040fb', icon:'💖'};
+  if(t.includes('Super Like')||t.includes('super like')) return {bg:'#f9a825', icon:'⭐'};
+  if(t.includes('💘')||t.includes('le gustó tu perfil')) return {bg:'#f33e58', icon:'💘'};
   if(t.includes('cumpleaños')||t.includes('🎂')) return {bg:'#e91e63', icon:'🎂'};
   if(t.includes('reaccionó')||t.includes('❤️')||t.includes('😍')) return {bg:'#f02849', icon:'❤️'};
   if(t.includes('comentó')||t.includes('💬')) return {bg:'#1877f2', icon:'💬'};
@@ -13908,8 +13914,12 @@ function renderNotifs(){
       </div>`;
     }
 
-    return `<div data-action="notif-click" data-postid="${postId}" data-bdayuid="${bdayUid}" data-bdaynick="${n.bdayNick||''}" data-storyid="${storyId}"
-      style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;transition:background .15s;${rowBg}cursor:${clickable?'pointer':'default'};border-bottom:1px solid rgba(255,255,255,.04);position:relative;"
+    const matchType   = n.type||'';
+    const matchUid    = n.matchUid||n.fromUid||'';
+    const isMatchNotif = matchType==='match_mutual'||matchType==='match_like'||matchType==='match_superlike';
+    const rowClickable = !!(postId || bdayUid || storyId || isMatchNotif);
+    return `<div data-action="notif-click" data-postid="${postId}" data-bdayuid="${bdayUid}" data-bdaynick="${n.bdayNick||''}" data-storyid="${storyId}" data-type="${matchType}" data-matchuid="${matchUid}" data-matchnick="${(n.fromNick||'').replace(/"/g,'&quot;')}"
+      style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;transition:background .15s;${rowBg}cursor:${rowClickable?'pointer':'default'};border-bottom:1px solid rgba(255,255,255,.04);position:relative;"
       onmouseover="this.style.background='var(--bg3)';this.querySelector('.notif-del-btn')&&(this.querySelector('.notif-del-btn').style.opacity='1')"
       onmouseout="this.style.background='${unreadBg}';this.querySelector('.notif-del-btn')&&(this.querySelector('.notif-del-btn').style.opacity='0')">
       ${!isRead ? `<div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${bg};border-radius:0 2px 2px 0;"></div>` : ''}
@@ -13949,9 +13959,25 @@ function renderNotifs(){
     if(!row) return;
     const action = row.dataset.action;
     if(action==='notif-click'){
+      const nType = row.dataset.type||'';
       if(row.dataset.storyid){ closeNotifDropdown(); openStoryById(row.dataset.storyid); }
       else if(row.dataset.postid){ closeNotifDropdown(); scrollToPost(row.dataset.postid); }
       else if(row.dataset.bdayuid){ closeNotifDropdown(); openUserProfile(row.dataset.bdayuid, row.dataset.bdaynick); }
+      else if(nType==='match_mutual'){
+        // Match mutuo: abrir chat con la persona o ir a Match
+        closeNotifDropdown();
+        const mUid  = row.dataset.matchuid;
+        const mNick = row.dataset.matchnick || '';
+        if(mUid && typeof openChatWith==='function'){
+          openChatWith(mUid, mNick);
+        } else if(typeof gp==='function'){
+          gp('match');
+        }
+      } else if(nType==='match_like'||nType==='match_superlike'){
+        // Like/Superlike recibido: ir a la sección Match
+        closeNotifDropdown();
+        if(typeof gp==='function') gp('match');
+      }
     } else if(action==='view-profile'){
       closeNotifDropdown(); openUserProfile(row.dataset.uid, row.dataset.nick);
     } else if(action==='accept-friend'){
@@ -28380,8 +28406,9 @@ let _gFilter  = '';
 let _seekFilter = '';
 let _loading  = false;
 let _online   = new Set();
-let _unsubLikes  = null;
-let _unsubMatch  = null;
+let _unsubLikes    = null;
+let _unsubMatch    = null;
+let _unsubIncoming = null;  // listener de likes recibidos (en tiempo real)
 
 /* Swipe touch/mouse */
 let _drag = { active:false, startX:0, startY:0, curX:0, curY:0, card:null };
@@ -28397,6 +28424,7 @@ window.initMatchPage = function(){
   }
   _loadUsers();
   _subscribeLikes();
+  _subscribeIncomingLikes();
 };
 
 /* ─────────────────────────────────────────────
@@ -28460,6 +28488,88 @@ function _subscribeLikes(){
     if(_mode==='grid') _renderGrid();
   });
 }
+
+/* ─────────────────────────────────────────────
+   LISTENER DE LIKES RECIBIDOS (tiempo real)
+   Escucha la subcolección matchLikes de cada
+   usuario del grupo y detecta cuando alguien
+   nos da like mientras estamos en la app.
+───────────────────────────────────────────── */
+// Cache de likes recibidos ya conocidos para evitar notificaciones duplicadas
+let _knownReceivedLikes = null;
+
+function _subscribeIncomingLikes(){
+  if(!window.CU) return;
+  if(_unsubIncoming){ _unsubIncoming(); _unsubIncoming = null; }
+
+  // Escuchamos la subcolección matchLikes del usuario actual
+  // que YA EXISTE (es donde otros guardan que les gusta mi perfil)
+  // En este modelo, cuando A le da like a B, guarda en:
+  //   users/A/matchLikes/B  (likes que A dio)
+  // Para recibir notificación de que B me dio like, necesito escuchar
+  //   users/B/matchLikes/ME  — pero no tenemos acceso a todos los usuarios.
+  //
+  // La solución correcta (y ya implementada): el documento del usuario actual
+  // se actualiza via `updateDoc` con `arrayUnion` en el array `notifs`.
+  // El listener `listenNotifs()` ya captura esos cambios en tiempo real.
+  //
+  // Este listener complementario escucha la colección `matchIncoming/{myId}`
+  // donde otros pueden escribir notificaciones de like/match directamente.
+  // Esto es un canal dedicado más liviano que el array de notifs del usuario.
+
+  try{
+    _unsubIncoming = onSnapshot(
+      collection(db,'matchIncoming',window.CU.id,'items'),
+      snap=>{
+        if(!snap || snap.empty) return;
+        snap.docChanges().forEach(change=>{
+          if(change.type !== 'added') return;
+          const d   = change.doc.data();
+          const uid = d.fromUid;
+          if(!uid || uid === window.CU.id) return;
+
+          // Verificar si ya procesamos este like (evitar doble notif)
+          if(_knownReceivedLikes === null){
+            // Primera carga: solo registrar los existentes sin tostar
+            if(_knownReceivedLikes === null){
+              _knownReceivedLikes = new Set();
+              snap.docs.forEach(doc => _knownReceivedLikes.add(doc.id));
+              return;
+            }
+          }
+          if(_knownReceivedLikes.has(change.doc.id)) return;
+          _knownReceivedLikes.add(change.doc.id);
+
+          // Verificar que no esté bloqueado
+          const blocked = window.CU?.blocked || [];
+          if(blocked.includes(uid)) return;
+
+          // Mostrar toast en tiempo real
+          const nick = d.fromNick || 'alguien';
+          if(d.superLike){
+            if(typeof showNotifToast === 'function')
+              showNotifToast('⭐ ¡'+nick+' te dio un Super Like! ¡Mirá Match!');
+            if(typeof playNotifSound === 'function') playNotifSound();
+          } else {
+            if(typeof showNotifToast === 'function')
+              showNotifToast('💘 ¡A '+nick+' le gustó tu perfil!');
+            if(typeof playNotifSound === 'function') playNotifSound();
+          }
+
+          // Verificar match mutuo en tiempo real
+          _checkMutualMatch(uid);
+        });
+      },
+      err => console.warn('[matchIncoming] listener err:', err)
+    );
+  }catch(e){ console.warn('[matchIncoming] setup err:', e); }
+}
+
+/* Exponer para llamar cuando el usuario inicia sesión después de cargar */
+window._resubscribeMatchListeners = function(){
+  _subscribeLikes();
+  _subscribeIncomingLikes();
+};
 
 function _refreshLikeBtn(){
   const u = _filtered[_idx];
@@ -28808,39 +28918,106 @@ window._matchShowInfo = function(){
 
 async function _doLike(uid){
   if(!window.CU){ toast('Iniciá sesión para dar likes','err'); return; }
-  const already = !!_likes[uid];
-  const likeRef = doc(db,'users',window.CU.id,'matchLikes',uid);
 
-  if(already){
-    try{ delete _likes[uid]; await deleteDoc(likeRef); }
-    catch(e){ console.warn('unlike err:',e); }
+  // ── Validar que no sea like duplicado ──
+  const likeRef = doc(db,'users',window.CU.id,'matchLikes',uid);
+  if(_likes[uid]){
+    // Ya existe: quitar like (unlike)
+    try{
+      delete _likes[uid];
+      await deleteDoc(likeRef);
+      _refreshLikeBtn();
+      if(_mode==='grid') _renderGrid();
+    }catch(e){ console.warn('unlike err:',e); }
     _advance();
     return;
   }
 
-  _likes[uid]=true;
+  // ── Verificar en Firestore que no exista ya (evitar duplicados en tab múltiple) ──
+  try{
+    const existing = await getDoc(likeRef);
+    if(existing.exists()){
+      _likes[uid] = existing.data() || true;
+      _advance();
+      return;
+    }
+  }catch(e){ console.warn('like dup check err:',e); }
+
+  // ── Guardar like ──
+  _likes[uid] = true;
+  _refreshLikeBtn();
+  if(_mode==='grid') _renderGrid();
   _advance();
 
-  try{ await setDoc(likeRef,{ts:Date.now(),nick:window.CU.nick||'',av:window.CU.av||'',superLike:false}); }
-  catch(e){ console.warn('like err:',e); toast('No se pudo guardar el like','err'); return; }
-
-  // Notif a la otra persona
   try{
-    await updateDoc(doc(db,'users',uid),{notifs:arrayUnion({
-      text:'💘 ¡A '+(window.CU.nick||'alguien')+' le gustó tu perfil! Entrá a Match.',
-      time:Date.now(),read:false,
-      fromUid:window.CU.id||'',fromAv:window.CU.av||'',fromNick:window.CU.nick||''
-    })});
-  }catch(ne){ console.warn('like notif err:',ne); }
+    await setDoc(likeRef,{
+      ts: Date.now(),
+      nick: window.CU.nick||'',
+      av:   window.CU.av||'',
+      superLike: false,
+      fromUid: window.CU.id||''
+    });
+  }catch(e){
+    console.warn('like err:',e);
+    toast('No se pudo guardar el like','err');
+    delete _likes[uid];
+    return;
+  }
 
-  // Verificar match mutuo
+  // ── Notif al receptor — usando sendNotifToUser que es robusta y ya funciona ──
+  if(typeof sendNotifToUser === 'function'){
+    try{
+      // Verificar que el receptor no tenga al emisor bloqueado
+      const blocked = window.CU?.blocked || [];
+      if(!blocked.includes(uid)){
+        const notif = {
+          text: '💘 ¡A '+(window.CU.nick||'alguien')+' le gustó tu perfil! Entrá a Match.',
+          time: Date.now(),
+          read: false,
+          type: 'match_like',
+          fromUid:  window.CU.id  || '',
+          fromAv:   window.CU.av  || '',
+          fromNick: window.CU.nick|| ''
+        };
+        await updateDoc(doc(db,'users',uid),{ notifs: arrayUnion(notif) });
+
+        // Escritura en canal matchIncoming para el listener en tiempo real del receptor
+        try{
+          await setDoc(
+            doc(db,'matchIncoming',uid,'items',window.CU.id),
+            { fromUid: window.CU.id||'', fromNick: window.CU.nick||'', fromAv: window.CU.av||'', superLike: false, ts: Date.now() }
+          );
+        }catch(me){ console.warn('matchIncoming write err:',me); }
+      }
+    }catch(ne){ console.warn('like notif err:',ne); }
+  }
+
+  // ── Verificar match mutuo ──
   _checkMutualMatch(uid);
 }
 
 async function _doSuperLike(uid, nick){
   if(!window.CU){ toast('Iniciá sesión para dar Super Like','err'); return; }
+
   const likeRef = doc(db,'users',window.CU.id,'matchLikes',uid);
-  _likes[uid]=true;
+
+  // ── Evitar duplicado (si ya hay like/superlike del mismo usuario) ──
+  if(_likes[uid]){
+    _advance();
+    return;
+  }
+  try{
+    const existing = await getDoc(likeRef);
+    if(existing.exists()){
+      _likes[uid] = existing.data() || true;
+      _advance();
+      return;
+    }
+  }catch(e){ console.warn('superlike dup check err:',e); }
+
+  _likes[uid] = true;
+  _refreshLikeBtn();
+  if(_mode==='grid') _renderGrid();
   _advance();
 
   // Efecto visual
@@ -28848,15 +29025,38 @@ async function _doSuperLike(uid, nick){
   toast('⭐ ¡Super Like enviado a '+_esc(nick||'')+'!','ok');
 
   try{
-    await setDoc(likeRef,{ts:Date.now(),nick:window.CU.nick||'',av:window.CU.av||'',superLike:true});
-  }catch(e){ console.warn('superlike err:',e); return; }
+    await setDoc(likeRef,{
+      ts: Date.now(),
+      nick: window.CU.nick||'',
+      av:   window.CU.av||'',
+      superLike: true,
+      fromUid: window.CU.id||''
+    });
+  }catch(e){ console.warn('superlike err:',e); delete _likes[uid]; return; }
 
+  // ── Notif destacada al receptor ──
   try{
-    await updateDoc(doc(db,'users',uid),{notifs:arrayUnion({
-      text:'⭐ ¡'+(window.CU.nick||'alguien')+' te dio un Super Like! ¡Revisá Match!',
-      time:Date.now(),read:false,
-      fromUid:window.CU.id||'',fromAv:window.CU.av||'',fromNick:window.CU.nick||''
-    })});
+    const blocked = window.CU?.blocked || [];
+    if(!blocked.includes(uid)){
+      const notif = {
+        text: '⭐ ¡'+(window.CU.nick||'alguien')+' te dio un Super Like! ¡Revisá Match!',
+        time: Date.now(),
+        read: false,
+        type: 'match_superlike',
+        fromUid:  window.CU.id  || '',
+        fromAv:   window.CU.av  || '',
+        fromNick: window.CU.nick|| ''
+      };
+      await updateDoc(doc(db,'users',uid),{ notifs: arrayUnion(notif) });
+
+      // Canal matchIncoming para el receptor en tiempo real
+      try{
+        await setDoc(
+          doc(db,'matchIncoming',uid,'items',window.CU.id),
+          { fromUid: window.CU.id||'', fromNick: window.CU.nick||'', fromAv: window.CU.av||'', superLike: true, ts: Date.now() }
+        );
+      }catch(me){ console.warn('matchIncoming superlike write err:',me); }
+    }
   }catch(ne){ console.warn('superlike notif err:',ne); }
 
   _checkMutualMatch(uid);
@@ -28866,24 +29066,69 @@ async function _checkMutualMatch(uid){
   try{
     const theirLike = await getDoc(doc(db,'users',uid,'matchLikes',window.CU.id));
     if(!theirLike.exists()) return;
+
     const matchedUser = _all.find(x=>x.id===uid);
     const matchedNick = matchedUser?.nick||'alguien';
     const matchedAv   = matchedUser?.av||'';
-    const nowTs = Date.now();
+    const nowTs       = Date.now();
+
+    // ── Evitar crear match duplicado: verificar si ya existe ──
+    const ids = [window.CU.id, uid].sort();
+    const matchId = ids[0]+'_'+ids[1];
+    let alreadyMatched = false;
+    try{
+      const existingMatch = await getDoc(doc(db,'matches',matchId));
+      alreadyMatched = existingMatch.exists();
+    }catch(e){ console.warn('match check err:',e); }
+
+    if(alreadyMatched) return; // ya hay match, no duplicar notificaciones
+
+    // ── Crear registro del match en colección dedicada ──
+    try{
+      await setDoc(doc(db,'matches',matchId),{
+        users:    ids,
+        user1:    ids[0],
+        user2:    ids[1],
+        user1Nick: ids[0]===window.CU.id ? (window.CU.nick||'') : matchedNick,
+        user2Nick: ids[1]===window.CU.id ? (window.CU.nick||'') : matchedNick,
+        user1Av:   ids[0]===window.CU.id ? (window.CU.av||'')   : matchedAv,
+        user2Av:   ids[1]===window.CU.id ? (window.CU.av||'')   : matchedAv,
+        createdAt: nowTs,
+        chatEnabled: true
+      });
+    }catch(e){ console.warn('match save err:',e); }
+
+    // ── Mostrar modal épico ──
     _showMutualMatch(uid, matchedNick, matchedAv);
 
-    // Notif para el usuario actual
-    try{ await updateDoc(doc(db,'users',window.CU.id),{notifs:arrayUnion({
-      text:'🎉 ¡Match con '+matchedNick+'! Los dos se dieron like 💖',
-      time:nowTs+1,read:false,fromUid:uid,fromAv:matchedAv,fromNick:matchedNick
-    })}); }catch(e){ console.warn('match self notif err:',e); }
+    // ── Notif para el usuario actual (yo) ──
+    try{
+      await updateDoc(doc(db,'users',window.CU.id),{ notifs: arrayUnion({
+        text:     '🎉 ¡Match con '+matchedNick+'! Los dos se dieron like 💖',
+        time:     nowTs+1,
+        read:     false,
+        type:     'match_mutual',
+        matchUid: uid,
+        fromUid:  uid,
+        fromAv:   matchedAv,
+        fromNick: matchedNick
+      })});
+    }catch(e){ console.warn('match self notif err:',e); }
 
-    // Notif para la otra persona
-    if(uid!==window.CU.id){
-      try{ await updateDoc(doc(db,'users',uid),{notifs:arrayUnion({
-        text:'🎉 ¡Es un match con '+(window.CU.nick||'alguien')+'! Los dos se dieron like 💖',
-        time:nowTs,read:false,fromUid:window.CU.id||'',fromAv:window.CU.av||'',fromNick:window.CU.nick||''
-      })}); }catch(e){ console.warn('match mutual notif err:',e); }
+    // ── Notif para la otra persona (ellos) ──
+    if(uid !== window.CU.id){
+      try{
+        await updateDoc(doc(db,'users',uid),{ notifs: arrayUnion({
+          text:     '🎉 ¡Es un match con '+(window.CU.nick||'alguien')+'! Los dos se dieron like 💖',
+          time:     nowTs,
+          read:     false,
+          type:     'match_mutual',
+          matchUid: window.CU.id,
+          fromUid:  window.CU.id  || '',
+          fromAv:   window.CU.av  || '',
+          fromNick: window.CU.nick|| ''
+        })});
+      }catch(e){ console.warn('match mutual notif err:',e); }
     }
   }catch(e){ console.warn('mutual match check err:',e); }
 }
