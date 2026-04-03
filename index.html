@@ -19681,6 +19681,7 @@ async function _loadUserProfilePage(uid, nick){
     // ── STATS ── Cargar posts con onSnapshot (tiempo real: reacciones y comentarios actualizan al instante)
     let userPosts = [];
     const _upList = document.getElementById('upPostsList');
+    if(_upList) _upList.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">Cargando publicaciones...</div>';
 
     // Cancelar listener anterior si existe
     if(window._upPostsUnsub){ window._upPostsUnsub(); window._upPostsUnsub = null; }
@@ -19689,24 +19690,27 @@ async function _loadUserProfilePage(uid, nick){
     function _renderUpPostsList(posts){
       const listEl = document.getElementById('upPostsList');
       if(!listEl) return;
-      if(!posts.length){
+      // Ordenar en el cliente (evita requerir índice compuesto en Firestore)
+      const sorted = posts.slice().sort((a,b)=>{
+        return (b.time?.toMillis?.()??b.time??0) - (a.time?.toMillis?.()??a.time??0);
+      });
+      if(!sorted.length){
         listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">Sin publicaciones aún</div>';
         return;
       }
       const scrollY = window.scrollY;
       // Smart update: si ya hay posts en el DOM, actualizar stats/acciones/comentarios sin repintado total
-      const hasRendered = posts.some(p => document.getElementById('post_'+p.id));
+      const hasRendered = sorted.some(p => document.getElementById('post_'+p.id));
       if(!hasRendered){
         const rendered = [];
-        for(const p of posts){
+        for(const p of sorted){
           try { rendered.push(postHTML(p)); } catch(ex){ console.warn('postHTML error',p.id,ex); }
         }
         listEl.innerHTML = rendered.join('') || '<div style="text-align:center;padding:40px;color:var(--muted);">Sin publicaciones aún</div>';
       } else {
-        posts.forEach(p=>{
+        sorted.forEach(p=>{
           const existing = document.getElementById('post_'+p.id);
           if(!existing){
-            // Post nuevo — insertar al principio
             const tmp0 = document.createElement('div');
             try { tmp0.innerHTML = postHTML(p); } catch(ex){ return; }
             if(tmp0.firstElementChild) listEl.insertBefore(tmp0.firstElementChild, listEl.firstChild);
@@ -19716,17 +19720,14 @@ async function _loadUserProfilePage(uid, nick){
           try { tmp.innerHTML = postHTML(p); } catch(ex){ return; }
           const newPost = tmp.firstElementChild;
           if(!newPost) return;
-          // Actualizar stats
           const oldStats = existing.querySelector('.post-stats');
           const newStats = newPost.querySelector('.post-stats');
           if(oldStats && newStats && oldStats.outerHTML !== newStats.outerHTML)
             oldStats.replaceWith(newStats.cloneNode(true));
-          // Actualizar acciones (botones de reacción)
           const oldAct = existing.querySelector('.post-actions');
           const newAct = newPost.querySelector('.post-actions');
           if(oldAct && newAct && oldAct.outerHTML !== newAct.outerHTML)
             oldAct.replaceWith(newAct.cloneNode(true));
-          // Actualizar comentarios (solo si no hay modal abierto ni input enfocado)
           const modalOpen = !!document.getElementById('_cmtModal_'+p.id);
           const inputFocused = document.activeElement && document.activeElement.id === 'cinp_'+p.id;
           if(!modalOpen && !inputFocused){
@@ -19742,13 +19743,14 @@ async function _loadUserProfilePage(uid, nick){
         });
       }
       window.scrollTo(0, scrollY);
-      document.getElementById('upPostCount').textContent = posts.length;
+      const cntEl = document.getElementById('upPostCount');
+      if(cntEl) cntEl.textContent = sorted.length;
     }
 
-    // Iniciar listener en tiempo real
+    // Iniciar listener en tiempo real — solo where (sin orderBy) para evitar índice compuesto
     try {
       window._upPostsUnsub = onSnapshot(
-        query(collection(db,'posts'), where('userId','==',uid), orderBy('time','desc')),
+        query(collection(db,'posts'), where('userId','==',uid)),
         { includeMetadataChanges: false },
         snap => {
           userPosts = snap.docs.map(d=>({id:d.id,...d.data()}));
@@ -19761,11 +19763,9 @@ async function _loadUserProfilePage(uid, nick){
         },
         err => {
           console.warn('onSnapshot posts perfil error:', err);
-          // Fallback: getDocs sin orderBy
+          // Fallback: getDocs una vez
           getDocs(query(collection(db,'posts'), where('userId','==',uid))).then(snap=>{
-            userPosts = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>{
-              return (b.time?.toMillis?.()??b.time??0) - (a.time?.toMillis?.()??a.time??0);
-            });
+            userPosts = snap.docs.map(d=>({id:d.id,...d.data()}));
             userPosts.forEach(p=>{ const idx=(_posts||[]).findIndex(x=>x.id===p.id); if(idx>=0) _posts[idx]=p; else (_posts||[]).unshift(p); });
             _renderUpPostsList(userPosts);
           }).catch(()=>{
@@ -19775,19 +19775,14 @@ async function _loadUserProfilePage(uid, nick){
       );
     } catch(e){
       console.warn('onSnapshot posts perfil setup error:', e);
-      // Fallback silencioso: cargar una vez
       getDocs(query(collection(db,'posts'), where('userId','==',uid))).then(snap=>{
-        userPosts = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>{
-          return (b.time?.toMillis?.()??b.time??0) - (a.time?.toMillis?.()??a.time??0);
-        });
+        userPosts = snap.docs.map(d=>({id:d.id,...d.data()}));
         userPosts.forEach(p=>{ const idx=(_posts||[]).findIndex(x=>x.id===p.id); if(idx>=0) _posts[idx]=p; else (_posts||[]).unshift(p); });
         _renderUpPostsList(userPosts);
       }).catch(()=>{
         if(_upList) _upList.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">No se pudieron cargar las publicaciones</div>';
       });
     }
-
-    document.getElementById('upPostCount').textContent = userPosts.length;
     document.getElementById('upFriendCount').textContent = (u.friends||[]).length;
     const myFriends = window.CU?.friends || [];
     // friendsList puede no estar cargado aun — usar array vacío como fallback
