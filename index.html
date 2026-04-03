@@ -165,7 +165,7 @@
   'use strict';
 
   var BASE_TITLE = 'MiLatido 👫❤️';
-  var STORAGE_KEY = 'crf4_lastVisitTs';
+  var STORAGE_KEY = 'app_lastVisitTs';
   var _badgeCount  = 0;
   var _blinkTimer  = null;
   var _isBlinking  = false;
@@ -260,7 +260,7 @@
   window.addEventListener('beforeunload', saveLastVisit);
 
   // Exponer para debug/testing
-  window._rf4Badge = {
+  window._appBadge = {
     getCount: function(){ return _badgeCount; },
     reset: function(){ _badgeCount=0; setTitle(0); },
     setLastVisit: function(ts){ try{ localStorage.setItem(STORAGE_KEY, ts.toString()); }catch(e){} }
@@ -524,12 +524,12 @@ html, body {
   box-shadow: 0 -2px 20px rgba(0,0,0,.1) !important;
 }
 #chatDragHandle { background: #ffffff !important; border-bottom: 1px solid #dddfe2 !important; }
-.rf4-tab { color: #65676b !important; background: transparent !important; }
-.rf4-tab.on { color: #1877f2 !important; border-bottom: 3px solid #1877f2 !important; background: transparent !important; }
-.rf4-tab:hover { background: #f0f2f5 !important; color: #050505 !important; }
-#rf4PanelJugadores,
-#rf4PanelMensajes,
-#rf4PanelChat { background: #ffffff !important; }
+.chat-tab { color: #65676b !important; background: transparent !important; }
+.chat-tab.on { color: #1877f2 !important; border-bottom: 3px solid #1877f2 !important; background: transparent !important; }
+.chat-tab:hover { background: #f0f2f5 !important; color: #050505 !important; }
+#chatUsersPanel,
+#chatMessagesPanel,
+#chatPanel { background: #ffffff !important; }
 #messengerList { background: #ffffff !important; }
 #chatWindow { background: #ffffff !important; }
 #chatMessages { background: #f0f2f5 !important; }
@@ -557,7 +557,7 @@ html, body {
 #chatReplyBar { background: #fff8e7 !important; color: #050505 !important; border-top: 1px solid #dddfe2 !important; }
 
 /* Jugadores list */
-#rf4JugadoresList { background: #ffffff !important; }
+#chatUsersList { background: #ffffff !important; }
 #jugadoresSearch { color: #050505 !important; }
 
 /* 13. Chat bubbles — el texto ya viene como inline style con background:#0084ff / #21262d */
@@ -897,10 +897,10 @@ body { background: #f0f2f5 !important; color: #050505 !important; font-family: -
   box-shadow: 0 -2px 20px rgba(0,0,0,.12) !important;
 }
 #chatDragHandle { background: #ffffff !important; border-bottom: 1px solid #dddfe2 !important; }
-.rf4-tab { color: #65676b !important; background: transparent !important; }
-.rf4-tab.on { color: #1877f2 !important; border-bottom: 3px solid #1877f2 !important; }
-.rf4-tab:hover { background: #f0f2f5 !important; color: #050505 !important; }
-#rf4PanelJugadores, #rf4PanelMensajes, #rf4PanelChat { background: #ffffff !important; }
+.chat-tab { color: #65676b !important; background: transparent !important; }
+.chat-tab.on { color: #1877f2 !important; border-bottom: 3px solid #1877f2 !important; }
+.chat-tab:hover { background: #f0f2f5 !important; color: #050505 !important; }
+#chatUsersPanel, #chatMessagesPanel, #chatPanel { background: #ffffff !important; }
 #messengerList { background: #ffffff !important; }
 #chatWindow { background: #ffffff !important; }
 #chatMessages { background: #f0f2f5 !important; }
@@ -921,7 +921,7 @@ body { background: #f0f2f5 !important; color: #050505 !important; font-family: -
 #chatSendBtn:hover { background: #166fe5 !important; }
 
 /* Messenger list items */
-#rf4JugadoresList > div { border-bottom: 1px solid #f0f2f5 !important; }
+#chatUsersList > div { border-bottom: 1px solid #f0f2f5 !important; }
 
 /* ── Amigos sidebar ── */
 #amigos-sidebar {
@@ -1015,14 +1015,14 @@ input, textarea, select {
 }
 
 /* Achicar el highlight del messenger para que sea claro */
-#mMessenger .rf4-tab.on { background: transparent !important; }
+#mMessenger .chat-tab.on { background: transparent !important; }
 
 /* ── fow (friends online widget) cards ── */
 .fow-card { background: #ffffff !important; border-color: #dddfe2 !important; }
 .fow-card:hover { background: #f0f2f5 !important; }
 
 /* ── Global chat input ── */
-#rf4PanelChat { background: #f0f2f5 !important; }
+#chatPanel { background: #f0f2f5 !important; }
 #globalChatMessages { background: #f0f2f5 !important; }
 
 /* ── Cuadro "Crear publicación" placeholder ── */
@@ -2571,12 +2571,12 @@ select.fi option{background:var(--bg3);color:var(--text);}
 .asb-item.active .asb-label, .asb-item.active { color: #1877f2 !important; }
 
 /* Usuarios online widget */
-#rf4JugadoresList { background: #ffffff; }
-#rf4JugadoresList > div { color: #050505 !important; }
+#chatUsersList { background: #ffffff; }
+#chatUsersList > div { color: #050505 !important; }
 
 /* Messenger tabs */
-.rf4-tab { color: #65676b !important; }
-.rf4-tab.on { color: #1877f2 !important; border-bottom-color: #1877f2 !important; }
+.chat-tab { color: #65676b !important; }
+.chat-tab.on { color: #1877f2 !important; border-bottom-color: #1877f2 !important; }
 
 /* Skeleton */
 .mc-skel-card { background: linear-gradient(90deg,#f0f2f5,#e4e6eb,#f0f2f5) !important; }
@@ -3530,7 +3530,7 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
       <div id="ptAbout" style="display:none;margin-bottom:14px;">
         <div class="profile-about-card">
           <div class="pac-title">Información</div>
-          <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:10px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border);">🎣 Pesca</div>
+          <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:10px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border);">🎣 </div>
           <div class="pac-item" id="profFavFishRow" style="display:none">🐟 Pez favorito: <strong id="profFavFish">—</strong></div>
           <div class="pac-item" id="profFavMapRow" style="display:none">🗺️ Mapa favorito: <strong id="profFavMap">—</strong></div>
           <div class="pac-item" id="profTechRow" style="display:none">🎯 Técnica: <strong id="profTech">—</strong></div>
@@ -3743,7 +3743,7 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
           <li style="display:flex;gap:10px;align-items:flex-start;background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.15);border-radius:var(--rs);padding:10px 14px;">✅ <span><strong>Conocer otros jugadores</strong> — El sistema de Match te permite encontrar personas de la comunidad con quienes conectar.</span></li>
           <li style="display:flex;gap:10px;align-items:flex-start;background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.15);border-radius:var(--rs);padding:10px 14px;">✅ <span><strong>Hacer amigos</strong> — Conectar con personas de Uruguay y Argentina que comparten tus intereses.</span></li>
           <li style="display:flex;gap:10px;align-items:flex-start;background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.15);border-radius:var(--rs);padding:10px 14px;">✅ <span><strong>Socializar e interactuar</strong> — Publicar, comentar, reaccionar y chatear en un entorno seguro y moderado.</span></li>
-          <li style="display:flex;gap:10px;align-items:flex-start;background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.15);border-radius:var(--rs);padding:10px 14px;">✅ <span><strong>Compartir contenido</strong> — Fotos, historias, capturas y publicaciones sobre pesca dentro de las normas de la comunidad.</span></li>
+          <li style="display:flex;gap:10px;align-items:flex-start;background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.15);border-radius:var(--rs);padding:10px 14px;">✅ <span><strong>Compartir contenido</strong> — Fotos, historias, capturas y publicaciones sobre  dentro de las normas de la comunidad.</span></li>
           <li style="display:flex;gap:10px;align-items:flex-start;background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.15);border-radius:var(--rs);padding:10px 14px;">✅ <span><strong>Expresarte libremente</strong> — Compartir tu opinión, logros y experiencias dentro de un marco de respeto mutuo.</span></li>
         </ul>
       </section>
@@ -4162,7 +4162,7 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
       </div>
     </div>
     <div style="position:relative;margin-bottom:8px;">
-      <textarea class="fi" id="postText" placeholder="¿Qué estás pensando? Comparte tu pesca... Usá @ para etiquetar personas" style="min-height:100px;border-radius:var(--r);" oninput="handlePostMentionInput(this);_autoLinkDetect(this.value)"></textarea>
+      <textarea class="fi" id="postText" placeholder="¿Qué estás pensando? Comparte tu ... Usá @ para etiquetar personas" style="min-height:100px;border-radius:var(--r);" oninput="handlePostMentionInput(this);_autoLinkDetect(this.value)"></textarea>
       <div id="mention_postText" style="display:none;position:absolute;bottom:calc(100% - 4px);left:0;right:0;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);min-width:200px;max-height:200px;overflow-y:auto;z-index:600;box-shadow:0 4px 16px rgba(0,0,0,.6);"></div>
     </div>
 
@@ -4476,7 +4476,7 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
             <div onclick="pickTextStyle('neon',this)" data-ts="neon" style="padding:8px 4px;border-radius:8px;background:var(--bg3);border:2px solid transparent;cursor:pointer;text-align:center;font-size:.78rem;color:#2ec4b6;text-shadow:0 0 8px #2ec4b6,0 0 18px #2ec4b6;font-weight:800;transition:all .15s;">Neón</div>
             <div onclick="pickTextStyle('italic',this)" data-ts="italic" style="padding:8px 4px;border-radius:8px;background:var(--bg3);border:2px solid transparent;cursor:pointer;text-align:center;font-size:.78rem;color:#fff;font-style:italic;font-weight:700;transition:all .15s;">Cursiva</div>
             <div onclick="pickTextStyle('outline',this)" data-ts="outline" style="padding:8px 4px;border-radius:8px;background:var(--bg3);border:2px solid transparent;cursor:pointer;text-align:center;font-size:.78rem;color:#fff;-webkit-text-stroke:1px #000;font-weight:900;transition:all .15s;">Contorno</div>
-            <div onclick="pickTextStyle('orbitron',this)" data-ts="orbitron" style="padding:8px 4px;border-radius:8px;background:var(--bg3);border:2px solid transparent;cursor:pointer;text-align:center;font-size:.68rem;color:#d4a017;font-family:'Orbitron',monospace;font-weight:700;transition:all .15s;">RF4</div>
+            <div onclick="pickTextStyle('orbitron',this)" data-ts="orbitron" style="padding:8px 4px;border-radius:8px;background:var(--bg3);border:2px solid transparent;cursor:pointer;text-align:center;font-size:.68rem;color:#d4a017;font-family:'Orbitron',monospace;font-weight:700;transition:all .15s;"></div>
           </div>
         </div>
 
@@ -5156,8 +5156,8 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
 .cm-toast-info { flex: 1; min-width: 0; }
 .cm-toast-nick { font-size: .8rem; font-weight: 700; color: #050505; }
 .cm-toast-text { font-size: .75rem; color: #65676b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-/* RF4 Chat tabs */
-.rf4-tab{
+/*  Chat tabs */
+.chat-tab{
   flex:1;
   background:none;
   border:none;
@@ -5171,7 +5171,7 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
   transition:all .2s;
   text-align:center;
 }
-.rf4-tab.on{
+.chat-tab.on{
   color:var(--accent);
   border-bottom-color:var(--accent);
 }
@@ -5196,7 +5196,7 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
 .gchat-text{ color:#050505; word-break:break-word; flex:1; }
 .gchat-time{ color:#65676b; font-size:.65rem; white-space:nowrap; flex-shrink:0; align-self:flex-end; }
 /* Player row */
-.rf4-player-row{
+.-player-row{
   display:flex;
   align-items:center;
   gap:9px;
@@ -5206,15 +5206,15 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
   border-radius:6px;
   margin:1px 4px;
 }
-.rf4-player-row:hover{ background:rgba(255,255,255,.05); }
-.rf4-online-dot{
+.-player-row:hover{ background:rgba(255,255,255,.05); }
+.-online-dot{
   width:8px;
   height:8px;
   background:#31a24c;
   border-radius:50%;
   flex-shrink:0;
 }
-.rf4-offline-dot{
+.-offline-dot{
   width:8px;
   height:8px;
   background:#555;
@@ -5240,13 +5240,13 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
     </div>
     
     <div style="display:flex;border-top:1px solid #f0f2f5;padding:0 4px;">
-      <button class="rf4-tab on" id="rf4TabJugadores" onclick="rf4SwitchTab('jugadores')" >👥 Usuarios conectados</button>
-      <button class="rf4-tab"   id="rf4TabMensajes"  onclick="rf4SwitchTab('mensajes')"  >✉️ Mensajes <span id="unreadChatBadge" style="display:none;background:var(--red);color:#fff;border-radius:50%;padding:0 4px;font-size:.6rem;"></span></button>
+      <button class="chat-tab on" id="rf4TabJugadores" onclick="rf4SwitchTab('jugadores')" >👥 Usuarios conectados</button>
+      <button class="chat-tab"   id="rf4TabMensajes"  onclick="rf4SwitchTab('mensajes')"  >✉️ Mensajes <span id="unreadChatBadge" style="display:none;background:var(--red);color:#fff;border-radius:50%;padding:0 4px;font-size:.6rem;"></span></button>
     </div>
   </div>
 
   
-  <div id="rf4PanelChat" style="flex:1;display:none;flex-direction:column;min-height:0;">
+  <div id="chatPanel" style="flex:1;display:none;flex-direction:column;min-height:0;">
     
     <div id="globalChatMessages" style="flex:1;overflow-y:auto;padding:6px 0;" class="custom-scroll"></div>
     
@@ -5259,7 +5259,7 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
   </div>
 
   
-  <div id="rf4PanelJugadores" style="flex:1;display:flex;flex-direction:column;min-height:0;overflow-y:auto;">
+  <div id="chatUsersPanel" style="flex:1;display:flex;flex-direction:column;min-height:0;overflow-y:auto;">
     
     <div style="padding:6px 8px;border-bottom:1px solid #21262d;background:#ffffff;flex-shrink:0;">
       <div style="background:#f0f2f5;border-radius:6px;display:flex;align-items:center;gap:6px;padding:5px 10px;">
@@ -5269,11 +5269,11 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
           oninput="rf4FilterJugadores(this.value)">
       </div>
     </div>
-    <div id="rf4JugadoresList" style="padding:6px 0;"></div>
+    <div id="chatUsersList" style="padding:6px 0;"></div>
   </div>
 
   
-  <div id="rf4PanelMensajes" style="flex:1;display:none;flex-direction:column;min-height:0;">
+  <div id="chatMessagesPanel" style="flex:1;display:none;flex-direction:column;min-height:0;">
     <div id="messengerList" style="padding:6px;overflow-y:auto;flex:1;"></div>
     <div id="chatWindow" style="display:none;flex-direction:column;flex:1;min-height:0;overflow:hidden;"></div>
   <div id="chatInputRow" style="display:none;padding:0;border-top:1px solid var(--border);flex-shrink:0;flex-direction:column;background:var(--bg2);">
@@ -6276,7 +6276,7 @@ window.initSalasPage = window.initSalasPage;
       <div style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:700;color:var(--accent);margin-bottom:14px;">🎨 Nombre del sitio y slogan</div>
       <div class="frow">
         <div class="fg"><label class="fl">Nombre del sitio</label><input class="fi" id="cfgSiteName" value="MiLatido"></div>
-        <div class="fg"><label class="fl">Slogan</label><input class="fi" id="cfgSlogan" value="RED SOCIAL DE PESCA"></div>
+        <div class="fg"><label class="fl">Slogan</label><input class="fi" id="cfgSlogan" value="RED SOCIAL DE "></div>
       </div>
       <button class="btn btn-p" style="font-size:.82rem;margin-top:8px;" onclick="saveSiteConfig()">💾 Guardar</button>
     </div>
@@ -6284,7 +6284,7 @@ window.initSalasPage = window.initSalasPage;
       <div style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:700;color:var(--accent);margin-bottom:14px;">🗂️ Nombres de secciones</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
         <div class="fg"><label class="fl">Sección Inicio</label><input class="fi" id="cfgNavHome" value="🏠 Inicio"></div>
-        <div class="fg"><label class="fl">Sección Grupos</label><input class="fi" id="cfgNavGroups" value="🎣 Grupos de Pesca"></div>
+        <div class="fg"><label class="fl">Sección Grupos</label><input class="fi" id="cfgNavGroups" value="🎣 Grupos de "></div>
         <div class="fg"><label class="fl">Sección Mapas</label><input class="fi" id="cfgNavMaps" value="🏅 Casi Trofeo"></div>
         <div class="fg"><label class="fl">Sección Torneos</label><input class="fi" id="cfgNavTourneys" value="🏆 Torneos"></div>
         <div class="fg"><label class="fl">Sección Parches</label><input class="fi" id="cfgNavPatches" value="🔧 Parches y Actualizaciones"></div>
@@ -6382,7 +6382,7 @@ window.initSalasPage = window.initSalasPage;
       </div>
       <div class="fg">
         <label class="fl">Título del live</label>
-        <input class="fi" id="liveTitleInput" placeholder="Ej: 🎣 Pesca en vivo — Akhtuba River">
+        <input class="fi" id="liveTitleInput" placeholder="Ej: 🎣  en vivo — Akhtuba River">
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">
         <button onclick="adminSetLive(true)" style="flex:1;background:linear-gradient(135deg,#ff0000,#cc0000);color:#fff;border:none;border-radius:var(--rs);padding:10px;font-size:.85rem;font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;">🔴 Activar Live</button>
@@ -6809,7 +6809,7 @@ function initShopCoinsDisplay(){
 
 <div class="page" id="page-spots" style="display:none!important;">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
-    <div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:var(--accent);">📍 Spots de Pesca</div>
+    <div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:var(--accent);">📍 Spots de </div>
     <button class="btn btn-p" style="font-size:.85rem;" onclick="om('mCreateSpot')">+ Compartir Spot</button>
   </div>
   
@@ -7015,7 +7015,7 @@ function initShopCoinsDisplay(){
 #page-cafe .cafe-map-btn.active{background:rgba(255,140,0,.15);border-color:#ff8c00;color:#ff8c00;}
 #page-cafe .cafe-body{padding:14px 16px;overflow-y:auto;flex:1;}
 #page-cafe .cafe-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
-/* Tarjeta estilo RF4 */
+/* Tarjeta estilo  */
 #page-cafe .cafe-card{background:#1a1e24;border:1px solid #2a313a;border-radius:10px;overflow:hidden;transition:border-color .2s,transform .15s;cursor:default;position:relative;}
 #page-cafe .cafe-card:hover{border-color:#3d4a55;transform:translateY(-2px);}
 #page-cafe .cafe-card.urgent{border-color:rgba(248,81,73,.6);}
@@ -7070,7 +7070,7 @@ function initShopCoinsDisplay(){
       <button class="cafe-map-btn" onclick="cafeSelectMap(this,'elk','Lago Elk')">Lago Elk</button>
     </div>
     <span id="cafeMeta" style="font-size:.7rem;color:var(--muted);flex-shrink:0;">● cargando...</span>
-    <a href="https://rf4-cafe.ru" target="_blank" style="flex-shrink:0;background:linear-gradient(135deg,#ff8c00,#e07000);border:none;border-radius:6px;color:#fff;padding:5px 12px;font-family:'Exo 2',sans-serif;font-size:.75rem;font-weight:700;text-decoration:none;white-space:nowrap;">☕ Visitar rf4-cafe.ru</a>
+    <a href="https://-cafe.ru" target="_blank" style="flex-shrink:0;background:linear-gradient(135deg,#ff8c00,#e07000);border:none;border-radius:6px;color:#fff;padding:5px 12px;font-family:'Exo 2',sans-serif;font-size:.75rem;font-weight:700;text-decoration:none;white-space:nowrap;">☕ Visitar -cafe.ru</a>
   </div>
 
   
@@ -7343,7 +7343,7 @@ function initShopCoinsDisplay(){
       var ghH = Math.floor(gameHoursLeft % 24);
       var ghM = Math.floor((gameHoursLeft % 1) * 60);
 
-      // Círculo muestra HH:MM de juego igual que RF4
+      // Círculo muestra HH:MM de juego igual que 
       var totalGameH = Math.floor(gameHoursLeft);
       var totalGameM = Math.floor((gameHoursLeft - totalGameH) * 60);
       var timerDisplay = totalGameH + ':' + String(totalGameM).padStart(2,'0');
@@ -8018,8 +8018,8 @@ function initShopCoinsDisplay(){
     <div class="fg"><label class="fl">Descripción</label><textarea class="fi" id="gDesc" placeholder="¿De qué trata el grupo?"></textarea></div>
     <div class="fg"><label class="fl">Categoría</label>
       <select class="fi" id="gCat">
-        <option>Pesca general</option><option>Spinning</option><option>Carpfishing</option>
-        <option>Pesca en hielo</option><option>Fly fishing</option><option>Torneos</option>
+        <option> general</option><option>Spinning</option><option>Carpfishing</option>
+        <option> en hielo</option><option>Fly fishing</option><option>Torneos</option>
       </select>
     </div>
     <div class="fg"><label class="fl">Imagen del grupo</label>
@@ -8296,7 +8296,7 @@ async function uploadImage(fileOrBase64, folder) {
   const formData = new FormData();
   formData.append('file', blob);
   formData.append('upload_preset', CLOUDINARY_PRESET);
-  formData.append('folder', 'rf4/' + (folder || 'general'));
+  formData.append('folder', '/' + (folder || 'general'));
 
   let res, data;
   try {
@@ -8407,7 +8407,7 @@ async function uploadVideo(file, folder) {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('upload_preset', CLOUDINARY_VIDEO_PRESET);
-  formData.append('folder', 'rf4/' + (folder || 'videos'));
+  formData.append('folder', '/' + (folder || 'videos'));
   formData.append('resource_type', 'video');
   const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/video/upload`, {
     method: 'POST',
@@ -10312,7 +10312,7 @@ const _DEEZER_PROXIES = [
   q => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent('https://api.deezer.com/search?q='+encodeURIComponent(q)+'&limit=12')}`,
 ];
 
-// Sugerencias rápidas mientras escriben (artistas populares de pesca/latam)
+// Sugerencias rápidas mientras escriben (artistas populares de /latam)
 // Sugerencias por prefijo (2-3 letras) — busca coincidencias en TODOS los artistas
 const _ALL_ARTISTS = [
   'Karol G','Kalimba','Kali Uchis','Bad Bunny','Bad Gyal','Banda MS',
@@ -11298,7 +11298,7 @@ async function _loadMostViewedPosts(el){
     try { snap = await getDocs(query(collection(db,'posts'), orderBy('likes','desc'), limit(30))); }
     catch(e){ snap = await getDocs(query(collection(db,'posts'), limit(30))); }
     if(snap.empty){
-      el.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--muted);font-size:.88rem;">🎣 No hay publicaciones aún.<br><span style="font-size:.78rem;opacity:.7;">¡Sé el primero en compartir tu pesca!</span></div>';
+      el.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--muted);font-size:.88rem;">🎣 No hay publicaciones aún.<br><span style="font-size:.78rem;opacity:.7;">¡Sé el primero en compartir tu !</span></div>';
       return;
     }
     const posts = snap.docs.map(d=>({id:d.id,...d.data(),time:d.data().time?.toMillis?.()||Date.now()}));
@@ -11458,7 +11458,7 @@ function _renderProfileFeedHTML(el, mine){
   // Si no hay posts propios en el DOM todavía → render completo
   const hasOwnPosts = rest.some(p=>document.getElementById('post_'+p.id));
   if(!hasOwnPosts){
-    el.innerHTML = pinnedH+(rest.length?rest.map(p=>postHTML(p)).join(''):(!pinnedH?`<div style="text-align:center;padding:40px;color:var(--muted)">Sin publicaciones aún. ¡Comparte tu primera pesca!</div>`:''));
+    el.innerHTML = pinnedH+(rest.length?rest.map(p=>postHTML(p)).join(''):(!pinnedH?`<div style="text-align:center;padding:40px;color:var(--muted)">Sin publicaciones aún. ¡Comparte tu primera !</div>`:''));
     window.scrollTo(0, scrollY);
     return;
   }
@@ -12288,7 +12288,7 @@ const _FEELINGS = {
     {e:'📚',l:'estudiando'},{e:'✈️',l:'viajando'},{e:'🏋️',l:'entrenando'},{e:'🎵',l:'escuchando música'},
     {e:'🎬',l:'viendo una película'},{e:'😴',l:'durmiendo'},{e:'🍺',l:'tomando algo'},{e:'🏊',l:'nadando'},
     {e:'🚴',l:'pedaleando'},{e:'🧘',l:'meditando'},{e:'👨‍🍳',l:'cocinando'},{e:'📸',l:'sacando fotos'},
-    {e:'🎤',l:'cantando'},{e:'🌿',l:'en la naturaleza'},{e:'🐟',l:'con mi pesca'},{e:'🏕️',l:'acampando'},
+    {e:'🎤',l:'cantando'},{e:'🌿',l:'en la naturaleza'},{e:'🐟',l:'con mi '},{e:'🏕️',l:'acampando'},
     {e:'🚣',l:'remando'},{e:'☀️',l:'disfrutando el sol'},{e:'🌙',l:'en una noche tranquila'},{e:'🤝',l:'con amigos'},
   ]
 };
@@ -13965,7 +13965,7 @@ const SHOP_ITEMS = [
   { id:'marco_oro',      cat:'marco',  name:'Marco Dorado',       preview:'🟡', emoji:'⭕', price:500,  desc:'Borde dorado clásico animado',          effect:'ring-gold' },
   { id:'marco_fuego',    cat:'marco',  name:'Marco de Fuego',     preview:'🔥', emoji:'🔥', price:800,  desc:'Llamas pulsantes alrededor de tu foto',  effect:'ring-fire' },
   { id:'marco_hielo',    cat:'marco',  name:'Marco Glacial',      preview:'❄️', emoji:'💠', price:800,  desc:'Resplandor helado en tu avatar',          effect:'ring-ice' },
-  { id:'marco_pesca',    cat:'marco',  name:'Marco Pescador',     preview:'🎣', emoji:'🎣', price:300,  desc:'Marco verde temático de pesca',           effect:'ring-fish' },
+  { id:'marco_pesca',    cat:'marco',  name:'Marco Pescador',     preview:'🎣', emoji:'🎣', price:300,  desc:'Marco verde temático de ',           effect:'ring-fish' },
   { id:'marco_legend',   cat:'marco',  name:'Marco Leyenda',      preview:'👑', emoji:'✨', price:1500, desc:'El marco más exclusivo de MiLatido',     effect:'ring-legend', exclusive:true },
   { id:'marco_neon',     cat:'marco',  name:'Marco Neón',         preview:'💜', emoji:'💜', price:700,  desc:'Neón violeta vibrante',                  effect:'ring-neon' },
   { id:'marco_galaxia',  cat:'marco',  name:'Marco Galaxia',      preview:'🌌', emoji:'🌌', price:1000, desc:'Cosmos girando en tu avatar',            effect:'ring-galaxy', exclusive:true },
@@ -13980,7 +13980,7 @@ const SHOP_ITEMS = [
   { id:'badge_shark',    cat:'badge',  name:'Tiburón',            preview:'🦈', emoji:'🦈', price:400,  desc:'Badge de tiburón junto a tu nombre' },
   { id:'badge_trophy',   cat:'badge',  name:'Campeón',            preview:'🏆', emoji:'🏆', price:600,  desc:'Badge de trofeo dorado' },
   { id:'badge_king',     cat:'badge',  name:'Rey del Río',        preview:'👑', emoji:'👑', price:900,  desc:'Badge exclusivo de realeza', exclusive:true },
-  { id:'badge_rf4',      cat:'badge',  name:'RF4 OG',             preview:'🎮', emoji:'🎮', price:350,  desc:'Badge de jugador original de RF4' },
+  { id:'badge_rf4',      cat:'badge',  name:' OG',             preview:'🎮', emoji:'🎮', price:350,  desc:'Badge de jugador original de ' },
   { id:'badge_latam',    cat:'badge',  name:'Latino Power',       preview:'🌎', emoji:'🌎', price:300,  desc:'Badge de orgullo latinoamericano' },
   { id:'badge_dragon',   cat:'badge',  name:'Dragón',             preview:'🐉', emoji:'🐉', price:800,  desc:'Badge de dragón legendario', exclusive:true },
   { id:'badge_ninja',    cat:'badge',  name:'Ninja',              preview:'🥷', emoji:'🥷', price:500,  desc:'Badge sigilo total' },
@@ -14006,7 +14006,7 @@ const SHOP_ITEMS = [
   { id:'titulo_sombra',   cat:'titulo', name:'La Sombra',         preview:'🌑', emoji:'🌑', price:700,  desc:'Misterioso y temido' },
   { id:'titulo_bestia',   cat:'titulo', name:'La Bestia',         preview:'🦁', emoji:'🦁', price:900,  desc:'Domina las aguas', exclusive:true },
   { id:'titulo_rookie',   cat:'titulo', name:'Rookie Imparable',  preview:'🚀', emoji:'🚀', price:300,  desc:'Nuevo pero letal' },
-  { id:'titulo_ghost',    cat:'titulo', name:'El Fantasma',       preview:'👻', emoji:'👻', price:500,  desc:'Aparece, pesca y desaparece' },
+  { id:'titulo_ghost',    cat:'titulo', name:'El Fantasma',       preview:'👻', emoji:'👻', price:500,  desc:'Aparece,  y desaparece' },
   // ── COLORES DE PUBLICACIÓN ──
   { id:'post_ocean',    cat:'postcolor', name:'Océano Profundo',   preview:'🌊', emoji:'🌊', price:600,  desc:'Fondo azul oscuro marino en tus posts',   theme:'post-theme-ocean' },
   { id:'post_fuego',    cat:'postcolor', name:'Fuego Ardiente',    preview:'🔥', emoji:'🔥', price:700,  desc:'Fondo rojo/naranja llameante',             theme:'post-theme-fuego' },
@@ -14046,7 +14046,7 @@ const SHOP_ITEMS = [
   { id:'tema_gold',     cat:'tema', name:'Oro Puro',            preview:'✨', emoji:'💛', price:1600, desc:'Borde dorado brillante rotativo, nombre con gradiente oro-platino, badge premium',                 temaCSS:'tema-gold-pure',     exclusive:true },
   { id:'tema_shadow',   cat:'tema', name:'Sombra Oscura',       preview:'🌑', emoji:'🌑', price:1000, desc:'Borde morado oscuro sutil, nombre con degradado sombrío misterioso',                              temaCSS:'tema-shadow-dark',   exclusive:false },
   { id:'tema_ice',      cat:'tema', name:'Glaciar',             preview:'❄️', emoji:'❄️', price:1100, desc:'Borde hielo cristalino, nombre con glow helado, partículas de nieve animadas',                   temaCSS:'tema-ice-glacier',   exclusive:false },
-  // ── TEMAS ACUÁTICOS RF4 ──
+  // ── TEMAS ACUÁTICOS  ──
   { id:'tema_poseidon', cat:'tema', name:'Poseidón',            preview:'🔱', emoji:'🔱', price:2200, desc:'Tridente y corona marina SVG sobre el avatar, borde azul profundo, olas animadas en el banner', temaCSS:'tema-poseidon', exclusive:true },
   { id:'tema_sirena',   cat:'tema', name:'Sirena',              preview:'🧜', emoji:'🧜', price:1900, desc:'Cola de sirena y conchas SVG sobre el avatar, borde rosa/cian, gradiente mágico', temaCSS:'tema-sirena', exclusive:true },
   { id:'tema_pulpo',    cat:'tema', name:'Pulpo Gigante',       preview:'🐙', emoji:'🐙', price:2000, desc:'8 tentáculos SVG rodeando el avatar, borde violeta pulsante, tinta en el banner', temaCSS:'tema-pulpo', exclusive:true },
@@ -14501,7 +14501,7 @@ function renderShopGrid(){
   const CAT_LABEL = {marco:'🖼 Marco',badge:'🏅 Badge',efecto:'✨ Efecto',titulo:'📛 Título',postcolor:'🎨 Color de Post',banner:'🖼 Banner Animado',tema:'🎭 Tema de Perfil'};
   const _shopHTML = items.map(item => {
     const isEquipped = _equippedItems[item.cat] === item.id;
-    const postPreview = item.cat==='postcolor' ? `<div class="${item.theme}" style="border-radius:8px;padding:8px 10px;margin-bottom:8px;font-size:.63rem;color:#ddd;line-height:1.5;text-align:left;"><div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;"><div style="width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.2);flex-shrink:0;"></div><span style="font-weight:700;">ruizgustavo12</span></div><div>🎣 ¡Gran pesca hoy!</div></div>` : '';
+    const postPreview = item.cat==='postcolor' ? `<div class="${item.theme}" style="border-radius:8px;padding:8px 10px;margin-bottom:8px;font-size:.63rem;color:#ddd;line-height:1.5;text-align:left;"><div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;"><div style="width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.2);flex-shrink:0;"></div><span style="font-weight:700;">ruizgustavo12</span></div><div>🎣 ¡Gran  hoy!</div></div>` : '';
     const bannerPreview = item.cat==='banner' ? `<div style="width:100%;height:60px;border-radius:8px;margin-bottom:8px;overflow:hidden;position:relative;background:${item.id==='banner_fuego'?'linear-gradient(180deg,#0a0000,#2d0800)':item.id==='banner_flores'?'linear-gradient(180deg,#0d0018,#2d0060)':item.id==='banner_ocean'?'linear-gradient(180deg,#00050f,#002050)':item.id==='banner_aurora'?'linear-gradient(180deg,#000508,#001a15)':item.id==='banner_galaxy'?'linear-gradient(180deg,#000005,#0a0020)':'linear-gradient(180deg,#050507,#101018)'};display:flex;align-items:center;justify-content:center;font-size:1.8rem;">${item.preview}</div>` : '';
     const temaPreview = item.cat==='tema' ? (()=>{
       const bgMap = {
@@ -17978,10 +17978,10 @@ async function loadGroups(){
   const headerEl = document.getElementById('gruposHeader');
   if(headerEl){
     if(window.CU?.nick === 'ruizgustavo12' || window.CU?.email === 'synxyes@gmail.com'){
-      headerEl.innerHTML = `<div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:var(--accent);">🎣 Grupos de Pesca</div>
+      headerEl.innerHTML = `<div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:var(--accent);">🎣 Grupos de </div>
         <button class="btn btn-p" style="font-size:.85rem;" onclick="om('mCreateGroup')">+ Crear grupo</button>`;
     } else {
-      headerEl.innerHTML = `<div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:var(--accent);">🎣 Grupos de Pesca</div>`;
+      headerEl.innerHTML = `<div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:var(--accent);">🎣 Grupos de </div>`;
     }
   }
   const snap = await getDocs(query(collection(db,'groups'), orderBy('time','desc'), limit(100)));
@@ -21229,9 +21229,9 @@ function openChatWith(uid, nick){
 
   // Switch tab — con retry por si rf4SwitchTab aun no esta definida
   function _doSwitchToMensajes(){
-    var pChat = document.getElementById('rf4PanelChat');
-    var pJug  = document.getElementById('rf4PanelJugadores');
-    var pMsg  = document.getElementById('rf4PanelMensajes');
+    var pChat = document.getElementById('chatPanel');
+    var pJug  = document.getElementById('chatUsersPanel');
+    var pMsg  = document.getElementById('chatMessagesPanel');
     var tJ    = document.getElementById('rf4TabJugadores');
     var tM    = document.getElementById('rf4TabMensajes');
     if(typeof rf4SwitchTab === 'function'){
@@ -23442,7 +23442,7 @@ function getEmailPrivacy(){ return (window.CU && window.CU.emailPrivacy) || 'onl
     {label:'Reggaetón',emoji:'🔥',color:'#ff5722',q:'reggaeton 2024'},
     {label:'Cumbia',emoji:'💃',color:'#ff9800',q:'cumbia argentina'},
     {label:'Trap',emoji:'⚡',color:'#607d8b',q:'trap latino 2024'},
-    {label:'Pesca 🎣',emoji:'🎣',color:'#4caf50',q:'musica para pescar relajar'},
+    {label:' 🎣',emoji:'🎣',color:'#4caf50',q:'musica para pescar relajar'},
     {label:'Electrónica',emoji:'🎛️',color:'#00bcd4',q:'electronica mix'},
     {label:'Salsa',emoji:'🎺',color:'#ffc107',q:'salsa clasica'},
   ];
@@ -24159,7 +24159,7 @@ window.switchRankTab=function(btn,mode){
 // ===== FIN RANKING SEMANAL =====
 
 // ╔══════════════════════════════════════════╗
-// ║   EXCLUSIVOS VERIFICADOS — RF4 LATAM     ║
+// ║   EXCLUSIVOS VERIFICADOS —  LATAM     ║
 // ╚══════════════════════════════════════════╝
 window._anonMode = false;
 
@@ -25224,7 +25224,7 @@ window.responderSoporte    = responderSoporte;
 const _SIDEBAR_DEFAULT = [
   { id:'profile',          icon:'👤', label:'Mi Perfil' },
   { id:'torneos',          icon:'🏆', label:'Torneos' },
-  { id:'rf4-records',      icon:'🎣', label:'Records RF4' },
+  { id:'-records',      icon:'🎣', label:'Records ' },
   { id:'skill',            icon:'📈', label:'Subir Skill' },
   { id:'compartir-spot',   icon:'📍', label:'Compartir Spot' },
   { id:'parches',          icon:'🔧', label:'Parches y Actualizaciones' },
@@ -25822,7 +25822,7 @@ window.I18N = {
     // PUBLICAR
     post_placeholder:'¿Qué estás pescando hoy?',
     post_btn:'Publicar', post_btn_loading:'Publicando...',
-    post_fish_tag:'🎣 Agregar pesca',
+    post_fish_tag:'🎣 Agregar ',
     post_visibility_public:'🌍 Público', post_visibility_friends:'👥 Amigos', post_visibility_private:'🔒 Solo yo',
     // TROFEOS
     trophy_recent:'Trofeos Recientes', trophy_verified:'Verificado en MiLatido.UY',
@@ -25955,7 +25955,7 @@ window.I18N = {
     cmt_gif_placeholder:'Buscar GIF...', cmt_sticker_placeholder:'Buscar',
     post_placeholder:'O que você está pescando hoje?',
     post_btn:'Publicar', post_btn_loading:'Publicando...',
-    post_fish_tag:'🎣 Adicionar pesca',
+    post_fish_tag:'🎣 Adicionar ',
     post_visibility_public:'🌍 Público', post_visibility_friends:'👥 Amigos', post_visibility_private:'🔒 Só eu',
     trophy_recent:'Troféus Recentes', trophy_verified:'Verificado no MiLatido.UY',
     trophy_publish:'🏆 Publicar Troféu', trophy_weight:'Peso do Troféu',
@@ -26133,7 +26133,7 @@ window.I18N = {
     cmt_gif_placeholder:'Cerca GIF...', cmt_sticker_placeholder:'Cerca',
     post_placeholder:'Cosa stai pescando oggi?',
     post_btn:'Pubblica', post_btn_loading:'Pubblicando...',
-    post_fish_tag:'🎣 Aggiungi pesca',
+    post_fish_tag:'🎣 Aggiungi ',
     post_visibility_public:'🌍 Pubblico', post_visibility_friends:'👥 Amici', post_visibility_private:'🔒 Solo io',
     trophy_recent:'Trofei Recenti', trophy_verified:'Verificato su MiLatido.UY',
     trophy_publish:'🏆 Pubblica Trofeo', trophy_weight:'Peso del Trofeo',
@@ -26746,9 +26746,9 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
       if(btn) btn.classList.toggle('on', t===tab);
     });
     // Paneles
-    var pChat = document.getElementById('rf4PanelChat');
-    var pJug  = document.getElementById('rf4PanelJugadores');
-    var pMsg  = document.getElementById('rf4PanelMensajes');
+    var pChat = document.getElementById('chatPanel');
+    var pJug  = document.getElementById('chatUsersPanel');
+    var pMsg  = document.getElementById('chatMessagesPanel');
     if(pChat) pChat.style.display = 'none';
     if(pJug)  pJug.style.display  = tab==='jugadores' ? 'flex' : 'none';
     if(pMsg)  pMsg.style.display  = tab==='mensajes'  ? 'flex' : 'none';
@@ -26904,7 +26904,7 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
   // ────────────────────────────────────────────────────────────
   async function loadJugadores(){
     _jLoaded = true;
-    var el = document.getElementById('rf4JugadoresList');
+    var el = document.getElementById('chatUsersList');
     if(!el) return;
     el.innerHTML = '<div style="text-align:center;padding:24px;color:#65676b;font-size:.8rem;">⚙️ Cargando jugadores...</div>';
 
@@ -26979,7 +26979,7 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
   }
 
   function renderJugadores(list){
-    var el = document.getElementById('rf4JugadoresList');
+    var el = document.getElementById('chatUsersList');
     if(!el) return;
     if(!list.length){ el.innerHTML='<div style="text-align:center;padding:24px;color:#65676b;font-size:.8rem;">Sin jugadores encontrados</div>'; return; }
 
@@ -27004,11 +27004,11 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
     var badge = u.role==='admin' ? ' <span style="font-size:.58rem;background:#ff4444;color:#fff;padding:0 4px;border-radius:3px;">ADMIN</span>'
               : u.role==='premium' ? ' <span style="font-size:.6rem;color:#ffd700;">⭐</span>' : '';
     var dot = u.online
-      ? '<div class="rf4-online-dot"></div>'
-      : '<div class="rf4-offline-dot"></div>';
+      ? '<div class="-online-dot"></div>'
+      : '<div class="-offline-dot"></div>';
     var lastSeen = !u.online && u.ts ? ('<span style="font-size:.65rem;color:#555;">'+fmtT(u.ts)+'</span>') : '';
 
-    return '<div class="rf4-player-row" onclick="openUserProfile(\''+u.id+'\',\''+esc(u.nick)+'\')">'+dot
+    return '<div class="-player-row" onclick="openUserProfile(\''+u.id+'\',\''+esc(u.nick)+'\')">'+dot
       +'<div style="width:32px;height:32px;border-radius:50%;background:#f0f2f5;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid #dddfe2;">'+av+'</div>'
       +'<div style="flex:1;min-width:0;">'
         +'<div style="font-size:.82rem;font-weight:700;color:#050505;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(u.nick)+badge+'</div>'
@@ -27109,7 +27109,7 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
     { id:'s1', cat:'carnadas', estado:'aprobado', userNick:'comunidad', pregunta:'¿Cuál es la mejor carnada para carpas?',
       respuesta:'Las carpas responden muy bien a las boilies de frutas, maíz cocido y pasta de cacahuate. Para trofeos, probá con boilies de 20mm+ y cebado previo en el spot.' },
     { id:'s2', cat:'carnadas', estado:'aprobado', userNick:'comunidad', pregunta:'¿Para qué sirve el cebador (groundbait)?',
-      respuesta:'El cebador atrae peces al área de pesca y los mantiene activos. Mezclalo con partículas pequeñas como maíz o cañamo. Usá la cantidad justa: demasiado llena los peces y dejan de picar.' },
+      respuesta:'El cebador atrae peces al área de  y los mantiene activos. Mezclalo con partículas pequeñas como maíz o cañamo. Usá la cantidad justa: demasiado llena los peces y dejan de picar.' },
     { id:'s3', cat:'carnadas', estado:'aprobado', userNick:'comunidad', pregunta:'¿Qué diferencia hay entre señuelo de superficie y hundido?',
       respuesta:'Los señuelos de superficie (topwater) imitan insectos o presas en la superficie y son muy efectivos en verano al amanecer. Los hundidos imitan peces pequeños heridos y funcionan mejor en aguas profundas o frías.' },
     { id:'s4', cat:'carnadas', estado:'aprobado', userNick:'comunidad', pregunta:'¿Cómo sé qué carnada usar en cada lago?',
@@ -27128,12 +27128,12 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
       respuesta:'Es el peso máximo que aguanta el hilo antes de romperse. Si el pez pesa más que el test del hilo, se rompe y perdés el pez y el anzuelo. Siempre usá hilo con test mayor al peso del pez que buscás.' },
     { id:'s10', cat:'aparejos', estado:'aprobado', userNick:'comunidad', pregunta:'¿Para qué sirve el freno del carrete?',
       respuesta:'El freno (drag) controla cuánta resistencia ofrece el carrete cuando el pez jala. Si está muy apretado el hilo se rompe; muy flojo y el pez escapa. Ajustalo a un 70-80% del test del hilo para una pelea efectiva.' },
-    { id:'s11', cat:'aparejos', estado:'aprobado', userNick:'comunidad', pregunta:'¿Cuándo usar flotador vs pesca de fondo?',
-      respuesta:'El flotador es ideal para pescar a media agua o superficie, perfecto para ruffe, roach y perch. La pesca de fondo (bottom fishing / feeder) es mejor para carpas, bream y tench que buscan comida en el lecho del lago.' },
+    { id:'s11', cat:'aparejos', estado:'aprobado', userNick:'comunidad', pregunta:'¿Cuándo usar flotador vs  de fondo?',
+      respuesta:'El flotador es ideal para pescar a media agua o superficie, perfecto para ruffe, roach y perch. La  de fondo (bottom fishing / feeder) es mejor para carpas, bream y tench que buscan comida en el lecho del lago.' },
     { id:'s12', cat:'aparejos', estado:'aprobado', userNick:'comunidad', pregunta:'¿Qué es el leader y para qué sirve?',
       respuesta:'El leader es un trozo de hilo más grueso entre el hilo principal y el anzuelo. Protege de los dientes del pez y del roce con rocas o vegetación. Es obligatorio para peces con dientes como el pike o el perch grande.' },
     { id:'s13', cat:'aparejos', estado:'aprobado', userNick:'comunidad', pregunta:'¿Qué diferencia hay entre spinning y feeder?',
-      respuesta:'El spinning se usa con señuelos artificiales que se castean y recuperan activamente. El feeder es pesca de fondo con carnada natural y un alimentador que suelta cebo. Son estilos muy distintos y requieren equipos diferentes.' },
+      respuesta:'El spinning se usa con señuelos artificiales que se castean y recuperan activamente. El feeder es  de fondo con carnada natural y un alimentador que suelta cebo. Son estilos muy distintos y requieren equipos diferentes.' },
     { id:'s14', cat:'aparejos', estado:'aprobado', userNick:'comunidad', pregunta:'¿Cómo mejorar el alcance del lanzamiento?',
       respuesta:'El alcance depende del peso del plomo/señuelo, la potencia de la caña y el nivel del personaje. Usá plomos más pesados para mayor distancia. También mejorá la caña: las de acción rápida lanzan más lejos.' },
 
@@ -27148,7 +27148,7 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
       respuesta:'Los trofeos son peces que superan el tamaño mínimo de trofeo de cada especie. Para conseguirlos necesitás el equipo adecuado, la carnada correcta, el spot preciso y muchas veces cierta hora del día. Consultá la sección de Trofeos de la wiki.' },
     { id:'s19', cat:'nivel', estado:'aprobado', userNick:'comunidad', pregunta:'¿Cómo gano dinero (plata) en el juego?',
       respuesta:'Vendé los peces que pescás en la tienda. Los peces grandes valen más. Completar misiones también da buenas recompensas. Evitá gastar en equipos caros hasta nivel 20+. Los peces de noche suelen ser más grandes y valer más.' },
-    { id:'s20', cat:'nivel', estado:'aprobado', userNick:'comunidad', pregunta:'¿El clima y la hora del día afectan la pesca?',
+    { id:'s20', cat:'nivel', estado:'aprobado', userNick:'comunidad', pregunta:'¿El clima y la hora del día afectan la ?',
       respuesta:'Sí, mucho. El amanecer y el atardecer son los mejores momentos para pescar. La lluvia activa mucho a los peces. El viento fuerte los hace menos activos. Cada especie tiene sus preferencias: consultá la wiki de cada pez para más detalle.' },
     { id:'s21', cat:'nivel', estado:'aprobado', userNick:'comunidad', pregunta:'¿Para qué sirve el keep net (red de retención)?',
       respuesta:'El keep net guarda los peces vivos que pescás sin que ocupen inventario. Cuando terminás la sesión, vendés todo de una vez. Es esencial para sesiones largas de grinding de XP o dinero.' },
@@ -29075,7 +29075,7 @@ async function publishRankingPost(top3, weekStart){
     }catch(e){ console.warn('notif ranking:', e); }
   }
 
-  console.log('[RF4 Ranking] Post de ganadores publicado:', ref.id);
+  console.log('[ Ranking] Post de ganadores publicado:', ref.id);
 }
 
 // ── Función principal — se ejecuta al cargar ─────────────────────────────────
@@ -29097,7 +29097,7 @@ async function checkAndFireRankingPost(){
   try{
     const top3 = await fetchPrevTop3();
     if(!top3.length){
-      console.log('[RF4 Ranking] Sin datos para publicar ganadores.');
+      console.log('[ Ranking] Sin datos para publicar ganadores.');
       return;
     }
     const { start } = getPrevWeekRange();
@@ -29105,7 +29105,7 @@ async function checkAndFireRankingPost(){
   }catch(e){
     // Si falla, remover la marca para que pueda reintentarse
     localStorage.removeItem(key);
-    console.error('[RF4 Ranking] Error al publicar ganadores:', e);
+    console.error('[ Ranking] Error al publicar ganadores:', e);
   }
 }
 
@@ -29114,14 +29114,14 @@ window.addEventListener('load', ()=> setTimeout(checkAndFireRankingPost, 5000));
 
 // Exponer para pruebas manuales desde consola: testRankingPost()
 window.testRankingPost = async function(){
-  console.log('[RF4 Ranking] Ejecutando test manual...');
+  console.log('[ Ranking] Ejecutando test manual...');
   try{
     const top3 = await fetchPrevTop3();
-    console.log('[RF4 Ranking] Top 3 encontrado:', top3);
+    console.log('[ Ranking] Top 3 encontrado:', top3);
     if(!top3.length){ console.warn('Sin datos.'); return; }
     const { start } = getPrevWeekRange();
     await publishRankingPost(top3, start);
-    console.log('[RF4 Ranking] ✅ Post publicado en modo test.');
+    console.log('[ Ranking] ✅ Post publicado en modo test.');
   }catch(e){ console.error(e); }
 };
 
