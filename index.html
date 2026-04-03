@@ -18645,19 +18645,8 @@ async function _loadUserProfilePage(uid, nick){
     const uNick = u.nick || nick;
     const isVerified = !!u.verified;
 
-    // ── PERFIL PRIVADO ADMIN — bloquear contenido antes de renderizar ──
-    if(isAdminUser(u)){
-      const nameEl2 = document.getElementById('upName');
-      if(nameEl2) nameEl2.textContent = uNick;
-      document.getElementById('upTabInfo').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:.85rem;">🔒 Perfil privado</div>';
-      document.getElementById('upTabFotos').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:.85rem;">🔒 Perfil privado</div>';
-      document.getElementById('upTabAmigos').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:.85rem;">🔒 Perfil privado</div>';
-      const upPostsList2 = document.getElementById('upPostsList');
-      if(upPostsList2) upPostsList2.innerHTML = '<div style="text-align:center;padding:48px 20px;color:var(--muted);"><div style="font-size:2.5rem;margin-bottom:12px;">🔒</div><div style="font-size:.88rem;line-height:1.6;">Este es un perfil de administración.<br>El contenido es privado.</div></div>';
-      const upAct2 = document.getElementById('upActions');
-      if(upAct2) upAct2.innerHTML = '<div style="font-size:.78rem;color:var(--muted);padding:4px 12px;border:1px solid var(--border);border-radius:8px;">🛡️ Administrador</div>';
-      return;
-    }
+    // ── PERFIL ADMIN — badge visible pero perfil normal (puede recibir mensajes) ──
+    // isAdminUser(u) se usa más abajo para ocultar botón de agregar amigo solamente
 
     // ── COVER ──
     const cover = document.getElementById('upCover');
