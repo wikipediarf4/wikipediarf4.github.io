@@ -8159,12 +8159,12 @@ let _unsubPosts = null;
 let _unsubStories = null;
 
 const REACTIONS = [
-  {emoji:'👍', label:'Me gusta',   color:'#1877f2', lottieSegment:'Like'  },
-  {emoji:'❤️', label:'Me encanta', color:'#f33e58', lottieSegment:'Love'  },
-  {emoji:'😂', label:'Ja ja',      color:'#f7b125', lottieSegment:'Haha'  },
-  {emoji:'😮', label:'Asombrado',  color:'#f7b125', lottieSegment:'Wow'   },
-  {emoji:'😢', label:'Triste',     color:'#f7b125', lottieSegment:'Sad'   },
-  {emoji:'😡', label:'Enojado',    color:'#e9710f', lottieSegment:'Angry' },
+  {emoji:'👍', label:'Me gusta',     color:'#1877f2', lottieSegment:'Like'  },
+  {emoji:'❤️', label:'Me encanta',   color:'#f33e58', lottieSegment:'Love'  },
+  {emoji:'😂', label:'Me divierte',  color:'#f7b125', lottieSegment:'Haha'  },
+  {emoji:'😮', label:'Me asombra',   color:'#f7b125', lottieSegment:'Wow'   },
+  {emoji:'😢', label:'Me entristece',color:'#6b9de8', lottieSegment:'Sad'   },
+  {emoji:'😡', label:'Me enoja',     color:'#e9710f', lottieSegment:'Angry' },
 ];
 window.REACTIONS = REACTIONS;
 window.REACTIONS = REACTIONS;
@@ -11792,15 +11792,24 @@ function postHTML(p){
     ${videoHTML}
     <div class="post-stats">
       <div class="post-rxn-summary" id="rxns_${p.id}" onclick="openReactionsModal('${p.id}')" style="${totalRxn>0?'cursor:pointer':'cursor:default'}">
-        <span style="display:flex;gap:4px;align-items:center;">
+        <span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
           ${(()=>{
-            /* FB-style: bolitas de emoji superpuestas */
-            const topArr = Object.entries(p.reactionCounts||{}).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([e])=>e);
-            const rxnColors = {'👍':'#1877f2','❤️':'#f33e58','😂':'#f7b125','😮':'#f7b125','😢':'#f7b125','😡':'#e9710f'};
+            /* FB-style: bolitas superpuestas + contadores individuales por tipo */
+            const RXORDER = ['👍','❤️','😂','😮','😢','😡'];
+            const rxnColors = {'👍':'#1877f2','❤️':'#f33e58','😂':'#f7b125','😮':'#f7b125','😢':'#6b9de8','😡':'#e9710f'};
+            const topArr = Object.entries(p.reactionCounts||{}).filter(([,v])=>v>0)
+              .sort((a,b)=>{ const ai=RXORDER.indexOf(a[0]); const bi=RXORDER.indexOf(b[0]); return (ai===-1?99:ai)-(bi===-1?99:bi); })
+              .slice(0,3).map(([e])=>e);
             const bubbles = topArr.map((em,i)=>`<span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:${rxnColors[em]||'#555'};font-size:.7rem;border:1.5px solid var(--bg2);margin-left:${i>0?'-5px':'0'};position:relative;z-index:${10-i};">${em}</span>`).join('');
-            return bubbles ? `<span style="display:inline-flex;align-items:center;">${bubbles}</span>` : '';
+            /* Contadores individuales — solo los que tienen > 0, en orden */
+            const counters = RXORDER.map(em=>{
+              const cnt = p.reactionCounts?.[em]||0;
+              if(!cnt) return '';
+              return `<span style="font-size:.75rem;color:var(--muted);display:inline-flex;align-items:center;gap:2px;">${em} ${cnt}</span>`;
+            }).filter(Boolean).join('');
+            const tooltipTotal = totalRxn>0 ? `title="A ${totalRxn} persona${totalRxn!==1?'s':''} les gusta esto"` : '';
+            return bubbles ? `<span style="display:inline-flex;align-items:center;gap:5px;" ${tooltipTotal}><span style="display:inline-flex;align-items:center;">${bubbles}</span>${counters?`<span style="display:inline-flex;gap:5px;flex-wrap:wrap;">${counters}</span>`:''}</span>` : '';
           })()}
-          ${totalRxn>0?`<span style="font-size:.78rem;color:var(--muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-left:2px;">${buildRxnLabel(p)}</span>`:''}
         </span>
       </div>
       <div style="display:flex;gap:10px;align-items:center;">
@@ -12532,8 +12541,15 @@ async function doReact(pid, emoji){
   const rxnSummary = document.getElementById('rxns_'+pid);
   if(rxnSummary){
     const total = Object.values(p.reactionCounts).reduce((a,b)=>a+(typeof b==='number'?b:0),0);
-    const top = Object.entries(p.reactionCounts).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([e])=>e).join('');
-    rxnSummary.innerHTML = total>0 ? `<span style="background:var(--bg3);border-radius:100px;padding:2px 8px;font-size:.82rem;">${top}</span><span style="font-size:.78rem;color:var(--muted);"> ${total}</span>` : '';
+    const RXORDER = ['👍','❤️','😂','😮','😢','😡'];
+    const rxnColors = {'👍':'#1877f2','❤️':'#f33e58','😂':'#f7b125','😮':'#f7b125','😢':'#6b9de8','😡':'#e9710f'};
+    const topArr = Object.entries(p.reactionCounts||{}).filter(([,v])=>v>0)
+      .sort((a,b)=>{ const ai=RXORDER.indexOf(a[0]); const bi=RXORDER.indexOf(b[0]); return (ai===-1?99:ai)-(bi===-1?99:bi); })
+      .slice(0,3).map(([e])=>e);
+    const bubbles = topArr.map((em,i)=>`<span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:${rxnColors[em]||'#555'};font-size:.7rem;border:1.5px solid var(--bg2);margin-left:${i>0?'-5px':'0'};position:relative;z-index:${10-i};">${em}</span>`).join('');
+    const counters = RXORDER.map(em=>{ const cnt=p.reactionCounts?.[em]||0; if(!cnt) return ''; return `<span style="font-size:.75rem;color:var(--muted);display:inline-flex;align-items:center;gap:2px;">${em} ${cnt}</span>`; }).filter(Boolean).join('');
+    rxnSummary.innerHTML = total>0 ? `<span style="display:inline-flex;align-items:center;gap:5px;" title="A ${total} persona${total!==1?'s':''} les gusta esto"><span style="display:inline-flex;align-items:center;">${bubbles}</span>${counters?`<span style="display:inline-flex;gap:5px;flex-wrap:wrap;">${counters}</span>`:''}</span>` : '';
+    rxnSummary.style.cursor = total>0 ? 'pointer' : 'default';
   }
   // Modal abierto
   const modalRxnBtn = document.getElementById('_modalRxnBtn_'+pid);
@@ -12562,7 +12578,7 @@ async function doReact(pid, emoji){
     toast('Error al reaccionar — ' + errMsg, 'err');
   }
 }
-function quickReact(pid){ if(!window.CU){toast('Inicia sesión','err');return;} doReact(pid,'🔥'); }
+function quickReact(pid){ if(!window.CU){toast('Inicia sesión','err');return;} doReact(pid,'👍'); }
 
 // ===== COMMENTS =====
 async function toggleComments(pid){
@@ -22367,8 +22383,12 @@ async function openReactionsModal(pid){
     + '<button onclick="document.getElementById(\'mReactionsDetail\').classList.remove(\'open\')" style="background:var(--bg3);border:none;color:var(--muted);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;">✕</button>';
   box.appendChild(header);
 
-  // Tabs row
-  const allEmojis = [...new Set(sorted.map(([,e])=>e))];
+  // Tabs row — en orden Facebook: 👍 ❤️ 😂 😮 😢 😡
+  const RXORDER_MODAL = ['👍','❤️','😂','😮','😢','😡'];
+  const allEmojis = [...new Set(sorted.map(([,e])=>e))].sort((a,b)=>{
+    const ai = RXORDER_MODAL.indexOf(a); const bi = RXORDER_MODAL.indexOf(b);
+    return (ai===-1?99:ai)-(bi===-1?99:bi);
+  });
   const tabsRow = document.createElement('div');
   tabsRow.id = 'rxnTabsRow';
   tabsRow.style.cssText = 'display:flex;gap:0;padding:0 12px;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;';
@@ -25557,7 +25577,7 @@ window.I18N = {
     save:'Guardar', cancel:'Cancelar', close:'Cerrar', send:'Enviar',
     no_results:'Sin resultados', error_generic:'Algo salió mal. Intentá de nuevo.',
     // REACCIONES
-    rxn_like:'Me calienta', rxn_love:'Me encanta', rxn_haha:'Me excita',
+    rxn_like:'Me gusta', rxn_love:'Me encanta', rxn_haha:'Me divierte',
     rxn_wow:'Me asombra', rxn_sad:'Me entristece', rxn_angry:'Me enoja', rxn_fisher:'Pescador',
     // TIEMPO
     time_just_now:'Ahora mismo', time_minutes:'min', time_hours:'h', time_days:'d',
@@ -29159,14 +29179,12 @@ setTimeout(function(){
 
   // Mapa emoji → clase de animación
   const RXN_ANIM = {
-    '🔥': 'anim-like',
-    '😍': 'anim-love',
-    '💋': 'anim-haha',
-    '🥵': 'anim-wow-fb',
-    '💦': 'anim-sad',
+    '👍': 'anim-like',
     '❤️': 'anim-love',
-    '😈': 'anim-angry',
-    '🤤': 'anim-haha',
+    '😂': 'anim-haha',
+    '😮': 'anim-wow-fb',
+    '😢': 'anim-sad',
+    '😡': 'anim-angry',
   };
 
   // Genera los botones de reacción
