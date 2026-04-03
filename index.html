@@ -456,7 +456,15 @@ html, body {
 .post-menu { color: #65676b !important; }
 .post-menu:hover { background: #f0f2f5 !important; color: #050505 !important; }
 .post-stats { border-top: 1px solid #f0f2f5 !important; }
-.post-actions { border-top: 1px solid #dddfe2 !important; background: transparent !important; }
+.post-actions, .fb-actions { border-top: 1px solid #dddfe2 !important; background: transparent !important; }
+.fb-act-btn { color: #65676b !important; }
+.fb-act-btn:hover { background: #f0f2f5 !important; color: #050505 !important; }
+.fb-like-btn:hover, .fb-comment-btn:hover { color: #1877f2 !important; }
+.fb-share-btn:hover { color: #00ba7c !important; }
+.fb-reacted { color: #1877f2 !important; }
+.rxn-total-count { color: #65676b !important; }
+.post-stat-link { color: #65676b !important; }
+.post-stat-link:hover { color: #050505 !important; }
 .post-action-btn, .act-btn {
   color: #65676b !important;
   background: transparent !important;
@@ -1616,6 +1624,34 @@ img[title="Verificado"]:hover{
 
 /* Rxn-wrap alineado */
 .tw-rxn{padding-bottom:0;margin-bottom:0;display:flex;align-items:center;}
+
+/* ===== POST STATS & ACTIONS — Facebook style ===== */
+/* Stats row: reacciones izq · comentarios/compartidos der */
+.post-stats{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;border-top:1px solid var(--border);min-height:32px;}
+.post-rxn-summary{display:inline-flex;align-items:center;gap:5px;cursor:pointer;border-radius:4px;padding:2px 4px;transition:background .15s;}
+.post-rxn-summary:hover{background:rgba(255,255,255,.06);}
+.rxn-bubbles-wrap{display:inline-flex;align-items:center;}
+.rxn-bubble{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-size:.72rem;border:2px solid var(--bg2);position:relative;}
+.rxn-total-count{font-size:.8rem;color:var(--muted);margin-left:4px;}
+.post-stats-right{display:flex;align-items:center;gap:10px;}
+.post-stat-link{font-size:.78rem;color:var(--muted);cursor:pointer;transition:color .15s;}
+.post-stat-link:hover{color:var(--text);text-decoration:underline;}
+
+/* Actions row: Me gusta · Comentar · Compartir */
+.fb-actions{display:flex;align-items:center;gap:0;border-top:1px solid var(--border);padding:2px 4px;}
+.fb-act-wrap{position:relative;display:flex;align-items:center;}
+.fb-act-btn{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 14px;border:none;background:none;color:var(--muted);font-size:.82rem;font-weight:600;cursor:pointer;border-radius:8px;transition:background .15s,color .15s;font-family:'Exo 2',sans-serif;white-space:nowrap;}
+.fb-act-btn:hover{background:rgba(255,255,255,.06);color:var(--text);}
+.fb-like-btn:hover{color:#1877f2;}
+.fb-like-btn:hover svg{stroke:#1877f2;}
+.fb-comment-btn:hover{color:#1877f2;}
+.fb-comment-btn:hover svg{stroke:#1877f2;}
+.fb-share-btn:hover{color:#00ba7c;}
+.fb-share-btn:hover svg{stroke:#00ba7c;}
+.fb-reacted{color:#1877f2 !important;}
+.fb-act-emoji{font-size:1.1rem;line-height:1;}
+.fb-act-label{font-size:.82rem;line-height:1;}
+.fb-views-btn{display:inline-flex;align-items:center;gap:4px;padding:8px 10px;margin-left:auto;pointer-events:none;}
 
 /* ===== COMMENTS - FACEBOOK STYLE ===== */
 .comments-section{display:none;padding:0 12px 8px;border-top:1px solid #ced0d4;}
@@ -11791,58 +11827,60 @@ function postHTML(p){
     return !p.sharedFrom ? imgHTML : '';
   })()}
     ${videoHTML}
-    <div class="post-stats">
-      <div class="post-rxn-summary" id="rxns_${p.id}" onclick="openReactionsModal('${p.id}')" style="${totalRxn>0?'cursor:pointer':'cursor:default'}">
-        <span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-          ${(()=>{
-            /* FB-style: bolitas superpuestas + contadores individuales por tipo */
-            const RXORDER = ['👍','❤️','😂','😮','😢','😡'];
-            const rxnColors = {'👍':'#1877f2','❤️':'#f33e58','😂':'#f7b125','😮':'#f7b125','😢':'#6b9de8','😡':'#e9710f'};
-            const topArr = Object.entries(p.reactionCounts||{}).filter(([,v])=>v>0)
-              .sort((a,b)=>{ const ai=RXORDER.indexOf(a[0]); const bi=RXORDER.indexOf(b[0]); return (ai===-1?99:ai)-(bi===-1?99:bi); })
-              .slice(0,3).map(([e])=>e);
-            const bubbles = topArr.map((em,i)=>`<span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:${rxnColors[em]||'#555'};font-size:.7rem;border:1.5px solid var(--bg2);margin-left:${i>0?'-5px':'0'};position:relative;z-index:${10-i};">${em}</span>`).join('');
-            /* Contadores individuales — solo los que tienen > 0, en orden */
-            const counters = RXORDER.map(em=>{
-              const cnt = p.reactionCounts?.[em]||0;
-              if(!cnt) return '';
-              return `<span style="font-size:.75rem;color:var(--muted);display:inline-flex;align-items:center;gap:2px;">${em} ${cnt}</span>`;
-            }).filter(Boolean).join('');
-            const tooltipTotal = totalRxn>0 ? `title="A ${totalRxn} persona${totalRxn!==1?'s':''} les gusta esto"` : '';
-            return bubbles ? `<span style="display:inline-flex;align-items:center;gap:5px;" ${tooltipTotal}><span style="display:inline-flex;align-items:center;">${bubbles}</span>${counters?`<span style="display:inline-flex;gap:5px;flex-wrap:wrap;">${counters}</span>`:''}</span>` : '';
-          })()}
-        </span>
+    <div class="post-stats" id="pstats_${p.id}">
+      <!-- Izquierda: emojis + total (clickeable → modal reacciones) -->
+      <div class="post-rxn-summary" id="rxns_${p.id}" onclick="openReactionsModal('${p.id}')" title="${totalRxn>0?`A ${totalRxn} persona${totalRxn!==1?'s':''} les gusta esto`:''}">
+        ${(()=>{
+          const RXORDER = ['👍','❤️','😂','😮','😢','😡'];
+          const rxnColors = {'👍':'#1877f2','❤️':'#f33e58','😂':'#f7b125','😮':'#f7b125','😢':'#6b9de8','😡':'#e9710f'};
+          const topArr = Object.entries(p.reactionCounts||{}).filter(([,v])=>v>0)
+            .sort((a,b)=>{ const ai=RXORDER.indexOf(a[0]); const bi=RXORDER.indexOf(b[0]); return (ai===-1?99:ai)-(bi===-1?99:bi); })
+            .slice(0,3).map(([e])=>e);
+          if(!topArr.length) return '';
+          const bubbles = topArr.map((em,i)=>`<span class="rxn-bubble" style="background:${rxnColors[em]||'#555'};margin-left:${i>0?'-5px':'0'};z-index:${10-i};">${em}</span>`).join('');
+          return `<span class="rxn-bubbles-wrap">${bubbles}</span><span class="rxn-total-count">${totalRxn}</span>`;
+        })()}
       </div>
-      <div style="display:flex;gap:10px;align-items:center;">
-        <div style="font-size:.78rem;color:var(--muted);cursor:pointer" onclick="toggleComments('${p.id}')">${(p.comments||[]).length>0?(p.comments||[]).length+' comentarios':''}</div>
-        ${(p.shares||0)>0?`<div style="font-size:.78rem;color:var(--muted);">${p.shares} ${p.shares===1?'vez compartido':'veces compartido'}</div>`:''}
+      <!-- Derecha: comentarios · compartidos -->
+      <div class="post-stats-right">
+        ${(p.comments||[]).length>0?`<span class="post-stat-link" onclick="toggleComments('${p.id}')">${(p.comments||[]).length} comentario${(p.comments||[]).length!==1?'s':''}</span>`:''}
+        ${(p.shares||0)>0?`<span class="post-stat-link">${p.shares} ${p.shares===1?'vez compartido':'veces compartido'}</span>`:''}
       </div>
     </div>
-    <div class="post-actions tw-actions">
-      <button class="tw-act-btn" onclick="toggleComments('${p.id}')">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        <span class="tw-act-count">${(p.comments||[]).length>0?(p.comments||[]).length:''}</span>
-      </button>
-      <button class="tw-act-btn tw-share-btn" onclick="sharePost('${p.id}')">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-        <span class="tw-act-count">${(p.shares||0)>0?p.shares:''}</span>
-      </button>
-      <div class="rxn-wrap tw-rxn" onmouseenter="showRxnPop('${p.id}')" onmouseleave="schedHideRxnPop('${p.id}')">
-        <button class="tw-act-btn tw-like-btn ${myRxn?'tw-liked':''}" id="rxnt_${p.id}" onclick="quickReact('${p.id}')" style="${myRxn?`color:${REACTIONS.find(r=>r.emoji===myRxn)?.color||'#1877f2'};font-weight:800;`:''}">
+    <!-- BARRA DE ACCIONES FB-style -->
+    <div class="post-actions fb-actions">
+      <!-- Me gusta (con popup reacciones al hover) -->
+      <div class="fb-act-wrap" onmouseenter="showRxnPop('${p.id}')" onmouseleave="schedHideRxnPop('${p.id}')">
+        <button class="fb-act-btn fb-like-btn ${myRxn?'fb-reacted':''}" id="rxnt_${p.id}"
+          onclick="quickReact('${p.id}')"
+          style="${myRxn?`color:${REACTIONS.find(r=>r.emoji===myRxn)?.color||'#1877f2'};`:''}"
+        >
           ${myRxn
-            ? `<span style="font-size:1.15rem;line-height:1;">${myRxn}</span>`
+            ? `<span class="fb-act-emoji">${myRxn}</span>`
             : `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>`
           }
-          <span class="tw-act-count" style="${myRxn?`color:${REACTIONS.find(r=>r.emoji===myRxn)?.color||'#1877f2'};font-weight:800;`:''}">
+          <span class="fb-act-label" style="${myRxn?`color:${REACTIONS.find(r=>r.emoji===myRxn)?.color||'#1877f2'};font-weight:700;`:''}">
             ${myRxn?(REACTIONS.find(r=>r.emoji===myRxn)?.label||'Me gusta'):'Me gusta'}
           </span>
         </button>
         <div class="rxn-popup" id="rxnp_${p.id}" onmouseenter="cancelHideRxnPop('${p.id}')" onmouseleave="schedHideRxnPop('${p.id}')">${rxnBtns}</div>
       </div>
-      <span class="tw-act-btn tw-views-btn" style="cursor:default;">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-        <span class="tw-act-count" id="post_views_${p.id}">${p.views||0}</span>
+      <!-- Comentar -->
+      <button class="fb-act-btn fb-comment-btn" onclick="toggleComments('${p.id}');setTimeout(()=>{document.querySelector('#cmts_${p.id} .cmt-input')?.focus()},200)">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span class="fb-act-label">Comentar</span>
+      </button>
+      <!-- Compartir -->
+      <button class="fb-act-btn fb-share-btn" onclick="sharePost('${p.id}')">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        <span class="fb-act-label">Compartir</span>
+      </button>
+      <!-- Vistas (derecha) -->
+      <span class="fb-act-btn fb-views-btn" style="margin-left:auto;cursor:default;color:var(--muted);">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span id="post_views_${p.id}" style="font-size:.75rem;">${p.views||0}</span>
       </span>
+    </div>
     </div>
     <div class="comments-section" id="cmts_${p.id}">
       <div class="cmt-list" id="cmt-list_${p.id}">${cmtsHTML}</div>
@@ -12528,9 +12566,14 @@ async function doReact(pid, emoji){
   // Botón post normal
   const rxnBtn = document.getElementById('rxnt_'+pid);
   if(rxnBtn){
-    rxnBtn.innerHTML = myNewRxn ? (myNewRxn + ' <span style="font-size:.82rem;">' + (rxnDef?.label||'Reaccionar') + '</span>') : '<span style="font-size:.82rem;">Reaccionar</span>';
-    rxnBtn.style.color = myNewRxn ? (rxnDef?.color||'var(--accent)') : '';
-    rxnBtn.classList.toggle('active', !!myNewRxn);
+    if(myNewRxn){
+      rxnBtn.innerHTML = `<span class="fb-act-emoji">${myNewRxn}</span><span class="fb-act-label" style="color:${rxnDef?.color||'#1877f2'};font-weight:700;">${rxnDef?.label||'Me gusta'}</span>`;
+      rxnBtn.style.color = rxnDef?.color||'#1877f2';
+    } else {
+      rxnBtn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg><span class="fb-act-label">Me gusta</span>`;
+      rxnBtn.style.color = '';
+    }
+    rxnBtn.classList.toggle('fb-reacted', !!myNewRxn);
   }
   // Botón trofeo feed card
   const trofeoRxnIcon = document.getElementById('trofeoRxnIcon_'+realId);
@@ -12547,10 +12590,16 @@ async function doReact(pid, emoji){
     const topArr = Object.entries(p.reactionCounts||{}).filter(([,v])=>v>0)
       .sort((a,b)=>{ const ai=RXORDER.indexOf(a[0]); const bi=RXORDER.indexOf(b[0]); return (ai===-1?99:ai)-(bi===-1?99:bi); })
       .slice(0,3).map(([e])=>e);
-    const bubbles = topArr.map((em,i)=>`<span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:${rxnColors[em]||'#555'};font-size:.7rem;border:1.5px solid var(--bg2);margin-left:${i>0?'-5px':'0'};position:relative;z-index:${10-i};">${em}</span>`).join('');
-    const counters = RXORDER.map(em=>{ const cnt=p.reactionCounts?.[em]||0; if(!cnt) return ''; return `<span style="font-size:.75rem;color:var(--muted);display:inline-flex;align-items:center;gap:2px;">${em} ${cnt}</span>`; }).filter(Boolean).join('');
-    rxnSummary.innerHTML = total>0 ? `<span style="display:inline-flex;align-items:center;gap:5px;" title="A ${total} persona${total!==1?'s':''} les gusta esto"><span style="display:inline-flex;align-items:center;">${bubbles}</span>${counters?`<span style="display:inline-flex;gap:5px;flex-wrap:wrap;">${counters}</span>`:''}</span>` : '';
-    rxnSummary.style.cursor = total>0 ? 'pointer' : 'default';
+    if(total>0){
+      const bubbles = topArr.map((em,i)=>`<span class="rxn-bubble" style="background:${rxnColors[em]||'#555'};margin-left:${i>0?'-5px':'0'};z-index:${10-i};">${em}</span>`).join('');
+      rxnSummary.innerHTML = `<span class="rxn-bubbles-wrap">${bubbles}</span><span class="rxn-total-count">${total}</span>`;
+      rxnSummary.style.cursor = 'pointer';
+      rxnSummary.title = `A ${total} persona${total!==1?'s':''} les gusta esto`;
+    } else {
+      rxnSummary.innerHTML = '';
+      rxnSummary.style.cursor = 'default';
+      rxnSummary.title = '';
+    }
   }
   // Modal abierto
   const modalRxnBtn = document.getElementById('_modalRxnBtn_'+pid);
