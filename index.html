@@ -4137,10 +4137,7 @@ input:focus, textarea:focus {
   
   <div id="rf4PanelMensajes" style="flex:1;display:none;flex-direction:column;min-height:0;">
     <div id="messengerList" style="padding:6px;overflow-y:auto;flex:1;"></div>
-    <div id="chatWindow" style="display:none;flex-direction:column;height:100%;"></div>
-  </div>
-
-  
+    <div id="chatWindow" style="display:none;flex-direction:column;flex:1;min-height:0;"></div>
   <div id="chatInputRow" style="display:none;padding:8px 10px;border-top:1px solid var(--border);flex-shrink:0;gap:6px;align-items:flex-end;background:var(--bg2);">
     
     <div style="display:flex;gap:2px;align-items:center;flex-shrink:0;">
@@ -4192,6 +4189,7 @@ input:focus, textarea:focus {
       <button onclick="cancelVoiceRecord()" style="background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;padding:2px 4px;">✕</button>
       <button onclick="stopAndSendVoice()" style="background:var(--red);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:.9rem;cursor:pointer;flex-shrink:0;">➤</button>
     </div>
+  </div>
   </div>
 </div>
 
