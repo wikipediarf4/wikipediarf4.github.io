@@ -2233,6 +2233,22 @@ input:focus, textarea:focus {
           </div>
         </div>
       </div>
+
+      <!-- ═══════════ USUARIOS ONLINE ═══════════ -->
+      <div class="divider"></div>
+      <div style="padding:6px 8px 4px;display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:.72rem;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.05em;">👥 Usuarios <span id="sidebarOnlineCount2" style="background:var(--accent);color:#000;border-radius:100px;padding:0 6px;font-size:.65rem;font-weight:900;margin-left:4px;">0</span></span>
+        <span onclick="window.toggleSidebarSearch&&window.toggleSidebarSearch()" style="font-size:.7rem;color:var(--accent);cursor:pointer;font-weight:700;">🔍</span>
+      </div>
+      <div id="sidebarSearchBox" style="display:none;padding:0 8px 6px;">
+        <input id="sidebarSearchInput" type="text" placeholder="Buscar usuario…" oninput="window._filterSidebarUsers&&window._filterSidebarUsers(this.value)"
+          style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:.75rem;color:var(--text);outline:none;">
+      </div>
+      <div id="sidebarOnlineList" style="padding:0 4px 8px;">
+        <div style="text-align:center;padding:14px 8px;color:var(--muted);font-size:.75rem;">Cargando usuarios…</div>
+      </div>
+      <!-- ═══════════ FIN USUARIOS ONLINE ═══════════ -->
+
     </div>
 
     
@@ -2335,159 +2351,83 @@ input:focus, textarea:focus {
       
 
       
-      <!-- ═══════════ NUEVOS USUARIOS WIDGET SIDEBAR ═══════════ -->
-      <style>
-        @keyframes swSkPulse{0%,100%{opacity:.4}50%{opacity:.7}}
-        .sw-sk{background:var(--bg3);border-radius:10px;animation:swSkPulse 1.4s infinite;}
-        .sw-nu-widget{margin:0 0 12px;background:linear-gradient(135deg,rgba(46,196,182,.09),rgba(46,196,182,.04));border:1px solid rgba(46,196,182,.28);border-radius:14px;overflow:hidden;}
-        .sw-nu-header{display:flex;align-items:center;justify-content:space-between;padding:9px 11px 6px;}
-        .sw-nu-title{font-size:.7rem;font-weight:900;color:var(--accent);text-transform:uppercase;letter-spacing:.05em;}
-        .sw-nu-see-all{font-size:.62rem;color:var(--accent);font-weight:700;cursor:pointer;background:none;border:none;padding:0;font-family:'Exo 2',sans-serif;}
-        .sw-nu-see-all:hover{text-decoration:underline;}
-        .sw-nu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;padding:0 7px 8px;}
-        .sw-nu-card{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:2/3;cursor:pointer;background:linear-gradient(135deg,var(--bg3),var(--bg2));border:1px solid rgba(46,196,182,.15);transition:transform .18s,box-shadow .18s;}
-        .sw-nu-card:hover{transform:scale(1.04);box-shadow:0 6px 18px rgba(46,196,182,.25);border-color:rgba(46,196,182,.4);}
-        .sw-nu-card img{width:100%;height:100%;object-fit:cover;display:block;position:absolute;top:0;left:0;}
-        .sw-nu-ini{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:900;color:var(--accent);}
-        .sw-nu-grad{position:absolute;bottom:0;left:0;right:0;height:60%;background:linear-gradient(to top,rgba(0,0,0,.85),transparent);pointer-events:none;}
-        .sw-nu-info{position:absolute;bottom:0;left:0;right:0;padding:4px 5px 5px;}
-        .sw-nu-name{font-size:.58rem;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;}
-        .sw-nu-badge{position:absolute;top:4px;left:4px;background:var(--accent);color:#000;font-size:.42rem;font-weight:900;border-radius:4px;padding:1px 4px;text-transform:uppercase;letter-spacing:.04em;z-index:2;}
-        .sw-nu-footer{padding:0 7px 9px;}
-        .sw-nu-open-btn{width:100%;padding:7px 0;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:9px;color:#000;font-size:.75rem;font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;letter-spacing:.03em;transition:opacity .15s;}
-        .sw-nu-open-btn:hover{opacity:.88;}
-        .sw-nu-empty{text-align:center;padding:14px 8px;font-size:.72rem;color:var(--muted);}
-      </style>
-      <div class="sw-nu-widget">
-        <div class="sw-nu-header">
-          <div class="sw-nu-title">&#10024; Nuevos Usuarios</div>
-          <button class="sw-nu-see-all" id="swNuSeeAll">Ver todos &rarr;</button>
+      <!-- ═══════════ GALERÍA DE FOTOS SIDEBAR ═══════════ -->
+      <div id="sidebarFotosWidget" style="margin:8px 8px 4px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;">
+        <div style="padding:10px 12px 6px;display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:.8rem;font-weight:800;color:var(--text);">📸 Fotos</span>
+          <span onclick="gp('fotos');if(typeof initFotosPage==='function')initFotosPage();" style="font-size:.7rem;color:var(--accent);cursor:pointer;font-weight:700;">Ver todas →</span>
         </div>
-        <div class="sw-nu-grid" id="sidebarNuGrid">
-          <div class="sw-sk" style="aspect-ratio:2/3;"></div>
-          <div class="sw-sk" style="aspect-ratio:2/3;"></div>
-          <div class="sw-sk" style="aspect-ratio:2/3;"></div>
-          <div class="sw-sk" style="aspect-ratio:2/3;"></div>
-          <div class="sw-sk" style="aspect-ratio:2/3;"></div>
-          <div class="sw-sk" style="aspect-ratio:2/3;"></div>
-        </div>
-        <div class="sw-nu-footer">
-          <button class="sw-nu-open-btn" id="swNuOpenBtn">&#127828; Ver nuevos registros</button>
-        </div>
+        <div id="sidebarFotosGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:0 0 8px;"></div>
       </div>
       <script>
       (function(){
-        var _tries = 0;
-        var _loading = false;
-        var _allLoaded = [];
+        var _loaded = false;
 
-        // Botones: navegar a página Gente
-        function _goGente() {
-          if (typeof gp === 'function') gp('gente');
-          else if (typeof rf4SwitchTab === 'function') rf4SwitchTab('gente');
-          else if (typeof swUpTab === 'function') swUpTab(null, 'upTabGente');
-        }
-        document.addEventListener('DOMContentLoaded', function() {
-          var btnAll = document.getElementById('swNuSeeAll');
-          var btnOpen = document.getElementById('swNuOpenBtn');
-          if (btnAll) btnAll.onclick = _goGente;
-          if (btnOpen) btnOpen.onclick = _goGente;
-        });
+        function _esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
-        function _esc(s) {
-          return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-        }
-
-        function _myId() { return (window.CU && window.CU.id) || ''; }
-
-        function _sortNew(arr) {
-          return arr.slice().sort(function(a, b) {
-            var ta = a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : (typeof a.createdAt === 'number' ? a.createdAt : 0);
-            var tb = b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : (typeof b.createdAt === 'number' ? b.createdAt : 0);
-            return tb - ta;
-          });
-        }
-
-        function _buildCard(u) {
-          var id   = _esc(u.id);
-          var nick = _esc((u.nick || '?').slice(0, 12));
-          var ini  = (u.nick || '?')[0].toUpperCase();
-          var av   = u.av || '';
-          var imgHtml = av
-            ? '<img src="' + _esc(av) + '" loading="lazy" onerror="this.remove();">'
-              + '<div class="sw-nu-ini" style="display:none;">' + ini + '</div>'
-            : '<div class="sw-nu-ini">' + ini + '</div>';
-          return '<div class="sw-nu-card" onclick="openUserProfile(' + "'" + id + "','" + nick + "')" + '>'
-            + imgHtml
-            + '<div class="sw-nu-grad"></div>'
-            + '<div class="sw-nu-badge">NEW</div>'
-            + '<div class="sw-nu-info"><div class="sw-nu-name">' + nick + '</div></div>'
-            + '</div>';
-        }
-
-        function _render(users) {
-          var grid = document.getElementById('sidebarNuGrid');
-          if (!grid) return;
-          if (!users || !users.length) {
-            grid.innerHTML = '<div class="sw-nu-empty">Sin usuarios nuevos</div>';
+        function _render(photos){
+          var grid = document.getElementById('sidebarFotosGrid');
+          if(!grid) return;
+          if(!photos || !photos.length){
+            grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:14px;font-size:.72rem;color:var(--muted);">Sin fotos aún</div>';
             return;
           }
-          var html = '';
-          for (var i = 0; i < users.length; i++) html += _buildCard(users[i]);
-          grid.innerHTML = html;
+          grid.innerHTML = photos.map(function(p){
+            var uid = _esc(p.uid||p.userId||'');
+            var nick = _esc(p.nick||p.userNick||'?');
+            var img = _esc(p.img||p.imgUrl||'');
+            var d = document.createElement('div');
+            d.style.cssText = 'aspect-ratio:1;overflow:hidden;cursor:pointer;position:relative;';
+            d.dataset.uid = uid; d.dataset.nick = nick;
+            d.onclick = function(){ openUserProfile(this.dataset.uid, this.dataset.nick); };
+            d.onmouseover = function(){ var i=this.querySelector('img'); if(i) i.style.transform='scale(1.07)'; };
+            d.onmouseout  = function(){ var i=this.querySelector('img'); if(i) i.style.transform='scale(1)'; };
+            var im = document.createElement('img');
+            im.src = img; im.loading = 'lazy';
+            im.style.cssText = 'width:100%;height:100%;object-fit:cover;transition:transform .2s;';
+            im.onerror = function(){ this.parentElement.style.display='none'; };
+            d.appendChild(im);
+            return d.outerHTML;
+          }).join('');
         }
 
-        function _fromCache() {
-          var base = (window._matchAllUsers || []).filter(function(u) {
-            return !u.banned && u.id !== _myId();
-          });
-          return _sortNew(base).slice(0, 6);
-        }
-
-        function _loadFirestore() {
-          if (_loading || !window.db) return;
-          _loading = true;
-          import('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js').then(function(m) {
+        function _load(){
+          if(_loaded || !window.db) return;
+          _loaded = true;
+          import('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js').then(function(m){
             var q = m.query(
-              m.collection(window.db, 'users'),
-              m.orderBy('createdAt', 'desc'),
-              m.limit(15)
+              m.collection(window.db,'posts'),
+              m.orderBy('time','desc'),
+              m.limit(60)
             );
             return m.getDocs(q);
-          }).then(function(snap) {
-            _loading = false;
-            var users = snap.docs
-              .map(function(d) { return Object.assign({ id: d.id }, d.data()); })
-              .filter(function(u) { return !u.banned && u.id !== _myId(); })
-              .slice(0, 6);
-            _allLoaded = users;
-            _render(users);
-          }).catch(function() {
-            _loading = false;
-            var cached = _fromCache();
-            if (cached.length) _render(cached);
-            else setTimeout(_fill, 2000);
+          }).then(function(snap){
+            var photos = snap.docs
+              .map(function(d){ return Object.assign({id:d.id},d.data()); })
+              .filter(function(p){ return p.img && !p.banned; })
+              .slice(0,18);
+            _render(photos);
+          }).catch(function(e){
+            // Fallback: usar posts del feed local
+            var local = (window._posts||[]).filter(function(p){ return p.img; }).slice(0,18);
+            if(local.length) _render(local);
+            else {
+              var grid = document.getElementById('sidebarFotosGrid');
+              if(grid) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:14px;font-size:.72rem;color:var(--muted);">Sin fotos aún</div>';
+            }
           });
         }
 
-        function _fill() {
-          var cached = _fromCache();
-          if (cached.length) { _render(cached); return; }
-          if (window.db) { _loadFirestore(); return; }
-          if (_tries++ < 30) setTimeout(_fill, 700);
-          else _render([]);
-        }
+        // Esperar que Firebase esté listo
+        var _iv = setInterval(function(){
+          if(window.db){ clearInterval(_iv); setTimeout(_load, 800); }
+        }, 500);
+        setTimeout(_load, 5000);
 
-        // Arrancar con retraso para que Firebase esté listo
-        var _check = setInterval(function() {
-          if (window.db) { clearInterval(_check); setTimeout(_fill, 500); }
-        }, 400);
-        setTimeout(_fill, 4000);
-
-        window._refreshSidebarNuevos = _fill;
+        window._refreshSidebarFotos = function(){ _loaded=false; _load(); };
       })();
       </script>
-      <!-- ═══════════ FIN NUEVOS USUARIOS WIDGET SIDEBAR ═══════════ -->
+      <!-- ═══════════ FIN GALERÍA DE FOTOS SIDEBAR ═══════════ -->
 
 
 
