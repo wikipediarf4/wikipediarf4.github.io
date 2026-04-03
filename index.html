@@ -2729,26 +2729,12 @@ input:focus, textarea:focus {
       </div>
 
       
-      <!-- ── QUOTE + STATUS + SEEKING + INTERESES ── -->
-      <div id="profQuoteBlock" style="display:none;margin:8px 0 4px;padding:0 0 4px;">
-        <div id="profQuoteEl" style="font-size:.88rem;font-style:italic;color:rgba(240,236,255,.75);line-height:1.5;padding-left:10px;border-left:2px solid var(--accent);"></div>
-      </div>
-      <div id="profStatusBlock" style="display:none;margin:6px 0 4px;flex-wrap:wrap;gap:6px;align-items:center;">
-        <span id="profStatusPill" style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:100px;font-size:.74rem;font-weight:600;border:1px solid;backdrop-filter:blur(8px);"></span>
-      </div>
-      <div id="profSeekingBlock" style="display:none;margin:6px 0 4px;">
-        <div id="profSeekingTags" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
-      </div>
-      <div id="profInterestsBlock" style="display:none;margin:6px 0 8px;">
-        <div id="profInterestsTags" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
-      </div>
-
       <div class="profile-tabs">
         <div class="ptab on" onclick="swPTab(this,'ptPosts')">Publicaciones</div>
         <div class="ptab" onclick="swPTab(this,'ptAbout')">Información</div>
         <div class="ptab" onclick="swPTab(this,'ptGallery')">🖼 Galería</div>
         <div class="ptab" onclick="swPTab(this,'ptFriends')">Amigos</div>
-        <div class="ptab" id="ptReelsTab" style="display:none;" onclick="swPTab(this,'ptReelsPerfil')">🎬 Reels</div>
+        
       </div>
     </div>
   </div>
@@ -2801,22 +2787,6 @@ input:focus, textarea:focus {
           <div class="pac-item" id="profDCRow" style="display:none">💬 Discord: <strong id="profDC">—</strong></div>
           <div class="pac-item" id="profYTRow" style="display:none">▶️ YouTube: <a id="profYT" style="color:var(--accent);word-break:break-all;" target="_blank" rel="noopener">—</a></div>
           <div class="pac-item" id="profTWRow" style="display:none">🎮 Twitch: <a id="profTW" style="color:var(--accent);" target="_blank" rel="noopener">—</a></div>
-          <!-- Canción favorita -->
-          <div id="profSongRow" style="display:none;margin-top:10px;">
-            <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:10px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border);">🎵 Canción favorita</div>
-            <div id="profSongCard" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:10px 14px;display:flex;align-items:center;gap:10px;">
-              <span style="font-size:1.6rem;flex-shrink:0;">🎵</span>
-              <div style="min-width:0;">
-                <div id="profSongName" style="font-size:.85rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
-                <div id="profArtistName" style="font-size:.75rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
-              </div>
-            </div>
-          </div>
-          <!-- Dato curioso -->
-          <div id="profDatoRow" style="display:none;margin-top:10px;">
-            <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:10px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border);">💡 Dato curioso</div>
-            <div id="profDatoEl" style="font-size:.83rem;color:var(--text);line-height:1.5;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:10px 14px;font-style:italic;"></div>
-          </div>
           <button class="btn btn-s" style="width:100%;margin-top:12px;font-size:.8rem" onclick="openEditProfile()">✏ Editar información</button>
         </div>
       </div>
@@ -2824,23 +2794,6 @@ input:focus, textarea:focus {
       <div id="ptGallery" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:14px;">
         <div style="font-family:'Orbitron',monospace;font-size:.82rem;font-weight:700;color:var(--accent);margin-bottom:12px;">🖼 Galería completa</div>
         <div id="profileGalleryGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;border-radius:var(--rs);overflow:hidden"></div>
-      </div>
-
-      <!-- ── PESTAÑA REELS DEL PERFIL (Canal YouTube del usuario) ── -->
-      <div id="ptReelsPerfil" style="display:none;margin-bottom:14px;">
-        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-            <span style="font-family:'Orbitron',monospace;font-size:.82rem;font-weight:700;color:var(--accent);">🎬 Reels</span>
-            <span id="profYTChannelLink" style="display:none;font-size:.72rem;color:var(--muted);"></span>
-          </div>
-          <div id="profReelsFeed" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;">
-            <div style="text-align:center;padding:30px 0;color:var(--muted);grid-column:1/-1;font-size:.85rem;">
-              <div style="font-size:2rem;margin-bottom:8px;">🎬</div>
-              <div>Este usuario no tiene reels aún.</div>
-              <div style="font-size:.75rem;margin-top:4px;">Para agregar reels, configurá tu canal de YouTube en <strong>Editar perfil</strong>.</div>
-            </div>
-          </div>
-        </div>
       </div>
       
       <div id="ptFriends" style="display:none;margin-bottom:14px;">
@@ -3948,72 +3901,6 @@ input:focus, textarea:focus {
 
 
     
-    <!-- ── SECCIÓN SOBRE MÍ ── -->
-    <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:14px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border);">✨ Sobre mí</div>
-
-    <div class="fg">
-      <label class="fl">💬 Frase / Quote</label>
-      <input class="fi" id="epQuote" placeholder="Tu frase favorita o algo que te defina..." maxlength="120">
-      <div style="font-size:.63rem;color:var(--muted);margin-top:3px;">Aparece destacada en tu perfil. Máx. 120 caracteres.</div>
-    </div>
-
-    <div class="fg">
-      <label class="fl">🟢 Estado</label>
-      <select class="fi" id="epStatus">
-        <option value="">Sin estado</option>
-        <option value="available">🟢 Disponible</option>
-        <option value="talking">🟡 Hablando con alguien</option>
-        <option value="browsing">🔵 Explorando</option>
-        <option value="busy">🔴 Ocupado/a</option>
-      </select>
-    </div>
-
-    <div class="fg">
-      <label class="fl">💡 Dato curioso sobre vos</label>
-      <input class="fi" id="epDato" placeholder="Ej: Nunca suelto el pez que pesco de noche..." maxlength="100">
-    </div>
-
-    <div class="fg">
-      <label class="fl">🎵 Canción favorita</label>
-      <div class="frow" style="gap:8px;margin:0;">
-        <div class="fg" style="margin:0;"><input class="fi" id="epSong" placeholder="Nombre de la canción"></div>
-        <div class="fg" style="margin:0;"><input class="fi" id="epArtist" placeholder="Artista"></div>
-      </div>
-    </div>
-
-    <div class="fg">
-      <label class="fl">🏷️ Intereses / Tags</label>
-      <input class="fi" id="epInterests" placeholder="Ej: pesca, naturaleza, asado, música... (separados por coma)" maxlength="200">
-      <div style="font-size:.63rem;color:var(--muted);margin-top:3px;">Separá los intereses con coma. Ej: pesca, viajes, rock</div>
-    </div>
-
-    <div class="fg">
-      <label class="fl">💘 ¿Qué estoy buscando?</label>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.8rem;background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:6px 14px;transition:all .15s;">
-          <input type="checkbox" id="epSeekSerious" style="accent-color:var(--accent);"> 💑 Algo serio
-        </label>
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.8rem;background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:6px 14px;transition:all .15s;">
-          <input type="checkbox" id="epSeekFriend" style="accent-color:var(--accent);"> 🤝 Amigos
-        </label>
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.8rem;background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:6px 14px;transition:all .15s;">
-          <input type="checkbox" id="epSeekCasual" style="accent-color:var(--accent);"> 🌊 Algo casual
-        </label>
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.8rem;background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:6px 14px;transition:all .15s;">
-          <input type="checkbox" id="epSeekChat" style="accent-color:var(--accent);"> 💬 Solo charlar
-        </label>
-      </div>
-    </div>
-
-    <!-- ── SECCIÓN REELS: Canal YouTube ── -->
-    <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:14px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border);">🎬 Mis Reels · Canal de YouTube</div>
-    <div class="fg">
-      <label class="fl">🎬 ID del canal de YouTube <span style="font-size:.65rem;color:var(--muted);font-weight:400;">(para mostrar tus reels en tu perfil)</span></label>
-      <input class="fi" id="epYTChannelId" placeholder="Ej: UCxxxxxxxxxxxxxxxxxxxxxx o @tucanal">
-      <div style="font-size:.63rem;color:var(--muted);margin-top:3px;">Los últimos videos de tu canal aparecerán como reels en tu perfil. Podés pegar la URL completa o solo el ID/handle.</div>
-    </div>
-
-    <!-- ── SECCIÓN REDES ── -->
     <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:14px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border);">🌐 Redes y Contacto</div>
     <div class="frow">
       <div class="fg"><label class="fl">📘 Facebook</label><input class="fi" id="epFB" placeholder="tu usuario (ej: ruizgustavo12)"></div>
@@ -10327,65 +10214,6 @@ function renderFeed(){
   });
 }
 
-// ── REELS DEL PERFIL PROPIO (canal YouTube del usuario) ──
-function _renderProfileReels(){
-  const el = document.getElementById('profReelsFeed');
-  const linkEl = document.getElementById('profYTChannelLink');
-  if(!el) return;
-  const ytChId = window.CU?.ytChannelId || '';
-  if(!ytChId){
-    el.innerHTML = '<div style="text-align:center;padding:30px 0;color:var(--muted);grid-column:1/-1;font-size:.85rem;"><div style="font-size:2rem;margin-bottom:8px;">🎬</div><div>No configuraste tu canal de YouTube todavía.</div><div style="font-size:.75rem;margin-top:4px;"><button onclick="openEditProfile()" style="background:var(--accent);color:#000;border:none;border-radius:8px;padding:6px 14px;font-size:.78rem;font-weight:700;cursor:pointer;margin-top:8px;">⚙️ Configurar canal</button></div></div>';
-    return;
-  }
-  // Construir URL del canal
-  const isHandle = ytChId.startsWith('@');
-  const channelUrl = isHandle
-    ? 'https://www.youtube.com/' + ytChId
-    : 'https://www.youtube.com/channel/' + ytChId;
-  if(linkEl){
-    linkEl.innerHTML = `<a href="${channelUrl}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;font-weight:600;">${ytChId}</a>`;
-    linkEl.style.display = 'inline';
-  }
-  // Los reels del canal ya los gestiona el sistema de reels principal (que usa videoId de los posts de Firestore).
-  // Aquí mostramos un embed del canal usando el RSS de YouTube como iframes.
-  // Usamos el canal mediante playlist de uploads: convertir channel id a playlist (UC → UU)
-  if(!isHandle && ytChId.startsWith('UC')){
-    const playlistId = 'UU' + ytChId.slice(2);
-    // Mostrar primeros 6 videos de la playlist de uploads
-    const videoSlots = 6;
-    // Sin API key pública segura, embebemos la playlist directamente con un iframe
-    el.innerHTML = `
-      <div style="grid-column:1/-1;border-radius:var(--rs);overflow:hidden;background:#000;aspect-ratio:16/9;">
-        <iframe
-          src="https://www.youtube.com/embed?listType=playlist&list=${playlistId}&index=1&rel=0&autoplay=0"
-          frameborder="0" allowfullscreen
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          style="width:100%;height:100%;display:block;border:none;"
-          loading="lazy"
-        ></iframe>
-      </div>
-      <div style="grid-column:1/-1;text-align:center;margin-top:10px;">
-        <a href="${channelUrl}" target="_blank" rel="noopener"
-          style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,0,0,.15);border:1px solid rgba(255,0,0,.35);color:#ff4444;border-radius:100px;padding:8px 18px;font-size:.8rem;font-weight:700;text-decoration:none;transition:all .2s;"
-          onmouseover="this.style.background='rgba(255,0,0,.25)'" onmouseout="this.style.background='rgba(255,0,0,.15)'">
-          ▶ Ver canal completo en YouTube
-        </a>
-      </div>`;
-  } else {
-    // Handle @usuario o ID no-UC: mostrar enlace directo al canal
-    el.innerHTML = `
-      <div style="grid-column:1/-1;text-align:center;padding:24px 0;">
-        <div style="font-size:2.5rem;margin-bottom:10px;">🎬</div>
-        <div style="font-size:.88rem;color:var(--text);margin-bottom:14px;">Canal de YouTube configurado</div>
-        <a href="${channelUrl}" target="_blank" rel="noopener"
-          style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,0,0,.15);border:1px solid rgba(255,0,0,.35);color:#ff4444;border-radius:100px;padding:10px 20px;font-size:.85rem;font-weight:700;text-decoration:none;transition:all .2s;"
-          onmouseover="this.style.background='rgba(255,0,0,.25)'" onmouseout="this.style.background='rgba(255,0,0,.15)'">
-          ▶ Ver canal en YouTube
-        </a>
-      </div>`;
-  }
-}
-
 function renderProfileFeed(){
   const el = document.getElementById('profileFeed');
   if(!el||!window.CU) return;
@@ -12614,68 +12442,6 @@ function renderProfile(){
   // Mostrar pestaña tienda solo para admin
   const shopTab = document.getElementById('ptShopTab');
   if(shopTab) shopTab.style.display = 'block'; // visible para todos
-  // ── Nuevos campos de perfil extendido ──
-  // Quote
-  const _quoteBlock = document.getElementById('profQuoteBlock');
-  const _quoteEl    = document.getElementById('profQuoteEl');
-  if(_quoteBlock && _quoteEl){
-    if(window.CU.quote){ _quoteEl.textContent = '\u201C' + window.CU.quote + '\u201D'; _quoteBlock.style.display='block'; }
-    else { _quoteBlock.style.display='none'; }
-  }
-  // Status pill
-  const _statusBlock = document.getElementById('profStatusBlock');
-  const _statusPill  = document.getElementById('profStatusPill');
-  const _statusMap   = {
-    available:{ text:'🟢 Disponible',      bg:'rgba(52,211,153,.12)', border:'rgba(52,211,153,.35)', color:'#34d399' },
-    talking:  { text:'🟡 Hablando con alguien', bg:'rgba(251,191,36,.12)', border:'rgba(251,191,36,.35)', color:'#fbbf24' },
-    browsing: { text:'🔵 Explorando',      bg:'rgba(96,165,250,.12)', border:'rgba(96,165,250,.35)', color:'#60a5fa' },
-    busy:     { text:'🔴 Ocupado/a',        bg:'rgba(248,81,73,.12)',  border:'rgba(248,81,73,.35)',  color:'#f85149' }
-  };
-  if(_statusBlock && _statusPill && window.CU.profStatus && _statusMap[window.CU.profStatus]){
-    const s = _statusMap[window.CU.profStatus];
-    _statusPill.textContent = s.text;
-    _statusPill.style.background = s.bg;
-    _statusPill.style.borderColor = s.border;
-    _statusPill.style.color = s.color;
-    _statusBlock.style.display='flex';
-  } else if(_statusBlock) { _statusBlock.style.display='none'; }
-  // Seeking tags
-  const _seekBlock = document.getElementById('profSeekingBlock');
-  const _seekTags  = document.getElementById('profSeekingTags');
-  const _seekLabels = { serious:'💑 Algo serio', friend:'🤝 Amigos', casual:'🌊 Algo casual', chat:'💬 Solo charlar' };
-  if(_seekBlock && _seekTags && (window.CU.seeking||[]).length){
-    _seekTags.innerHTML = (window.CU.seeking||[]).map(s=>_seekLabels[s]?`<span style="font-size:.75rem;background:rgba(185,103,255,.12);border:1px solid rgba(185,103,255,.3);color:#b967ff;border-radius:100px;padding:4px 12px;font-weight:600;">${_seekLabels[s]}</span>`:'').join('');
-    _seekBlock.style.display='block';
-  } else if(_seekBlock) { _seekBlock.style.display='none'; }
-  // Intereses tags
-  const _interBlock = document.getElementById('profInterestsBlock');
-  const _interTags  = document.getElementById('profInterestsTags');
-  if(_interBlock && _interTags && (window.CU.interests||[]).length){
-    _interTags.innerHTML = (window.CU.interests||[]).slice(0,12).map(t=>`<span style="font-size:.75rem;background:var(--bg3);border:1px solid var(--border);color:var(--text2||var(--muted));border-radius:100px;padding:4px 11px;">${t}</span>`).join('');
-    _interBlock.style.display='block';
-  } else if(_interBlock) { _interBlock.style.display='none'; }
-  // Canción favorita en ptAbout
-  const _songRow = document.getElementById('profSongRow');
-  if(_songRow){
-    if(window.CU.song){
-      document.getElementById('profSongName').textContent = window.CU.song;
-      document.getElementById('profArtistName').textContent = window.CU.songArtist || '';
-      _songRow.style.display='block';
-    } else { _songRow.style.display='none'; }
-  }
-  // Dato curioso en ptAbout
-  const _datoRow = document.getElementById('profDatoRow');
-  const _datoEl  = document.getElementById('profDatoEl');
-  if(_datoRow && _datoEl){
-    if(window.CU.dato){ _datoEl.textContent = window.CU.dato; _datoRow.style.display='block'; }
-    else { _datoRow.style.display='none'; }
-  }
-  // Pestaña Reels del perfil: mostrar si tiene canal YT configurado
-  const _reelsTab = document.getElementById('ptReelsTab');
-  if(_reelsTab) _reelsTab.style.display = window.CU.ytChannelId ? 'block' : 'none';
-  // Prerender reels del perfil (si tiene canal)
-  _renderProfileReels();
-
   // Cover
   if(window.CU.cover){ document.getElementById('profCover').style.backgroundImage=`url(${window.CU.cover})`; document.getElementById('profCover').style.backgroundSize='cover'; document.getElementById('profCoverInner').style.display='none'; }
   // Cargar fotos y stats directamente desde Firestore (no depender del cache _posts)
@@ -12766,27 +12532,6 @@ async function saveProfile(){
   window.CU.social_fb = (document.getElementById('epFB').value.trim()).replace(/^@/,'').replace(/^https?:\/\/(www\.)?facebook\.com\/?/,'').replace(/\/$/,'');
   window.CU.social_ig = (document.getElementById('epIG').value.trim()).replace(/^@/,'').replace(/^https?:\/\/(www\.)?instagram\.com\/?/,'').replace(/\/$/,'');
   window.CU.social_tt = (document.getElementById('epTT').value.trim()).replace(/^@/,'').replace(/^https?:\/\/(www\.)?tiktok\.com\/@?/,'').replace(/\/$/,'');
-  // ── Nuevos campos de perfil extendido ──
-  window.CU.quote       = document.getElementById('epQuote')?.value.trim() || '';
-  window.CU.profStatus  = document.getElementById('epStatus')?.value || '';
-  window.CU.dato        = document.getElementById('epDato')?.value.trim() || '';
-  window.CU.song        = document.getElementById('epSong')?.value.trim() || '';
-  window.CU.songArtist  = document.getElementById('epArtist')?.value.trim() || '';
-  const rawInterests    = document.getElementById('epInterests')?.value || '';
-  window.CU.interests   = rawInterests.split(',').map(s=>s.trim()).filter(Boolean);
-  const seeking = [];
-  if(document.getElementById('epSeekSerious')?.checked) seeking.push('serious');
-  if(document.getElementById('epSeekFriend')?.checked) seeking.push('friend');
-  if(document.getElementById('epSeekCasual')?.checked) seeking.push('casual');
-  if(document.getElementById('epSeekChat')?.checked) seeking.push('chat');
-  window.CU.seeking     = seeking;
-  // Canal YouTube para reels
-  let ytCh = document.getElementById('epYTChannelId')?.value.trim() || '';
-  if(ytCh.startsWith('https://')) {
-    const m = ytCh.match(/youtube\.com\/(channel\/|@)([\w-]+)/);
-    if(m) ytCh = (m[1]==='@' ? '@' : '') + m[2];
-  }
-  window.CU.ytChannelId = ytCh;
   await updateDoc(doc(db, 'users', window.CU.id), window.CU);
   cm('mEditProfile'); updateNavUI(); renderProfile();
   toast('Perfil actualizado ✅','ok');
@@ -12861,30 +12606,6 @@ function openEditProfile(){
   document.getElementById('epFB').value = window.CU.social_fb||'';
   document.getElementById('epIG').value = window.CU.social_ig||'';
   document.getElementById('epTT').value = window.CU.social_tt||'';
-  // ── Nuevos campos ──
-  const epQuoteEl = document.getElementById('epQuote');
-  if(epQuoteEl) epQuoteEl.value = window.CU.quote||'';
-  const epStatusEl = document.getElementById('epStatus');
-  if(epStatusEl) epStatusEl.value = window.CU.profStatus||'';
-  const epDatoEl = document.getElementById('epDato');
-  if(epDatoEl) epDatoEl.value = window.CU.dato||'';
-  const epSongEl = document.getElementById('epSong');
-  if(epSongEl) epSongEl.value = window.CU.song||'';
-  const epArtistEl = document.getElementById('epArtist');
-  if(epArtistEl) epArtistEl.value = window.CU.songArtist||'';
-  const epInterestsEl = document.getElementById('epInterests');
-  if(epInterestsEl) epInterestsEl.value = (window.CU.interests||[]).join(', ');
-  const seeking = window.CU.seeking||[];
-  const epSeekSeriousEl = document.getElementById('epSeekSerious');
-  if(epSeekSeriousEl) epSeekSeriousEl.checked = seeking.includes('serious');
-  const epSeekFriendEl = document.getElementById('epSeekFriend');
-  if(epSeekFriendEl) epSeekFriendEl.checked = seeking.includes('friend');
-  const epSeekCasualEl = document.getElementById('epSeekCasual');
-  if(epSeekCasualEl) epSeekCasualEl.checked = seeking.includes('casual');
-  const epSeekChatEl = document.getElementById('epSeekChat');
-  if(epSeekChatEl) epSeekChatEl.checked = seeking.includes('chat');
-  const epYTChEl = document.getElementById('epYTChannelId');
-  if(epYTChEl) epYTChEl.value = window.CU.ytChannelId||'';
   om('mEditProfile');
   setTimeout(setupBioLimit,50);
 }
@@ -13016,12 +12737,10 @@ function swPTab(el, tabId){
   const feedEl = document.getElementById('profileFeed');
   const postBox = document.getElementById('profilePostBox');
   const leftCol = document.getElementById('profileLeftCol');
-  const reelsPerfilEl = document.getElementById('ptReelsPerfil');
   if(aboutEl) aboutEl.style.display = tabId==='ptAbout' ? 'block' : 'none';
   if(galleryEl) galleryEl.style.display = tabId==='ptGallery' ? 'block' : 'none';
   if(friendsEl) friendsEl.style.display = tabId==='ptFriends' ? 'block' : 'none';
   if(shopEl) shopEl.style.display = tabId==='ptShop' ? 'block' : 'none';
-  if(reelsPerfilEl) reelsPerfilEl.style.display = tabId==='ptReelsPerfil' ? 'block' : 'none';
   if(feedEl) feedEl.style.display = tabId==='ptPosts' ? 'block' : 'none';
   if(postBox) postBox.style.display = tabId==='ptPosts' ? 'block' : 'none';
   if(leftCol) leftCol.style.display = (tabId==='ptAbout' || tabId==='ptFriends') ? 'none' : 'block';
@@ -13029,7 +12748,6 @@ function swPTab(el, tabId){
   if(tabId==='ptGallery') renderGallery();
   if(tabId==='ptFriends') renderProfileFriendsList();
   if(tabId==='ptShop'){ loadShopEquipped().then(()=>renderShopGrid()); loadShopDiscount(); }
-  if(tabId==='ptReelsPerfil') _renderProfileReels();
 }
 
 // ===== TIENDA DE ÍTEMS DE PERFIL (admin only) =====
@@ -22276,7 +21994,7 @@ const _expose = {
   swAdminTab, loadAdminData, previewAdminMedia, saveSiteConfig,
   submitPatch, submitTorneo, submitAdminGroup, submitAd, toggleAd,
   banUser, deleteAdminContent, deleteAdminPost, resolveReport,
-  openUserProfile, sendFriendRequest, togglePostMenu, renderProfileFriendsList, openEditPost, saveEditPost, deleteMyPost, removeFriend, _renderProfileReels,
+  openUserProfile, sendFriendRequest, togglePostMenu, renderProfileFriendsList, openEditPost, saveEditPost, deleteMyPost, removeFriend,
   toggleMessenger, sendChatMsg, openChatWith, backToMessengerList, closeMessenger, minimizeMessenger, maximizeMessenger, toggleVoiceRecord, cancelVoiceRecord, stopAndSendVoice, toggleVoicePlay, toggleVoiceBtn, openPostWithYt, reactChatMsg, showMsgRxnBar, hideMsgRxnBar, keepMsgRxnBar, showCmtMenu, hideCmtMenu, setChatTyping, toggleGifPicker, closeGifPicker, searchGifs, sendGif, toggleMsgTime, sendChatSticker, searchChatStickers,
   joinGroup, leaveGroup, openGroupPost, showGroupWelcome, previewGroupPostImg, removeGroupPostImg, submitGroupPost,
   acceptFriendRequest, rejectFriendRequest, dismissFriendRequest, sendFriendRequestFromProfile, loadRealFriends, updateNotifBadge, updateMsgBadge,
@@ -28133,1108 +27851,1315 @@ window._showBanScreen = _showBanScreen;
 
 <!-- ═══════════════════════════ MATCH PAGE ═══════════════════════════ -->
 <style>
-/* ══════════ MATCH — ESTILO BADOO ══════════ */
+/* ══════════════════════════════════════════════
+   MATCH PAGE — DISEÑO MODERNO (v2)
+══════════════════════════════════════════════ */
+
+/* ── Layout página ── */
 #page-match {
-  max-width:480px;margin:0 auto;padding:0 0 80px;
-  flex-direction:column;align-items:center;
-  background:#000;
+  max-width: 520px; margin: 0 auto; padding: 0 0 90px;
+  flex-direction: column; align-items: center;
+  background: #08060f; min-height: 100vh;
 }
-#page-match.active { display:flex; }
-@keyframes heartbeat { 0%,100%{transform:scale(1)} 15%{transform:scale(1.25)} 30%{transform:scale(1)} 45%{transform:scale(1.15)} 60%{transform:scale(1)} }
-.match-heart-icon { display:inline-block;animation:heartbeat 1.4s ease-in-out infinite;transform-origin:center; }
+#page-match.active { display: flex; }
 
-/* Header estilo Badoo */
-.match-header {
-  width:100%;display:flex;align-items:center;justify-content:space-between;
-  padding:14px 16px 10px;flex-wrap:wrap;gap:8px;
-  background:var(--bg2);border-bottom:1px solid var(--border);
-  position:sticky;top:0;z-index:10;
+/* ── Header ── */
+.mh-bar {
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px 12px;
+  background: rgba(8,6,15,.95); backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  position: sticky; top: 0; z-index: 20;
 }
-.match-title  { font-family:'Exo 2',sans-serif;font-size:1.15rem;font-weight:900;color:var(--text);display:flex;align-items:center;gap:8px; }
-.match-count-pill { font-size:.72rem;background:linear-gradient(135deg,#f33e58,#e8174e);color:#fff;padding:3px 10px;border-radius:100px;font-weight:700; }
+.mh-logo {
+  font-family: 'Orbitron', monospace; font-size: 1.15rem; font-weight: 900;
+  background: linear-gradient(135deg, #f33e58, #e040fb);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: flex; align-items: center; gap: 8px;
+}
+.mh-pill {
+  font-size: .68rem; font-weight: 700; padding: 3px 10px; border-radius: 100px;
+  background: linear-gradient(135deg, #f33e58, #c4164b); color: #fff;
+}
+.mh-actions { display: flex; gap: 8px; }
+.mh-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1);
+  color: #f0ecff; font-size: 1rem; cursor: pointer; display: flex;
+  align-items: center; justify-content: center;
+  transition: all .2s;
+}
+.mh-btn:hover { background: rgba(243,62,88,.2); border-color: rgba(243,62,88,.4); }
+.mh-btn.active { background: rgba(243,62,88,.25); border-color: #f33e58; color: #f33e58; }
 
-/* Filtros colapsables */
-.match-filters-wrap { width:100%;margin-bottom:0;border-bottom:1px solid var(--border); }
-.match-filters-toggle { width:100%;padding:8px 16px;background:var(--bg2);border:none;border-radius:0;color:var(--muted);font-family:'Exo 2',sans-serif;font-size:.8rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:color .15s; }
-.match-filters-toggle:hover { color:#f33e58; }
-.match-filters-body { display:none;padding:12px 14px;background:var(--bg2);border-top:1px solid var(--border);flex-wrap:wrap;gap:8px;align-items:flex-end; }
-.match-filters-body.open { display:flex; }
-.match-filter-group { display:flex;flex-direction:column;gap:4px;flex:1;min-width:120px; }
-.match-filter-label { font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted); }
-.match-filter-select { background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:7px 10px;font-family:'Exo 2',sans-serif;font-size:.82rem;outline:none;cursor:pointer;transition:border-color .15s; }
-.match-filter-select:focus { border-color:#f33e58; }
-.mfg-btn { padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);background:transparent;color:var(--text);font-size:.78rem;font-weight:700;cursor:pointer;transition:all .15s; }
-.mfg-btn:hover { border-color:#f33e58;color:#f33e58; }
+/* ── Tabs de modo (Swipe / Grid) ── */
+.match-mode-tabs {
+  width: 100%; display: flex; background: rgba(8,6,15,.9);
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  position: sticky; top: 57px; z-index: 19;
+}
+.match-mode-tab {
+  flex: 1; padding: 10px 0; border: none; background: transparent;
+  color: rgba(255,255,255,.45); font-family: 'Exo 2', sans-serif;
+  font-size: .82rem; font-weight: 700; cursor: pointer;
+  border-bottom: 2px solid transparent; transition: all .2s;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+}
+.match-mode-tab.on { color: #f33e58; border-bottom-color: #f33e58; }
 
-/* Área card — pantalla completa estilo Badoo */
+/* ── Panel de filtros ── */
+.mf-panel {
+  width: 100%; background: rgba(14,11,26,.98); backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  max-height: 0; overflow: hidden;
+  transition: max-height .35s cubic-bezier(.4,0,.2,1);
+}
+.mf-panel.open { max-height: 480px; }
+.mf-inner { padding: 14px 16px 18px; display: flex; flex-direction: column; gap: 14px; }
+.mf-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.mf-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 130px; }
+.mf-label {
+  font-size: .62rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .08em; color: rgba(255,255,255,.35);
+}
+.mf-sel {
+  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+  color: #f0ecff; border-radius: 10px; padding: 8px 11px;
+  font-family: 'Exo 2', sans-serif; font-size: .82rem; outline: none; cursor: pointer;
+  transition: border-color .15s;
+}
+.mf-sel:focus { border-color: #f33e58; }
+/* Pill género */
+.mf-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.mf-pill {
+  padding: 6px 14px; border-radius: 100px;
+  border: 1.5px solid rgba(255,255,255,.12);
+  background: transparent; color: rgba(255,255,255,.55);
+  font-size: .78rem; font-weight: 700; cursor: pointer;
+  font-family: 'Exo 2', sans-serif; transition: all .18s;
+}
+.mf-pill:hover  { border-color: #f33e58; color: #f33e58; }
+.mf-pill.on { background: linear-gradient(135deg,#f33e58,#c4164b); border-color: #f33e58; color: #fff; }
+/* Intereses chips */
+.mf-interest-chip {
+  padding: 5px 12px; border-radius: 100px;
+  border: 1.5px solid rgba(255,255,255,.1);
+  background: transparent; color: rgba(255,255,255,.5);
+  font-size: .75rem; cursor: pointer; transition: all .15s;
+}
+.mf-interest-chip.on { background: rgba(224,64,251,.2); border-color: #e040fb; color: #e040fb; }
+.mf-reset {
+  padding: 7px 16px; border-radius: 100px; border: 1px solid rgba(255,255,255,.12);
+  background: transparent; color: rgba(255,255,255,.4);
+  font-size: .75rem; cursor: pointer; align-self: flex-end;
+  font-family: 'Exo 2', sans-serif; transition: all .15s;
+}
+.mf-reset:hover { border-color: #f33e58; color: #f33e58; }
+
+/* ══════════════════════════════════
+   MODO SWIPE
+══════════════════════════════════ */
 .match-swipe-area {
-  width:100%;position:relative;display:flex;align-items:center;
-  justify-content:center;min-height:520px;padding:12px;
+  width: 100%; position: relative; display: flex;
+  align-items: center; justify-content: center;
+  min-height: 580px; padding: 16px 14px 0;
 }
 
-/* Card estilo Badoo — foto grande, borde redondeado, sin fondo inferior */
-.mc-single-card {
-  width:100%;max-width:420px;
-  border-radius:20px;overflow:hidden;
-  position:relative;user-select:none;
-  box-shadow:0 8px 32px rgba(0,0,0,.35);
-  transition:transform .35s cubic-bezier(.25,.8,.25,1), opacity .35s;
+/* Stack de cartas */
+.mc-stack { position: relative; width: 100%; max-width: 420px; height: 580px; }
+.mc-stack-bg {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  border-radius: 24px; overflow: hidden;
+  transform-origin: bottom center;
+  pointer-events: none;
 }
-.mc-single-card.slide-left  { transform:translateX(-120%) rotate(-12deg);opacity:0; }
-.mc-single-card.slide-right { transform:translateX(120%)  rotate(12deg); opacity:0; }
-.mc-single-card.slide-in-right { animation:mcSlideInR .32s cubic-bezier(.25,.8,.25,1) forwards; }
-.mc-single-card.slide-in-left  { animation:mcSlideInL .32s cubic-bezier(.25,.8,.25,1) forwards; }
-@keyframes mcSlideInR { from{transform:translateX(80%);opacity:0} to{transform:translateX(0);opacity:1} }
-@keyframes mcSlideInL { from{transform:translateX(-80%);opacity:0} to{transform:translateX(0);opacity:1} }
+.mc-stack-bg.b1 { transform: scale(.96) translateY(12px); z-index: 0; opacity: .45; }
+.mc-stack-bg.b2 { transform: scale(.93) translateY(24px); z-index: -1; opacity: .25; }
 
-/* Foto ocupa TODA la card — estilo Badoo */
-.mc-photo-wrap {
-  position:relative;width:100%;
-  aspect-ratio:3/4;  /* más alto que ancho como Badoo */
-  overflow:hidden;
-  background:linear-gradient(135deg,#2a1f3d,#1a0a2e);
+/* Card principal */
+.mc-card {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  border-radius: 24px; overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.06);
+  user-select: none; cursor: grab; z-index: 1;
+  will-change: transform;
+  transition: box-shadow .2s;
 }
-.mc-photo-wrap img { width:100%;height:100%;object-fit:cover;display:block; }
-.mc-photo-initials { width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:6rem;font-weight:900;color:#f33e58;background:linear-gradient(135deg,#2a1f3d,#1a0a2e); }
-.mc-photo-grad {
-  position:absolute;bottom:0;left:0;right:0;height:65%;
-  background:linear-gradient(to top,rgba(0,0,0,.88) 0%,rgba(0,0,0,.3) 60%,transparent 100%);
-  pointer-events:none;
-}
+.mc-card:active { cursor: grabbing; }
 
-/* Verificado badge estilo Badoo */
-.mc-online-pip {
-  position:absolute;top:14px;left:14px;display:flex;align-items:center;gap:5px;
-  background:rgba(0,0,0,.55);backdrop-filter:blur(6px);
-  border-radius:100px;padding:4px 10px 4px 7px;
-  border:1px solid rgba(255,255,255,.15);
+/* Foto */
+.mc-img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  pointer-events: none; transform: scale(1.01);
+  transition: transform .6s ease;
 }
-.mc-online-dot { width:8px;height:8px;border-radius:50%;background:#3fb950;flex-shrink:0;box-shadow:0 0 6px #3fb950; }
-.mc-online-txt { font-size:.65rem;color:#fff;font-weight:700; }
+.mc-card:hover .mc-img { transform: scale(1.04); }
 
-/* "Nueva usuaria" tag estilo Badoo */
-.mc-new-badge {
-  position:absolute;top:14px;right:14px;
-  background:rgba(0,0,0,.55);backdrop-filter:blur(6px);
-  border:1px solid rgba(255,255,255,.15);
-  border-radius:100px;padding:4px 10px;
-  font-size:.65rem;color:#fff;font-weight:700;
-  display:flex;align-items:center;gap:4px;
+/* Gradiente inferior */
+.mc-grad {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,.04) 0%,
+    rgba(0,0,0,.0)  30%,
+    rgba(0,0,0,.55) 60%,
+    rgba(0,0,0,.92) 100%
+  );
 }
 
-/* Info overlay sobre la foto */
-.mc-photo-info {
-  position:absolute;bottom:0;left:0;right:0;
-  padding:60px 18px 18px;
-  z-index:2;
+/* Indicator left/right al hacer swipe */
+.mc-swipe-indicator {
+  position: absolute; top: 24px; padding: 8px 18px;
+  border-radius: 10px; border: 3px solid; font-size: 1.5rem; font-weight: 900;
+  opacity: 0; pointer-events: none; z-index: 10;
+  transition: opacity .1s;
+  letter-spacing: 2px;
+}
+.mc-swipe-indicator.nope {
+  left: 20px; color: #f33e58; border-color: #f33e58;
+  background: rgba(243,62,88,.12); transform: rotate(-15deg);
+}
+.mc-swipe-indicator.like {
+  right: 20px; color: #34d399; border-color: #34d399;
+  background: rgba(52,211,153,.12); transform: rotate(15deg);
+}
+.mc-swipe-indicator.super {
+  left: 50%; transform: translateX(-50%) rotate(0deg);
+  color: #fbbf24; border-color: #fbbf24;
+  background: rgba(251,191,36,.12);
+  top: 16px;
+}
+
+/* Badge online */
+.mc-online-badge {
+  position: absolute; top: 14px; left: 14px; z-index: 5;
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(0,0,0,.55); backdrop-filter: blur(8px);
+  border: 1px solid rgba(52,211,153,.5); border-radius: 100px;
+  padding: 4px 10px; font-size: .72rem; font-weight: 700; color: #34d399;
+}
+.mc-online-dot {
+  width: 7px; height: 7px; border-radius: 50%; background: #34d399;
+  animation: mcPulse 1.8s ease-in-out infinite;
+}
+@keyframes mcPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.4)} }
+
+/* Badge verificado */
+.mc-verif-badge {
+  position: absolute; top: 14px; right: 14px; z-index: 5;
+  background: rgba(24,119,242,.85); backdrop-filter: blur(8px);
+  border-radius: 50%; width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .75rem; color: #fff; font-weight: 900;
+  box-shadow: 0 2px 10px rgba(24,119,242,.5);
+}
+
+/* Compat ring */
+.mc-compat-ring {
+  position: absolute; top: 10px; right: 10px; z-index: 5;
+  width: 44px; height: 44px;
+}
+.mc-compat-ring svg { width: 44px; height: 44px; transform: rotate(-90deg); }
+.mc-compat-ring .cr-bg  { fill:none; stroke:rgba(255,255,255,.15); stroke-width:3; }
+.mc-compat-ring .cr-fill{ fill:none; stroke-width:3; stroke-linecap:round; transition:stroke-dashoffset .8s ease; }
+.mc-compat-pct {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: .6rem; font-weight: 900; color: #fff;
+}
+
+/* Info en la card */
+.mc-info {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 18px 18px 16px; z-index: 3; pointer-events: none;
+}
+.mc-name-row {
+  display: flex; align-items: flex-end; gap: 8px; flex-wrap: wrap; margin-bottom: 5px;
 }
 .mc-name {
-  font-size:1.55rem;font-weight:900;color:#fff;line-height:1.2;
-  text-shadow:0 2px 10px rgba(0,0,0,.8);
-  display:flex;align-items:center;gap:8px;
+  font-family: 'Exo 2', sans-serif; font-size: 1.55rem; font-weight: 900;
+  color: #fff; line-height: 1.1; text-shadow: 0 2px 8px rgba(0,0,0,.4);
 }
-/* tick azul verificado */
-.mc-name::after { content:'✓';display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#1877f2;border-radius:50%;font-size:.7rem;font-weight:900;color:#fff;flex-shrink:0; }
-.mc-age-loc { font-size:.82rem;color:rgba(255,255,255,.85);margin-top:5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap; }
-
-/* Botones de acción — superpuestos sobre la foto, parte inferior */
-.mc-body { padding:0;display:flex;flex-direction:column;gap:0;position:relative; }
-.mc-desc { font-size:.82rem;color:rgba(255,255,255,.75);line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;padding:0 18px;margin-top:-8px;position:relative;z-index:3;text-shadow:0 1px 4px rgba(0,0,0,.8); }
-.mc-tags { display:flex;flex-wrap:wrap;gap:5px;padding:6px 18px 0;position:relative;z-index:3; }
-.mc-tag { font-size:.68rem;padding:3px 10px;border-radius:100px;background:rgba(255,255,255,.15);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.2);color:#fff;font-weight:600; }
-
-/* Botones Badoo — debajo de la foto */
-.mc-actions {
-  display:flex;align-items:center;justify-content:center;gap:20px;
-  width:100%;padding:16px 0 10px;z-index:10;
-  pointer-events:none;
-  background:transparent;
+.mc-age { font-size: 1.1rem; font-weight: 400; color: rgba(255,255,255,.8); }
+.mc-loc {
+  font-size: .8rem; color: rgba(255,255,255,.75);
+  display: flex; align-items: center; gap: 4px; margin-bottom: 7px;
 }
-.mc-actions button { pointer-events:auto; }
-
-.mc-btn-nope {
-  width:58px;height:58px;border-radius:50%;
-  border:none;
-  background:#fff;
-  color:#ff4458;
-  cursor:pointer;font-size:1.7rem;
-  display:flex;align-items:center;justify-content:center;transition:all .18s;flex-shrink:0;
-  box-shadow:0 4px 18px rgba(0,0,0,.35);
+.mc-quote {
+  font-size: .82rem; color: rgba(255,255,255,.7); font-style: italic;
+  line-height: 1.45; margin-bottom: 8px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
 }
-.mc-btn-nope:hover { transform:scale(1.1);box-shadow:0 6px 24px rgba(255,68,88,.4); }
-
-.mc-btn-like {
-  width:72px;height:72px;border-radius:50%;border:none;cursor:pointer;
-  font-size:2rem;display:flex;align-items:center;justify-content:center;
-  transition:all .18s;flex-shrink:0;
-  background:#fff;
-  color:#f33e58;
-  box-shadow:0 6px 24px rgba(0,0,0,.35);
+.mc-chips { display: flex; flex-wrap: wrap; gap: 5px; pointer-events: none; }
+.mc-chip {
+  font-size: .7rem; font-weight: 600; padding: 3px 10px; border-radius: 100px;
+  background: rgba(255,255,255,.15); backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,.2); color: #fff;
 }
-.mc-btn-like:hover { transform:scale(1.12);box-shadow:0 8px 30px rgba(243,62,88,.5); }
-.mc-btn-like.liked { background:linear-gradient(135deg,#f33e58,#c4164b);color:#fff;box-shadow:0 6px 20px rgba(243,62,88,.5); }
+.mc-chip.seek { background: rgba(243,62,88,.2); border-color: rgba(243,62,88,.4); color: #f9a8d4; }
+.mc-chip.online { background: rgba(52,211,153,.15); border-color: rgba(52,211,153,.35); color: #34d399; }
+.mc-chip.verif  { background: rgba(24,119,242,.25); border-color: rgba(24,119,242,.5); color: #93c5fd; }
 
-.mc-btn-profile {
-  width:58px;height:58px;border-radius:50%;
-  border:none;
-  background:#fff;color:#888;cursor:pointer;font-size:1.4rem;
-  display:flex;align-items:center;justify-content:center;transition:all .18s;flex-shrink:0;
-  box-shadow:0 4px 18px rgba(0,0,0,.35);
+/* Botones de acción */
+.mc-action-row {
+  width: 100%; max-width: 420px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: center;
+  gap: 18px; padding: 20px 12px 10px;
 }
-.mc-btn-profile:hover { transform:scale(1.1);color:#f33e58; }
-
-/* Nav prev/next */
-.mc-nav { display:flex;align-items:center;justify-content:space-between;width:100%;max-width:420px;padding:0 12px; }
-.mc-nav-btn {
-  padding:6px 16px;border-radius:20px;border:1.5px solid var(--border);
-  background:var(--bg2);color:var(--muted);font-family:'Exo 2',sans-serif;
-  font-size:.8rem;font-weight:700;cursor:pointer;transition:all .18s;
-  display:flex;align-items:center;gap:5px;
+.mc-act-nope {
+  width: 58px; height: 58px; border-radius: 50%;
+  background: rgba(255,255,255,.07);
+  border: 2px solid rgba(243,62,88,.4);
+  color: #f33e58; font-size: 1.4rem;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all .2s; box-shadow: 0 4px 20px rgba(0,0,0,.3);
 }
-.mc-nav-btn:hover:not(:disabled) { border-color:#f33e58;color:#f33e58; }
-.mc-nav-btn:disabled { opacity:.3;cursor:default; }
-.mc-nav-counter { font-size:.78rem;color:var(--muted);font-weight:700; }
+.mc-act-nope:hover { background: rgba(243,62,88,.15); transform: scale(1.1); box-shadow: 0 6px 28px rgba(243,62,88,.35); }
 
-/* Match mutuo toast estilo Badoo */
-.match-mutual-toast {
-  position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:99999;
-  background:linear-gradient(135deg,#f33e58,#e8174e);color:#fff;
-  border-radius:16px;padding:14px 24px;font-family:'Exo 2',sans-serif;
-  font-size:.95rem;font-weight:800;text-align:center;box-shadow:0 8px 32px rgba(243,62,88,.4);
-  animation:mcToastIn .3s ease;pointer-events:none;
+.mc-act-like {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: linear-gradient(135deg, #f33e58, #c4164b);
+  border: none; color: #fff; font-size: 1.8rem;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all .2s; box-shadow: 0 6px 28px rgba(243,62,88,.5);
 }
-@keyframes mcToastIn { from{opacity:0;transform:translateX(-50%) translateY(-20px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
-@keyframes matchHeartPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.18)} }
+.mc-act-like:hover { transform: scale(1.12); box-shadow: 0 10px 36px rgba(243,62,88,.65); }
+.mc-act-like.liked { background: linear-gradient(135deg, #34d399, #059669); box-shadow: 0 6px 28px rgba(52,211,153,.5); }
 
-/* Skeleton estilo Badoo */
-.mc-skeleton-card { width:100%;max-width:420px;border-radius:20px;overflow:hidden;background:var(--bg2);border:1px solid var(--border); }
-.match-skeleton { background:linear-gradient(90deg,var(--bg2) 25%,var(--bg3) 50%,var(--bg2) 75%);background-size:200% 100%;animation:matchSkel 1.4s infinite; }
-@keyframes matchSkel { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+.mc-act-super {
+  width: 58px; height: 58px; border-radius: 50%;
+  background: rgba(255,255,255,.07);
+  border: 2px solid rgba(251,191,36,.4);
+  color: #fbbf24; font-size: 1.4rem;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all .2s; box-shadow: 0 4px 20px rgba(0,0,0,.3);
+}
+.mc-act-super:hover { background: rgba(251,191,36,.15); transform: scale(1.1); box-shadow: 0 6px 28px rgba(251,191,36,.35); }
 
-.match-empty-state { text-align:center;padding:60px 20px;color:var(--muted); }
+.mc-act-profile {
+  width: 46px; height: 46px; border-radius: 50%;
+  background: rgba(255,255,255,.06);
+  border: 1.5px solid rgba(255,255,255,.14);
+  color: rgba(255,255,255,.6); font-size: 1rem;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all .2s;
+}
+.mc-act-profile:hover { background: rgba(255,255,255,.12); color: #fff; }
+
+/* Nav contador */
+.mc-nav-row {
+  width: 100%; max-width: 420px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 2px 16px 10px; margin: 0 auto;
+}
+.mc-nav-btn2 {
+  background: none; border: none; color: rgba(255,255,255,.3);
+  font-size: .8rem; font-weight: 700; cursor: pointer;
+  font-family: 'Exo 2', sans-serif; padding: 4px 8px;
+  transition: color .15s; border-radius: 8px;
+}
+.mc-nav-btn2:hover:not(:disabled) { color: #f33e58; }
+.mc-nav-btn2:disabled { opacity: .2; cursor: default; }
+.mc-counter2 { font-size: .75rem; color: rgba(255,255,255,.3); font-weight: 700; }
+
+/* Skeleton */
+.mc-skel-card {
+  width: 100%; max-width: 420px; height: 580px;
+  border-radius: 24px; overflow: hidden;
+  background: linear-gradient(90deg, rgba(255,255,255,.04) 25%, rgba(255,255,255,.08) 50%, rgba(255,255,255,.04) 75%);
+  background-size: 200% 100%;
+  animation: mcSkel 1.5s infinite;
+}
+@keyframes mcSkel { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+/* Empty state */
+.mc-empty {
+  text-align: center; padding: 70px 20px; color: rgba(255,255,255,.4);
+  width: 100%;
+}
+.mc-empty-icon { font-size: 3.5rem; margin-bottom: 14px; }
+.mc-empty-title { font-size: 1.05rem; font-weight: 800; color: rgba(255,255,255,.7); margin-bottom: 6px; }
+.mc-empty-sub { font-size: .83rem; line-height: 1.5; }
+
+/* ══════════════════════════════════
+   MODO GRID
+══════════════════════════════════ */
+.mc-grid {
+  width: 100%; display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px; padding: 12px 14px;
+}
+.mc-grid-card {
+  border-radius: 16px; overflow: hidden; position: relative;
+  aspect-ratio: 2/3; cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0,0,0,.4);
+  border: 1px solid rgba(255,255,255,.06);
+  transition: transform .2s, box-shadow .2s;
+}
+.mc-grid-card:hover { transform: scale(1.02); box-shadow: 0 8px 32px rgba(0,0,0,.5); }
+.mc-grid-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.mc-grid-grad {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.85) 100%);
+}
+.mc-grid-info {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 10px 12px;
+}
+.mc-grid-name {
+  font-family: 'Exo 2', sans-serif; font-size: .92rem; font-weight: 800;
+  color: #fff; line-height: 1.2;
+}
+.mc-grid-sub { font-size: .7rem; color: rgba(255,255,255,.65); margin-top: 2px; }
+.mc-grid-online {
+  position: absolute; top: 10px; left: 10px;
+  width: 10px; height: 10px; border-radius: 50%;
+  background: #34d399; border: 2px solid #08060f;
+  box-shadow: 0 0 6px rgba(52,211,153,.7);
+}
+.mc-grid-liked {
+  position: absolute; top: 10px; right: 10px;
+  font-size: .95rem;
+}
+.mc-grid-compat {
+  position: absolute; top: 10px; right: 10px;
+  font-size: .65rem; font-weight: 800; color: #fff;
+  background: rgba(0,0,0,.55); backdrop-filter: blur(6px);
+  border-radius: 100px; padding: 3px 8px;
+  border: 1px solid rgba(255,255,255,.15);
+}
+
+/* Animaciones swipe */
+@keyframes swipeRight { to { transform: translateX(160%) rotate(20deg); opacity: 0; } }
+@keyframes swipeLeft  { to { transform: translateX(-160%) rotate(-20deg); opacity: 0; } }
+@keyframes swipeUp    { to { transform: translateY(-130%) scale(.8); opacity: 0; } }
+@keyframes cardIn     { from { transform: scale(.9) translateY(30px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+@keyframes heartbeat  { 0%,100%{transform:scale(1)} 15%{transform:scale(1.25)} 30%{transform:scale(1)} 45%{transform:scale(1.15)} 60%{transform:scale(1)} }
 </style>
 
-<!-- ═══════════════════════════ FOTOS ════════════════════════════ -->
-<div class="page" id="page-fotos" style="max-width:1000px;margin:0 auto;padding:20px 16px 80px;">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
-    <div style="font-family:Orbitron,monospace;font-size:1.1rem;font-weight:900;color:var(--text);">📸 Fotos de la comunidad</div>
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-      <input id="fotosSearch" type="text" placeholder="Buscar por usuario…" oninput="fotosFilterByUser(this.value)" style="padding:6px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;color:var(--text);font-size:.82rem;outline:none;width:180px;">
-      <select id="fotosSort" onchange="fotosRender()" style="padding:6px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;color:var(--text);font-size:.82rem;outline:none;cursor:pointer;">
-        <option value="new">Más recientes</option>
-        <option value="old">Más antiguas</option>
-      </select>
-    </div>
-  </div>
-  <div id="fotosStats" style="font-size:.78rem;color:var(--muted);margin-bottom:14px;"></div>
-  <div id="fotosGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;"></div>
-  <div id="fotosLoadMore" style="text-align:center;margin-top:24px;display:none;"></div>
-  <div id="fotosEmpty" style="display:none;text-align:center;padding:60px 20px;color:var(--muted);">
-    <div style="font-size:2.5rem;margin-bottom:10px;">📷</div>
-    <div>No hay fotos aún en la comunidad.</div>
-  </div>
-  <div id="fotosLoading" style="text-align:center;padding:60px;color:var(--muted);">
-    <div style="font-size:2rem;margin-bottom:10px;">⏳</div>
-    <div>Cargando fotos…</div>
-  </div>
-</div>
-
-<script>
-(function(){
-  var _fotosAllItems = [];
-  var _fotosFiltered = [];
-  var _fotosPage = 0;      // página actual (0-based)
-  var _fotosPer = 12;      // 4 cols x 3 filas = 12 por página
-  var _fotosLoaded = false;
-  var _fotosSearchVal = "";
-
-  window.initFotosPage = async function(){
-    if(_fotosLoaded){ fotosRender(); return; }
-    var loading = document.getElementById("fotosLoading");
-    var grid = document.getElementById("fotosGrid");
-    var empty = document.getElementById("fotosEmpty");
-    if(loading) loading.style.display = "block";
-    if(grid) grid.innerHTML = "";
-    if(empty) empty.style.display = "none";
-    try{
-      var fsLib = window._fsLib || {};
-      var gd = fsLib.getDocs, q = fsLib.query, col = fsLib.collection, ob = fsLib.orderBy, lim = fsLib.limit;
-      if(!gd || !window.db){ if(loading) loading.style.display="none"; return; }
-      var snap = await gd(q(col(window.db,"posts"), ob("time","desc"), lim(300)));
-      _fotosAllItems = [];
-      snap.forEach(function(d){
-        var p = d.data();
-        if(p.images && p.images.length){
-          p.images.forEach(function(src){
-            _fotosAllItems.push({
-              src: src,
-              nick: p.userNick || "Usuario",
-              av: p.userAv || "",
-              uid: p.uid || p.userId || "",
-              postId: d.id,
-              time: p.time || 0
-            });
-          });
-        }
-      });
-      _fotosLoaded = true;
-      if(loading) loading.style.display = "none";
-      fotosRender();
-    } catch(e){
-      console.warn("fotos error:",e);
-      if(loading) loading.style.display = "none";
-      var g = document.getElementById("fotosGrid");
-      if(g) g.innerHTML = "<div style=\"text-align:center;padding:40px;color:var(--muted)\">&#9888; Error cargando fotos.</div>";
-    }
-  };
-
-  window.fotosFilterByUser = function(val){
-    _fotosSearchVal = val.toLowerCase().trim();
-    _fotosPage = 0;
-    fotosRender();
-  };
-
-  window.fotosGoPage = function(p){
-    _fotosPage = p;
-    fotosRender();
-    // scroll suave al tope de la sección
-    var pg = document.getElementById("page-fotos");
-    if(pg) pg.scrollTo ? pg.scrollTo({top:0,behavior:"smooth"}) : window.scrollTo(0,0);
-  };
-
-  window.fotosRender = function(){
-    var sortEl = document.getElementById("fotosSort");
-    var sort = sortEl ? sortEl.value : "new";
-    var items = _fotosAllItems.slice();
-    if(_fotosSearchVal){
-      items = items.filter(function(x){ return x.nick.toLowerCase().indexOf(_fotosSearchVal) !== -1; });
-    }
-    if(sort === "old") items.sort(function(a,b){ return a.time - b.time; });
-    else items.sort(function(a,b){ return b.time - a.time; });
-    _fotosFiltered = items;
-
-    // Stats
-    var stats = document.getElementById("fotosStats");
-    var uniqueUsers = new Set(items.map(function(x){return x.uid;})).size;
-    if(stats) stats.textContent = items.length + " foto" + (items.length!==1?"s":"") + " de " + uniqueUsers + " usuario" + (uniqueUsers!==1?"s":"");
-
-    var grid = document.getElementById("fotosGrid");
-    var empty = document.getElementById("fotosEmpty");
-    var more = document.getElementById("fotosLoadMore");
-    if(!grid) return;
-
-    if(!items.length){
-      grid.innerHTML="";
-      if(empty) empty.style.display="block";
-      if(more) more.style.display="none";
-      return;
-    }
-    if(empty) empty.style.display="none";
-
-    // Página actual
-    var totalPages = Math.ceil(items.length / _fotosPer);
-    if(_fotosPage >= totalPages) _fotosPage = totalPages - 1;
-    var start = _fotosPage * _fotosPer;
-    var pageItems = items.slice(start, start + _fotosPer);
-    var allSrcs = JSON.stringify(items.map(function(i){return i.src;}));
-
-    // Numerar globalmente desde 1
-    grid.innerHTML = pageItems.map(function(item, idx){
-      var globalNum = start + idx + 1;
-      var avHtml;
-      if(item.av && item.av.indexOf("http") === 0){
-        avHtml = "<img src=\""+_fe(item.av)+"\" style=\"width:22px;height:22px;border-radius:50%;object-fit:cover;flex-shrink:0;\" onerror=\"this.style.display='none'\">";
-      } else {
-        avHtml = "<div style=\"width:22px;height:22px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:.65rem;flex-shrink:0;font-weight:700;\">"+_fe((item.nick||"?")[0].toUpperCase())+"</div>";
-      }
-      var uid = _fe(item.uid);
-      var nick = _fe(item.nick);
-      return "<div style=\"border-radius:10px;overflow:hidden;background:var(--bg2);box-shadow:0 1px 4px rgba(0,0,0,.22);position:relative;\">"
-        + "<div style=\"position:absolute;top:6px;left:6px;background:rgba(0,0,0,.6);color:#fff;font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:100px;z-index:2;line-height:1.4;\">"+globalNum+"</div>"
-        + "<img src=\""+_fe(item.src)+"\" loading=\"lazy\" style=\"width:100%;aspect-ratio:1;object-fit:cover;display:block;cursor:pointer;transition:opacity .18s;\" onmouseover=\"this.style.opacity=.82\" onmouseout=\"this.style.opacity=1\" onclick=\"openImgLightbox(this.src,"+allSrcs+")\" onerror=\"this.closest('div').style.display='none'\">"
-        + "<div style=\"padding:6px 8px;display:flex;align-items:center;gap:6px;\">"
-        + avHtml
-        + "<span onclick=\"_fotosGoProfile('"+uid+"','"+nick+"')\" style=\"font-size:.75rem;color:var(--muted);cursor:pointer;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:calc(100% - 32px)\" onmouseover=\"this.style.color='var(--accent)'\" onmouseout=\"this.style.color='var(--muted)'\">"+nick+"</span>"
-        + "</div></div>";
-    }).join("");
-
-    // Paginación numerada
-    if(more){
-      if(totalPages <= 1){ more.style.display="none"; }
-      else {
-        more.style.display="block";
-        var btns = "";
-        // botón anterior
-        btns += "<button onclick=\"fotosGoPage("+(_fotosPage-1)+")\" "+((_fotosPage===0)?"disabled":"")+
-          " style=\"padding:6px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer;font-size:.82rem;font-family:'Exo 2',sans-serif;\">&#8592;</button> ";
-        // número de páginas
-        for(var i=0;i<totalPages;i++){
-          var active = i===_fotosPage;
-          btns += "<button onclick=\"fotosGoPage("+i+")\" style=\"padding:6px 13px;background:"+(active?"var(--accent)":"var(--bg2)")+";border:1px solid "+(active?"var(--accent)":"var(--border)")+";border-radius:8px;color:"+(active?"#000":"var(--text)")+";cursor:pointer;font-weight:"+(active?"700":"400")+";font-size:.82rem;font-family:'Exo 2',sans-serif;margin:0 2px;\">"+( i+1)+"</button>";
-        }
-        // botón siguiente
-        btns += " <button onclick=\"fotosGoPage("+(_fotosPage+1)+")\" "+((_fotosPage===totalPages-1)?"disabled":"")+
-          " style=\"padding:6px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer;font-size:.82rem;font-family:'Exo 2',sans-serif;\">&#8594;</button>";
-        more.innerHTML = "<div style=\"display:flex;align-items:center;justify-content:center;gap:4px;flex-wrap:wrap;\">"+btns+"</div>";
-      }
-    }
-  };
-
-  // Navegar al perfil del usuario que subió la foto
-  window._fotosGoProfile = function(uid, nick){
-    if(!uid || uid === "undefined") return;
-    if(typeof openUserProfile === "function"){
-      openUserProfile(uid, nick);
-    } else if(typeof gp === "function"){
-      gp("userprofile");
-    }
-  };
-
-  window.fotosLoadMore = function(){ /* legacy */ };
-
-  function _fe(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
-})();
-</script>
-<!-- ════════════════════════════════════════════════════════════ -->
-
+<!-- HTML de la sección MATCH -->
 <div class="page" id="page-match">
-  <!-- Header estilo Badoo "Encuentros" -->
-  <div class="match-header">
-    <div class="match-title">Encuentros <span id="matchCountPill" class="match-count-pill">—</span></div>
-    <div style="display:flex;align-items:center;gap:10px;">
-      <button style="width:36px;height:36px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="Boost">⚡</button>
-      <button onclick="document.querySelector('.match-filters-body').classList.toggle('open')" style="width:36px;height:36px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="Filtros">⚙️</button>
+
+  <!-- Header -->
+  <div class="mh-bar">
+    <div class="mh-logo">
+      <span style="animation:heartbeat 1.4s ease-in-out infinite;display:inline-block;">💘</span>
+      Encuentros
+      <span id="matchCountPill" class="mh-pill">—</span>
+    </div>
+    <div class="mh-actions">
+      <button class="mh-btn" id="mhFilterBtn" onclick="_toggleMatchFilters()" title="Filtros">⚙️</button>
+      <button class="mh-btn" id="mhBoostBtn" onclick="_matchBoost()" title="Boost">⚡</button>
     </div>
   </div>
 
-  <!-- Filtros colapsables -->
-  <div class="match-filters-wrap">
-    <button class="match-filters-toggle" onclick="this.nextElementSibling.classList.toggle('open');this.querySelector('.mft-arrow').textContent=this.nextElementSibling.classList.contains('open')?'▲':'▼'">
-      <span>🎯 Filtros</span><span class="mft-arrow">▼</span>
+  <!-- Tabs modo Swipe / Grid -->
+  <div class="match-mode-tabs">
+    <button class="match-mode-tab on" id="mTabSwipe" onclick="_setMatchMode('swipe',this)">
+      🃏 Swipe
     </button>
-    <div class="match-filters-body" id="matchFiltersBody">
-      <div class="match-filter-group">
-        <span class="match-filter-label">Género</span>
-        <div style="display:flex;gap:5px;flex-wrap:wrap;">
-          <button id="mfgAll" class="mfg-btn" onclick="setGenderFilter('',this)" style="border-color:var(--accent);background:var(--accent);color:#000;">Todos</button>
-          <button id="mfgM"   class="mfg-btn" onclick="setGenderFilter('Masculino',this)">♂ Hombre</button>
-          <button id="mfgF"   class="mfg-btn" onclick="setGenderFilter('Femenino',this)">♀ Mujer</button>
+    <button class="match-mode-tab" id="mTabGrid" onclick="_setMatchMode('grid',this)">
+      ⊞ Explorar
+    </button>
+  </div>
+
+  <!-- Panel de filtros -->
+  <div class="mf-panel" id="mfPanel">
+    <div class="mf-inner">
+      <div class="mf-row">
+        <!-- Género -->
+        <div class="mf-group">
+          <span class="mf-label">Género</span>
+          <div class="mf-pills">
+            <button class="mf-pill on" id="mfpAll"    onclick="_setGender('',this)">Todos</button>
+            <button class="mf-pill"    id="mfpM"      onclick="_setGender('Hombre',this)">♂ Hombre</button>
+            <button class="mf-pill"    id="mfpF"      onclick="_setGender('Mujer',this)">♀ Mujer</button>
+          </div>
+        </div>
+        <!-- País -->
+        <div class="mf-group">
+          <span class="mf-label">País</span>
+          <select class="mf-sel" id="mfCountry2" onchange="_applyMatchFilters()">
+            <option value="">🌎 Todos</option>
+            <option value="Uruguay">🇺🇾 Uruguay</option>
+            <option value="Argentina">🇦🇷 Argentina</option>
+            <option value="México">🇲🇽 México</option>
+            <option value="España">🇪🇸 España</option>
+            <option value="Colombia">🇨🇴 Colombia</option>
+            <option value="Chile">🇨🇱 Chile</option>
+            <option value="Brasil">🇧🇷 Brasil</option>
+            <option value="Venezuela">🇻🇪 Venezuela</option>
+          </select>
         </div>
       </div>
-      <div class="match-filter-group">
-        <span class="match-filter-label">Edad</span>
-        <div style="display:flex;gap:5px;align-items:center;">
-          <select class="match-filter-select" id="mfAgeMin" onchange="applyMatchFilters()">
+      <!-- Rango de edad -->
+      <div class="mf-row">
+        <div class="mf-group">
+          <span class="mf-label">Edad mínima</span>
+          <select class="mf-sel" id="mfAgeMin2" onchange="_applyMatchFilters()">
             <option value="">Desde</option>
-            <option value="18">18</option><option value="21">21</option><option value="25">25</option>
-            <option value="30">30</option><option value="35">35</option><option value="40">40</option><option value="50">50</option>
-          </select>
-          <span style="color:var(--muted);font-size:.8rem;">—</span>
-          <select class="match-filter-select" id="mfAgeMax" onchange="applyMatchFilters()">
-            <option value="">Hasta</option>
-            <option value="20">20</option><option value="25">25</option><option value="30">30</option>
+            <option value="18">18</option><option value="21">21</option>
+            <option value="25">25</option><option value="30">30</option>
             <option value="35">35</option><option value="40">40</option><option value="50">50</option>
+          </select>
+        </div>
+        <div class="mf-group">
+          <span class="mf-label">Edad máxima</span>
+          <select class="mf-sel" id="mfAgeMax2" onchange="_applyMatchFilters()">
+            <option value="">Hasta</option>
+            <option value="20">20</option><option value="25">25</option>
+            <option value="30">30</option><option value="35">35</option>
+            <option value="40">40</option><option value="50">50</option>
             <option value="60">60</option><option value="70">70</option>
           </select>
         </div>
       </div>
-      <div class="match-filter-group">
-        <span class="match-filter-label">País</span>
-        <select class="match-filter-select" id="mfCountry" onchange="applyMatchFilters()">
-          <option value="">🌎 Todos</option>
-          <option value="Uruguay">🇺🇾 Uruguay</option>
-          <option value="Argentina">🇦🇷 Argentina</option>
-          <option value="México">🇲🇽 México</option>
-          <option value="España">🇪🇸 España</option>
-          <option value="Colombia">🇨🇴 Colombia</option>
-          <option value="Chile">🇨🇱 Chile</option>
-          <option value="Brasil">🇧🇷 Brasil</option>
-          <option value="Venezuela">🇻🇪 Venezuela</option>
-          <option value="Paraguay">🇵🇾 Paraguay</option>
-        </select>
+      <!-- Busca -->
+      <div class="mf-group">
+        <span class="mf-label">Busca</span>
+        <div class="mf-pills">
+          <button class="mf-pill on" id="mfpSeekAll"     onclick="_setSeek('',this)">Todos</button>
+          <button class="mf-pill"    id="mfpSeekSerious" onclick="_setSeek('serious',this)">💑 Algo serio</button>
+          <button class="mf-pill"    id="mfpSeekFriend"  onclick="_setSeek('friend',this)">🤝 Amigos</button>
+          <button class="mf-pill"    id="mfpSeekCasual"  onclick="_setSeek('casual',this)">🌊 Casual</button>
+        </div>
       </div>
-      <button onclick="resetMatchFilters()" style="padding:6px 14px;border-radius:20px;border:1.5px solid #30363d;background:transparent;color:var(--muted);font-size:.78rem;cursor:pointer;align-self:flex-end;">✕ Limpiar</button>
-    </div>
-  </div>
-
-  <!-- Card única -->
-  <div class="match-swipe-area" id="matchSwipeArea">
-    <div class="mc-skeleton-card">
-      <div style="width:100%;aspect-ratio:3/4;" class="match-skeleton"></div>
-      <div style="padding:14px 16px 16px;">
-        <div style="height:14px;border-radius:6px;margin-bottom:8px;" class="match-skeleton"></div>
-        <div style="height:10px;border-radius:6px;width:60%;" class="match-skeleton"></div>
+      <div style="display:flex;justify-content:flex-end;">
+        <button class="mf-reset" onclick="_resetMatchFilters()">✕ Limpiar filtros</button>
       </div>
     </div>
   </div>
 
-  <!-- Nav anterior / siguiente -->
-  <div class="mc-nav" style="margin-top:18px;">
-    <button class="mc-nav-btn" id="mcPrevBtn" onclick="matchNavPrev()" disabled>← Anterior</button>
-    <span class="mc-nav-counter" id="mcNavCounter"></span>
-    <button class="mc-nav-btn" id="mcNextBtn" onclick="matchNavNext()">Siguiente →</button>
+  <!-- Área principal (swipe o grid) -->
+  <div id="matchMainArea" style="width:100%;">
+
+    <!-- MODO SWIPE -->
+    <div id="matchSwipeWrap" style="width:100%;">
+      <div class="match-swipe-area" id="matchSwipeArea">
+        <!-- skeleton inicial -->
+        <div class="mc-skel-card"></div>
+      </div>
+      <!-- Botones de acción -->
+      <div class="mc-action-row" id="mcActionRow">
+        <button class="mc-act-profile" id="mcProfileBtn" onclick="_matchViewProfile()" title="Ver perfil">👤</button>
+        <button class="mc-act-nope"    id="mcNopeBtn"    onclick="_matchNope()"        title="Pasar">✕</button>
+        <button class="mc-act-like"    id="mcLikeBtn2"   onclick="_matchLike()"        title="Like">❤️</button>
+        <button class="mc-act-super"   id="mcSuperBtn"   onclick="_matchSuperLike()"   title="Super Like">⭐</button>
+        <button class="mc-act-profile" id="mcInfoBtn"    onclick="_matchShowInfo()"    title="Info">ℹ️</button>
+      </div>
+      <!-- Contador nav -->
+      <div class="mc-nav-row">
+        <button class="mc-nav-btn2" id="mcPrevBtn2" onclick="_matchPrev()" disabled>← Anterior</button>
+        <span class="mc-counter2" id="mcCounter2"></span>
+        <button class="mc-nav-btn2" id="mcNextBtn2" onclick="_matchNext()">Siguiente →</button>
+      </div>
+    </div>
+
+    <!-- MODO GRID -->
+    <div id="matchGridWrap" style="display:none;">
+      <div class="mc-grid" id="matchGridArea"></div>
+    </div>
+
   </div>
 </div>
 
 <script>
 (function(){
-  'use strict';
+'use strict';
 
-  let _allUsers    = [];
-  let _filtered    = [];
-  let _idx         = 0;          // índice actual en _filtered
-  let _likes       = {};
-  let _unsubLikes  = null;
-  let _loading     = false;
-  let _onlineSet   = new Set();
-  let _genderFilter = '';
+/* ─────────────────────────────────────────────
+   ESTADO
+───────────────────────────────────────────── */
+let _all      = [];
+let _filtered = [];
+let _idx      = 0;
+let _likes    = {};
+let _mode     = 'swipe';   // 'swipe' | 'grid'
+let _gFilter  = '';
+let _seekFilter = '';
+let _loading  = false;
+let _online   = new Set();
+let _unsubLikes  = null;
+let _unsubMatch  = null;
 
-  // ── Filtro género con botones ─────────────────────────────────────────────
-  window.setGenderFilter = function(val, btn){
-    _genderFilter = val;
-    document.querySelectorAll('.mfg-btn').forEach(b => {
-      b.style.background = 'transparent';
-      b.style.color = 'var(--text)';
-      b.style.borderColor = '#30363d';
+/* Swipe touch/mouse */
+let _drag = { active:false, startX:0, startY:0, curX:0, curY:0, card:null };
+
+/* ─────────────────────────────────────────────
+   INIT
+───────────────────────────────────────────── */
+window.initMatchPage = function(){
+  if(typeof db==='undefined'||!db){ setTimeout(window.initMatchPage,1000); return; }
+  _loading = false;
+  if(window._sidebarAllOnline){
+    _online = new Set((window._sidebarAllOnline||[]).map(u=>u.id));
+  }
+  _loadUsers();
+  _subscribeLikes();
+};
+
+/* ─────────────────────────────────────────────
+   CARGA USUARIOS
+───────────────────────────────────────────── */
+function _loadUsers(){
+  if(_loading) return;
+  if(_all.length > 0){ _applyMatchFilters(); return; }
+  if(window._matchAllUsers&&window._matchAllUsers.length>0){
+    _all = window._matchAllUsers;
+    _applyMatchFilters();
+    _subscribeRT();
+    return;
+  }
+  _loading = true;
+  _showSkel();
+  getDocs(collection(db,'users'))
+    .then(snap=>{
+      _all = snap.docs.map(d=>({id:d.id,...d.data()})).filter(u=>!u.banned);
+      window._matchAllUsers = _all;
+      _loading = false;
+      _applyMatchFilters();
+      if(typeof window._refreshSidebarMatch==='function') window._refreshSidebarMatch();
+      _subscribeRT();
+    })
+    .catch(err=>{
+      console.warn('match load error:',err);
+      _loading = false;
+      if(window._matchAllUsers&&window._matchAllUsers.length>0){
+        _all = window._matchAllUsers;
+        _applyMatchFilters();
+      } else { _showErr(); }
     });
-    if(btn){
-      btn.style.background = 'var(--accent)';
-      btn.style.color = '#000';
-      btn.style.borderColor = 'var(--accent)';
-    }
-    _applyFilters();
-  };
+}
 
-  // ── Init ─────────────────────────────────────────────────────────────────
-  window.initMatchPage = function(){
-    // Si Firebase no está listo, reintentar en 1 segundo
-    if(typeof db === 'undefined' || !db){
-      setTimeout(window.initMatchPage, 1000);
-      return;
-    }
-    _loading = false; // reset por si quedó colgado de una carga anterior
-    _loadUsers();
-    _subscribeLikes();
-    if(window._sidebarAllOnline){
-      _onlineSet = new Set((window._sidebarAllOnline||[]).map(u=>u.id));
-    }
-  };
+/* ─────────────────────────────────────────────
+   REALTIME
+───────────────────────────────────────────── */
+function _subscribeRT(){
+  if(_unsubMatch) _unsubMatch();
+  try{
+    _unsubMatch = onSnapshot(collection(db,'users'), snap=>{
+      _all = snap.docs.map(d=>({id:d.id,...d.data()})).filter(u=>!u.banned);
+      window._matchAllUsers = _all;
+      _applyMatchFilters();
+      if(typeof window._refreshSidebarMatch==='function') window._refreshSidebarMatch();
+    }, err=>console.warn('match RT err:',err));
+  }catch(e){}
+}
 
-  // ── Carga usuarios ────────────────────────────────────────────────────────
-  function _loadUsers(){
-    if(_loading) return;
-    // Si ya tenemos usuarios cacheados, mostrarlos de inmediato
-    if(_allUsers.length > 0){
-      _applyFilters();
-      return;
+/* ─────────────────────────────────────────────
+   LIKES
+───────────────────────────────────────────── */
+function _subscribeLikes(){
+  if(!window.CU) return;
+  if(_unsubLikes) _unsubLikes();
+  _unsubLikes = onSnapshot(collection(db,'users',window.CU.id,'matchLikes'), snap=>{
+    _likes = {};
+    snap.docs.forEach(d=>{ _likes[d.id]=d.data()||true; });
+    _refreshLikeBtn();
+    if(_mode==='grid') _renderGrid();
+  });
+}
+
+function _refreshLikeBtn(){
+  const u = _filtered[_idx];
+  if(!u) return;
+  const btn = document.getElementById('mcLikeBtn2');
+  if(!btn) return;
+  const isLiked = !!_likes[u.id];
+  btn.innerHTML = isLiked ? '💖' : '❤️';
+  if(isLiked) btn.classList.add('liked');
+  else btn.classList.remove('liked');
+}
+
+/* ─────────────────────────────────────────────
+   FILTROS
+───────────────────────────────────────────── */
+window._applyMatchFilters = function(){
+  const ageMin = parseInt(document.getElementById('mfAgeMin2')?.value)||0;
+  const ageMax = parseInt(document.getElementById('mfAgeMax2')?.value)||999;
+  const country= document.getElementById('mfCountry2')?.value||'';
+  const myCountry=(window.CU?.country||'').replace(/^[^\s]+\s/,'').trim().toLowerCase();
+  const blocked = window.CU?.blocked||[];
+
+  _filtered = _all.filter(u=>{
+    if(u.id===window.CU?.id) return false;
+    if(u.hidden) return false;
+    if(blocked.includes(u.id)) return false;
+    if(!u.av||typeof u.av!=='string'||!u.av.startsWith('http')) return false;
+    // Filtro género (considera gender Y values como "Hombre","Mujer","Masculino","Femenino")
+    if(_gFilter){
+      const g = (u.gender||'').toLowerCase();
+      const fL = _gFilter.toLowerCase();
+      if(!g.includes(fL) && !(fL==='hombre'&&g==='masculino') && !(fL==='mujer'&&g==='femenino')) return false;
     }
-    // Si hay caché global de una carga previa (ej: widget de home), usarla
-    if(window._matchAllUsers && window._matchAllUsers.length > 0){
-      _allUsers = window._matchAllUsers;
-      _applyFilters();
-      _subscribeRealtime();
-      return;
+    if(country && !(u.country||'').includes(country)) return false;
+    const age = parseInt(u.age)||0;
+    if(ageMin&&age&&age<ageMin) return false;
+    if(ageMax<999&&age&&age>ageMax) return false;
+    // Filtro por seeking
+    if(_seekFilter){
+      const seeking = u.seeking||[];
+      if(!seeking.includes(_seekFilter)) return false;
     }
-    _loading = true;
-    _showSkeleton();
-    getDocs(collection(db, 'users'))
-      .then(snap => {
-        _allUsers = snap.docs.map(d => ({id: d.id, ...d.data()})).filter(u => !u.banned);
-        window._matchAllUsers = _allUsers;
-        _loading = false;
-        _applyFilters();
-        if(typeof window._refreshSidebarMatch === 'function') window._refreshSidebarMatch();
-        _subscribeRealtime();
-      })
-      .catch(err => {
-        console.warn('match getDocs error:', err);
-        _loading = false;
-        if(window._matchAllUsers && window._matchAllUsers.length > 0){
-          _allUsers = window._matchAllUsers;
-          _applyFilters();
-        } else {
-          _showError();
-        }
-      });
+    return true;
+  });
+
+  // Ordenar: misma ciudad > mismo país > online > compat > actividad reciente
+  _filtered.sort((a,b)=>{
+    const ac=(a.country||'').replace(/^[^\s]+\s/,'').trim().toLowerCase();
+    const bc=(b.country||'').replace(/^[^\s]+\s/,'').trim().toLowerCase();
+    const aCity=(a.city||a.dept||'').toLowerCase();
+    const bCity=(b.city||b.dept||'').toLowerCase();
+    const myCity=(window.CU?.city||window.CU?.dept||'').toLowerCase();
+    const aCityMatch = myCity&&aCity&&aCity===myCity ? 3:0;
+    const bCityMatch = myCity&&bCity&&bCity===myCity ? 3:0;
+    const aCountry = myCountry&&ac===myCountry ? 2:0;
+    const bCountry = myCountry&&bc===myCountry ? 2:0;
+    const aOnline = _online.has(a.id)?1:0;
+    const bOnline = _online.has(b.id)?1:0;
+    const aC = _compat(a);
+    const bC = _compat(b);
+    return (bCityMatch+bCountry+bOnline+bC*0.01)-(aCityMatch+aCountry+aOnline+aC*0.01);
+  });
+
+  if(_idx>=_filtered.length) _idx=0;
+  const pill=document.getElementById('matchCountPill');
+  if(pill) pill.textContent=_filtered.length+' personas';
+
+  if(_mode==='swipe') _renderSwipeCard(null);
+  else _renderGrid();
+};
+
+window.applyMatchFilters  = window._applyMatchFilters;
+window.resetMatchFilters  = _resetMatchFilters;
+
+function _resetMatchFilters(){
+  _gFilter=''; _seekFilter='';
+  document.querySelectorAll('.mf-pill').forEach(p=>p.classList.remove('on'));
+  const pa=document.getElementById('mfpAll'); if(pa) pa.classList.add('on');
+  const ps=document.getElementById('mfpSeekAll'); if(ps) ps.classList.add('on');
+  ['mfAgeMin2','mfAgeMax2','mfCountry2'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  window._applyMatchFilters();
+}
+
+/* ─────────────────────────────────────────────
+   COMPATIBILIDAD
+───────────────────────────────────────────── */
+function _compat(u){
+  if(!window.CU) return 50;
+  let score = 50;
+  const myInterests = (window.CU.interests||[]).map(s=>s.toLowerCase());
+  const theirInterests = (u.interests||[]).map(s=>s.toLowerCase());
+  if(myInterests.length&&theirInterests.length){
+    const common = myInterests.filter(i=>theirInterests.includes(i)).length;
+    score += Math.min(common*8, 30);
   }
-
-  // ── Realtime ──────────────────────────────────────────────────────────────
-  let _unsubMatch = null;
-  function _subscribeRealtime(){
-    if(_unsubMatch) _unsubMatch();
-    try {
-      _unsubMatch = onSnapshot(
-        collection(db, 'users'),
-        snap => {
-          _allUsers = snap.docs.map(d => ({id: d.id, ...d.data()})).filter(u => !u.banned);
-          window._matchAllUsers = _allUsers;
-          _applyFilters();
-          if(typeof window._refreshSidebarMatch === 'function') window._refreshSidebarMatch();
-        },
-        err => console.warn('match realtime error:', err)
-      );
-    } catch(e){}
+  if((window.CU.country||'')===(u.country||'')&&u.country) score+=10;
+  if((window.CU.city||'')===(u.city||u.dept||'')&&(window.CU.city||'')) score+=8;
+  if(_online.has(u.id)) score+=4;
+  // Seeking match
+  const mySeeking  = window.CU.seeking||[];
+  const theirSeek  = u.seeking||[];
+  if(mySeeking.length&&theirSeek.length){
+    const common2 = mySeeking.filter(s=>theirSeek.includes(s)).length;
+    if(common2>0) score+=6;
   }
+  return Math.min(score,99);
+}
 
-  // ── Likes ─────────────────────────────────────────────────────────────────
-  function _subscribeLikes(){
-    if(!window.CU) return;
-    if(_unsubLikes) _unsubLikes();
-    _unsubLikes = onSnapshot(
-      collection(db, 'users', window.CU.id, 'matchLikes'),
-      snap => {
-        _likes = {};
-        snap.docs.forEach(d => { _likes[d.id] = true; });
-        // Actualizar botón de like si la card actual coincide
-        _updateLikeBtn();
-      }
-    );
+/* ─────────────────────────────────────────────
+   MODO
+───────────────────────────────────────────── */
+window._setMatchMode = function(mode, btn){
+  _mode = mode;
+  document.querySelectorAll('.match-mode-tab').forEach(t=>t.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  const sw = document.getElementById('matchSwipeWrap');
+  const gr = document.getElementById('matchGridWrap');
+  if(sw) sw.style.display = mode==='swipe'?'block':'none';
+  if(gr) gr.style.display = mode==='grid'?'block':'none';
+  if(mode==='swipe') _renderSwipeCard(null);
+  else _renderGrid();
+};
+
+/* ─────────────────────────────────────────────
+   RENDER SWIPE
+───────────────────────────────────────────── */
+function _renderSwipeCard(direction){
+  try{ _doRenderSwipe(direction); }
+  catch(e){ console.warn('render swipe err:',e); }
+}
+
+function _doRenderSwipe(direction){
+  const area = document.getElementById('matchSwipeArea');
+  if(!area) return;
+  _updateNav();
+
+  if(!_filtered.length){
+    area.innerHTML=`<div class="mc-empty"><div class="mc-empty-icon">🔍</div><div class="mc-empty-title">No se encontraron personas</div><div class="mc-empty-sub">Probá cambiar los filtros o volvé más tarde.</div></div>`;
+    _setActionVis(false); return;
   }
+  const u = _filtered[_idx];
+  if(!u){
+    area.innerHTML=`<div class="mc-empty"><div class="mc-empty-icon">🎉</div><div class="mc-empty-title">¡Ya viste todos los perfiles!</div><div class="mc-empty-sub">Volvé más tarde o cambiá los filtros.</div><button onclick="window.initMatchPage()" style="margin-top:16px;padding:10px 24px;background:linear-gradient(135deg,#f33e58,#c4164b);border:none;border-radius:100px;color:#fff;font-weight:800;cursor:pointer;font-size:.85rem;">🔄 Ver de nuevo</button></div>`;
+    _setActionVis(false); return;
+  }
+  _setActionVis(true);
 
-  function _updateLikeBtn(){
-    const u = _filtered[_idx];
-    if(!u) return;
-    const btn = document.getElementById('mcLikeBtn');
-    if(!btn) return;
-    if(_likes[u.id]){
-      btn.classList.add('liked');
-      btn.title = 'Quitá el like';
-      btn.innerHTML = '💖';
+  const isOnline = _online.has(u.id);
+  const isLiked  = !!_likes[u.id];
+  const compat   = _compat(u);
+  const age      = u.age ? u.age : '';
+  const dept     = u.dept||u.city||'';
+  const country  = (u.country||'').replace(/^[^\s]+\s/,'').trim();
+  const loc      = [dept,country].filter(Boolean).join(', ');
+  const nick     = u.nick||u.email?.split('@')[0]||'Usuario';
+  const ini      = nick[0].toUpperCase();
+  const quote    = u.quote||u.bio||'';
+  const seeking  = (u.seeking||[]);
+  const seekLabels = {serious:'💑 Algo serio',friend:'🤝 Amigos',casual:'🌊 Casual',chat:'💬 Charlar'};
+  const isVerif  = !!(u.av&&u.av.startsWith('http'));
+
+  // Calcular circunferencia compat ring
+  const R=18, C=2*Math.PI*R;
+  const fill = C*(1-(compat/100));
+  const compatColor = compat>=75?'#34d399':compat>=50?'#fbbf24':'#f33e58';
+
+  // Foto
+  const photoInner = u.av
+    ? `<img class="mc-img" src="${_esc(u.av)}" loading="lazy" onerror="this.style.display='none';this.nextSibling.style.display='flex';">
+       <div class="mc-photo-initials" style="display:none;width:100%;height:100%;background:linear-gradient(135deg,#2a1f3d,#1a0a2e);display:none;align-items:center;justify-content:center;font-size:6rem;font-weight:900;color:#f33e58;">${ini}</div>`
+    : `<div style="width:100%;height:100%;background:linear-gradient(135deg,#2a1f3d,#1a0a2e);display:flex;align-items:center;justify-content:center;font-size:6rem;font-weight:900;color:#f33e58;">${ini}</div>`;
+
+  // Chips de busca
+  const seekChips = seeking.slice(0,2).map(s=>seekLabels[s]?`<span class="mc-chip seek">${_esc(seekLabels[s])}</span>`:'').join('');
+  // Chips extra
+  const extraChips = [];
+  if(isOnline) extraChips.push('<span class="mc-chip online">🟢 Online</span>');
+  if(isVerif)  extraChips.push('<span class="mc-chip verif">✓ Verificado</span>');
+  if(u.role==='premium'||u.role==='admin') extraChips.push('<span class="mc-chip" style="background:rgba(251,191,36,.2);border-color:rgba(251,191,36,.4);color:#fbbf24;">⭐ Premium</span>');
+
+  // Quitar card anterior con animación
+  const oldCard = area.querySelector('.mc-card');
+  if(oldCard&&direction){
+    const anim = direction==='next'?'swipeLeft':'swipeRight';
+    oldCard.style.animation = `${anim} .3s ease forwards`;
+    setTimeout(()=>oldCard.remove(),280);
+  } else if(oldCard) { oldCard.remove(); }
+
+  // Quitar skeleton
+  const skel = area.querySelector('.mc-skel-card');
+  if(skel) skel.remove();
+
+  const card = document.createElement('div');
+  card.className = 'mc-card';
+  if(direction) card.style.animation = 'cardIn .35s cubic-bezier(.34,1.56,.64,1) both';
+  card.dataset.uid = u.id;
+  card.dataset.nick = nick;
+
+  card.innerHTML = `
+    ${photoInner}
+    <div class="mc-grad"></div>
+    ${isOnline?'<div class="mc-online-badge"><div class="mc-online-dot"></div>En línea</div>':''}
+    ${isVerif?'<div class="mc-verif-badge">✓</div>':''}
+    <!-- Compat ring (solo si verif no está en misma posición) -->
+    ${!isVerif?`<div class="mc-compat-ring" style="position:absolute;top:14px;right:14px;z-index:5;">
+      <svg viewBox="0 0 44 44"><circle class="cr-bg" cx="22" cy="22" r="${R}"/><circle class="cr-fill" cx="22" cy="22" r="${R}" stroke="${compatColor}" stroke-dasharray="${C}" stroke-dashoffset="${fill}"/></svg>
+      <div class="mc-compat-pct" style="color:${compatColor};">${compat}%</div>
+    </div>`:
+    `<div style="position:absolute;top:48px;right:14px;z-index:5;display:flex;align-items:center;gap:4px;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.12);border-radius:100px;padding:3px 8px;">
+      <span style="font-size:.6rem;font-weight:800;color:${compatColor};">${compat}%</span>
+      <span style="font-size:.55rem;color:rgba(255,255,255,.5);">compat.</span>
+    </div>`}
+    <!-- Indicadores swipe -->
+    <div class="mc-swipe-indicator nope" id="mcIndNope">✕ NOPE</div>
+    <div class="mc-swipe-indicator like" id="mcIndLike">LIKE ♥</div>
+    <div class="mc-swipe-indicator super" id="mcIndSuper">⭐ SUPER</div>
+    <!-- Info -->
+    <div class="mc-info">
+      <div class="mc-name-row">
+        <span class="mc-name">${_esc(nick)}</span>
+        ${age?`<span class="mc-age">${_esc(age)}</span>`:''}
+      </div>
+      ${loc?`<div class="mc-loc">📍 ${_esc(loc)}</div>`:''}
+      ${quote?`<div class="mc-quote">"${_esc(quote)}"</div>`:''}
+      <div class="mc-chips">
+        ${seekChips}
+        ${extraChips.join('')}
+      </div>
+    </div>`;
+
+  area.appendChild(card);
+  _refreshLikeBtn();
+  _attachSwipeGestures(card, u.id, nick);
+}
+
+/* ─────────────────────────────────────────────
+   SWIPE GESTURES (touch + mouse)
+───────────────────────────────────────────── */
+function _attachSwipeGestures(card, uid, nick){
+  const THRESHOLD_X = 90;
+  const THRESHOLD_Y = -110;
+
+  function onStart(x, y){
+    _drag.active=true; _drag.startX=x; _drag.startY=y;
+    _drag.curX=x; _drag.curY=y; _drag.card=card;
+    card.style.transition='none';
+  }
+  function onMove(x, y){
+    if(!_drag.active) return;
+    _drag.curX=x; _drag.curY=y;
+    const dx=x-_drag.startX, dy=y-_drag.startY;
+    const rot = dx*0.07;
+    card.style.transform=`translate(${dx}px,${dy}px) rotate(${rot}deg)`;
+
+    // Indicators
+    const nope=card.querySelector('#mcIndNope');
+    const like=card.querySelector('#mcIndLike');
+    const sup =card.querySelector('#mcIndSuper');
+    const absDx=Math.abs(dx), absDy=Math.abs(dy);
+    if(dy<-60&&absDy>absDx){
+      if(nope)nope.style.opacity='0'; if(like)like.style.opacity='0';
+      if(sup) sup.style.opacity=Math.min(Math.abs(dy)/THRESHOLD_Y*-1,1)+'';
+    } else if(dx>30){
+      if(nope)nope.style.opacity='0'; if(sup)sup.style.opacity='0';
+      if(like)like.style.opacity=Math.min(dx/THRESHOLD_X,1)+'';
+    } else if(dx<-30){
+      if(like)like.style.opacity='0'; if(sup)sup.style.opacity='0';
+      if(nope)nope.style.opacity=Math.min(Math.abs(dx)/THRESHOLD_X,1)+'';
     } else {
-      btn.classList.remove('liked');
-      btn.title = 'Me gusta';
-      btn.innerHTML = '❤️';
+      if(nope)nope.style.opacity='0'; if(like)like.style.opacity='0'; if(sup)sup.style.opacity='0';
+    }
+  }
+  function onEnd(){
+    if(!_drag.active) return;
+    _drag.active=false;
+    const dx=_drag.curX-_drag.startX, dy=_drag.curY-_drag.startY;
+    card.style.transition='transform .3s ease, opacity .3s ease';
+    const nope=card.querySelector('#mcIndNope');
+    const like=card.querySelector('#mcIndLike');
+    const sup=card.querySelector('#mcIndSuper');
+    if(nope)nope.style.opacity='0'; if(like)like.style.opacity='0'; if(sup)sup.style.opacity='0';
+
+    if(dy<THRESHOLD_Y&&Math.abs(dy)>Math.abs(dx)){
+      // Super like
+      card.style.animation='swipeUp .4s ease forwards';
+      setTimeout(()=>{ _doSuperLike(uid, nick); },350);
+    } else if(dx>THRESHOLD_X){
+      // Like
+      card.style.animation='swipeRight .35s ease forwards';
+      setTimeout(()=>{ _doLike(uid); },300);
+    } else if(dx<-THRESHOLD_X){
+      // Nope
+      card.style.animation='swipeLeft .35s ease forwards';
+      setTimeout(()=>{ _advance(); },280);
+    } else {
+      // Rebote
+      card.style.transform='';
     }
   }
 
-  // ── Filtros ───────────────────────────────────────────────────────────────
-  function _applyFilters(){
-    const ageMin  = parseInt(document.getElementById('mfAgeMin')?.value)  || 0;
-    const ageMax  = parseInt(document.getElementById('mfAgeMax')?.value)  || 999;
-    const country = document.getElementById('mfCountry')?.value || '';
-    const myCountry = (window.CU?.country||'').replace(/^[^\s]+\s/,'').trim().toLowerCase();
+  // Touch
+  card.addEventListener('touchstart', e=>{ const t=e.touches[0]; onStart(t.clientX,t.clientY); },{passive:true});
+  card.addEventListener('touchmove',  e=>{ const t=e.touches[0]; onMove(t.clientX,t.clientY); e.preventDefault(); },{passive:false});
+  card.addEventListener('touchend',   ()=>onEnd());
 
-    _filtered = _allUsers.filter(u => {
-      if(u.id === window.CU?.id) return false;
-      // Solo mostrar usuarios con foto de perfil
-      if(!u.av || typeof u.av !== 'string' || !u.av.startsWith('http')) return false;
-      if(_genderFilter && (u.gender||'') !== _genderFilter) return false;
-      if(country && !(u.country||'').includes(country)) return false;
-      const age = parseInt(u.age)||0;
-      if(ageMin && age && age < ageMin) return false;
-      if(ageMax < 999 && age && age > ageMax) return false;
-      return true;
-    });
+  // Mouse
+  card.addEventListener('mousedown', e=>{ onStart(e.clientX,e.clientY); e.preventDefault(); });
+  document.addEventListener('mousemove', e=>{ if(_drag.active) onMove(e.clientX,e.clientY); });
+  document.addEventListener('mouseup', ()=>{ if(_drag.active) onEnd(); });
+}
 
-    _filtered.sort((a,b)=>{
-      const ac = (a.country||'').replace(/^[^\s]+\s/,'').trim().toLowerCase();
-      const bc = (b.country||'').replace(/^[^\s]+\s/,'').trim().toLowerCase();
-      const aN = myCountry && ac===myCountry ? 2:0;
-      const bN = myCountry && bc===myCountry ? 2:0;
-      const ao = _onlineSet.has(a.id)?1:0;
-      const bo = _onlineSet.has(b.id)?1:0;
-      return (bN+bo)-(aN+ao);
-    });
+/* ─────────────────────────────────────────────
+   ACCIONES (Nope / Like / SuperLike)
+───────────────────────────────────────────── */
+window._matchNope = function(){
+  const card=document.querySelector('.mc-card');
+  if(card){ card.style.animation='swipeLeft .35s ease forwards'; }
+  setTimeout(_advance, 300);
+};
 
-    // Conservar índice si es posible, sino resetear
-    if(_idx >= _filtered.length) _idx = 0;
-    _renderCard(null);
+window._matchLike = async function(){
+  const u=_filtered[_idx]; if(!u) return;
+  const card=document.querySelector('.mc-card');
+  if(card){ card.style.animation='swipeRight .35s ease forwards'; }
+  setTimeout(()=>_doLike(u.id), 300);
+};
+
+window._matchSuperLike = async function(){
+  const u=_filtered[_idx]; if(!u) return;
+  const card=document.querySelector('.mc-card');
+  if(card){ card.style.animation='swipeUp .4s ease forwards'; }
+  setTimeout(()=>_doSuperLike(u.id, u.nick||''), 350);
+};
+
+window._matchViewProfile = function(){
+  const u=_filtered[_idx]; if(!u) return;
+  if(typeof openUserProfile==='function') openUserProfile(u.id, u.nick||'');
+};
+
+window._matchShowInfo = function(){
+  const u=_filtered[_idx]; if(!u) return;
+  if(typeof openUserProfile==='function') openUserProfile(u.id, u.nick||'');
+};
+
+async function _doLike(uid){
+  if(!window.CU){ toast('Iniciá sesión para dar likes','err'); return; }
+  const already = !!_likes[uid];
+  const likeRef = doc(db,'users',window.CU.id,'matchLikes',uid);
+
+  if(already){
+    try{ delete _likes[uid]; await deleteDoc(likeRef); }
+    catch(e){ console.warn('unlike err:',e); }
+    _advance();
+    return;
   }
 
-  window.applyMatchFilters = _applyFilters;
-  window.resetMatchFilters = function(){
-    _genderFilter = '';
-    document.querySelectorAll('.mfg-btn').forEach(b => {
-      b.style.background = 'transparent';
-      b.style.color = 'var(--text)';
-      b.style.borderColor = '#30363d';
-    });
-    const all = document.getElementById('mfgAll');
-    if(all){ all.style.background = 'var(--accent)'; all.style.color = '#000'; all.style.borderColor = 'var(--accent)'; }
-    ['mfAgeMin','mfAgeMax','mfCountry'].forEach(id=>{
-      const el = document.getElementById(id); if(el) el.value='';
-    });
-    _applyFilters();
-  };
+  _likes[uid]=true;
+  _advance();
 
-  // ── Render card única ─────────────────────────────────────────────────────
-  function _renderCard(direction){
-    try { _renderCardInner(direction); }
-    catch(e){ console.warn('_renderCard error:', e); }
+  try{ await setDoc(likeRef,{ts:Date.now(),nick:window.CU.nick||'',av:window.CU.av||'',superLike:false}); }
+  catch(e){ console.warn('like err:',e); toast('No se pudo guardar el like','err'); return; }
+
+  // Notif a la otra persona
+  try{
+    await updateDoc(doc(db,'users',uid),{notifs:arrayUnion({
+      text:'💘 ¡A '+(window.CU.nick||'alguien')+' le gustó tu perfil! Entrá a Match.',
+      time:Date.now(),read:false,
+      fromUid:window.CU.id||'',fromAv:window.CU.av||'',fromNick:window.CU.nick||''
+    })});
+  }catch(ne){ console.warn('like notif err:',ne); }
+
+  // Verificar match mutuo
+  _checkMutualMatch(uid);
+}
+
+async function _doSuperLike(uid, nick){
+  if(!window.CU){ toast('Iniciá sesión para dar Super Like','err'); return; }
+  const likeRef = doc(db,'users',window.CU.id,'matchLikes',uid);
+  _likes[uid]=true;
+  _advance();
+
+  // Efecto visual
+  _spawnStars();
+  toast('⭐ ¡Super Like enviado a '+_esc(nick||'')+'!','ok');
+
+  try{
+    await setDoc(likeRef,{ts:Date.now(),nick:window.CU.nick||'',av:window.CU.av||'',superLike:true});
+  }catch(e){ console.warn('superlike err:',e); return; }
+
+  try{
+    await updateDoc(doc(db,'users',uid),{notifs:arrayUnion({
+      text:'⭐ ¡'+(window.CU.nick||'alguien')+' te dio un Super Like! ¡Revisá Match!',
+      time:Date.now(),read:false,
+      fromUid:window.CU.id||'',fromAv:window.CU.av||'',fromNick:window.CU.nick||''
+    })});
+  }catch(ne){ console.warn('superlike notif err:',ne); }
+
+  _checkMutualMatch(uid);
+}
+
+async function _checkMutualMatch(uid){
+  try{
+    const theirLike = await getDoc(doc(db,'users',uid,'matchLikes',window.CU.id));
+    if(!theirLike.exists()) return;
+    const matchedUser = _all.find(x=>x.id===uid);
+    const matchedNick = matchedUser?.nick||'alguien';
+    const matchedAv   = matchedUser?.av||'';
+    const nowTs = Date.now();
+    _showMutualMatch(uid, matchedNick, matchedAv);
+
+    // Notif para el usuario actual
+    try{ await updateDoc(doc(db,'users',window.CU.id),{notifs:arrayUnion({
+      text:'🎉 ¡Match con '+matchedNick+'! Los dos se dieron like 💖',
+      time:nowTs+1,read:false,fromUid:uid,fromAv:matchedAv,fromNick:matchedNick
+    })}); }catch(e){ console.warn('match self notif err:',e); }
+
+    // Notif para la otra persona
+    if(uid!==window.CU.id){
+      try{ await updateDoc(doc(db,'users',uid),{notifs:arrayUnion({
+        text:'🎉 ¡Es un match con '+(window.CU.nick||'alguien')+'! Los dos se dieron like 💖',
+        time:nowTs,read:false,fromUid:window.CU.id||'',fromAv:window.CU.av||'',fromNick:window.CU.nick||''
+      })}); }catch(e){ console.warn('match mutual notif err:',e); }
+    }
+  }catch(e){ console.warn('mutual match check err:',e); }
+}
+
+/* ─────────────────────────────────────────────
+   AVANZAR / RETROCEDER
+───────────────────────────────────────────── */
+function _advance(){
+  if(_idx<_filtered.length-1){ _idx++; _renderSwipeCard('next'); }
+  else { _renderSwipeCard(null); }
+  _updateNav();
+}
+
+window._matchPrev = function(){
+  if(_idx<=0) return; _idx--; _renderSwipeCard('prev'); _updateNav();
+};
+window._matchNext = function(){
+  if(_idx>=_filtered.length-1) return; _idx++; _renderSwipeCard('next'); _updateNav();
+};
+
+function _updateNav(){
+  const prev=document.getElementById('mcPrevBtn2');
+  const next=document.getElementById('mcNextBtn2');
+  const cnt =document.getElementById('mcCounter2');
+  if(prev) prev.disabled=(_idx<=0);
+  if(next) next.disabled=(_idx>=_filtered.length-1);
+  if(cnt)  cnt.textContent=_filtered.length?`${_idx+1} / ${_filtered.length}`:'';
+}
+
+function _setActionVis(vis){
+  const row=document.getElementById('mcActionRow');
+  if(row) row.style.visibility=vis?'visible':'hidden';
+}
+
+/* ─────────────────────────────────────────────
+   RENDER GRID
+───────────────────────────────────────────── */
+function _renderGrid(){
+  const area=document.getElementById('matchGridArea');
+  if(!area) return;
+  if(!_filtered.length){
+    area.innerHTML=`<div class="mc-empty" style="grid-column:1/-1;"><div class="mc-empty-icon">🔍</div><div class="mc-empty-title">Sin resultados</div><div class="mc-empty-sub">Cambiá los filtros.</div></div>`;
+    return;
   }
-  function _renderCardInner(direction){
-    const area = document.getElementById('matchSwipeArea');
-    if(!area) return;
-
-    const pill = document.getElementById('matchCountPill');
-    if(pill) pill.textContent = _filtered.length + ' personas';
-
-    _updateNavBtns();
-
-    if(_filtered.length === 0){
-      area.innerHTML = `<div class="match-empty-state">
-        <div style="font-size:3rem;margin-bottom:12px;">🔍</div>
-        <div style="font-size:1rem;font-weight:700;color:var(--text);">No se encontraron personas</div>
-        <div style="font-size:.82rem;margin-top:6px;color:var(--muted);">Probá cambiar o limpiar los filtros</div>
-      </div>`;
-      return;
-    }
-
-    const u = _filtered[_idx];
-    if(!u){
-      // Se terminaron los perfiles
-      area.innerHTML = `<div class="match-empty-state">
-        <div style="font-size:3rem;margin-bottom:12px;">🎉</div>
-        <div style="font-size:1rem;font-weight:700;color:var(--text);">¡Ya viste todos los perfiles!</div>
-        <div style="font-size:.82rem;margin-top:6px;color:var(--muted);">Volvé más tarde o cambiá los filtros.</div>
-        <button onclick="window.initMatchPage()" style="margin-top:14px;padding:9px 22px;background:var(--accent);border:none;border-radius:10px;color:#000;font-weight:800;cursor:pointer;font-size:.85rem;">🔄 Ver de nuevo</button>
-      </div>`;
-      return;
-    }
-    const isOnline = _onlineSet.has(u.id);
-    const liked    = !!_likes[u.id];
-    const age      = u.age ? u.age + ' años' : '';
-    const dept     = u.dept || u.city || '';
-    const loc      = [dept, (u.country||'')].filter(Boolean).join(' · ');
-    const av       = u.av || '';
-    const nick     = u.nick || u.email?.split('@')[0] || 'Usuario';
-    const ini      = nick[0].toUpperCase();
-    const bio      = u.bio || u.about || '';
-    const genderIcon = u.gender === 'Masculino' ? '♂' : u.gender === 'Femenino' ? '♀' : '';
-
-    const photoHTML = av
-      ? `<img src="${_esc(av)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-         <div class="mc-photo-initials" style="display:none;">${ini}</div>`
-      : `<div class="mc-photo-initials">${ini}</div>`;
-
-    const tags = [];
-    if(u.gender) tags.push(u.gender === 'Masculino' ? '♂ Hombre' : u.gender === 'Femenino' ? '♀ Mujer' : u.gender);
-    if(u.verified) tags.push('✓ Verificado');
-    if(u.role === 'admin') tags.push('🛡️ Admin');
-    else if(u.role === 'premium') tags.push('⭐ Premium');
-
-    // Quitar skeleton si existe (no tiene animación)
-    const skel = area.querySelector('.mc-skeleton-card');
-    if(skel) skel.remove();
-
-    // Quitar card vieja con animación si hay dirección
-    const old = area.querySelector('.mc-single-card');
-    if(old && direction){
-      old.classList.add(direction === 'next' ? 'slide-left' : 'slide-right');
-      setTimeout(()=>old.remove(), 350);
-    } else if(old){
-      old.remove();
-    }
-
-    const card = document.createElement('div');
-    card.className = 'mc-single-card' + (direction ? (direction==='next' ? ' slide-in-right' : ' slide-in-left') : '');
-    card.innerHTML = `
-      <div class="mc-photo-wrap">
-        ${photoHTML}
-        <div class="mc-photo-grad"></div>
-        ${isOnline ? '<div class="mc-online-pip"><div class="mc-online-dot"></div><span class="mc-online-txt">En línea</span></div>' : ''}
-        <div class="mc-photo-info">
-          <div class="mc-name">${_esc(nick)}${age ? '<span style="font-weight:400;opacity:.85;">, '+age+'</span>' : ''}${genderIcon ? ' <span style="font-size:.85em;opacity:.9;">'+genderIcon+'</span>' : ''}</div>
-          ${loc ? `<div class="mc-age-loc">📍 ${_esc(loc)}</div>` : ''}
-          ${bio ? `<div class="mc-desc" style="margin-top:6px;">${_esc(bio)}</div>` : ''}
-          ${tags.length ? `<div class="mc-tags" style="margin-top:6px;">${tags.map(t=>`<span class="mc-tag">${_esc(t)}</span>`).join('')}</div>` : ''}
-        </div>
-      </div>
-      <!-- Botones debajo de la foto -->
-      <div class="mc-actions">
-        <button class="mc-btn-nope" onclick="matchNope()" title="Siguiente">✕</button>
-        <button id="mcLikeBtn" class="mc-btn-like${liked?' liked':''}" onclick="matchToggleLike('${_esc(u.id)}')" title="${liked?'Quitá el like':'Me gusta'}">
-          ${liked ? '💖' : '❤️'}
-        </button>
-        <button class="mc-btn-profile" onclick="openUserProfile('${_esc(u.id)}','${_esc(nick)}')" title="Ver perfil">👤</button>
-      </div>
-      <div class="mc-body"></div>`;
-
-    area.appendChild(card);
-  }
-
-  function _updateNavBtns(){
-    const prev = document.getElementById('mcPrevBtn');
-    const next = document.getElementById('mcNextBtn');
-    const counter = document.getElementById('mcNavCounter');
-    if(prev) prev.disabled = (_idx <= 0);
-    if(next) next.disabled = (_idx >= _filtered.length - 1);
-    if(counter) counter.textContent = _filtered.length ? `${_idx+1} / ${_filtered.length}` : '';
-  }
-
-  // ── Navegación ────────────────────────────────────────────────────────────
-  window.matchNavNext = function(){
-    if(_idx >= _filtered.length - 1) return;
-    _idx++;
-    _renderCard('next');
-  };
-  window.matchNavPrev = function(){
-    if(_idx <= 0) return;
-    _idx--;
-    _renderCard('prev');
-  };
-
-  // ── Nope: simplemente avanzar ─────────────────────────────────────────────
-  window.matchNope = function(){
-    // Animación de rechazo y avanzar al siguiente
-    const card = document.querySelector('.mc-single-card');
-    if(card){ card.style.transition='transform .3s ease,opacity .3s ease'; card.style.transform='translateX(-120%) rotate(-12deg)'; card.style.opacity='0'; }
-    setTimeout(function(){
-      if(_idx < _filtered.length - 1){
-        _idx++;
-        _renderCard('next');
-      } else {
-        _renderCard(null);
-      }
-    }, 280);
-  };
-
-  // ── Like toggle ────────────────────────────────────────────────────────────
-  window.matchToggleLike = async function(uid){
-    if(!window.CU){ toast('Iniciá sesión para dar likes','err'); return; }
-    const btn = document.getElementById('mcLikeBtn');
-    if(btn && btn.dataset.processing === 'true') return;
-    if(btn) btn.dataset.processing = 'true';
-
-    const already = !!_likes[uid];
-    const likeRef = doc(db,'users',window.CU.id,'matchLikes',uid);
-
-    if(already){
-      try {
-        _likes[uid] = false;
-        if(btn){ btn.classList.remove('liked'); btn.innerHTML='❤️'; btn.title='Me gusta'; }
-        await deleteDoc(likeRef);
-        delete _likes[uid];
-      } catch(e){
-        console.warn('unlike error:', e);
-        _likes[uid] = true;
-        if(btn){ btn.classList.add('liked'); btn.innerHTML='💖'; }
-      }
-      if(btn) btn.dataset.processing = 'false';
-      return;
-    }
-
-    // ── Dar like ──
-    _likes[uid] = true;
-    if(btn){ btn.classList.add('liked'); btn.innerHTML='💖'; btn.title='Like dado'; }
-
-    // Animar tarjeta hacia la derecha INMEDIATAMENTE
-    const card = document.querySelector('.mc-single-card');
-    if(card){
-      card.style.transition = 'transform .35s ease, opacity .35s ease';
-      card.style.transform  = 'translateX(130%) rotate(14deg)';
-      card.style.opacity    = '0';
-      card.style.pointerEvents = 'none';
-    }
-
-    // Avanzar al siguiente y liberar lock
-    setTimeout(function(){
-      if(btn) btn.dataset.processing = 'false';
-      if(_idx < _filtered.length - 1){ _idx++; _renderCard('next'); }
-      else { _renderCard(null); }
-    }, 320);
-
-    // Guardar like en Firestore
-    try {
-      await setDoc(likeRef, { ts: Date.now(), nick: window.CU.nick||'', av: window.CU.av||'' });
-    } catch(e){
-      console.warn('like setDoc error:', e);
-      toast('No se pudo guardar el like, verificá tu conexión','err');
-      return;
-    }
-
-    // Notificación a la otra persona (like simple)
-    if(uid !== window.CU.id){
-      try {
-        await updateDoc(doc(db,'users',uid), {
-          notifs: arrayUnion({
-            text: '\uD83D\uDC98 \u00A1A ' + (window.CU.nick||'alguien') + ' le gust\u00F3 tu perfil! Entr\u00E1 a Match para verlo.',
-            time: Date.now(), read: false,
-            fromUid: window.CU.id||'', fromAv: window.CU.av||'', fromNick: window.CU.nick||''
-          })
-        });
-      } catch(ne){ console.error('[match notif ERROR]', ne.code, ne.message); }
-    }
-
-    // Verificar match mutuo
-    try {
-      const theirLike = await getDoc(doc(db,'users',uid,'matchLikes',window.CU.id));
-      if(theirLike.exists()){
-        const matchedUser = _allUsers.find(x=>x.id===uid);
-        const matchedNick = matchedUser?.nick || 'alguien';
-        const matchedAv   = matchedUser?.av   || '';
-        const nowTs = Date.now();
-
-        // Mostrar efecto épico al usuario actual
-        _showMutualMatch(uid);
-
-        // Notif persistente para el usuario ACTUAL (para que aparezca en la campanita)
-        // Usamos updateDoc directo (no sendNotifToUser que filtra uid===CU.id)
-        try {
-          await updateDoc(doc(db,'users',window.CU.id), {
-            notifs: arrayUnion({
-              text: '\uD83C\uDF89 \u00A1Match con ' + matchedNick + '! Los dos se dieron like \uD83D\uDC96',
-              time: nowTs + 1, read: false,
-              fromUid: uid, fromAv: matchedAv, fromNick: matchedNick
-            })
-          });
-        } catch(me2){ console.error('[match self notif ERROR]', me2.code, me2.message); }
-
-        // Notif para la otra persona
-        if(uid !== window.CU.id){
-          try {
-            await updateDoc(doc(db,'users',uid), {
-              notifs: arrayUnion({
-                text: '\uD83C\uDF89 \u00A1Es un match con ' + (window.CU.nick||'alguien') + '! Los dos se dieron like \uD83D\uDC96',
-                time: nowTs, read: false,
-                fromUid: window.CU.id||'', fromAv: window.CU.av||'', fromNick: window.CU.nick||''
-              })
-            });
-          } catch(me){ console.error('[match mutual notif ERROR]', me.code, me.message); }
-        }
-      }
-    } catch(e){ console.warn('mutual match check error:', e); }
-  };
-
-  // ── Efecto épico de match mutuo ───────────────────────────────────────────
-  function _showMutualMatch(uid){
-    const u = _allUsers.find(x=>x.id===uid);
-    const name = u?.nick || 'alguien';
-    const av   = u?.av   || '';
-
-    // Inyectar estilos de animación si no existen
-    if(!document.getElementById('_matchFxStyles')){
-      const s = document.createElement('style');
-      s.id = '_matchFxStyles';
-      s.textContent = `
-        @keyframes _mfxHeartPop {
-          0%   { transform: scale(0) rotate(-20deg); opacity:0; }
-          60%  { transform: scale(1.4) rotate(8deg);  opacity:1; }
-          80%  { transform: scale(.9) rotate(-4deg);  opacity:1; }
-          100% { transform: scale(1)  rotate(0deg);   opacity:1; }
-        }
-        @keyframes _mfxSlideUp {
-          from { transform: translateY(60px) scale(.92); opacity:0; }
-          to   { transform: translateY(0)    scale(1);   opacity:1; }
-        }
-        @keyframes _mfxPulseGlow {
-          0%,100% { box-shadow: 0 0 30px rgba(224,64,251,.5),  0 0 80px rgba(224,64,251,.15); }
-          50%     { box-shadow: 0 0 60px rgba(224,64,251,.85), 0 0 120px rgba(224,64,251,.35); }
-        }
-        @keyframes _mfxFloat {
-          0%   { transform: translateY(0)   rotate(0deg)   scale(1);   opacity:1; }
-          100% { transform: translateY(-110vh) rotate(720deg) scale(.3); opacity:0; }
-        }
-        @keyframes _mfxConfetti {
-          0%   { transform: translateY(-20px) rotate(0deg);   opacity:1; }
-          100% { transform: translateY(110vh) rotate(600deg); opacity:0; }
-        }
-        @keyframes _mfxShimmer {
-          0%   { background-position: -200% center; }
-          100% { background-position:  200% center; }
-        }
-        ._mfx-heart-emoji {
-          position:fixed; pointer-events:none; z-index:99998;
-          font-size:2rem; animation: _mfxFloat linear forwards;
-        }
-        ._mfx-confetti {
-          position:fixed; pointer-events:none; z-index:99998;
-          width:10px; height:10px; border-radius:2px;
-          animation: _mfxConfetti linear forwards;
-        }
-        ._mfx-avatar-ring {
-          animation: _mfxPulseGlow 1.5s ease-in-out infinite;
-          border-radius:50%; border:3px solid #e040fb;
-          width:80px; height:80px; object-fit:cover;
-          box-shadow: 0 0 30px rgba(224,64,251,.6);
-        }
-        ._mfx-title-shimmer {
-          background: linear-gradient(90deg, #e040fb, #f48fb1, #fff, #e040fb);
-          background-size: 200% auto;
-          -webkit-background-clip: text; background-clip: text;
-          -webkit-text-fill-color: transparent; color: transparent;
-          animation: _mfxShimmer 2s linear infinite;
-        }
-      `;
-      document.head.appendChild(s);
-    }
-
-    // Lanzar corazones flotantes
-    const hearts = ['❤️','💖','💗','💕','💞','💓'];
-    for(let i=0;i<18;i++){
-      setTimeout(()=>{
-        const h = document.createElement('div');
-        h.className = '_mfx-heart-emoji';
-        h.textContent = hearts[Math.floor(Math.random()*hearts.length)];
-        h.style.left = Math.random()*100 + 'vw';
-        h.style.bottom = '-60px';
-        h.style.fontSize = (1.2 + Math.random()*2.2) + 'rem';
-        const dur = 2.2 + Math.random()*3;
-        h.style.animationDuration = dur + 's';
-        h.style.animationDelay = '0s';
-        document.body.appendChild(h);
-        setTimeout(()=>h.remove(), dur*1000+100);
-      }, i * 120);
-    }
-
-    // Lanzar confetti de colores
-    const confettiColors = ['#e040fb','#f48fb1','#2ec4b6','#ffd700','#ff6b6b','#a78bfa','#34d399'];
-    for(let i=0;i<40;i++){
-      setTimeout(()=>{
-        const c = document.createElement('div');
-        c.className = '_mfx-confetti';
-        c.style.left = Math.random()*100 + 'vw';
-        c.style.top = '-20px';
-        c.style.background = confettiColors[Math.floor(Math.random()*confettiColors.length)];
-        c.style.width = (6+Math.random()*10) + 'px';
-        c.style.height = (6+Math.random()*10) + 'px';
-        c.style.borderRadius = Math.random() > .5 ? '50%' : '2px';
-        const dur = 2.5 + Math.random()*2.5;
-        c.style.animationDuration = dur + 's';
-        c.style.animationDelay = Math.random()*1.2 + 's';
-        document.body.appendChild(c);
-        setTimeout(()=>c.remove(), (dur+1.5)*1000);
-      }, i * 60);
-    }
-
-    // Modal principal
-    const overlay = document.createElement('div');
-    overlay.id = '_matchMutualOverlay';
-    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.78);backdrop-filter:blur(8px);';
-
-    const avHtml = av
-      ? `<img src="${_esc(av)}" class="_mfx-avatar-ring" onerror="this.style.display='none'">`
-      : `<div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#e040fb,#9c27b0);display:flex;align-items:center;justify-content:center;font-size:2.2rem;box-shadow:0 0 30px rgba(224,64,251,.6);">💜</div>`;
-
-    const myAvHtml = (window.CU?.av)
-      ? `<img src="${_esc(window.CU.av)}" class="_mfx-avatar-ring" onerror="this.style.display='none'">`
-      : `<div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#2ec4b6,#0d9488);display:flex;align-items:center;justify-content:center;font-size:2.2rem;box-shadow:0 0 30px rgba(46,196,182,.6);">💚</div>`;
-
-    overlay.innerHTML = `
-      <div style="
-        background:linear-gradient(160deg,#1a0a1e 0%,#0d1117 60%,#0a1628 100%);
-        border:1.5px solid rgba(224,64,251,.5);
-        border-radius:28px;
-        padding:40px 32px 32px;
-        max-width:340px;
-        width:92%;
-        text-align:center;
-        animation: _mfxSlideUp .45s cubic-bezier(.34,1.56,.64,1) both;
-        position:relative;
-        overflow:hidden;
-      ">
-        <!-- Brillo de fondo animado -->
-        <div style="position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:220px;height:220px;background:radial-gradient(circle,rgba(224,64,251,.18) 0%,transparent 70%);pointer-events:none;"></div>
-
-        <!-- Corazón principal -->
-        <div style="font-size:4.5rem;line-height:1;margin-bottom:12px;animation:_mfxHeartPop .6s cubic-bezier(.34,1.56,.64,1) both;">💖</div>
-
-        <!-- Título con shimmer -->
-        <div class="_mfx-title-shimmer" style="font-family:Orbitron,monospace;font-size:1.6rem;font-weight:900;letter-spacing:2px;margin-bottom:4px;">¡ES UN MATCH!</div>
-        <div style="font-size:.88rem;color:#c9a0dc;margin-bottom:24px;letter-spacing:.5px;">Se gustaron mutuamente 💕</div>
-
-        <!-- Avatares lado a lado -->
-        <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:22px;">
-          ${myAvHtml}
-          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
-            <div style="font-size:1.6rem;">💞</div>
-            <div style="width:2px;height:20px;background:linear-gradient(to bottom,#e040fb,transparent);border-radius:2px;"></div>
+  area.innerHTML=_filtered.slice(0,40).map((u,i)=>{
+    const nick=u.nick||u.email?.split('@')[0]||'Usuario';
+    const ini=nick[0].toUpperCase();
+    const isOnline=_online.has(u.id);
+    const isLiked=!!_likes[u.id];
+    const compat=_compat(u);
+    const age=u.age||'';
+    const dept=u.dept||u.city||'';
+    const compatColor=compat>=75?'#34d399':compat>=50?'#fbbf24':'#f33e58';
+    const photo=u.av
+      ?`<img class="mc-grid-img" src="${_esc(u.av)}" loading="lazy" onerror="this.src='';this.style.display='none'">`
+      :`<div style="width:100%;height:100%;background:linear-gradient(135deg,#2a1f3d,#1a0a2e);display:flex;align-items:center;justify-content:center;font-size:3.5rem;font-weight:900;color:#f33e58;">${ini}</div>`;
+    return `
+      <div class="mc-grid-card" onclick="_gridCardClick(${i})">
+        ${photo}
+        <div class="mc-grid-grad"></div>
+        ${isOnline?'<div class="mc-grid-online"></div>':''}
+        <div class="mc-grid-compat" style="color:${compatColor};">${compat}%</div>
+        ${isLiked?'<div class="mc-grid-liked">💖</div>':''}
+        <div class="mc-grid-info">
+          <div class="mc-grid-name">${_esc(nick)}${age?`<span style="font-weight:400;opacity:.75;">, ${_esc(age)}</span>`:''}
           </div>
-          ${avHtml}
-        </div>
-
-        <!-- Nombres -->
-        <div style="font-size:.92rem;color:#e6edf3;margin-bottom:26px;line-height:1.6;">
-          <strong style="color:#f9a8d4;">${_esc(window.CU?.nick||'Vos')}</strong>
-          <span style="color:#8b949e;"> y </span>
-          <strong style="color:#f48fb1;">${_esc(name)}</strong>
-          <br><span style="color:#8b949e;font-size:.82rem;">se dieron like ✨</span>
-        </div>
-
-        <!-- Botones -->
-        <div style="display:flex;gap:10px;justify-content:center;">
-          <button
-            onclick="(function(el){typeof openChatWith==='function'&&openChatWith('${_esc(uid)}','${_esc(name)}');el.closest('#_matchMutualOverlay').remove();})(this)"
-            style="background:linear-gradient(135deg,#e040fb,#9c27b0);color:#fff;border:none;border-radius:100px;padding:13px 24px;font-size:.88rem;font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;letter-spacing:.3px;box-shadow:0 4px 20px rgba(224,64,251,.4);transition:transform .15s,box-shadow .15s;"
-            onmouseover="this.style.transform='scale(1.05)';this.style.boxShadow='0 6px 28px rgba(224,64,251,.6)'"
-            onmouseout="this.style.transform='';this.style.boxShadow='0 4px 20px rgba(224,64,251,.4)'">
-            💬 Enviar mensaje
-          </button>
-          <button
-            onclick="document.getElementById('_matchMutualOverlay').remove();"
-            style="background:rgba(255,255,255,.07);color:#e6edf3;border:1px solid rgba(255,255,255,.15);border-radius:100px;padding:13px 18px;font-size:.86rem;font-weight:700;cursor:pointer;transition:background .15s;"
-            onmouseover="this.style.background='rgba(255,255,255,.13)'"
-            onmouseout="this.style.background='rgba(255,255,255,.07)'">
-            Ahora no
-          </button>
+          <div class="mc-grid-sub">${dept?'📍 '+_esc(dept):''}</div>
         </div>
       </div>`;
+  }).join('');
+}
 
-    document.body.appendChild(overlay);
-    overlay.addEventListener('click', e=>{ if(e.target===overlay) overlay.remove(); });
+window._gridCardClick=function(i){
+  _idx=i;
+  _setMatchMode('swipe', document.getElementById('mTabSwipe'));
+};
+
+/* ─────────────────────────────────────────────
+   FILTROS — SETTERS
+───────────────────────────────────────────── */
+window._setGender=function(val,btn){
+  _gFilter=val;
+  document.querySelectorAll('.mf-pill[id^="mfp"]').forEach(p=>{
+    if(['mfpAll','mfpM','mfpF'].includes(p.id)) p.classList.remove('on');
+  });
+  if(btn) btn.classList.add('on');
+  window._applyMatchFilters();
+};
+window.setGenderFilter=function(val,btn){ window._setGender(val,btn); };
+
+window._setSeek=function(val,btn){
+  _seekFilter=val;
+  document.querySelectorAll('.mf-pill[id^="mfpSeek"]').forEach(p=>p.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  window._applyMatchFilters();
+};
+
+/* ─────────────────────────────────────────────
+   PANEL FILTROS
+───────────────────────────────────────────── */
+window._toggleMatchFilters=function(){
+  const panel=document.getElementById('mfPanel');
+  const btn=document.getElementById('mhFilterBtn');
+  if(!panel) return;
+  panel.classList.toggle('open');
+  if(btn) btn.classList.toggle('active',panel.classList.contains('open'));
+};
+
+/* ─────────────────────────────────────────────
+   BOOST (stub)
+───────────────────────────────────────────── */
+window._matchBoost=function(){
+  toast('⚡ Boost activado por 30 minutos — más personas verán tu perfil','ok');
+};
+
+/* ─────────────────────────────────────────────
+   EFECTOS VISUALES
+───────────────────────────────────────────── */
+function _spawnStars(){
+  for(let i=0;i<12;i++){
     setTimeout(()=>{
-      if(overlay.parentNode){
-        overlay.style.opacity='0';
-        overlay.style.transition='opacity .5s';
-        setTimeout(()=>overlay.remove(), 500);
-      }
-    }, 11000);
+      const s=document.createElement('div');
+      s.style.cssText=`position:fixed;pointer-events:none;z-index:9999;font-size:${1+Math.random()*1.4}rem;
+        left:${10+Math.random()*80}%;bottom:${10+Math.random()*30}%;
+        animation:_mfxFloat ${1.8+Math.random()*2}s linear forwards;`;
+      s.textContent=['⭐','✨','💫','🌟'][Math.floor(Math.random()*4)];
+      document.body.appendChild(s);
+      setTimeout(()=>s.remove(),4000);
+    },i*80);
+  }
+}
 
-    // Browser notification
-    if(typeof Notification !== 'undefined' && Notification.permission === 'granted'){
-      try{ new Notification('\uD83D\uDC98 \u00A1Match en MiLatido!', { body: 'Vos y '+name+' se dieron like. \u00A1Escribile!', icon:'/icon-192.png' }); }catch(e){}
-    }
-
-    // Sonido de match (melodía más elaborada)
-    try{
-      const ctx = new (window.AudioContext||window.webkitAudioContext)();
-      const notes = [
-        [523.25, 0],    // C5
-        [659.25, 0.12], // E5
-        [783.99, 0.24], // G5
-        [1046.5, 0.38], // C6
-        [1318.5, 0.54], // E6
-      ];
-      notes.forEach(([f,d])=>{
-        const o=ctx.createOscillator(), g=ctx.createGain();
-        o.connect(g); g.connect(ctx.destination);
-        o.frequency.value=f; o.type='sine';
-        g.gain.setValueAtTime(0, ctx.currentTime+d);
-        g.gain.linearRampToValueAtTime(.32, ctx.currentTime+d+.06);
-        g.gain.linearRampToValueAtTime(0,   ctx.currentTime+d+.45);
-        o.start(ctx.currentTime+d); o.stop(ctx.currentTime+d+.5);
-      });
-    }catch(e){}
+/* ─────────────────────────────────────────────
+   MATCH MUTUO — Modal épico
+───────────────────────────────────────────── */
+function _showMutualMatch(uid, name, av){
+  if(!document.getElementById('_matchFxStyles')){
+    const s=document.createElement('style');
+    s.id='_matchFxStyles';
+    s.textContent=`
+      @keyframes _mfxHeartPop{0%{transform:scale(0) rotate(-20deg);opacity:0}60%{transform:scale(1.4) rotate(8deg);opacity:1}80%{transform:scale(.9) rotate(-4deg)}100%{transform:scale(1) rotate(0)}}
+      @keyframes _mfxSlideUp{from{transform:translateY(60px) scale(.92);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+      @keyframes _mfxPulseGlow{0%,100%{box-shadow:0 0 30px rgba(224,64,251,.5),0 0 80px rgba(224,64,251,.15)}50%{box-shadow:0 0 60px rgba(224,64,251,.85),0 0 120px rgba(224,64,251,.35)}}
+      @keyframes _mfxFloat{0%{transform:translateY(0) rotate(0) scale(1);opacity:1}100%{transform:translateY(-110vh) rotate(720deg) scale(.3);opacity:0}}
+      @keyframes _mfxConfetti{0%{transform:translateY(-20px) rotate(0);opacity:1}100%{transform:translateY(110vh) rotate(600deg);opacity:0}}
+      @keyframes _mfxShimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+      ._mfx-heart-emoji{position:fixed;pointer-events:none;z-index:99998;animation:_mfxFloat linear forwards;}
+      ._mfx-confetti{position:fixed;pointer-events:none;z-index:99998;width:10px;height:10px;border-radius:2px;animation:_mfxConfetti linear forwards;}
+      ._mfx-avatar-ring{animation:_mfxPulseGlow 1.5s ease-in-out infinite;border-radius:50%;border:3px solid #e040fb;width:80px;height:80px;object-fit:cover;}
+      ._mfx-title-shimmer{background:linear-gradient(90deg,#e040fb,#f48fb1,#fff,#e040fb);background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:_mfxShimmer 2s linear infinite;}`;
+    document.head.appendChild(s);
   }
 
-  function _showSkeleton(){
-    const area = document.getElementById('matchSwipeArea');
-    if(!area) return;
-    area.innerHTML = `<div class="mc-skeleton-card">
-      <div style="width:100%;aspect-ratio:3/4;" class="match-skeleton"></div>
-      <div style="padding:14px 16px 16px;">
-        <div style="height:14px;border-radius:6px;margin-bottom:8px;" class="match-skeleton"></div>
-        <div style="height:10px;border-radius:6px;width:60%;" class="match-skeleton"></div>
+  // Corazones
+  const hearts=['❤️','💖','💗','💕','💞','💓'];
+  for(let i=0;i<18;i++){
+    setTimeout(()=>{
+      const h=document.createElement('div');
+      h.className='_mfx-heart-emoji';
+      h.textContent=hearts[Math.floor(Math.random()*hearts.length)];
+      h.style.left=Math.random()*100+'vw'; h.style.bottom='-60px';
+      h.style.fontSize=(1.2+Math.random()*2.2)+'rem';
+      const dur=2.2+Math.random()*3; h.style.animationDuration=dur+'s';
+      document.body.appendChild(h); setTimeout(()=>h.remove(),dur*1000+100);
+    },i*120);
+  }
+  // Confetti
+  const cc=['#e040fb','#f48fb1','#2ec4b6','#ffd700','#ff6b6b','#a78bfa','#34d399'];
+  for(let i=0;i<40;i++){
+    setTimeout(()=>{
+      const c=document.createElement('div'); c.className='_mfx-confetti';
+      c.style.left=Math.random()*100+'vw'; c.style.top='-20px';
+      c.style.background=cc[Math.floor(Math.random()*cc.length)];
+      c.style.width=(6+Math.random()*10)+'px'; c.style.height=c.style.width;
+      c.style.borderRadius=Math.random()>.5?'50%':'2px';
+      const dur=2.5+Math.random()*2.5; c.style.animationDuration=dur+'s';
+      c.style.animationDelay=Math.random()*1.2+'s';
+      document.body.appendChild(c); setTimeout(()=>c.remove(),(dur+1.5)*1000);
+    },i*60);
+  }
+
+  // Sonido
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    [[523.25,0],[659.25,.12],[783.99,.24],[1046.5,.38],[1318.5,.54]].forEach(([f,d])=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g); g.connect(ctx.destination); o.frequency.value=f; o.type='sine';
+      g.gain.setValueAtTime(0,ctx.currentTime+d);
+      g.gain.linearRampToValueAtTime(.32,ctx.currentTime+d+.06);
+      g.gain.linearRampToValueAtTime(0,ctx.currentTime+d+.45);
+      o.start(ctx.currentTime+d); o.stop(ctx.currentTime+d+.5);
+    });
+  }catch(e){}
+
+  // Notif browser
+  if(typeof Notification!=='undefined'&&Notification.permission==='granted'){
+    try{ new Notification('💘 ¡Match en MiLatido!',{body:'Vos y '+name+' se dieron like. ¡Escribile!',icon:'/icon-192.png'}); }catch(e){}
+  }
+
+  // Modal
+  const existing=document.getElementById('_matchMutualOverlay');
+  if(existing) existing.remove();
+  const overlay=document.createElement('div');
+  overlay.id='_matchMutualOverlay';
+  overlay.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.82);backdrop-filter:blur(10px);';
+
+  const avHtml=av
+    ?`<img src="${_esc(av)}" class="_mfx-avatar-ring" onerror="this.style.display='none'">`
+    :`<div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#e040fb,#9c27b0);display:flex;align-items:center;justify-content:center;font-size:2.2rem;">💜</div>`;
+  const myAvHtml=window.CU?.av
+    ?`<img src="${_esc(window.CU.av)}" class="_mfx-avatar-ring" onerror="this.style.display='none'">`
+    :`<div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#2ec4b6,#0d9488);display:flex;align-items:center;justify-content:center;font-size:2.2rem;">💚</div>`;
+
+  overlay.innerHTML=`
+    <div style="background:linear-gradient(160deg,#1a0a1e 0%,#0d1117 60%,#0a1628 100%);border:1.5px solid rgba(224,64,251,.5);border-radius:28px;padding:40px 32px 32px;max-width:340px;width:92%;text-align:center;animation:_mfxSlideUp .45s cubic-bezier(.34,1.56,.64,1) both;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:220px;height:220px;background:radial-gradient(circle,rgba(224,64,251,.18) 0%,transparent 70%);pointer-events:none;"></div>
+      <div style="font-size:4.5rem;line-height:1;margin-bottom:12px;animation:_mfxHeartPop .6s cubic-bezier(.34,1.56,.64,1) both;">💖</div>
+      <div class="_mfx-title-shimmer" style="font-family:Orbitron,monospace;font-size:1.6rem;font-weight:900;letter-spacing:2px;margin-bottom:4px;">¡ES UN MATCH!</div>
+      <div style="font-size:.88rem;color:#c9a0dc;margin-bottom:24px;letter-spacing:.5px;">Se gustaron mutuamente 💕</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:22px;">
+        ${myAvHtml}
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <div style="font-size:1.6rem;">💞</div>
+          <div style="width:2px;height:20px;background:linear-gradient(to bottom,#e040fb,transparent);border-radius:2px;"></div>
+        </div>
+        ${avHtml}
+      </div>
+      <div style="font-size:.92rem;color:#e6edf3;margin-bottom:26px;line-height:1.6;">
+        <strong style="color:#f9a8d4;">${_esc(window.CU?.nick||'Vos')}</strong>
+        <span style="color:#8b949e;"> y </span>
+        <strong style="color:#f48fb1;">${_esc(name)}</strong>
+        <br><span style="color:#8b949e;font-size:.82rem;">se dieron like ✨</span>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <button onclick="(function(el){typeof openChatWith==='function'&&openChatWith('${_esc(uid)}','${_esc(name)}');el.closest('#_matchMutualOverlay').remove();})(this)"
+          style="background:linear-gradient(135deg,#e040fb,#9c27b0);color:#fff;border:none;border-radius:100px;padding:13px 24px;font-size:.88rem;font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;box-shadow:0 4px 20px rgba(224,64,251,.4);transition:transform .15s,box-shadow .15s;"
+          onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform=''">
+          💬 Enviar mensaje
+        </button>
+        <button onclick="document.getElementById('_matchMutualOverlay').remove();"
+          style="background:rgba(255,255,255,.07);color:#e6edf3;border:1px solid rgba(255,255,255,.15);border-radius:100px;padding:13px 18px;font-size:.86rem;font-weight:700;cursor:pointer;">
+          Ahora no
+        </button>
       </div>
     </div>`;
-  }
 
-  function _showError(){
-    const area = document.getElementById('matchSwipeArea');
-    if(!area) return;
-    area.innerHTML = `<div class="match-empty-state">
-      <div style="font-size:2rem;margin-bottom:10px;">⚠️</div>
-      <div>Error cargando usuarios.<br>
-      <button onclick="window.initMatchPage()" style="margin-top:10px;padding:8px 18px;background:var(--accent);border:none;border-radius:8px;color:#000;font-weight:700;cursor:pointer;">Reintentar</button>
-      </div>
-    </div>`;
-  }
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click',e=>{ if(e.target===overlay) overlay.remove(); });
+  setTimeout(()=>{
+    if(overlay.parentNode){ overlay.style.opacity='0'; overlay.style.transition='opacity .5s'; setTimeout(()=>overlay.remove(),500); }
+  },11000);
+}
 
-  function _esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+/* ─────────────────────────────────────────────
+   SKELETON / ERROR
+───────────────────────────────────────────── */
+function _showSkel(){
+  const area=document.getElementById('matchSwipeArea');
+  if(!area) return;
+  area.innerHTML='<div class="mc-skel-card"></div>';
+}
+function _showErr(){
+  const area=document.getElementById('matchSwipeArea');
+  if(!area) return;
+  area.innerHTML=`<div class="mc-empty"><div class="mc-empty-icon">⚠️</div><div class="mc-empty-title">Error al cargar</div><div class="mc-empty-sub"><button onclick="window.initMatchPage()" style="margin-top:12px;padding:9px 22px;background:var(--accent);border:none;border-radius:100px;color:#000;font-weight:800;cursor:pointer;">🔄 Reintentar</button></div></div>`;
+}
+
+/* ─────────────────────────────────────────────
+   HELPERS
+───────────────────────────────────────────── */
+function _esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
 })();
 </script>
 <!-- ═══════════════════════════ FIN MATCH ════════════════════════════ -->
+
 
 
 <div id="siteFooter" style="display:none;background:#161b22;border-top:1px solid #30363d;margin-top:32px;">
