@@ -1702,8 +1702,8 @@ img[title="Verificado"]:hover{
 
 
 /* ===== XP / LEVEL / STREAK ===== */
-.xp-bar-wrap{background:#f0f2f5;border-radius:100px;height:8px;overflow:hidden;margin-top:4px;}
-.xp-bar-fill{height:100%;border-radius:100px;transition:width .6s ease;background:linear-gradient(90deg,var(--accent),var(--accent2));}
+
+
 .level-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:100px;font-size:.72rem;font-weight:700;border:1px solid;}
 .streak-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:100px;font-size:.72rem;font-weight:700;background:rgba(255,100,0,.12);border:1px solid rgba(255,100,0,.35);color:#ff8c42;}
 
@@ -2759,20 +2759,7 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
 
 
       
-      <div id="sidebarStreakWidget" style="display:none;margin:8px 8px 4px;background:linear-gradient(135deg,rgba(255,100,0,.1),rgba(255,60,0,.05));border:1px solid rgba(255,100,0,.25);border-radius:var(--r);padding:10px 12px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-          <div>
-            <div style="font-size:.7rem;color:#ff8c42;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">🔥 Racha activa</div>
-            <div style="font-size:1.4rem;font-weight:900;color:#ff8c42;font-family:'Orbitron',monospace;" id="sidebarStreakCount">0</div>
-            <div style="font-size:.65rem;color:var(--muted);">días seguidos</div>
-          </div>
-          <div style="text-align:right;">
-            <div id="sidebarLevelBadge" style="font-size:.72rem;font-weight:700;"></div>
-            <div style="font-size:.65rem;color:var(--muted);margin-top:4px;" id="sidebarXpLabel"></div>
-            <div class="xp-bar-wrap" style="width:80px;margin-top:4px;"><div class="xp-bar-fill" id="sidebarXpBar" style="width:0%"></div></div>
-          </div>
-        </div>
-      </div>
+      
     </div>
 
     
@@ -6213,17 +6200,17 @@ window.initSalasPage = window.initSalasPage;
     <button class="adm-tab" onclick="swAdminTab(this,'admt-posts')">📝 Posts</button>
     <button class="adm-tab" onclick="swAdminTab(this,'admt-users')">👥 Usuarios</button>
     <button class="adm-tab" onclick="swAdminTab(this,'admt-verif')">✅ Verificaciones</button>
-    <button class="adm-tab" onclick="swAdminTab(this,'admt-site')">🎨 Sitio Web</button>
-    <button class="adm-tab" onclick="swAdminTab(this,'admt-parches')">🔧 Parches</button>
-    <button class="adm-tab" onclick="swAdminTab(this,'admt-torneos')">🏆 Torneos</button>
+    
+    
+    
     <button class="adm-tab" onclick="swAdminTab(this,'admt-grupos')">🎣 Grupos</button>
     <button class="adm-tab" onclick="swAdminTab(this,'admt-ads')">📢 Publicidad</button>
     <button class="adm-tab" onclick="swAdminTab(this,'admt-live')" style="background:rgba(255,0,0,.1);border-color:rgba(255,0,0,.3);color:#ff4444;">🔴 Live</button>
-    <button class="adm-tab" onclick="swAdminTab(this,'admt-pezdelsemana')" style="background:rgba(0,230,118,.08);border-color:rgba(0,230,118,.3);color:var(--green);">🐟 Pez Semanal</button>
-    <button class="adm-tab" onclick="swAdminTab(this,'admt-xplevels');renderXPLevelsAdmin();" style="background:rgba(255,215,0,.08);border-color:rgba(255,215,0,.3);color:var(--gold);">⚡ Niveles XP</button>
-    <button class="adm-tab" onclick="swAdminTab(this,'admt-insignias');loadInsigniasPanel();" style="background:rgba(46,196,182,.08);border-color:rgba(46,196,182,.3);color:var(--accent);">🎣 Insignias & Roles</button>
-    <button class="adm-tab" onclick="swAdminTab(this,'admt-soporte');loadSoporteTickets();" style="background:rgba(255,107,53,.1);border-color:rgba(255,107,53,.35);color:#ff6b35;" id="admTabSoporte">🆘 Soporte <span id="admSoporteBadge" style="display:none;background:#ff6b35;color:#fff;border-radius:100px;padding:1px 6px;font-size:.65rem;font-weight:800;margin-left:3px;">0</span></button>
-    <button class="adm-tab" onclick="swAdminTab(this,'admt-sidebar');initSidebarAdmin();" style="background:rgba(46,196,182,.08);border-color:rgba(46,196,182,.3);color:var(--accent);">🗂️ Sidebar</button>
+    
+    
+    
+    
+    
     <button class="adm-tab" onclick="swAdminTab(this,'admt-faq');loadAdminFaq();" style="background:rgba(46,196,182,.08);border-color:rgba(46,196,182,.3);color:var(--accent);">❓ FAQ <span id="admFaqBadge" style="display:none;background:var(--accent);color:#0d1117;border-radius:100px;padding:1px 6px;font-size:.65rem;font-weight:800;margin-left:3px;">0</span></button>
 
   </div>
@@ -6271,104 +6258,13 @@ window.initSalasPage = window.initSalasPage;
   </div>
 
   
-  <div id="admt-site" style="display:none;">
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:14px;">
-      <div style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:700;color:var(--accent);margin-bottom:14px;">🎨 Nombre del sitio y slogan</div>
-      <div class="frow">
-        <div class="fg"><label class="fl">Nombre del sitio</label><input class="fi" id="cfgSiteName" value="MiLatido"></div>
-        <div class="fg"><label class="fl">Slogan</label><input class="fi" id="cfgSlogan" value="RED SOCIAL DE PESCA"></div>
-      </div>
-      <button class="btn btn-p" style="font-size:.82rem;margin-top:8px;" onclick="saveSiteConfig()">💾 Guardar</button>
-    </div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:14px;">
-      <div style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:700;color:var(--accent);margin-bottom:14px;">🗂️ Nombres de secciones</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div class="fg"><label class="fl">Sección Inicio</label><input class="fi" id="cfgNavHome" value="🏠 Inicio"></div>
-        <div class="fg"><label class="fl">Sección Grupos</label><input class="fi" id="cfgNavGroups" value="🎣 Grupos de Pesca"></div>
-        <div class="fg"><label class="fl">Sección Mapas</label><input class="fi" id="cfgNavMaps" value="🏅 Casi Trofeo"></div>
-        <div class="fg"><label class="fl">Sección Torneos</label><input class="fi" id="cfgNavTourneys" value="🏆 Torneos"></div>
-        <div class="fg"><label class="fl">Sección Parches</label><input class="fi" id="cfgNavPatches" value="🔧 Parches y Actualizaciones"></div>
-        <div class="fg"><label class="fl">Sección Trofeos</label><input class="fi" id="cfgNavTrophy" value="🏆 Trofeo"></div>
-      </div>
-      <button class="btn btn-p" style="font-size:.82rem;margin-top:8px;" onclick="saveSiteConfig()">💾 Guardar cambios</button>
-    </div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px;">
-      <div style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:700;color:var(--accent);margin-bottom:14px;">📢 Aviso global (aparece en el feed)</div>
-      <div class="fg"><label class="fl">Mensaje del aviso</label><textarea class="fi" id="cfgAnnouncement" placeholder="Deja vacío para no mostrar ningún aviso..."></textarea></div>
-      <div class="fg"><label class="fl">Tipo</label>
-        <select class="fi" id="cfgAnnouncementType">
-          <option value="info">ℹ️ Información</option>
-          <option value="warn">⚠️ Advertencia</option>
-          <option value="ok">✅ Positivo</option>
-        </select>
-      </div>
-      <button class="btn btn-p" style="font-size:.82rem;margin-top:8px;" onclick="saveSiteConfig()">💾 Guardar aviso</button>
-    </div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-top:14px;">
-      <div style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:700;color:gold;margin-bottom:6px;">🛒 Descuento 100% Tienda</div>
-      <div style="font-size:.75rem;color:var(--muted);margin-bottom:12px;">Fecha y hora en que termina el 100% de descuento. Deja vacío para ocultar el contador.</div>
-      <div class="frow">
-        <div class="fg"><label class="fl">Fecha de vencimiento</label><input type="datetime-local" class="fi" id="cfgShopDiscountEnd" style="color-scheme:dark;color:var(--text);background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:8px 12px;width:100%;box-sizing:border-box;"></div>
-      </div>
-      <button class="btn btn-p" style="font-size:.82rem;margin-top:8px;" onclick="saveSiteConfig()">💾 Guardar fecha</button>
-    </div>
-  </div>
+  
 
   
-  <div id="admt-parches" style="display:none;">
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px;">
-      <div style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:700;color:var(--accent);margin-bottom:14px;">➕ Nuevo parche / actualización</div>
-      <div class="frow">
-        <div class="fg"><label class="fl">Título *</label><input class="fi" id="patchTitle" placeholder="Ej: Actualización 3.9"></div>
-        <div class="fg"><label class="fl">Tipo</label>
-          <select class="fi" id="patchType">
-            <option value="nuevo">🆕 Nuevo</option>
-            <option value="parche">🔧 Parche</option>
-            <option value="hotfix">🚨 Hotfix</option>
-          </select>
-        </div>
-      </div>
-      <div class="fg"><label class="fl">Descripción *</label><textarea class="fi" id="patchDesc" placeholder="Describe los cambios..." style="min-height:100px;"></textarea></div>
-      <div class="fg"><label class="fl">Imágenes (máx 5)</label>
-        <label style="display:flex;align-items:center;gap:8px;padding:10px;border:2px dashed var(--border);border-radius:var(--rs);cursor:pointer;color:var(--muted);font-size:.85rem;">
-          📸 Subir imágenes <input type="file" accept="image/*" multiple id="patchImgInput" style="display:none" onchange="previewAdminMedia(this,'patchImgPrev')">
-        </label>
-        <div id="patchImgPrev" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;"></div>
-      </div>
-      <button class="btn btn-p" style="font-size:.85rem;margin-top:4px;" onclick="submitPatch()">📤 Publicar</button>
-    </div>
-    <div id="adminPatchesList"><div style="text-align:center;padding:20px;color:var(--muted);">Cargando...</div></div>
-  </div>
+  
 
   
-  <div id="admt-torneos" style="display:none;">
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px;">
-      <div style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:700;color:var(--gold);margin-bottom:14px;">🏆 Crear Torneo</div>
-      <div class="frow">
-        <div class="fg"><label class="fl">Nombre *</label><input class="fi" id="torneoName" placeholder="Ej: Evento MiLatido 2026"></div>
-        <div class="fg"><label class="fl">Estado</label>
-          <select class="fi" id="torneoStatus">
-            <option value="proximo">📅 Próximo</option>
-            <option value="activo">🟢 Activo</option>
-            <option value="finalizado">✅ Finalizado</option>
-          </select>
-        </div>
-      </div>
-      <div class="frow">
-        <div class="fg"><label class="fl">Fecha inicio</label><input class="fi" type="date" id="torneoStart"></div>
-        <div class="fg"><label class="fl">Fecha fin</label><input class="fi" type="date" id="torneoEnd"></div>
-      </div>
-      <div class="fg"><label class="fl">Descripción</label><textarea class="fi" id="torneoDesc" placeholder="Reglas, premios, información..." style="min-height:100px;"></textarea></div>
-      <div class="fg"><label class="fl">Imágenes / Banner (máx 5)</label>
-        <label style="display:flex;align-items:center;gap:8px;padding:10px;border:2px dashed var(--border);border-radius:var(--rs);cursor:pointer;color:var(--muted);font-size:.85rem;">
-          📸 Subir imágenes <input type="file" accept="image/*" multiple id="torneoImgInput" style="display:none" onchange="previewAdminMedia(this,'torneoImgPrev')">
-        </label>
-        <div id="torneoImgPrev" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;"></div>
-      </div>
-      <button class="btn btn-p" style="font-size:.85rem;margin-top:4px;" onclick="submitTorneo()">🏆 Crear torneo</button>
-    </div>
-    <div id="adminTorneosList"><div style="text-align:center;padding:20px;color:var(--muted);">Cargando torneos...</div></div>
-  </div>
+  
 
   
   
@@ -6413,93 +6309,7 @@ window.initSalasPage = window.initSalasPage;
   </div>
 
   
-  <div id="admt-pezdelsemana" style="display:none;">
-
-    
-    <div style="background:var(--bg2);border:1px solid rgba(0,230,118,.25);border-radius:var(--r);padding:20px;margin-bottom:16px;">
-      <div style="background:linear-gradient(135deg,#b8962e,#d4af5a);border-radius:var(--rs);padding:10px 16px;margin-bottom:18px;">
-        <div style="font-family:'Exo 2',sans-serif;font-size:.95rem;font-weight:800;color:#fff;letter-spacing:.5px;">📋 Descripción general del evento</div>
-      </div>
-
-      
-      <div class="frow" style="align-items:flex-start;">
-        <div class="fg" style="flex:1;">
-          <label class="fl">🐟 Pez objetivo *</label>
-          <input class="fi" id="pszFish"  autocomplete="off" placeholder="Ej: música, viajes, deporte...">
-          <div style="margin-top:10px;">
-            <label class="fl">📸 Imagen del pez</label>
-            <label style="display:flex;align-items:center;gap:8px;padding:10px;border:2px dashed rgba(0,230,118,.3);border-radius:var(--rs);cursor:pointer;color:var(--muted);font-size:.82rem;">
-              📸 Subir imagen <input type="file" accept="image/*" id="pszImgInput" style="display:none" onchange="previewPezSemanaImg(this)">
-            </label>
-            <div id="pszImgPrev" style="margin-top:8px;"></div>
-          </div>
-        </div>
-        <div style="flex:1;display:flex;flex-direction:column;gap:0;">
-          <div class="frow">
-            <div class="fg"><label class="fl">📅 Comenzar</label><input class="fi" type="datetime-local" id="pszStart"></div>
-            <div class="fg"><label class="fl">📅 Fin</label><input class="fi" type="datetime-local" id="pszEnd"></div>
-          </div>
-          <div class="frow">
-            <div class="fg">
-              <label class="fl">🌊 Cuerpo de agua</label>
-              <select class="fi" id="pszMap">
-                <option value="">Sin restricciones</option>
-                <option>Belaya River</option><option>Volkhov River</option><option>Akhtuba River</option>
-                <option>Ladoga Lake</option><option>Sura River</option><option>Bear Lake</option>
-                <option>Mosquito Lake</option><option>Amber Lake</option><option>Yama River</option>
-                <option>Westhill / Bunessan</option><option>Old Burg</option>
-              </select>
-            </div>
-            <div class="fg"><label class="fl">🏆 Premio</label><input class="fi" id="pszPremio" placeholder="Ej: PF98XH Dardos"></div>
-          </div>
-          <div class="frow">
-            <div class="fg">
-              <label class="fl">🎯 Modo</label>
-              <select class="fi" id="pszModo">
-                <option value="">Sin restricciones</option>
-                <option>Recolector</option><option>Competitivo</option><option>Cooperativo</option><option>Torneo</option>
-              </select>
-            </div>
-            <div class="fg"><label class="fl">⚖️ Peso objetivo (g)</label><input class="fi" type="number" id="pszPeso" placeholder="Ej: 999"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    
-    <div style="background:var(--bg2);border:1px solid rgba(0,198,255,.2);border-radius:var(--r);padding:20px;margin-bottom:16px;">
-      <div style="background:linear-gradient(135deg,#b8962e,#d4af5a);border-radius:var(--rs);padding:10px 16px;margin-bottom:18px;">
-        <div style="font-family:'Exo 2',sans-serif;font-size:.95rem;font-weight:800;color:#fff;letter-spacing:.5px;">📜 Programa del evento</div>
-      </div>
-
-      <div class="fg">
-        <label class="fl" style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">❓ ¿Qué tienen que hacer? <span style="font-size:.7rem;color:var(--muted);font-weight:400;">(una regla por línea)</span></label>
-        <textarea class="fi" id="pszQueHacer" placeholder="El objetivo es capturar el ejemplar de Taran que pesa 999 g.&#10;El pez debe capturarse dentro del tiempo límite del desafío y publicarse dentro de las 3 horas posteriores a su captura.&#10;El jugador que capture el pez más cercano al peso objetivo gana." style="min-height:110px;border-radius:var(--rs);"></textarea>
-      </div>
-
-      <div class="fg">
-        <label class="fl" style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">📊 Resultados <span style="font-size:.7rem;color:var(--muted);font-weight:400;">(una regla por línea)</span></label>
-        <textarea class="fi" id="pszResultados" placeholder="Los peces capturados deberán publicarse en este tema hasta que finalice el desafío.&#10;Puedes publicar tantos como quieras, pero recuerda que deben ser de esa especie.&#10;Todo se comprobará cuidadosamente en los registros, por lo que no hay posibilidad de hacer trampa." style="min-height:110px;border-radius:var(--rs);"></textarea>
-      </div>
-
-      <div class="fg">
-        <label class="fl" style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">📋 La siguiente información debe incluirse en la publicación <span style="font-size:.7rem;color:var(--muted);font-weight:400;">(un ítem por línea)</span></label>
-        <textarea class="fi" id="pszInfoReq" placeholder="Captura de pantalla del pez capturado.&#10;El nombre del mapa en el que se capturó el pez.&#10;Coordenadas exactas / Cuadrícula, si estás troleando&#10;Cebo / Señuelo&#10;Nombre en el juego" style="min-height:130px;border-radius:var(--rs);"></textarea>
-      </div>
-    </div>
-
-    <div id="pszErr" style="color:var(--red);font-size:.8rem;margin-bottom:8px;text-align:center;"></div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;">
-      <button class="btn btn-p" style="font-size:.85rem;flex:1;" onclick="submitPezSemana()">🐟 Publicar Pez de la Semana</button>
-      <button style="background:rgba(255,68,68,.1);border:1px solid rgba(255,68,68,.3);color:var(--red);padding:8px 20px;border-radius:var(--rs);font-family:'Exo 2',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;" onclick="deletePezSemana()">🗑️ Quitar</button>
-    </div>
-
-    
-    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px;">
-      <div style="font-size:.72rem;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">👁️ Vista previa del evento publicado</div>
-      <div id="pszCurrentPreview"><div style="text-align:center;padding:20px;color:var(--muted);font-size:.82rem;">Sin pez de la semana activo</div></div>
-    </div>
-  </div>
+  
 </div>
 
 
@@ -6507,82 +6317,13 @@ window.initSalasPage = window.initSalasPage;
   </div>
 
   
-  <div id="admt-xplevels" style="display:none;">
-    <div style="background:var(--bg2);border:1px solid rgba(255,215,0,.2);border-radius:var(--r);padding:20px;margin-bottom:16px;">
-      <div style="background:linear-gradient(135deg,#b8962e,#d4af5a);border-radius:var(--rs);padding:10px 16px;margin-bottom:18px;">
-        <div style="font-family:'Exo 2',sans-serif;font-size:.95rem;font-weight:800;color:#fff;">⚡ Editor de Niveles XP</div>
-      </div>
-      <div style="font-size:.78rem;color:var(--muted);margin-bottom:14px;">Definí los rangos de XP, nombre, emoji y color de cada nivel. Los usuarios lo verán en su perfil en tiempo real.</div>
-
-      
-      <div style="display:grid;grid-template-columns:2fr 80px 80px 44px 1fr auto;gap:6px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:0 10px;margin-bottom:6px;">
-        <span>Nombre / Emoji</span><span>Min XP</span><span>Max XP</span><span>Color</span><span>Border CSS</span><span></span>
-      </div>
-
-      
-      <div id="xpLevelsEditor"></div>
-
-      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
-        <button onclick="addXPLevelRow()" class="btn btn-s" style="font-size:.82rem;">+ Agregar nivel</button>
-        <button onclick="saveXPLevels()" class="btn btn-p" style="font-size:.82rem;flex:1;">💾 Guardar cambios</button>
-      </div>
-
-      
-      <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px;">
-        <div style="font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Vista previa de niveles</div>
-        <div id="xpLevelsPreview" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
-      </div>
-    </div>
-  </div>
+  
 
   
-  <div id="admt-insignias" style="display:none;">
-    
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
-      <input id="insigniasSearch" class="fi" placeholder="🔍 Buscar usuario..." oninput="filterInsigniasPanel()" style="flex:1;min-width:200px;max-width:340px;">
-      <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        <span style="font-size:.72rem;color:var(--muted);align-self:center;">Filtrar:</span>
-        <button onclick="filterInsigniasBy('todos')" id="ifbtn-todos" class="cfbtn active">Todos</button>
-        <button onclick="filterInsigniasBy('pescador')" id="ifbtn-pescador" class="cfbtn">⭐ Pescador</button>
-        <button onclick="filterInsigniasBy('activo')" id="ifbtn-activo" class="cfbtn">⭐ Activo</button>
-        <button onclick="filterInsigniasBy('pro')" id="ifbtn-pro" class="cfbtn">👑 Pro</button>
-        <button onclick="filterInsigniasBy('premium')" id="ifbtn-premium" class="cfbtn">⭐ Premium</button>
-      </div>
-    </div>
-
-    
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
-      <span style="display:flex;align-items:center;gap:5px;padding:4px 12px;border-radius:100px;background:rgba(46,196,182,.12);border:1px solid rgba(46,196,182,.3);font-size:.75rem;color:var(--accent);font-weight:700;">⭐ Activo</span>
-      <span style="display:flex;align-items:center;gap:5px;padding:4px 12px;border-radius:100px;background:rgba(212,160,23,.12);border:1px solid rgba(212,160,23,.3);font-size:.75rem;color:var(--gold);font-weight:700;">👑 Pro</span>
-      <span style="display:flex;align-items:center;gap:5px;padding:4px 12px;border-radius:100px;background:rgba(66,183,42,.12);border:1px solid rgba(66,183,42,.3);font-size:.75rem;color:var(--green);font-weight:700;">⭐ Pescador</span>
-      <span style="display:flex;align-items:center;gap:5px;padding:4px 12px;border-radius:100px;background:rgba(255,215,0,.12);border:1px solid rgba(255,215,0,.4);font-size:.75rem;color:#ffd700;font-weight:700;">⭐ Premium</span>
-            <span style="margin-left:auto;font-size:.72rem;color:var(--muted);align-self:center;">Click en una insignia o rol para activar/desactivar → se guarda solo</span>
-    </div>
-
-    <div id="insigniasPanelList" style="display:grid;gap:8px;">
-      <div style="text-align:center;padding:30px;color:var(--muted);">Cargando usuarios...</div>
-    </div>
-  </div>
+  
 
   
-  <div id="admt-soporte" style="display:none;">
-    
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
-      <div style="flex:1;min-width:200px;">
-        <input id="soporteSearch" class="fi" placeholder="🔍 Buscar por usuario o descripción..." oninput="filterSoporteTickets()" style="width:100%;box-sizing:border-box;">
-      </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        <button onclick="filterSoporteBy('todos')"    id="sfbtn-todos"    class="cfbtn active">Todos</button>
-        <button onclick="filterSoporteBy('pendiente')" id="sfbtn-pendiente" class="cfbtn" style="color:#ff6b35;">🔴 Pendientes</button>
-        <button onclick="filterSoporteBy('leido')"    id="sfbtn-leido"    class="cfbtn" style="color:var(--green);">✅ Revisados</button>
-      </div>
-      <button onclick="loadSoporteTickets()" style="background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:var(--rs);font-size:.76rem;cursor:pointer;font-family:'Exo 2',sans-serif;">🔄</button>
-    </div>
-    
-    <div id="soporteTicketsList">
-      <div style="text-align:center;padding:40px;color:var(--muted);">Cargando tickets...</div>
-    </div>
-  </div>
+  
 
   
 
@@ -7007,198 +6748,7 @@ function initShopCoinsDisplay(){
 
 
 
-<div class="page" id="page-cafe" style="padding-top:0 !important;">
-<style>
-#page-cafe .cafe-header{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0;}
-#page-cafe .cafe-map-btn{background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--muted);padding:5px 11px;font-family:'Exo 2',sans-serif;font-size:.76rem;font-weight:700;cursor:pointer;transition:all .18s;white-space:nowrap;}
-#page-cafe .cafe-map-btn:hover{background:var(--bg4);color:var(--text);}
-#page-cafe .cafe-map-btn.active{background:rgba(255,140,0,.15);border-color:#ff8c00;color:#ff8c00;}
-#page-cafe .cafe-body{padding:14px 16px;overflow-y:auto;flex:1;}
-#page-cafe .cafe-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
-/* Tarjeta estilo RF4 */
-#page-cafe .cafe-card{background:#1a1e24;border:1px solid #2a313a;border-radius:10px;overflow:hidden;transition:border-color .2s,transform .15s;cursor:default;position:relative;}
-#page-cafe .cafe-card:hover{border-color:#3d4a55;transform:translateY(-2px);}
-#page-cafe .cafe-card.urgent{border-color:rgba(248,81,73,.6);}
-#page-cafe .cafe-card.warning{border-color:rgba(210,153,34,.6);}
-/* Imagen */
-#page-cafe .cafe-card-img{width:100%;height:145px;background:linear-gradient(180deg,#232a33 0%,#161b22 100%);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
-#page-cafe .cafe-card-img img{max-width:90%;max-height:130px;object-fit:contain;filter:drop-shadow(0 4px 12px rgba(0,0,0,.7));}
-#page-cafe .cafe-card-img .cafe-no-img{font-size:4rem;opacity:.25;}
-/* Círculo timer azul superpuesto */
-#page-cafe .cafe-timer-circle{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);width:52px;height:52px;border-radius:50%;background:#2196f3;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:900;color:#fff;font-variant-numeric:tabular-nums;text-align:center;line-height:1.2;z-index:2;box-shadow:0 2px 8px rgba(0,0,0,.5);border:2px solid #1a1e24;}
-#page-cafe .cafe-timer-circle.urgent{background:#f85149;}
-#page-cafe .cafe-timer-circle.warning{background:#d29922;}
-/* Cuerpo */
-#page-cafe .cafe-card-body{padding:26px 14px 10px;text-align:center;}
-#page-cafe .cafe-card-name{font-size:1rem;font-weight:700;color:#050505;margin-bottom:2px;}
-#page-cafe .cafe-card-mapname{font-size:.72rem;color:#5a8060;margin-bottom:12px;}
-#page-cafe .cafe-card-qty{font-size:.8rem;color:#b0bec5;margin-bottom:3px;}
-#page-cafe .cafe-card-weight{font-size:.8rem;color:#b0bec5;margin-bottom:10px;}
-/* Línea separadora */
-#page-cafe .cafe-card-sep{height:1px;background:#2a313a;margin:0 14px 8px;}
-/* Monedas footer */
-#page-cafe .cafe-card-reward{display:flex;align-items:center;justify-content:center;gap:6px;padding:0 14px 12px;font-size:.88rem;font-weight:700;color:#b0bec5;}
-#page-cafe .cafe-coin-icon{width:16px;height:16px;background:#8b6914;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.6rem;color:#ffd700;border:1px solid #c49a2a;}
-#page-cafe .cafe-empty{text-align:center;padding:60px 16px;color:var(--muted);font-size:.88rem;}
-@media(max-width:600px){#page-cafe .cafe-grid{grid-template-columns:1fr 1fr;gap:10px;}#page-cafe .cafe-card-img{height:110px;}}
-@media(max-width:380px){#page-cafe .cafe-grid{grid-template-columns:1fr;}}
-</style>
 
-<div style="height:calc(100vh - 56px);display:flex;flex-direction:column;overflow:hidden;">
-
-  
-  <div class="cafe-header">
-    <span style="font-family:'Orbitron',monospace;font-size:.95rem;font-weight:900;color:#ff8c00;flex-shrink:0;">☕ Café</span>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;flex:1;">
-      <button class="cafe-map-btn active" onclick="cafeSelectMap(this,'mosquito','Mosquito Lake')">Mosquito</button>
-      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'winding','Winding Rivulet')">Winding</button>
-      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'oldburg','Old Burg Lake')">Old Burg</button>
-      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'belaya','Belaya River')">Belaya</button>
-      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'volkhov','Volkhov River')">Volkhov</button>
-      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'donets','Seversky Donets River')">Donets</button>
-      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'sura','Sura River')">Sura</button>
-      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'ladoga','Ladoga Lake')">Ladoga</button>
-      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'archipelago','Ladoga archipelago')">Archipiélago</button>
-      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'amber','Amber Lake')">Amber</button>
-      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'bear','Bear Lake')">Bear</button>
-      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'kuori','Kuori Lake')">Kuori</button>
-      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'akhtuba','Akhtuba River')">Akhtuba</button>
-      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'tunguska','Lower Tunguska River')">Tunguska</button>
-      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'yama','Yama River')">Yama</button>
-      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'copper','Copper lake')">Cooper</button>
-      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'sea','Norwegian Sea')">Mar Noruega</button>
-      <button class="cafe-map-btn" onclick="cafeSelectMap(this,'elk','Lago Elk')">Lago Elk</button>
-    </div>
-    <span id="cafeMeta" style="font-size:.7rem;color:var(--muted);flex-shrink:0;">● cargando...</span>
-    <a href="https://rf4-cafe.ru" target="_blank" style="flex-shrink:0;background:linear-gradient(135deg,#ff8c00,#e07000);border:none;border-radius:6px;color:#fff;padding:5px 12px;font-family:'Exo 2',sans-serif;font-size:.75rem;font-weight:700;text-decoration:none;white-space:nowrap;">☕ Visitar rf4-cafe.ru</a>
-  </div>
-
-  
-  <div style="background:var(--bg3);border-bottom:1px solid var(--border);padding:6px 16px;display:flex;align-items:center;gap:8px;flex-shrink:0;">
-    <span style="font-size:.75rem;color:var(--muted);">Pedidos en <b id="cafeCurrentMapLabel" style="color:#ff8c00;">Komarinoe</b>:</span>
-    <span id="cafeOrderCount" style="font-size:.75rem;font-weight:700;color:var(--text);">0</span>
-    <button id="cafeReportBtn" onclick="cafeOpenReport()" style="display:none;margin-left:auto;background:rgba(255,140,0,.15);border:1px solid rgba(255,140,0,.4);border-radius:6px;color:#ff8c00;padding:4px 12px;font-family:'Exo 2',sans-serif;font-size:.75rem;font-weight:700;cursor:pointer;">+ Agregar pedido</button>
-    <button onclick="cafeAbrirLectorIA()" style="background:linear-gradient(135deg,rgba(46,196,182,.15),rgba(46,196,182,.08));border:1px solid rgba(46,196,182,.4);border-radius:6px;color:#2ec4b6;padding:4px 12px;font-family:Exo 2,sans-serif;font-size:.75rem;font-weight:700;cursor:pointer;white-space:nowrap;">📸 Publicar pedidos con IA</button>
-    <input type="file" id="cafeIAInput" accept="image/*" style="display:none" onchange="cafeLeerImagenIA(this)">
-    <span id="cafeMetaRight" style="font-size:.68rem;color:var(--muted);margin-left:auto;">🔴 Expiran solos</span>
-  </div>
-
-  
-  <div id="cafeIAModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9999;align-items:center;justify-content:center;padding:16px;">
-    <div style="background:#ffffff;border:1px solid rgba(46,196,182,.35);border-radius:16px;padding:24px 20px;max-width:500px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.7);">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#2ec4b6,#1a6a64);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">☕</div>
-        <div>
-          <div style="font-family:Orbitron,monospace;font-size:.85rem;font-weight:900;color:#2ec4b6;">PUBLICAR PEDIDOS DEL CAFÉ</div>
-          <div style="font-size:.7rem;color:#65676b;">Subí una foto para compartir con la comunidad</div>
-        </div>
-        <button onclick="document.getElementById('cafeIAModal').style.display='none'" style="margin-left:auto;background:none;border:none;color:#65676b;font-size:1.2rem;cursor:pointer;">✕</button>
-      </div>
-      
-      <div style="margin-bottom:14px;">
-        <div style="font-size:.72rem;color:#65676b;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Mapa destino de los pedidos</div>
-        <select id="cafeIAMapSelect" style="width:100%;background:#f0f2f5;border:1px solid rgba(46,196,182,.4);border-radius:6px;color:#050505;padding:8px 11px;font-family:'Exo 2',sans-serif;font-size:.85rem;outline:none;">
-          <option value="Mosquito Lake">Mosquito Lake</option>
-          <option value="Winding Rivulet">Winding Rivulet</option>
-          <option value="Old Burg Lake">Old Burg Lake</option>
-          <option value="Bear Lake">Bear Lake</option>
-          <option value="Belaya River">Belaya River</option>
-          <option value="Kuori Lake">Kuori Lake</option>
-          <option value="Volkhov River">Volkhov River</option>
-          <option value="Seversky Donets River">Seversky Donets River</option>
-          <option value="Sura River">Sura River</option>
-          <option value="Ladoga Lake">Ladoga Lake</option>
-          <option value="Ladoga archipelago">Ladoga archipelago</option>
-          <option value="Amber Lake">Amber Lake</option>
-          <option value="Akhtuba River">Akhtuba River</option>
-          <option value="Copper lake">Copper Lake</option>
-          <option value="Lower Tunguska River">Lower Tunguska River</option>
-          <option value="Yama River">Yama River</option>
-          <option value="Norwegian Sea">Norwegian Sea</option>
-        </select>
-      </div>
-      <div id="cafeIADropZone" onclick="document.getElementById('cafeIAInput').click()" style="border:2px dashed rgba(46,196,182,.4);border-radius:12px;padding:30px 16px;text-align:center;cursor:pointer;margin-bottom:14px;background:rgba(46,196,182,.03);">
-        <div style="font-size:2rem;margin-bottom:8px;">🖼️</div>
-        <div style="color:#2ec4b6;font-weight:700;font-size:.9rem;margin-bottom:4px;">Tocá acá para cargar la captura</div>
-        <div style="color:#65676b;font-size:.75rem;">Foto o captura de pantalla del panel de pedidos del Café</div>
-      </div>
-      <div id="cafeIAPreview" style="display:none;margin-bottom:14px;text-align:center;"><img id="cafeIAPreviewImg" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid #dddfe2;"></div>
-      <div id="cafeIALoading" style="display:none;text-align:center;padding:16px;">
-        <div style="font-size:.85rem;color:#2ec4b6;font-weight:700;margin-bottom:10px;">🤖 Analizando la imagen, aguantá un momento...</div>
-        <div style="display:flex;justify-content:center;gap:6px;">
-          <span style="width:8px;height:8px;border-radius:50%;background:#2ec4b6;animation:rf4dot 1.2s ease-in-out infinite;"></span>
-          <span style="width:8px;height:8px;border-radius:50%;background:#2ec4b6;animation:rf4dot 1.2s ease-in-out .2s infinite;"></span>
-          <span style="width:8px;height:8px;border-radius:50%;background:#2ec4b6;animation:rf4dot 1.2s ease-in-out .4s infinite;"></span>
-        </div>
-      </div>
-      <div id="cafeIAResult" style="display:none;">
-        <div id="cafeIAResultText"></div>
-        <div id="cafeIAPublishBar" style="display:none;margin-top:12px;gap:8px;flex-wrap:wrap;">
-          <button onclick="cafeIAPublicarTodos()" id="cafeIAPublishBtn" style="flex:1;padding:10px;border-radius:6px;border:none;background:#ff8c00;color:#fff;font-family:Exo 2,sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;">🚀 Publicar todos los pedidos</button>
-          <button onclick="cafeIAReset()" style="padding:10px 14px;border-radius:6px;border:1px solid rgba(46,196,182,.4);background:rgba(46,196,182,.1);color:#2ec4b6;font-family:Exo 2,sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;">📸 Nueva imagen</button>
-        </div>
-        <div style="margin-top:8px;font-size:.68rem;color:#65676b;text-align:center;">Powered by MiLatido · IA</div>
-      </div>
-      <div id="cafeIAError" style="display:none;background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);border-radius:8px;padding:12px;text-align:center;color:#f85149;font-size:.82rem;"></div>
-    </div>
-  </div>
-
-  
-  <div id="cafeReportModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9000;align-items:center;justify-content:center;padding:16px;">
-    <div style="background:#ffffff;border:1px solid #dddfe2;border-radius:14px;padding:20px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-        <span style="font-family:'Orbitron',monospace;font-size:.9rem;font-weight:900;color:#ff8c00;">☕ Reportar pedido</span>
-        <button onclick="cafeCloseReport()" style="margin-left:auto;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;">✕</button>
-      </div>
-      
-      <div style="margin-bottom:10px;">
-        <div style="font-size:.72rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Mapa</div>
-        <div id="cafeReportMapLabel" style="background:#f0f2f5;border:1px solid #dddfe2;border-radius:6px;padding:8px 11px;font-size:.85rem;color:#ff8c00;font-weight:700;"></div>
-      </div>
-      
-      <div style="margin-bottom:10px;">
-        <div style="font-size:.72rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Especie</div>
-        <select id="cafeReportFish" style="width:100%;background:#f0f2f5;border:1px solid #dddfe2;border-radius:6px;color:var(--text);padding:8px 11px;font-family:'Exo 2',sans-serif;font-size:.85rem;outline:none;">
-          <option value="">— Seleccioná el pez —</option>
-        </select>
-      </div>
-      
-      <div style="margin-bottom:10px;">
-        <div style="font-size:.72rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Peso a partir de</div>
-        <div style="display:flex;gap:6px;">
-          <input type="number" id="cafeReportWeight" step="0.001" placeholder="0" style="flex:1;background:#f0f2f5;border:1px solid #dddfe2;border-radius:6px;color:var(--text);padding:8px 11px;font-family:'Exo 2',sans-serif;font-size:.85rem;outline:none;">
-          <select id="cafeReportWeightUnit" style="width:64px;background:#f0f2f5;border:1px solid #dddfe2;border-radius:6px;color:var(--text);padding:8px 6px;font-family:'Exo 2',sans-serif;font-size:.82rem;outline:none;">
-            <option value="kg">kg</option>
-            <option value="g">g</option>
-          </select>
-        </div>
-      </div>
-      
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
-        <div>
-          <div style="font-size:.72rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Cantidad</div>
-          <input type="number" id="cafeReportQty" value="1" min="1" style="width:100%;background:#f0f2f5;border:1px solid #dddfe2;border-radius:6px;color:var(--text);padding:8px 11px;font-family:'Exo 2',sans-serif;font-size:.85rem;outline:none;">
-        </div>
-        <div>
-          <div style="font-size:.72rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Recompensa 💰</div>
-          <input type="number" id="cafeReportReward" step="0.01" placeholder="0" style="width:100%;background:#f0f2f5;border:1px solid #dddfe2;border-radius:6px;color:var(--text);padding:8px 11px;font-family:'Exo 2',sans-serif;font-size:.85rem;outline:none;">
-        </div>
-      </div>
-      
-      <div style="margin-bottom:14px;">
-        <div style="font-size:.72rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Horas del juego (ej: 48)</div>
-        <input type="number" id="cafeReportHours" min="1" placeholder="ej: 48" style="width:100%;background:#f0f2f5;border:1px solid #dddfe2;border-radius:6px;color:var(--text);padding:8px 11px;font-family:'Exo 2',sans-serif;font-size:.85rem;outline:none;">
-        <div style="font-size:.7rem;color:var(--muted);margin-top:3px;">48 horas de juego = 2 días = 2 horas reales</div>
-      </div>
-      <div id="cafeReportErr" style="display:none;background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);color:#f85149;padding:8px 12px;border-radius:6px;font-size:.8rem;margin-bottom:10px;"></div>
-      <button onclick="cafeSubmitReport()" id="cafeReportSubmitBtn" style="width:100%;padding:10px;border-radius:6px;border:none;background:#ff8c00;color:#fff;font-family:'Exo 2',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;">Publicar pedido</button>
-    </div>
-  </div>
-
-  
-  <div class="cafe-body" id="cafeOrdersList"></div>
-</div>
-</div>
 
 <script>
 (function(){
@@ -7681,88 +7231,7 @@ function initShopCoinsDisplay(){
 </div>
 
 
-<div class="page" id="page-soporte" style="max-width:680px;margin:0 auto;padding:24px 16px 80px;">
 
-  
-  <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
-    <div style="background:linear-gradient(135deg,#ff6b35,#f7c59f);border-radius:14px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;">🆘</div>
-    <div>
-      <div style="font-family:'Orbitron',monospace;font-size:1.15rem;font-weight:900;color:#ff6b35;">Soporte Técnico</div>
-      <div style="font-size:.75rem;color:var(--muted);margin-top:2px;">Reportá un problema y el equipo te contactará</div>
-    </div>
-  </div>
-
-  
-  <div id="soporteForm" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:24px;">
-
-    
-    <div style="margin-bottom:18px;">
-      <label style="display:block;font-size:.82rem;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;">Tipo de problema</label>
-      <select id="soporteTipo" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:11px 14px;font-size:.9rem;font-family:'Exo 2',sans-serif;outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%228%22 viewBox=%220 0 12 8%22><path fill=%22%23888%22 d=%22M6 8L0 0h12z%22/></svg>');background-repeat:no-repeat;background-position:right 14px center;" onchange="soporteCheckOtro()">
-        <option value="">— Seleccioná un problema —</option>
-        <optgroup label="🌐 Problemas de la Web">
-          <option value="no-carga">La página no carga / pantalla en blanco</option>
-          <option value="login-fallo">No puedo iniciar sesión / registrarme</option>
-          <option value="foto-no-sube">No puedo subir fotos o videos</option>
-          <option value="musica-fallo">El reproductor de música no funciona</option>
-          <option value="notif-fallo">Las notificaciones no llegan</option>
-          <option value="chat-fallo">El chat / mensajes no funcionan</option>
-          <option value="perfil-fallo">No puedo editar mi perfil</option>
-          <option value="post-fallo">No puedo publicar / comentar</option>
-          <option value="torneo-fallo">Problema con torneos o trofeos</option>
-          <option value="mapa-fallo">El mapa / spots no cargan</option>
-          <option value="error-visual">Error visual / diseño roto</option>
-          <option value="lento">La web va muy lenta</option>
-        </optgroup>
-        <optgroup label="👤 Cuenta y Seguridad">
-          <option value="cuenta-bloqueada">Mi cuenta fue bloqueada</option>
-          <option value="reporte-usuario">Quiero reportar a un usuario</option>
-          <option value="datos-incorrectos">Mis datos o estadísticas son incorrectos</option>
-        </optgroup>
-        <option value="otro">🔧 Otro (describilo abajo)</option>
-      </select>
-    </div>
-
-    
-    <div id="soporteOtroWrap" style="display:none;margin-bottom:18px;">
-      <label style="display:block;font-size:.82rem;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;">¿Cuál es el problema?</label>
-      <input id="soporteOtroTxt" placeholder="Describí brevemente el tipo de error..." style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:11px 14px;font-size:.9rem;font-family:'Exo 2',sans-serif;outline:none;box-sizing:border-box;">
-    </div>
-
-    
-    <div style="margin-bottom:18px;">
-      <label style="display:block;font-size:.82rem;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;">Descripción del error *</label>
-      <textarea id="soporteDesc" placeholder="Contanos qué pasó, qué estabas haciendo cuando ocurrió el error, y si hay algún mensaje de error que viste..." style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:12px 14px;font-size:.9rem;font-family:'Exo 2',sans-serif;outline:none;resize:vertical;min-height:110px;box-sizing:border-box;line-height:1.6;"></textarea>
-    </div>
-
-    
-    <div style="margin-bottom:22px;">
-      <label style="display:block;font-size:.82rem;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;">Dispositivo (opcional)</label>
-      <select id="soporteDispositivo" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:11px 14px;font-size:.9rem;font-family:'Exo 2',sans-serif;outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%228%22 viewBox=%220 0 12 8%22><path fill=%22%23888%22 d=%22M6 8L0 0h12z%22/></svg>');background-repeat:no-repeat;background-position:right 14px center;">
-        <option value="">— No especificado —</option>
-        <option value="pc-windows">💻 PC / Windows</option>
-        <option value="mac">🍎 Mac / Safari</option>
-        <option value="android">📱 Android</option>
-        <option value="iphone">📱 iPhone / iOS</option>
-        <option value="tablet">📟 Tablet</option>
-      </select>
-    </div>
-
-    
-    <button onclick="submitSoporte()" style="width:100%;padding:14px;background:linear-gradient(135deg,#ff6b35,#f7931e);border:none;border-radius:12px;color:#fff;font-size:1rem;font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;letter-spacing:.03em;transition:opacity .2s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
-      📨 Enviar Reporte
-    </button>
-  </div>
-
-  
-  <div id="soporteEnviado" style="display:none;text-align:center;padding:40px 24px;background:var(--bg2);border:1px solid rgba(46,196,182,.3);border-radius:var(--r);">
-    <div style="font-size:3rem;margin-bottom:12px;">✅</div>
-    <div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:700;color:var(--accent);margin-bottom:10px;">¡Reporte enviado!</div>
-    <div style="font-size:.9rem;color:var(--muted);line-height:1.7;max-width:380px;margin:0 auto;">Tu reporte fue enviado al equipo de administración.<br>Se pondrán en contacto con vos a la brevedad. 🙌</div>
-    <button onclick="soporteNuevoReporte()" style="margin-top:20px;padding:10px 28px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:.9rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">Enviar otro reporte</button>
-  </div>
-
-</div>
 
 
 
@@ -7803,7 +7272,7 @@ function initShopCoinsDisplay(){
     <p>No vendemos tus datos. Los compartimos solo con Google Firebase, Analytics y autoridades legales cuando sea requerido por ley.</p>
 
     <div style="font-weight:700;color:var(--accent);margin:14px 0 4px;font-size:.8rem;">🛡️ Tus derechos</div>
-    <p>Podés acceder, corregir o eliminar tus datos contactándonos por <span onclick="gp('soporte')" style="color:var(--accent);cursor:pointer;font-weight:600;">Soporte Técnico</span>. Sitio <strong style="color:var(--text);">para mayores de 18 años</strong>.</p>
+    <p>Podés acceder, corregir o eliminar tus datos contactándonos por . Sitio <strong style="color:var(--text);">para mayores de 18 años</strong>.</p>
 
     <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
       <span style="font-size:.72rem;color:var(--muted);">© 2026 MiLatido · Para mayores de 18 años</span>
@@ -8077,8 +7546,6 @@ function _stub(name){ return function(){ _q.push([name, arguments]); }; }
  'doForgotPassword','quickLogin','createGroup','previewGroupImg',
  'submitMapPost','previewMapMedia','filterMapPosts',
  'gp','om','cm','setNav','toggleUserMenu','doLogout',
- 'swAdminTab','loadAdminData','previewAdminMedia','saveSiteConfig',
- 'submitPatch','submitTorneo','submitAdminGroup','submitAd','toggleAd',
  'banUser','deleteAdminContent','deleteAdminPost','resolveReport','adminEditUser','adminSaveUser','adminDeleteUser','adminConfirmDelete','filterAdminUsers',
  'openUserProfile','sendFriendRequest','togglePostMenu','renderProfileFriendsList','openEditPost','saveEditPost','deleteMyPost',
  'toggleMessenger','sendChatMsg','openChatWith','backToMessengerList','setChatReply','cancelChatReply','previewChatPhoto','removeChatImgPreview','showChatToast',
@@ -8086,8 +7553,7 @@ function _stub(name){ return function(){ _q.push([name, arguments]); }; }
  'acceptFriendRequest','rejectFriendRequest','dismissFriendRequest','sendFriendRequestFromProfile','loadRealFriends','updateNotifBadge','updateMsgBadge',
  'previewSpotImg','removeSpotImg','submitSpot','loadSpots','spOpenPublish','spGp','spCm','spResetForm','spHFiles','spRemFile','spSubmitSpot','spRenderSpots','spOnHomeMapChange','spDeleteSpot','toggleYtInput','previewYtEmbed','clearYtInput','extractYtId','openPostWithYt','loadFriendSpots','renderFriendSpotsInHome','openEditSpot','saveEditSpot','deleteSpot','scrollToPost',
  'renderSidebarFriends','renderSuggestedUsers','playNotifSound','showNotifToast','sendNotifToUserWithPost','openMessenger','loadVideos','filterVideos',
- 'previewPezSemanaImg','submitPezSemana','deletePezSemana','loadPezSemana','openPezSemanalModal','openReactionsModal','buildRxnLabel',
- 'swSkillTab','searchStoryMusic','selectStoryMusic','clearStoryMusic','searchDeezer','playDeezer','debounceStoryMusic','_hoverStoryPreview','_leaveStoryPreview','debounceMusicSearch','_doSharePost','_cmtOpenGif','searchCmtGifs','sendCmtGif','_toggleSharePrivacy','_setSharePrivacy','_txtMusicInput','_txtMusicFocus','_txtMusicSearch','_txtSelectTrack','_txtClearMusic','_txtSelectPopular','_txtSetSearch','_fotoMusicInput','_fotoMusicFocus','_fotoMusicSearch','_fotoSelectTrack','_fotoClearMusic','_fotoSelectPopular','_fotoSetSearch','_svToggleRxnPop','_svCloseRxnPop'
+ 'previewPezSemanaImg', 'swSkillTab','searchStoryMusic','selectStoryMusic','clearStoryMusic','searchDeezer','playDeezer','debounceStoryMusic','_hoverStoryPreview','_leaveStoryPreview','debounceMusicSearch','_doSharePost','_cmtOpenGif','searchCmtGifs','sendCmtGif','_toggleSharePrivacy','_setSharePrivacy','_txtMusicInput','_txtMusicFocus','_txtMusicSearch','_txtSelectTrack','_txtClearMusic','_txtSelectPopular','_txtSetSearch','_fotoMusicInput','_fotoMusicFocus','_fotoMusicSearch','_fotoSelectTrack','_fotoClearMusic','_fotoSelectPopular','_fotoSetSearch','_svToggleRxnPop','_svCloseRxnPop'
 ].forEach(fn => { window[fn] = _stub(fn); });
 </script>
 <script type="module" defer>
@@ -9093,8 +8559,7 @@ function onLogin(){
 
   // Fase 3 (800ms): contenido secundario del feed
   setTimeout(()=>{
-    loadPezSemana();
-    loadShopEquipped();
+      loadShopEquipped();
     if(typeof _updatePostBoxPlaceholder === 'function') _updatePostBoxPlaceholder();
   }, 800);
 
@@ -9106,8 +8571,7 @@ function onLogin(){
     renderSuggestedPosts();
     renderFriendSpotsInHome();
     checkDailyStreak();
-    loadXPLevels();
-    // Inicializar anuncios AdSense para usuarios no-premium
+      // Inicializar anuncios AdSense para usuarios no-premium
     window.loadAdsIfNeeded && window.loadAdsIfNeeded();
   }, 1500);
 
@@ -9551,7 +9015,7 @@ window.gp = (id, pushState = true) => {
   if(id==='profile') renderProfile();
   if(id==='match') { if(typeof window.initMatchPage==='function') window.initMatchPage(); }
   if(id==='fotos') { if(typeof window.initFotosPage==='function') setTimeout(window.initFotosPage, 50); }
-  if(id==='admin') { loadAdminData(); loadPezSemana(); loadSoporteBadge(); }
+  if(id==='admin') { loadAdminData(); loadPezSemana(); }
   // Show video button in posts only for verified users
   const pvBtn = document.getElementById('postVideoBtn');
   if(pvBtn) pvBtn.style.display = window.CU?.verified ? 'flex' : 'none';
@@ -9576,8 +9040,8 @@ window.gp = (id, pushState = true) => {
     return;
   }
   if(id==='shop') { loadShopDiscount(); }
-  if(id==='parches') loadParches();
-  if(id==='soporte') initSoportePage();
+  if(id==='parches')
+  if(id==='soporte') 
   if(id==='torneos') loadTorneos();
   if(id==='ranking-semanal') loadRankingSemanal();
   if(id==='salas') { if(typeof window.initSalasPage==='function') setTimeout(window.initSalasPage,50); }
@@ -11809,7 +11273,6 @@ function postHTML(p){
             return `<span style="font-weight:700;color:var(--text);">${_nick}</span>`;
           })()}${p.feeling?` <span style="font-weight:400;font-size:.85rem;">está ${p.feeling.emoji} <span style="color:var(--muted);">me siento ${p.feeling.label}.</span></span>`:''}</div>
           ${_postTitulo?`<span style="font-size:.6rem;font-weight:800;color:var(--muted);background:rgba(0,0,0,.06);border-radius:100px;padding:1px 8px;letter-spacing:.04em;">${esc(_postTitulo)}</span>`:''}
-          ${(()=>{ const plvl=getLevel(p.userXp||0); return `<span style="font-size:.6rem;font-weight:700;padding:1px 7px;border-radius:100px;border:1px solid;color:${plvl.color};border-color:${plvl.border};background:${plvl.border.replace(/[\d.]+\)$/,'.08)')};">${plvl.name}</span>`; })()}
         </div>
         <div class="post-time">🌐 ${fmtT(p.time)}${p.feeling?` · <span style="font-size:.78rem;">${p.feeling.emoji} <span style="color:var(--muted);">me siento ${p.feeling.label}</span></span>`:''}</div>
       </div>
@@ -12107,7 +11570,6 @@ async function submitPost(){
   if(tagChips) tagChips.innerHTML='';
   cm('mCreatePost');
   addNotif('📝 Publicaste una nueva captura'+(fish?`: ${fish} ${weight?fmtKg(weight):''}`:''));
-  addXP(10,'publicación');
   toast('¡Publicado! 🎣 +10 XP','ok');
 }
 
@@ -12556,7 +12018,7 @@ async function doReact(pid, emoji){
   } else {
     updates[`reactions.${uid}`] = emoji;
     updates[`reactionCounts.${emoji}`] = increment(1);
-    if(!prev) addXP(1,'reacción');
+    if(!prev)
     if(p.userId && p.userId !== uid && !prev){
       const preview = (p.text||'').slice(0,80) + ((p.text||'').length>80?'...':'');
       const postImg = (p.images&&p.images[0]) || p.imgUrl || null;
@@ -13016,7 +12478,6 @@ async function _submitModalCmt(pid){
     const countEl = document.getElementById('_cmtModalCount_'+pid);
     if(countEl) countEl.textContent = newComments.length + ' comentario' + (newComments.length!==1?'s':'');
     if(p.userId && p.userId !== window.CU.id) sendNotifToUserWithPost(p.userId, '💬 ' + window.CU.nick + ' comentó tu publicación', pid);
-    addXP(3,'comentario');
   } catch(e){ console.error(e); toast('Error al comentar','err'); }
   inp.disabled = false;
   inp.focus();
@@ -13290,7 +12751,6 @@ async function submitCommentImg(input, pid){
     if(p.userId && p.userId !== window.CU.id){
       sendNotifToUserWithPost(p.userId, `🖼️ ${window.CU.nick} comentó con una imagen`, p.id);
     }
-    addXP(3,'comentario');
     const cmtsEl = document.getElementById('cmts_'+pid);
     if(cmtsEl){
       cmtsEl.classList.add('open');
@@ -13368,7 +12828,6 @@ async function submitComment(pid){
         }
       } catch(e){}
     }
-    addXP(3,'comentario');
     const cmtsEl = document.getElementById('cmts_'+pid);
     if(cmtsEl){
       if(!cmtsEl.classList.contains('open')) cmtsEl.classList.add('open');
@@ -13647,7 +13106,6 @@ function renderProfile(){
         <button onclick="event.stopPropagation();removeFriend('${f.id}','${(f.nick||'').replace(/'/g,"\\'")}')" title="Eliminar amigo" style="margin-top:3px;width:100%;padding:2px 0;background:transparent;border:1px solid rgba(248,81,73,.35);border-radius:var(--rs);color:var(--red);font-size:.6rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .18s;" onmouseover="this.style.background='rgba(248,81,73,.12)'" onmouseout="this.style.background='transparent'">✕ Eliminar</button>
       </div>`).join('');
   }
-  renderXPUI();
   // Mostrar pestaña tienda solo para admin
   const shopTab = document.getElementById('ptShopTab');
   if(shopTab) shopTab.style.display = 'block'; // visible para todos
@@ -14890,8 +14348,7 @@ async function renderProfileFriendsList(userId) {
       const fid = s.id;
       const isMe = window.CU?.id === fid;
       const alreadyFriend = myFriends.includes(fid);
-      const lvl = getLevel(f.xp||0);
-      const isOwnProfile = uid === window.CU?.id;
+            const isOwnProfile = uid === window.CU?.id;
       const addBtn = (!isMe && !alreadyFriend)
         ? `<button onclick="sendFriendRequest('${fid}','${(f.nick||'').replace(/'/g,"\'")}','profile')" style="margin-top:6px;width:100%;padding:5px;background:var(--accent);border:none;border-radius:var(--rs);color:#000;font-size:.72rem;font-weight:700;cursor:pointer;">+ Agregar</button>`
         : (alreadyFriend && !isMe && isOwnProfile)
@@ -16729,19 +16186,15 @@ async function submitReport(){
 function swAdminTab(el, tabId){
   document.querySelectorAll('.adm-tab').forEach(t=>t.classList.remove('adm-on'));
   el.classList.add('adm-on');
-  ['admt-reports','admt-posts','admt-users','admt-verif','admt-site','admt-parches','admt-torneos','admt-grupos','admt-ads','admt-live','admt-pezdelsemana','admt-xplevels','admt-insignias','admt-soporte','admt-faq']
+  ['admt-reports','admt-posts','admt-users','admt-verif','admt-grupos','admt-ads','admt-live','admt-faq']
     .forEach(id=>{ const e=document.getElementById(id); if(e) e.style.display='none'; });
   const tab = document.getElementById(tabId);
   if(tab) tab.style.display='block';
-  if(tabId==='admt-parches') loadAdminPatches();
-  if(tabId==='admt-torneos') loadAdminTorneos();
   if(tabId==='admt-grupos') loadAdminGrupos();
   if(tabId==='admt-users') loadAdminUsers();
   if(tabId==='admt-verif') loadVerifRequests();
-  if(tabId==='admt-site') loadSiteConfig();
   if(tabId==='admt-ads') loadAdminAds();
   if(tabId==='admt-live') loadAdminLive();
-  if(tabId==='admt-soporte') loadSoporteTickets();
   if(tabId==='admt-faq') loadAdminFaq();
 }
 
@@ -17086,39 +16539,7 @@ function previewAdminMedia(input, previewId, max=5){
   }).join('');
 }
 
-async function loadSiteConfig(){
-  try {
-    const snap = await getDoc(doc(db,'config','site'));
-    if(snap.exists()){
-      const d = snap.data();
-      if(d.siteName) document.getElementById('cfgSiteName').value = d.siteName;
-      if(d.slogan) document.getElementById('cfgSlogan').value = d.slogan;
-      if(d.announcement) document.getElementById('cfgAnnouncement').value = d.announcement;
-      if(d.announcementType) document.getElementById('cfgAnnouncementType').value = d.announcementType;
-      if(d.shopDiscountEnd){
-        // Convert stored ISO string to datetime-local format
-        const dt = new Date(d.shopDiscountEnd);
-        const pad = n=>String(n).padStart(2,'0');
-        const local = `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
-        document.getElementById('cfgShopDiscountEnd').value = local;
-      }
-    }
-  } catch(e){}
-}
 
-async function saveSiteConfig(){
-  const shopDiscountRaw = document.getElementById('cfgShopDiscountEnd')?.value;
-  const cfg = {
-    siteName: document.getElementById('cfgSiteName').value.trim(),
-    slogan: document.getElementById('cfgSlogan').value.trim(),
-    announcement: document.getElementById('cfgAnnouncement').value.trim(),
-    announcementType: document.getElementById('cfgAnnouncementType').value,
-    shopDiscountEnd: shopDiscountRaw ? new Date(shopDiscountRaw).toISOString() : '',
-  };
-  await setDoc(doc(db,'config','site'), cfg, {merge:true});
-  toast('Configuración guardada ✅','ok');
-  if(cfg.announcement) showAnnouncement(cfg);
-}
 
 // ===== SHOP DISCOUNT COUNTDOWN =====
 let _shopCountdownTimer = null;
@@ -17195,42 +16616,8 @@ function showAnnouncement(cfg){
   ann.innerHTML=`<span style="flex:1">${cfg.announcement}</span><button onclick="this.parentElement.remove()" style="background:none;border:none;color:inherit;cursor:pointer;font-size:1rem;">✕</button>`;
 }
 
-async function submitPatch(){
-  if(!window.CU) return;
-  const title = document.getElementById('patchTitle').value.trim();
-  const desc = document.getElementById('patchDesc').value.trim();
-  const type = document.getElementById('patchType').value;
-  if(!title||!desc){ toast('Completá título y descripción','err'); return; }
-  toast('Publicando parche...','inf');
-  const imgs = _adminMediaFiles['patchImgPrev']||[];
-  const imageUrls = [];
-  for(const f of imgs) imageUrls.push(await uploadImage(f,'patches'));
-  await addDoc(collection(db,'patches'),{title,desc,type,images:imageUrls,author:window.CU.nick,time:serverTimestamp()});
-  document.getElementById('patchTitle').value='';
-  document.getElementById('patchDesc').value='';
-  document.getElementById('patchImgPrev').innerHTML='';
-  _adminMediaFiles['patchImgPrev']=[];
-  toast('Parche publicado ✅','ok');
-  loadAdminPatches();
-}
 
-async function loadSoporteBadge(){
-  try {
-    const snap = await getDocs(query(collection(db,'soporte'), where('leido','==',false)));
-    const count = snap.size;
-    const badge = document.getElementById('admSoporteBadge');
-    if(badge){ badge.style.display = count>0?'inline':'none'; badge.textContent=count; }
-  } catch(e){}
-}
 
-async function loadAdminPatches(){
-  try {
-    const snap = await getDocs(query(collection(db,'patches'),orderBy('time','desc'),limit(50)));
-    const items = snap.docs.map(d=>({id:d.id,...d.data()}));
-    const el = document.getElementById('adminPatchesList');
-    if(el) el.innerHTML = items.length ? items.map(p=>patchCardHTML(p,true)).join('') : '<div style="text-align:center;padding:20px;color:var(--muted);">Sin parches aún</div>';
-  } catch(e){ console.error(e); }
-}
 
 // ═══════════════════════════════════════════════
 // PANEL DE SOPORTE TÉCNICO — Admin
@@ -17238,254 +16625,20 @@ async function loadAdminPatches(){
 let _soporteTickets = [];
 let _soporteFilter = 'todos';
 
-async function loadSoporteTickets(){
-  const el = document.getElementById('soporteTicketsList');
-  if(!el) return;
-  el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">⏳ Cargando tickets...</div>';
-  try {
-    const snap = await getDocs(query(collection(db,'soporte'), orderBy('time','desc'), limit(100)));
-    _soporteTickets = snap.docs.map(d=>({id:d.id,...d.data(), _ts: d.data().time?.toMillis?.()|| Date.now()}));
-    // Actualizar badge con pendientes
-    const pendientes = _soporteTickets.filter(t=>!t.leido).length;
-    const badge = document.getElementById('admSoporteBadge');
-    if(badge){
-      badge.style.display = pendientes > 0 ? 'inline' : 'none';
-      badge.textContent = pendientes;
-    }
-    renderSoporteTickets();
-  } catch(e){
-    console.error('loadSoporteTickets:', e);
-    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--red);">Error al cargar tickets: '+e.message+'</div>';
-  }
-}
 
-function filterSoporteBy(f){
-  _soporteFilter = f;
-  document.querySelectorAll('[id^="sfbtn-"]').forEach(b=>b.classList.remove('active'));
-  const btn = document.getElementById('sfbtn-'+f);
-  if(btn) btn.classList.add('active');
-  renderSoporteTickets();
-}
 
-function filterSoporteTickets(){
-  renderSoporteTickets();
-}
 
-function renderSoporteTickets(){
-  const el = document.getElementById('soporteTicketsList');
-  if(!el) return;
-  const q = (document.getElementById('soporteSearch')?.value||'').toLowerCase().trim();
-  let list = _soporteTickets;
-  if(_soporteFilter === 'pendiente') list = list.filter(t=>!t.leido);
-  if(_soporteFilter === 'leido')     list = list.filter(t=>!!t.leido);
-  if(q) list = list.filter(t=>
-    (t.nick||'').toLowerCase().includes(q) ||
-    (t.desc||'').toLowerCase().includes(q) ||
-    (t.tipo||'').toLowerCase().includes(q)
-  );
-  if(!list.length){
-    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">'+
-      '<div style="font-size:2rem;margin-bottom:8px;">📭</div>'+
-      '<div style="font-size:.85rem;">Sin tickets que mostrar</div></div>';
-    return;
-  }
-  el.innerHTML = list.map(t=>soporteTicketHTML(t)).join('');
-}
 
-function soporteTicketHTML(t){
-  const fecha = t._ts ? new Date(t._ts).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
-  const estadoBg  = t.leido ? 'rgba(46,196,182,.1)'  : 'rgba(255,107,53,.1)';
-  const estadoBrd = t.leido ? 'rgba(46,196,182,.35)' : 'rgba(255,107,53,.35)';
-  const estadoClr = t.leido ? 'var(--accent)'        : '#ff6b35';
-  const estadoTxt = t.leido ? '✅ Revisado'           : '🔴 Pendiente';
-  const avLetter  = (t.nick||'?')[0].toUpperCase();
-  const avSrc     = t.av ? `<img src="${t.av}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.parentElement.textContent='${avLetter}'">` : avLetter;
 
-  return `<div id="st_${t.id}" style="background:var(--bg2);border:1px solid ${t.leido?'var(--border)':'rgba(255,107,53,.3)'};border-radius:var(--r);padding:16px 18px;margin-bottom:10px;transition:border .2s;">
-    
-    <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;">
-      <div style="width:42px;height:42px;border-radius:50%;background:var(--bg3);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:800;color:var(--accent);flex-shrink:0;overflow:hidden;">${avSrc}</div>
-      <div style="flex:1;min-width:0;">
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:2px;">
-          <span style="font-weight:800;font-size:.9rem;cursor:pointer;color:var(--text);" onclick="openUserProfile('${t.uid||''}','${(t.nick||'').replace(/'/g,"\\'")}')">@${esc(t.nick||'?')}</span>
-          <span style="font-size:.68rem;padding:2px 8px;border-radius:100px;background:${estadoBg};border:1px solid ${estadoBrd};color:${estadoClr};font-weight:700;">${estadoTxt}</span>
-        </div>
-        <div style="font-size:.72rem;color:var(--muted);">${fecha} · ${esc(t.dispositivo||'Dispositivo no especificado')}</div>
-      </div>
-      <div style="display:flex;gap:6px;flex-shrink:0;">
-        ${!t.leido ? `<button onclick="marcarSoporteLeido('${t.id}')" title="Marcar como revisado"
-          style="background:rgba(46,196,182,.1);border:1px solid rgba(46,196,182,.3);color:var(--accent);padding:5px 10px;border-radius:var(--rs);font-size:.75rem;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700;transition:opacity .15s;"
-          onmouseover="this.style.opacity='.75'" onmouseout="this.style.opacity='1'">✅ Marcar revisado</button>` : ''}
-        <button onclick="responderSoporte('${t.id}','${(t.uid||'').replace(/'/g,"\\'")}','${(t.nick||'').replace(/'/g,"\\'")}','${(t.tipo||'').replace(/'/g,"\\'").replace(/"/g,'\\"')}')" title="Responder por chat"
-          style="background:rgba(0,198,255,.1);border:1px solid rgba(0,198,255,.3);color:var(--accent);padding:5px 10px;border-radius:var(--rs);font-size:.75rem;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700;transition:opacity .15s;"
-          onmouseover="this.style.opacity='.75'" onmouseout="this.style.opacity='1'">💬 Responder</button>
-        <button onclick="eliminarSoporteTicket('${t.id}')" title="Eliminar ticket"
-          style="background:rgba(255,68,68,.08);border:1px solid rgba(255,68,68,.2);color:var(--red);padding:5px 8px;border-radius:var(--rs);font-size:.75rem;cursor:pointer;font-family:'Exo 2',sans-serif;transition:opacity .15s;"
-          onmouseover="this.style.opacity='.75'" onmouseout="this.style.opacity='1'">🗑</button>
-      </div>
-    </div>
-    
-    <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,107,53,.08);border:1px solid rgba(255,107,53,.2);border-radius:100px;padding:3px 12px;font-size:.75rem;font-weight:700;color:#ff6b35;margin-bottom:10px;">
-      🆘 ${esc(t.tipo||'Sin tipo')}
-    </div>
-    
-    <div style="background:var(--bg3);border-radius:var(--rs);padding:12px 14px;font-size:.85rem;line-height:1.6;color:var(--text);white-space:pre-wrap;word-break:break-word;">${esc(t.desc||'Sin descripción')}</div>
-  </div>`;
-}
 
-async function marcarSoporteLeido(ticketId){
-  try {
-    await updateDoc(doc(db,'soporte',ticketId), {leido: true});
-    const t = _soporteTickets.find(x=>x.id===ticketId);
-    if(t) t.leido = true;
-    // Actualizar badge
-    const pendientes = _soporteTickets.filter(x=>!x.leido).length;
-    const badge = document.getElementById('admSoporteBadge');
-    if(badge){ badge.style.display = pendientes>0?'inline':'none'; badge.textContent=pendientes; }
-    // Re-render solo el ticket
-    const el = document.getElementById('st_'+ticketId);
-    if(el && t) el.outerHTML = soporteTicketHTML(t);
-    else renderSoporteTickets();
-    toast('Ticket marcado como revisado ✅','ok');
-  } catch(e){ toast('Error: '+e.message,'err'); }
-}
 
-async function eliminarSoporteTicket(ticketId){
-  if(!confirm('¿Eliminar este ticket de soporte?')) return;
-  try {
-    await deleteDoc(doc(db,'soporte',ticketId));
-    _soporteTickets = _soporteTickets.filter(x=>x.id!==ticketId);
-    renderSoporteTickets();
-    toast('Ticket eliminado','ok');
-  } catch(e){ toast('Error: '+e.message,'err'); }
-}
-
-function responderSoporte(ticketId, uid, nick, tipo){
-  // Abre el chat con el usuario y envía un mensaje inicial de contexto
-  if(!uid){ toast('No se puede responder: usuario desconocido','err'); return; }
-  // Navegar al chat y precargar el mensaje
-  openMessenger();
-  setTimeout(()=>{
-    openChat(uid, nick);
-    setTimeout(()=>{
-      const inp = document.getElementById('chatInput');
-      if(inp){
-        inp.value = `Hola @${nick}, te contactamos por tu ticket de soporte: "${tipo}". `;
-        inp.focus();
-      }
-    }, 400);
-  }, 300);
-  // Marcar como leído al responder
-  marcarSoporteLeido(ticketId);
-}
 
 
 // ====== SOPORTE TÉCNICO ======
-function initSoportePage(){
-  // Resetear form si ya fue enviado antes
-  document.getElementById('soporteForm').style.display='block';
-  document.getElementById('soporteEnviado').style.display='none';
-  document.getElementById('soporteTipo').value='';
-  document.getElementById('soporteDesc').value='';
-  document.getElementById('soporteOtroTxt').value='';
-  document.getElementById('soporteOtroWrap').style.display='none';
-  document.getElementById('soporteDispositivo').value='';
-}
 
-function soporteCheckOtro(){
-  const val = document.getElementById('soporteTipo').value;
-  document.getElementById('soporteOtroWrap').style.display = val==='otro' ? 'block' : 'none';
-}
 
-async function submitSoporte(){
-  if(!window.CU){ toast('Tenés que estar logueado para enviar un reporte','err'); return; }
-  const tipo = document.getElementById('soporteTipo').value;
-  const desc = document.getElementById('soporteDesc').value.trim();
-  const otroTxt = document.getElementById('soporteOtroTxt').value.trim();
-  const dispositivo = document.getElementById('soporteDispositivo').value;
 
-  if(!tipo){ toast('Seleccioná el tipo de problema','err'); return; }
-  if(!desc){ toast('Describí el error antes de enviar','err'); return; }
 
-  const tipoLabel = tipo==='otro' ? ('Otro: '+(otroTxt||'sin especificar')) : document.getElementById('soporteTipo').selectedOptions[0]?.text || tipo;
-  const notifText = `🆘 Soporte de @${window.CU.nick||'usuario'}: ${tipoLabel} — "${desc.slice(0,80)}${desc.length>80?'...':''}"`;
-
-  const btn = document.querySelector('#soporteForm button[onclick]');
-  if(btn){ btn.disabled=true; btn.textContent='Enviando...'; }
-
-  try {
-    // 1. Guardar ticket en colección 'soporte'
-    await addDoc(collection(db,'soporte'),{
-      uid: window.CU.id,
-      nick: window.CU.nick||'',
-      av: window.CU.av||'',
-      tipo: tipoLabel,
-      desc,
-      dispositivo,
-      time: serverTimestamp(),
-      leido: false
-    });
-
-    // 2. Notificar al admin usando el sistema de notifs de la app (users/{uid}.notifs)
-    // Buscar por nick y por email para asegurarse
-    const [byNick, byEmail] = await Promise.all([
-      getDocs(query(collection(db,'users'), where('nick','==','ruizgustavo12'))),
-      getDocs(query(collection(db,'users'), where('email','==','synxyes@gmail.com')))
-    ]);
-
-    const adminIds = new Set();
-    byNick.docs.forEach(d=>adminIds.add(d.id));
-    byEmail.docs.forEach(d=>adminIds.add(d.id));
-    // También buscar por role=='admin' por si hay otros admins
-    try {
-      const byRole = await getDocs(query(collection(db,'users'), where('role','==','admin')));
-      byRole.docs.forEach(d=>adminIds.add(d.id));
-    } catch(e){}
-
-    // Enviar a cada admin encontrado (excepto a uno mismo)
-    const notifPromises = [];
-    adminIds.forEach(adminId => {
-      if(adminId !== window.CU.id){
-        notifPromises.push(
-          updateDoc(doc(db,'users',adminId), {
-            notifs: arrayUnion({
-              text: notifText,
-              time: Date.now(),
-              read: false,
-              type: 'soporte',
-              fromAv: window.CU.av||'',
-              fromNick: window.CU.nick||'',
-              fromId: window.CU.id
-            })
-          }).catch(e=>console.warn('No se pudo notificar admin',adminId,e))
-        );
-      }
-    });
-    await Promise.all(notifPromises);
-
-    // 3. Mostrar éxito
-    document.getElementById('soporteForm').style.display='none';
-    document.getElementById('soporteEnviado').style.display='block';
-
-  } catch(e){
-    console.error('Error soporte:', e);
-    toast('Error al enviar el reporte. Intentá de nuevo.','err');
-    if(btn){ btn.disabled=false; btn.textContent='📨 Enviar Reporte'; }
-  }
-}
-
-function soporteNuevoReporte(){
-  initSoportePage();
-}
-
-async function loadParches(){
-  try {
-    const snap = await getDocs(query(collection(db,'patches'),orderBy('time','desc'),limit(50)));
-    const items = snap.docs.map(d=>({id:d.id,...d.data()}));
-    const el = document.getElementById('parchesFeed');
-    if(el) el.innerHTML = items.length ? items.map(p=>patchCardHTML(p,false)).join('') : '<div style="text-align:center;padding:40px;color:var(--muted);">Sin parches publicados aún.</div>';
-  } catch(e){ console.error(e); }
-}
 
 function patchCardHTML(p, isAdmin){
   const tc={nuevo:'var(--accent)',parche:'var(--warn)',hotfix:'var(--red)'};
@@ -17503,63 +16656,9 @@ function patchCardHTML(p, isAdmin){
   </div>`;
 }
 
-async function submitTorneo(){
-  if(!window.CU) return;
-  const name = document.getElementById('torneoName').value.trim();
-  const desc = document.getElementById('torneoDesc').value.trim();
-  const status = document.getElementById('torneoStatus').value;
-  const start = document.getElementById('torneoStart').value;
-  const end = document.getElementById('torneoEnd').value;
-  if(!name){ toast('Ingresá el nombre del torneo','err'); return; }
-  toast('Creando torneo...','inf');
-  const imgs = _adminMediaFiles['torneoImgPrev']||[];
-  const imageUrls = [];
-  for(const f of imgs) imageUrls.push(await uploadImage(f,'torneos'));
-  await addDoc(collection(db,'torneos'),{name,desc,status,start,end,images:imageUrls,author:window.CU.nick,time:serverTimestamp()});
-  document.getElementById('torneoName').value='';
-  document.getElementById('torneoDesc').value='';
-  document.getElementById('torneoImgPrev').innerHTML='';
-  _adminMediaFiles['torneoImgPrev']=[];
-  toast('Torneo creado 🏆','ok');
-  loadAdminTorneos();
-}
 
-async function loadAdminTorneos(){
-  try {
-    const snap = await getDocs(query(collection(db,'torneos'),orderBy('time','desc'),limit(100)));
-    const items = snap.docs.map(d=>({id:d.id,...d.data()}));
-    const el = document.getElementById('adminTorneosList');
-    if(el) el.innerHTML = items.length ? items.map(t=>torneoCardHTML(t,true)).join('') : '<div style="text-align:center;padding:20px;color:var(--muted);">Sin torneos</div>';
-  } catch(e){}
-}
 
-async function loadTorneos(){
-  try {
-    const snap = await getDocs(query(collection(db,'torneos'),orderBy('time','desc'),limit(100)));
-    const items = snap.docs.map(d=>({id:d.id,...d.data()}));
-    const el = document.getElementById('torneosFeed');
-    if(el) el.innerHTML = items.length ? items.map(t=>torneoCardHTML(t,false)).join('') : '<div style="text-align:center;padding:40px;color:var(--muted);">Sin torneos aún.</div>';
-  } catch(e){}
-}
 
-function torneoCardHTML(t, isAdmin){
-  const sc={proximo:'rgba(0,198,255,.1)',activo:'rgba(0,230,118,.1)',finalizado:'rgba(150,150,150,.1)'};
-  const st={proximo:'var(--accent)',activo:'var(--green)',finalizado:'var(--muted)'};
-  const sl={proximo:'📅 PRÓXIMO',activo:'🟢 ACTIVO',finalizado:'✅ FINALIZADO'};
-  return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:14px;">
-    ${t.images&&t.images[0]?`<img src="${t.images[0]}" style="width:100%;max-height:200px;object-fit:cover;" loading="lazy">`:''}
-    <div style="padding:18px;">
-      <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:8px;flex-wrap:wrap;">
-        <span style="background:${sc[t.status]||sc.proximo};color:${st[t.status]||st.proximo};padding:3px 10px;border-radius:100px;font-size:.72rem;font-weight:700;">${sl[t.status]||sl.proximo}</span>
-        ${isAdmin?`<button onclick="deleteAdminContent('torneos','${t.id}')" style="background:rgba(255,68,68,.1);border:1px solid rgba(255,68,68,.3);color:var(--red);padding:3px 10px;border-radius:var(--rs);font-size:.7rem;cursor:pointer;font-family:'Exo 2',sans-serif;margin-left:auto;">🗑</button>`:''}
-      </div>
-      <div style="font-family:'Orbitron',monospace;font-size:1rem;font-weight:800;margin-bottom:8px;">${esc(t.name)}</div>
-      ${t.start||t.end?`<div style="font-size:.78rem;color:var(--muted);margin-bottom:8px;">📅 ${t.start||'—'} → ${t.end||'—'}</div>`:''}
-      <div style="font-size:.85rem;color:var(--muted);line-height:1.7;">${esc(t.desc||'')}</div>
-      ${t.images&&t.images.length>1?`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px;margin-top:10px;">${t.images.slice(1).map(img=>`<img src="${img}" style="width:100%;border-radius:6px;cursor:pointer;" onclick="openImgLightbox('${img}')" loading="lazy">`).join('')}</div>`:''}
-    </div>
-  </div>`;
-}
 
 async function submitAdminGroup(){
   const name = document.getElementById('agName').value.trim();
@@ -17731,8 +16830,6 @@ async function deleteAdminContent(col, id){
   if(!confirm('¿Eliminar este contenido?')) return;
   await deleteDoc(doc(db,col,id));
   toast('Eliminado ✅','ok');
-  if(col==='patches') loadAdminPatches();
-  if(col==='torneos') loadAdminTorneos();
   if(col==='groups'){ loadAdminGrupos(); loadGroups(); }
 }
 
@@ -19638,8 +18735,7 @@ async function _loadUserProfilePage(uid, nick){
     }
 
     // ── NIVEL ──
-    const lvl = getLevel(u.xp||0);
-    document.getElementById('upLevel').innerHTML = '';
+        document.getElementById('upLevel').innerHTML = '';
     document.getElementById('upBio').textContent = u.bio||'';
     // Meta info con iconos estilo Facebook
     const metaParts = [];
@@ -20161,7 +19257,6 @@ async function sendFriendRequest(uid, nick){
 }
 
 async function acceptFriendRequest(fromId, fromNick, notifIndex){
-  addXP(5,'nuevo amigo');
   if(!window.CU){ toast('Iniciá sesión primero','err'); return; }
   try {
     // 1. Add each other as friends
@@ -20508,8 +19603,7 @@ function renderFeedOnline(online){
     } else if((u.xp||0)>=2000){
       nickHtml = `<span style="background:linear-gradient(90deg,#ce93d8,#b39ddb);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:800;">${nick}</span>`;
     } else if((u.xp||0)>=500){
-      const lvl = getLevel(u.xp||0);
-      nickHtml = `<span style="color:${lvl.color};font-weight:700;">${nick}</span>`;
+            nickHtml = `<span style="color:${lvl.color};font-weight:700;">${nick}</span>`;
     } else {
       nickHtml = `<span class="user-name" style="font-size:.75rem;">${nick}</span>`;
     }
@@ -20607,10 +19701,8 @@ function renderSidebarOnline(online, offline){
     const fc = frameClass(isOnline, dev);
     const isAdmin = u.nick==='ruizgustavo12' || u.role==='admin';
     const isVerified = !!u.verified;
-    const uXp = u.xp || 0;
-    const uLvl = getLevel(uXp);
-    const isHighLvl = uXp >= 500; // nivel alto
-    const isLegend  = uXp >= 2000;
+    const isHighLvl = false;
+    const isLegend  = false;
 
     // ── Fondo y borde de la card ──
     let bgCard, borderCard, cardExtra='';
@@ -22806,367 +21898,27 @@ async function openReactionsModal(pid){
   } catch(e){}
 }
 
-// ===== PEZ DE LA SEMANA =====
-let _pszImgData = null;
-
-function previewPezSemanaImg(input){
-  const f = input.files[0]; if(!f) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    _pszImgData = e.target.result;
-    document.getElementById('pszImgPrev').innerHTML = `<div style="position:relative;display:inline-block;"><img src="${e.target.result}" style="max-height:140px;border-radius:var(--rs);border:1px solid var(--border);"><button onclick="_pszImgData=null;document.getElementById('pszImgPrev').innerHTML='';document.getElementById('pszImgInput').value='';" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.7);border:none;color:#fff;border-radius:50%;width:22px;height:22px;font-size:.7rem;cursor:pointer;line-height:22px;">✕</button></div>`;
-  };
-  reader.readAsDataURL(f);
-}
-
-async function submitPezSemana(){
-  if(!window.CU || window.CU.nick !== 'ruizgustavo12' && window.CU.nick !== 'gustavo ruiz' && window.CU.nick !== 'gustavoruiz'){ toast('Solo el admin puede hacer esto','err'); return; }
-  const fish = document.getElementById('pszFish').value.trim();
-  const queHacer = document.getElementById('pszQueHacer').value.trim();
-  const errEl = document.getElementById('pszErr');
-  if(!fish){ errEl.textContent = 'El nombre del pez es obligatorio'; return; }
-  errEl.textContent = '';
-  toast('Publicando Pez de la Semana...','inf');
-  let imgUrl = '';
-  if(_pszImgData){
-    try { imgUrl = await uploadImage(_pszImgData, 'pez-semana'); } catch(e){}
-  }
-  const data = {
-    fish,
-    img: imgUrl,
-    start: document.getElementById('pszStart').value,
-    end: document.getElementById('pszEnd').value,
-    map: document.getElementById('pszMap').value,
-    premio: document.getElementById('pszPremio').value.trim(),
-    modo: document.getElementById('pszModo').value,
-    peso: document.getElementById('pszPeso').value.trim(),
-    queHacer,
-    resultados: document.getElementById('pszResultados').value.trim(),
-    infoReq: document.getElementById('pszInfoReq').value.trim(),
-    updatedAt: serverTimestamp(),
-    active: true
-  };
-  try {
-    await setDoc(doc(db, 'config', 'pezSemana'), data);
-    toast('🐟 ¡Pez de la Semana actualizado!','ok');
-    loadPezSemana();
-  } catch(e){ errEl.textContent = 'Error al guardar: '+e.message; }
-}
-
-async function deletePezSemana(){
-  if(!window.CU || (window.CU.nick !== 'ruizgustavo12' && window.CU.nick !== 'gustavo ruiz' && window.CU.nick !== 'gustavoruiz' && window.CU.email !== 'synxyes@gmail.com')) return;
-  if(!confirm('¿Quitar el Pez de la Semana?')) return;
-  try {
-    await setDoc(doc(db,'config','pezSemana'),{active:false});
-    toast('Pez de la Semana eliminado','ok');
-    loadPezSemana();
-    const widget = document.getElementById('pezSemanaWidget');
-    if(widget){ widget.style.display='none'; widget.innerHTML=''; }
-  } catch(e){ toast('Error al eliminar','err'); }
-}
-
-function buildPezSemanaCard(d){
-  // Format datetime helper
-  function fmtDT(str){
-    if(!str) return '—';
-    try { const dt = new Date(str); return dt.toLocaleDateString('es',{day:'numeric',month:'short'})+', '+dt.toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'})+' UTC'; } catch(e){ return str; }
-  }
-  // Render numbered list from multiline text
-  function numberedList(text){
-    if(!text) return '';
-    return text.split('\n').filter(l=>l.trim()).map((l,i)=>`<li style="margin-bottom:6px;color:#444;font-size:.82rem;">${i+1}. ${esc(l.trim())}</li>`).join('');
-  }
-  // Render bullet list from multiline text
-  function bulletList(text){
-    if(!text) return '';
-    return text.split('\n').filter(l=>l.trim()).map(l=>`<li style="margin-bottom:5px;color:#444;font-size:.82rem;">${esc(l.trim())}</li>`).join('');
-  }
-
-  return `
-  <div style="background:#ffffff;border-radius:var(--r);overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.25);font-family:'Exo 2',sans-serif;color:#333;">
-
-    
-    <div style="background:linear-gradient(135deg,#b8962e,#d4af5a);padding:12px 18px;">
-      <div style="font-size:.95rem;font-weight:800;color:#fff;letter-spacing:.3px;">Descripción general del evento</div>
-    </div>
-    <div style="padding:16px 18px 14px;border-bottom:2px solid #e8e0c8;">
-      
-      <div style="display:grid;grid-template-columns:140px 1fr 1fr 1fr 1fr 1fr;gap:4px;font-size:.72rem;font-weight:700;color:#666;margin-bottom:8px;">
-        <span>Peces objetivo:</span>
-        <span>Comenzar:</span>
-        <span>Fin:</span>
-        <span>Cuerpo de agua:</span>
-        <span>Premio:</span>
-        <span>Modo: &nbsp; Peso objetivo:</span>
-      </div>
-      
-      <div style="display:grid;grid-template-columns:140px 1fr 1fr 1fr 1fr 1fr;gap:4px;align-items:center;">
-        <div>
-          ${d.img ? `<img src="${d.img}" style="max-height:90px;max-width:130px;object-fit:contain;display:block;">` : `<div style="font-size:3rem;text-align:center;">🐟</div>`}
-          <div style="font-size:.78rem;font-weight:700;color:#333;margin-top:4px;text-align:center;">${esc(d.fish)}</div>
-        </div>
-        <div style="font-size:.78rem;color:#555;">${fmtDT(d.start)}</div>
-        <div style="font-size:.78rem;color:#555;">${fmtDT(d.end)}</div>
-        <div style="font-size:.78rem;color:#555;">${esc(d.map||'Sin restricciones')}</div>
-        <div style="font-size:.78rem;color:#555;">${esc(d.premio||'—')}</div>
-        <div style="font-size:.78rem;color:#555;">${esc(d.modo||'—')}&nbsp;&nbsp; ${d.peso ? d.peso+' gramos' : '—'}</div>
-      </div>
-    </div>
-
-    
-    <div style="background:linear-gradient(135deg,#b8962e,#d4af5a);padding:12px 18px;">
-      <div style="font-size:.95rem;font-weight:800;color:#fff;letter-spacing:.3px;">Programa del evento</div>
-    </div>
-    <div style="padding:16px 18px;">
-
-      ${d.queHacer ? `
-      <div style="font-size:.85rem;font-weight:700;color:#333;margin-bottom:8px;">¿Qué tienes que hacer?</div>
-      <ol style="padding-left:18px;margin:0 0 16px;">${numberedList(d.queHacer)}</ol>` : ''}
-
-      ${d.resultados ? `
-      <div style="font-size:.85rem;font-weight:700;color:#333;margin-bottom:8px;">Resultados:</div>
-      <ol style="padding-left:18px;margin:0 0 16px;">${numberedList(d.resultados)}</ol>` : ''}
-
-      ${d.infoReq ? `
-      <div style="font-size:.85rem;font-weight:700;color:#333;margin-bottom:8px;">La siguiente información debe incluirse en la publicación:</div>
-      <ul style="padding-left:18px;margin:0;list-style:disc;">${bulletList(d.infoReq)}</ul>` : ''}
-
-    </div>
-  </div>`;
-}
-
-async function loadPezSemana(){
-  try {
-    const snap = await getDoc(doc(db,'config','pezSemana'));
-    const widget = document.getElementById('pezSemanaWidget');
-    const preview = document.getElementById('pszCurrentPreview');
-    if(!snap.exists() || !snap.data().active){
-      if(widget){ widget.style.display='none'; widget.innerHTML=''; }
-      if(preview) preview.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:.82rem;">Sin pez de la semana activo</div>';
-      return;
-    }
-    const d = snap.data();
-    const cardHtml = buildPezSemanaCard(d);
-
-    // Preview in admin only (widget removed from sidebar - use modal button instead)
-    if(preview){ preview.innerHTML=cardHtml; }
-
-    // Re-populate form fields
-    const s = id => document.getElementById(id);
-    if(s('pszFish')) s('pszFish').value=d.fish||'';
-    if(s('pszStart')) s('pszStart').value=d.start||'';
-    if(s('pszEnd')) s('pszEnd').value=d.end||'';
-    if(s('pszMap')) s('pszMap').value=d.map||'';
-    if(s('pszPremio')) s('pszPremio').value=d.premio||'';
-    if(s('pszModo')) s('pszModo').value=d.modo||'';
-    if(s('pszPeso')) s('pszPeso').value=d.peso||'';
-    if(s('pszQueHacer')) s('pszQueHacer').value=d.queHacer||'';
-    if(s('pszResultados')) s('pszResultados').value=d.resultados||'';
-    if(s('pszInfoReq')) s('pszInfoReq').value=d.infoReq||'';
-  } catch(e){}
-}
 
 
-async function openPezSemanalModal(){
-  om('mPezSemanal');
-  const el = document.getElementById('pezSemanalModalContent');
-  if(!el) return;
-  el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:.9rem;">🐟 Cargando evento...</div>';
-  try {
-    const snap = await getDoc(doc(db,'config','pezSemana'));
-    if(!snap.exists() || !snap.data().active){
-      el.innerHTML = '<div style="text-align:center;padding:48px 24px;"><div style="font-size:3rem;margin-bottom:12px;">🐟</div><div style="font-size:.95rem;color:var(--muted);">No hay ningún Pez de la Semana activo esta semana.</div><div style="font-size:.78rem;color:var(--muted);margin-top:6px;">¡Volvé pronto!</div></div>';
-      return;
-    }
-    el.innerHTML = buildPezSemanaCard(snap.data());
-  } catch(e){
-    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">Error al cargar el evento.</div>';
-  }
-}
+
+
+
+
 
 // ===== XP & LEVEL SYSTEM =====
 // XP Levels — loaded from Firestore (admin editable), fallback defaults
-let XP_LEVELS = [
-  { name:'🐟 Novato',      min:0,    max:99,   color:'#6b8fa8', border:'rgba(107,143,168,.4)' },
-  { name:'🎣 Aprendiz',    min:100,  max:299,  color:'#00c6ff', border:'rgba(0,198,255,.4)'   },
-  { name:'⭐ Pescador',    min:300,  max:699,  color:'#00e676', border:'rgba(0,230,118,.4)'   },
-  { name:'🏅 Experto',     min:700,  max:1499, color:'#ffaa00', border:'rgba(255,170,0,.4)'   },
-  { name:'🏆 Maestro',     min:1500, max:2999, color:'#ff7043', border:'rgba(255,112,67,.4)'  },
-  { name:'👑 Leyenda',     min:3000, max:99999,color:'#ffd700', border:'rgba(255,215,0,.4)'   },
-];
-
-async function loadXPLevels(){
-  try {
-    const snap = await getDoc(doc(db,'config','xpLevels'));
-    if(snap.exists() && snap.data().levels && snap.data().levels.length){
-      XP_LEVELS = snap.data().levels;
-    }
-  } catch(e){}
-}
-
-async function saveXPLevels(){
-  if(!window.CU || (window.CU.nick !== 'ruizgustavo12' && window.CU.nick !== 'gustavo ruiz' && window.CU.nick !== 'gustavoruiz' && window.CU.email !== 'synxyes@gmail.com')) return;
-  try {
-    const rows = document.querySelectorAll('.xp-level-row');
-    const levels = Array.from(rows).map(row => ({
-      name:  row.querySelector('.xpl-name').value.trim(),
-      min:   parseInt(row.querySelector('.xpl-min').value)||0,
-      max:   parseInt(row.querySelector('.xpl-max').value)||999,
-      color: row.querySelector('.xpl-color').value,
-      border:row.querySelector('.xpl-border').value,
-    })).filter(l=>l.name);
-    if(levels.length < 2){ toast('Necesitás al menos 2 niveles','err'); return; }
-    // Sort by min XP
-    levels.sort((a,b)=>a.min-b.min);
-    await setDoc(doc(db,'config','xpLevels'),{levels});
-    XP_LEVELS = levels;
-    toast('✅ Niveles de XP guardados','ok');
-    renderXPLevelsAdmin();
-    renderXPUI();
-  } catch(e){ toast('Error: '+e.message,'err'); }
-}
-
-function addXPLevelRow(data){
-  const d = data || {name:'🎖️ Nuevo Nivel',min:0,max:500,color:'#00c6ff',border:'rgba(0,198,255,.4)'};
-  const wrap = document.getElementById('xpLevelsEditor');
-  if(!wrap) return;
-  const row = document.createElement('div');
-  row.className = 'xp-level-row';
-  row.style.cssText = 'display:grid;grid-template-columns:2fr 80px 80px 44px 1fr auto;gap:6px;align-items:center;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:8px 10px;margin-bottom:6px;';
-  row.innerHTML = `
-    <input class="fi xpl-name" value="${d.name}" placeholder="Ej: 🐟 Novato" style="font-size:.82rem;padding:5px 10px;">
-    <input class="fi xpl-min" type="number" value="${d.min}" placeholder="Min XP" style="font-size:.82rem;padding:5px 8px;">
-    <input class="fi xpl-max" type="number" value="${d.max}" placeholder="Max XP" style="font-size:.82rem;padding:5px 8px;">
-    <input type="color" class="xpl-color" value="${d.color}" title="Color texto" style="width:36px;height:36px;border:none;border-radius:6px;cursor:pointer;background:none;padding:0;">
-    <input class="fi xpl-border" value="${d.border}" placeholder="rgba(0,198,255,.4)" style="font-size:.75rem;padding:5px 8px;">
-    <button onclick="this.closest('.xp-level-row').remove()" style="background:rgba(255,68,68,.1);border:1px solid rgba(255,68,68,.3);color:var(--red);width:28px;height:28px;border-radius:var(--rs);cursor:pointer;font-size:.9rem;flex-shrink:0;">✕</button>
-  `;
-  wrap.appendChild(row);
-}
-
-function renderXPLevelsAdmin(){
-  const wrap = document.getElementById('xpLevelsEditor');
-  if(!wrap) return;
-  wrap.innerHTML = '';
-  XP_LEVELS.forEach(l => addXPLevelRow(l));
-  // Refresh preview badges
-  const preview = document.getElementById('xpLevelsPreview');
-  if(preview){
-    preview.innerHTML = XP_LEVELS.map(l=>`
-      <div style="display:inline-flex;flex-direction:column;align-items:center;gap:4px;">
-        <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 14px;border-radius:100px;font-size:.78rem;font-weight:700;border:1px solid;color:${l.color};border-color:${l.border};background:${l.border.replace(/[\d.]+\)$/,'.08)')};">${l.name}</span>
-        <span style="font-size:.62rem;color:var(--muted);">${l.min}–${l.max} XP</span>
-      </div>`).join('');
-  }
 
 
-}
 
 
-function getLevel(xp){
-  for(let i=XP_LEVELS.length-1;i>=0;i--){
-    if((xp||0)>=XP_LEVELS[i].min) return {index:i, ...XP_LEVELS[i]};
-  }
-  return {index:0, ...XP_LEVELS[0]};
-}
 
-function getXpProgress(xp){
-  const lvl = getLevel(xp);
-  if(lvl.index===XP_LEVELS.length-1) return {pct:100, current:xp-lvl.min, needed:0};
-  const current = (xp||0) - lvl.min;
-  const needed = lvl.max - lvl.min + 1;
-  return {pct: Math.min(100, Math.round(current/needed*100)), current, needed};
-}
 
-async function addXP(amount, reason){
-  if(!window.CU) return;
-  const newXP = (window.CU.xp||0) + amount;
-  const oldLevel = getLevel(window.CU.xp||0);
-  const newLevel = getLevel(newXP);
-  window.CU.xp = newXP;
-  try { await updateDoc(doc(db,'users',window.CU.id),{xp:newXP}); } catch(e){}
-  // Level up toast
-  if(newLevel.index > oldLevel.index){
-    toast(`🎉 ¡Subiste de nivel! Ahora eres ${newLevel.name}`, 'ok');
-    addNotif(`🎉 ¡Subiste al nivel ${newLevel.name}! +${amount} XP por ${reason}`);
-  }
-  renderXPUI();
-}
 
-function renderXPUI(){
-  if(!window.CU) return;
-  const xp = window.CU.xp||0;
-  const streak = window.CU.streak||0;
-  const lvl = getLevel(xp);
-  const prog = getXpProgress(xp);
 
-  // ── Profile header block ──
-  const block = document.getElementById('profXpBlock');
-  if(block){
-    block.style.display='block';
-    const lb = document.getElementById('profLevelBadge');
-    if(lb){ lb.textContent=lvl.name; lb.style.color=lvl.color; lb.style.borderColor=lvl.border; lb.style.background=lvl.border.replace('.4)','.08)'); }
-    const bar = document.getElementById('profXpBar');
-    if(bar) bar.style.width=prog.pct+'%';
-    const lbl = document.getElementById('profXpLabel');
-    if(lbl) lbl.textContent=xp+' XP';
-    const nxt = document.getElementById('profXpNext');
-    if(nxt) nxt.textContent=prog.needed>0?prog.current+'/'+prog.needed+' para siguiente nivel':'¡Nivel máximo!';
-    const sb = document.getElementById('profStreakBadge');
-    if(sb){ sb.style.display='none'; }
-  }
 
-  // ── About tab ──
-  const sr = document.getElementById('profStreakRow');
-  if(sr) sr.style.display='none';
-  const xr = document.getElementById('profXpInfoRow');
-  if(xr) xr.style.display='none';
-  document.getElementById('profLevel').textContent = lvl.name;
 
-  // ── Sidebar widget — oculto ──
-  const sw = document.getElementById('sidebarStreakWidget');
-  if(sw) sw.style.display='none';
-}
 
-async function checkDailyStreak(){
-  if(!window.CU) return;
-  const now = Date.now();
-  const today = new Date().toDateString();
-  const lastLogin = window.CU.lastLoginDate||'';
-  const yesterday = new Date(now-86400000).toDateString();
-
-  if(lastLogin===today){
-    // Already logged in today — just render
-    renderXPUI(); return;
-  }
-
-  let newStreak = 1;
-  if(lastLogin===yesterday){
-    // Consecutive day — extend streak
-    newStreak = (window.CU.streak||0)+1;
-  }
-  // else streak resets to 1
-
-  const xpBonus = newStreak>=7?10:newStreak>=3?5:2;
-  window.CU.streak = newStreak;
-  window.CU.lastLoginDate = today;
-  window.CU.xp = (window.CU.xp||0) + xpBonus;
-
-  try {
-    await updateDoc(doc(db,'users',window.CU.id),{
-      streak:newStreak, lastLoginDate:today, xp:window.CU.xp
-    });
-  } catch(e){}
-
-  if(newStreak===1){
-    toast('👋 ¡Bienvenido! +'+xpBonus+' XP por iniciar sesión','inf');
-  } else if(newStreak>=7){
-    toast('🔥 ¡'+newStreak+' días seguidos! +'+xpBonus+' XP de bonus','ok');
-  } else {
-    toast('🔥 Racha de '+newStreak+' días · +'+xpBonus+' XP','inf');
-  }
-  renderXPUI();
-}
+async function checkDailyStreak(){ /* removed */ }
 
 
 
@@ -23684,8 +22436,7 @@ const _expose = {
   doReact,quickReact,
   togglePassVis, maskEmail, startEmailChange, cancelEmailChange, sendVerifEmailForChange, confirmEmailChange,
   setMusicType, quickGenreSearch, searchSpotify, searchDeezer, playDeezer, playSpotify, closeMusicPlayer,
-  submitSoporte, soporteCheckOtro, soporteNuevoReporte, initSoportePage,
-  saveProfile,openEditProfile,calcAgeFromBirthdate,
+  submitSoporte, soporteCheckOtro, soporteNuevoReporte,   saveProfile,openEditProfile,calcAgeFromBirthdate,
   changeCover,changeAvatar,
   previewPostImg,removePostImg,previewPostMedia,removePostMedia,
   previewStoryImg,pickStoryEmoji,
@@ -23714,8 +22465,6 @@ const _expose = {
   submitMapPost,previewMapMedia,filterMapPosts,
   gp:window.gp, om:window.om, cm:window.cm, setNav,
   toggleUserMenu, doLogout,
-  swAdminTab, loadAdminData, previewAdminMedia, saveSiteConfig,
-  submitPatch, submitTorneo, submitAdminGroup, submitAd, toggleAd,
   banUser, deleteAdminContent, deleteAdminPost, resolveReport,
   openUserProfile, sendFriendRequest, togglePostMenu, renderProfileFriendsList, openEditPost, saveEditPost, deleteMyPost, removeFriend,
   toggleMessenger, sendChatMsg, openChatWith, backToMessengerList, closeMessenger, minimizeMessenger, maximizeMessenger, toggleVoiceRecord, cancelVoiceRecord, stopAndSendVoice, toggleVoicePlay, toggleVoiceBtn, openPostWithYt, reactChatMsg, showMsgRxnBar, hideMsgRxnBar, keepMsgRxnBar, showCmtMenu, hideCmtMenu, setChatTyping, toggleGifPicker, closeGifPicker, searchGifs, sendGif, toggleMsgTime, sendChatSticker, searchChatStickers, setChatReply, cancelChatReply, previewChatPhoto, removeChatImgPreview, showChatToast,
@@ -23723,10 +22472,7 @@ const _expose = {
   acceptFriendRequest, rejectFriendRequest, dismissFriendRequest, sendFriendRequestFromProfile, loadRealFriends, updateNotifBadge, updateMsgBadge,
   previewSpotImg, removeSpotImg, submitSpot, loadSpots, loadFriendSpots, renderFriendSpotsInHome, openEditSpot, saveEditSpot, deleteSpot, scrollToPost, loadVideos, filterVideos,
   renderSidebarFriends, renderSuggestedUsers, renderAmigosPage, renderMisAmigos, renderNewFishers, renderSuggestedPosts, playNotifSound, showNotifToast, sendNotifToUserWithPost, openMessenger,
-  previewPezSemanaImg, submitPezSemana, deletePezSemana, loadPezSemana, buildPezSemanaCard, openPezSemanalModal, openReactionsModal, buildRxnLabel,
-  addXP, renderXPUI, checkDailyStreak, getLevel, getXpProgress,
-  loadXPLevels, saveXPLevels, addXPLevelRow, renderXPLevelsAdmin,
-};
+  addXP, };
 
 
 // ===== COMPARTIR SPOT (wiki-style) =====
@@ -25079,10 +23825,8 @@ window.filterInsigniasBy   = filterInsigniasBy;
 window.filterInsigniasPanel= filterInsigniasPanel;
 window.toggleInsignia      = toggleInsignia;
 window.setUserRole         = setUserRole;
-window.loadSoporteTickets  = loadSoporteTickets;
 window.previewStoryVideo   = previewStoryVideo;
 window.previewPostVideo    = previewPostVideo;
-window.filterSoporteBy     = filterSoporteBy;
 window.filterSoporteTickets= filterSoporteTickets;
 window.marcarSoporteLeido  = marcarSoporteLeido;
 window.eliminarSoporteTicket = eliminarSoporteTicket;
@@ -25221,168 +23965,7 @@ window.responderSoporte    = responderSoporte;
 </div>
 
 
-<script>
-// ═══════════════════════════════════════════════════
-// ADMIN — Reordenar Sidebar (drag & drop)
-// ═══════════════════════════════════════════════════
-const _SIDEBAR_DEFAULT = [
-  { id:'profile',          icon:'👤', label:'Mi Perfil' },
-  { id:'torneos',          icon:'🏆', label:'Torneos' },
-  { id:'rf4-records',      icon:'🎣', label:'Records RF4' },
-  { id:'skill',            icon:'📈', label:'Subir Skill' },
-  { id:'compartir-spot',   icon:'📍', label:'Compartir Spot' },
-  { id:'parches',          icon:'🔧', label:'Parches y Actualizaciones' },
-  { id:'soporte',          icon:'🆘', label:'Soporte Técnico' },
-  { id:'amigos',           icon:'👥', label:'Amigos' },
-  { id:'fotos',            icon:'📸', label:'Fotos' },
-  { id:'reels',            icon:'🎬', label:'Reels' },
-  { id:'ranking-semanal',  icon:'🏅', label:'Ranking Semanal' },
-  { id:'cafe',             icon:'☕', label:'Pedidos Café' },
-  { id:'tienda',           icon:'🛒', label:'Tienda' },
-  { id:'guardados',        icon:'🔖', label:'Guardados' },
-  { id:'faq',              icon:'❓', label:'Dudas Frecuentes' },
-  { id:'privacidad',       icon:'🔒', label:'Privacidad' },
-];
-const _SIDEBAR_KEY = 'adminSidebarOrder';
 
-function _getSidebarOrder(){
-  try{
-    const saved = localStorage.getItem(_SIDEBAR_KEY);
-    if(saved){ const arr=JSON.parse(saved); if(arr&&arr.length) return arr; }
-  }catch(e){}
-  return _SIDEBAR_DEFAULT.map(x=>x.id);
-}
-
-function _saveSidebarOrder(order){
-  localStorage.setItem(_SIDEBAR_KEY, JSON.stringify(order));
-}
-
-function applySidebarOrder(){
-  const order = _getSidebarOrder();
-  const container = document.querySelector('.sidebar-left');
-  if(!container) return;
-  // Mapear id -> elemento del sidebar
-  const map = {};
-  _SIDEBAR_DEFAULT.forEach(item=>{
-    // buscar el sl-item que tenga onclick con gp('id')
-    const els = container.querySelectorAll('.sl-item');
-    els.forEach(el=>{
-      const oc = el.getAttribute('onclick')||'';
-      if(oc.includes("'"+item.id+"'") || oc.includes('"'+item.id+'"')){
-        map[item.id] = el;
-      }
-    });
-  });
-  // Encontrar el primer sl-item para insertar antes del divider
-  const firstItem = container.querySelector('.sl-item');
-  if(!firstItem) return;
-  const parent = firstItem.parentNode;
-  // Encontrar el punto de inserción (después del divider y antes del primer sl-item)
-  const divider = container.querySelector('.divider');
-  const anchor = divider ? divider.nextSibling : firstItem;
-  // Re-insertar en orden
-  order.forEach(id=>{
-    if(map[id]) parent.insertBefore(map[id], anchor ? anchor : null);
-  });
-}
-
-function initSidebarAdmin(){
-  const tab = document.getElementById('admt-sidebar');
-  if(!tab) return;
-  const order = _getSidebarOrder();
-  const items = order.map(id=>{
-    const def = _SIDEBAR_DEFAULT.find(x=>x.id===id);
-    return def || {id, icon:'📌', label:id};
-  });
-  // Agregar items que no estén en el orden guardado
-  _SIDEBAR_DEFAULT.forEach(d=>{
-    if(!items.find(x=>x.id===d.id)) items.push(d);
-  });
-
-  tab.innerHTML = `
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px;">
-      <div style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:700;color:var(--accent);margin-bottom:6px;">🗂️ Orden del Sidebar</div>
-      <div style="font-size:.73rem;color:var(--muted);margin-bottom:16px;">Arrastrá los ítems para cambiar el orden. Se aplica al instante.</div>
-      <ul id="sidebarSortList" style="list-style:none;display:flex;flex-direction:column;gap:6px;">
-        ${items.map((item,i)=>`
-          <li draggable="true" data-id="${item.id}" data-idx="${i}"
-            style="display:flex;align-items:center;gap:12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:10px 14px;cursor:grab;transition:background .15s,border-color .15s;user-select:none;"
-            ondragstart="_sbDragStart(event)"
-            ondragover="_sbDragOver(event)"
-            ondrop="_sbDrop(event)"
-            ondragend="_sbDragEnd(event)"
-          >
-            <span style="font-size:1rem;flex-shrink:0;color:var(--muted);">⠿</span>
-            <span style="font-size:1.1rem;">${item.icon}</span>
-            <span style="font-size:.85rem;font-weight:600;color:var(--text);">${item.label}</span>
-            <span style="margin-left:auto;font-size:.68rem;color:var(--muted);font-family:monospace;">${item.id}</span>
-          </li>
-        `).join('')}
-      </ul>
-      <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;">
-        <button class="btn btn-p" style="font-size:.82rem;" onclick="_sbSave()">💾 Guardar y aplicar orden</button>
-        <button class="btn btn-s" style="font-size:.82rem;" onclick="_sbReset()">↺ Restablecer por defecto</button>
-      </div>
-      <div id="sbSaveMsg" style="display:none;margin-top:10px;padding:8px 14px;background:rgba(63,185,80,.12);border:1px solid rgba(63,185,80,.3);border-radius:var(--rs);font-size:.78rem;color:var(--green);">✅ Orden guardado y aplicado al sidebar.</div>
-    </div>
-  `;
-}
-
-let _sbDragging = null;
-function _sbDragStart(e){
-  _sbDragging = e.currentTarget;
-  e.currentTarget.style.opacity = '.45';
-  e.dataTransfer.effectAllowed = 'move';
-}
-function _sbDragOver(e){
-  e.preventDefault();
-  e.dataTransfer.dropEffect = 'move';
-  const list = document.getElementById('sidebarSortList');
-  const items = [...list.querySelectorAll('li')];
-  const target = e.currentTarget;
-  if(target === _sbDragging) return;
-  const rect = target.getBoundingClientRect();
-  const after = e.clientY > rect.top + rect.height/2;
-  if(after) target.after(_sbDragging);
-  else target.before(_sbDragging);
-}
-function _sbDrop(e){ e.preventDefault(); }
-function _sbDragEnd(e){ e.currentTarget.style.opacity = '1'; _sbDragging = null; }
-
-function _sbSave(){
-  const list = document.getElementById('sidebarSortList');
-  if(!list) return;
-  const order = [...list.querySelectorAll('li')].map(li=>li.dataset.id);
-  _saveSidebarOrder(order);
-  applySidebarOrder();
-  const msg = document.getElementById('sbSaveMsg');
-  if(msg){ msg.style.display='block'; setTimeout(()=>msg.style.display='none', 2500); }
-}
-function _sbReset(){
-  localStorage.removeItem(_SIDEBAR_KEY);
-  applySidebarOrder();
-  initSidebarAdmin();
-  const msg = document.getElementById('sbSaveMsg');
-  if(msg){ msg.style.display='block'; msg.textContent='↺ Orden restablecido por defecto.'; setTimeout(()=>{msg.style.display='none';msg.textContent='✅ Orden guardado y aplicado al sidebar.';}, 2000); }
-}
-
-// Aplicar al cargar la página
-window.addEventListener('DOMContentLoaded', ()=>{ setTimeout(applySidebarOrder, 800); });
-</script>
-
-
-<script>
-// Parchar el page-admin para incluir el div del tab
-(function(){
-  const pageAdmin = document.getElementById('page-admin');
-  if(!pageAdmin) return;
-  const tabDiv = document.createElement('div');
-  tabDiv.id = 'admt-sidebar';
-  tabDiv.style.display = 'none';
-  tabDiv.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:.85rem;">Hacé click en la tab 🗂️ Sidebar para cargar.</div>';
-  pageAdmin.appendChild(tabDiv);
-})();
-</script>
 
 
 <style>
