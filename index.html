@@ -4818,29 +4818,28 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
 
 
 
-<div id="mNotif" style="display:none;position:fixed;z-index:9999;top:56px;right:8px;width:400px;max-width:calc(100vw - 16px);max-height:85vh;background:#1c1e21;border:1px solid #3a3b3c;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,.8);flex-direction:column;overflow:hidden;animation:mIn .18s ease;">
-
-  <!-- Header -->
-  <div style="padding:16px 16px 0;background:#1c1e21;flex-shrink:0;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+<div id="mNotif" style="display:none;position:fixed;z-index:9999;top:56px;right:8px;width:380px;max-width:calc(100vw - 16px);max-height:80vh;background:var(--bg2);border:1px solid var(--border);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.05);flex-direction:column;overflow:hidden;animation:mIn .18s ease;">
+  
+  <div style="padding:16px 18px 0;background:var(--bg2);flex-shrink:0;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
       <div style="display:flex;align-items:center;gap:8px;">
-        <button onclick="closeNotifDropdown()" style="background:none;border:none;color:#e4e6eb;font-size:1.3rem;cursor:pointer;padding:0 4px;display:none;" class="mobile-only-btn" id="notifBackBtn">‹</button>
-        <span style="font-size:1.3rem;font-weight:900;color:#e4e6eb;font-family:'Exo 2',sans-serif;">Notificaciones</span>
+        
+        <button onclick="closeNotifDropdown()" style="background:none;border:none;color:var(--text);font-size:1.3rem;cursor:pointer;padding:0 4px;display:none;" class="mobile-only-btn" id="notifBackBtn">‹</button>
+        <span style="font-family:'Orbitron',monospace;font-size:1rem;font-weight:900;color:var(--text);">Notificaciones</span>
       </div>
       <div style="display:flex;gap:6px;align-items:center;">
-        <button onclick="markAllNotifsRead()" title="Marcar todas como leídas" style="background:#3a3b3c;border:none;color:#e4e6eb;font-size:.82rem;cursor:pointer;padding:6px 12px;border-radius:20px;font-family:'Exo 2',sans-serif;font-weight:600;transition:background .15s;" onmouseover="this.style.background='#4a4b4c'" onmouseout="this.style.background='#3a3b3c'">···</button>
-        <button onclick="closeNotifDropdown()" style="background:#3a3b3c;border:none;color:#e4e6eb;font-size:1rem;cursor:pointer;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='#4a4b4c'" onmouseout="this.style.background='#3a3b3c'">✕</button>
+        <button onclick="markAllNotifsRead()" title="Marcar todas como leídas" style="background:none;border:none;color:var(--muted);font-size:.82rem;cursor:pointer;padding:4px 10px;border-radius:20px;font-family:'Exo 2',sans-serif;font-weight:600;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">···</button>
+        <button onclick="closeNotifDropdown()" style="background:var(--bg3);border:none;color:var(--text);font-size:1rem;cursor:pointer;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background='var(--bg3)'">✕</button>
       </div>
     </div>
-    <!-- Tabs -->
-    <div style="display:flex;gap:4px;margin-bottom:4px;">
-      <button id="ntab-all" onclick="switchNotifTab('all')" style="padding:7px 16px;border:none;border-radius:20px;font-size:.85rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;background:#0084ff;color:#fff;transition:all .15s;">Todas</button>
-      <button id="ntab-unread" onclick="switchNotifTab('unread')" style="padding:7px 16px;border:none;border-radius:20px;font-size:.85rem;font-weight:600;cursor:pointer;font-family:'Exo 2',sans-serif;background:#3a3b3c;color:#e4e6eb;transition:all .15s;" onmouseover="this.style.background='#4a4b4c'" onmouseout="if(_notifTab!=='unread')this.style.background='#3a3b3c'">No leídas</button>
+    
+    <div style="display:flex;gap:4px;margin-bottom:10px;">
+      <button id="ntab-all" onclick="switchNotifTab('all')" style="padding:7px 14px;border:none;border-radius:20px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;background:var(--accent);color:#000;transition:all .15s;">Todas</button>
+      <button id="ntab-unread" onclick="switchNotifTab('unread')" style="padding:7px 14px;border:none;border-radius:20px;font-size:.82rem;font-weight:600;cursor:pointer;font-family:'Exo 2',sans-serif;background:transparent;color:var(--muted);transition:all .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="if(_notifTab!=='unread')this.style.background='transparent'">No leídas</button>
     </div>
   </div>
-
-  <!-- Lista -->
-  <div id="notifList" style="flex:1;overflow-y:auto;padding:4px 0;"></div>
+  
+  <div id="notifList" style="flex:1;overflow-y:auto;padding:8px 0;"></div>
 </div>
 
 
@@ -11323,7 +11322,7 @@ async function submitStory(){
     const newStoryId = storySnap.docs[0]?.id || '';
     const friends = window.CU?.friends || [];
     if(friends.length && newStoryId){
-      const notif = { text: `📖 ${window.CU.nick} publicó una nueva historia`, time: Date.now(), read: false, storyId: newStoryId, storyImg: imgUrl || '', fromAv: window.CU.av || '', fromNick: window.CU.nick || '', type: 'newStory' };
+      const notif = { text: `📖 ${window.CU.nick} publicó una nueva historia`, time: Date.now(), read: false, storyId: newStoryId, storyImg: imgUrl || '', fromAv: window.CU.av || '', fromNick: window.CU.nick || '', fromUid: window.CU.id || '', type: 'newStory' };
       await Promise.allSettled(friends.slice(0,50).map(uid => updateDoc(doc(db,'users',uid),{ notifs: arrayUnion(notif) })));
     }
   } catch(e){ console.warn('Error notif historia:', e); }
@@ -15053,8 +15052,8 @@ function switchNotifTab(tab){
   _notifTab = tab;
   const all = document.getElementById('ntab-all');
   const unread = document.getElementById('ntab-unread');
-  if(all){ all.style.background = tab==='all'?'#0084ff':'#3a3b3c'; all.style.color = '#fff'; }
-  if(unread){ unread.style.background = tab==='unread'?'#0084ff':'#3a3b3c'; unread.style.color = '#e4e6eb'; }
+  if(all){ all.style.background = tab==='all'?'var(--accent)':'transparent'; all.style.color = tab==='all'?'#000':'var(--muted)'; }
+  if(unread){ unread.style.background = tab==='unread'?'var(--accent)':'transparent'; unread.style.color = tab==='unread'?'#000':'var(--muted)'; }
   renderNotifs();
 }
 async function markAllNotifsRead(){
@@ -15073,170 +15072,166 @@ async function markAllNotifsRead(){
 }
 
 function _notifIcon(n){
-  if(n.type==='friendRequest') return {bg:'#1877f2', icon:'👥', svgIcon:'people'};
-  if(n.type==='match_mutual')    return {bg:'#e040fb', icon:'💖', svgIcon:'heart'};
-  if(n.type==='match_superlike') return {bg:'#f9a825', icon:'⭐', svgIcon:'star'};
-  if(n.type==='match_like')      return {bg:'#f33e58', icon:'💘', svgIcon:'heart'};
-  if(n.type==='newStory')        return {bg:'#9c27b0', icon:'📖', svgIcon:'story'};
+  // Retorna {emoji, bg, icon} para el badge sobre el avatar
+  if(n.type==='friendRequest') return {bg:'#1877f2', icon:'👥'};
+  if(n.type==='match_mutual')    return {bg:'#e040fb', icon:'💖'};
+  if(n.type==='match_superlike') return {bg:'#f9a825', icon:'⭐'};
+  if(n.type==='match_like')      return {bg:'#f33e58', icon:'💘'};
   const t = n.text||'';
-  if(t.includes('Match')||t.includes('match')||t.includes('dieron like')) return {bg:'#e040fb', icon:'💖', svgIcon:'heart'};
-  if(t.includes('Super Like')||t.includes('super like')) return {bg:'#f9a825', icon:'⭐', svgIcon:'star'};
-  if(t.includes('💘')||t.includes('le gustó tu perfil')) return {bg:'#f33e58', icon:'💘', svgIcon:'heart'};
-  if(t.includes('cumpleaños')||t.includes('🎂')) return {bg:'#e91e63', icon:'🎂', svgIcon:'birthday'};
-  if(t.includes('reaccionó')||t.includes('❤️')||t.includes('😍')||t.includes('le gusta')) return {bg:'#f02849', icon:'❤️', svgIcon:'like'};
-  if(t.includes('comentó')||t.includes('mencionó')||t.includes('comentario')) return {bg:'#1877f2', icon:'💬', svgIcon:'comment'};
-  if(t.includes('compartió')||t.includes('🔁')) return {bg:'#1877f2', icon:'🔁', svgIcon:'share'};
-  if(t.includes('etiquetó')||t.includes('🏷')) return {bg:'#1877f2', icon:'🏷️', svgIcon:'tag'};
-  if(t.includes('amigo')||t.includes('solicitud')||t.includes('aceptó')) return {bg:'#1877f2', icon:'👥', svgIcon:'people'};
-  if(t.includes('foto')||t.includes('📸')||t.includes('imagen')) return {bg:'#43a047', icon:'📸', svgIcon:'photo'};
-  if(t.includes('spot')||t.includes('📍')) return {bg:'#43a047', icon:'📍', svgIcon:'pin'};
-  if(t.includes('trofeo')||t.includes('🏆')) return {bg:'#f9a825', icon:'🏆', svgIcon:'trophy'};
-  if(t.includes('verificad')||t.includes('✅')) return {bg:'#ffd700', icon:'✅', svgIcon:'verified'};
-  if(t.includes('historia')||t.includes('📖')) return {bg:'#9c27b0', icon:'📖', svgIcon:'story'};
-  if(t.includes('felicitó')||t.includes('🎉')) return {bg:'#e91e63', icon:'🎉', svgIcon:'party'};
-  if(t.includes('reaccionó a tu comentario')) return {bg:'#f02849', icon:'❤️', svgIcon:'like'};
-  return {bg:'#1877f2', icon:'🔔', svgIcon:'bell'};
-}
-
-function _notifSvgBadge(svgIcon, bg){
-  const icons = {
-    like:     `<svg viewBox="0 0 24 24" fill="white" width="11" height="11"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>`,
-    comment:  `<svg viewBox="0 0 24 24" fill="white" width="11" height="11"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>`,
-    heart:    `<svg viewBox="0 0 24 24" fill="white" width="11" height="11"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`,
-    people:   `<svg viewBox="0 0 24 24" fill="white" width="11" height="11"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>`,
-    share:    `<svg viewBox="0 0 24 24" fill="white" width="11" height="11"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>`,
-    photo:    `<svg viewBox="0 0 24 24" fill="white" width="11" height="11"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>`,
-    story:    `<svg viewBox="0 0 24 24" fill="white" width="11" height="11"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>`,
-    star:     `<svg viewBox="0 0 24 24" fill="white" width="11" height="11"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`,
-    bell:     `<svg viewBox="0 0 24 24" fill="white" width="11" height="11"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>`,
-    birthday: `<svg viewBox="0 0 24 24" fill="white" width="11" height="11"><path d="M12 6c1.11 0 2-.9 2-2 0-.38-.1-.73-.29-1.03L12 0l-1.71 2.97c-.19.3-.29.65-.29 1.03 0 1.1.9 2 2 2zm4.6 9.99l-1.07-1.07-1.08 1.07c-1.3 1.3-3.58 1.31-4.89 0l-1.07-1.07-1.09 1.07C6.75 16.64 5.88 17 4.96 17c-.73 0-1.4-.23-1.96-.61V21c0 .55.45 1 1 1h16c.55 0 1-.45 1-1v-4.61c-.56.38-1.23.61-1.96.61-.92 0-1.79-.36-2.44-1.01zM18 9H6c-1.66 0-3 1.34-3 3v.57c0 1.1.9 2 2 2 .53 0 1.04-.21 1.41-.59l1.09-1.07 1.07 1.07c.74.74 2.07.74 2.81 0l1.08-1.07 1.07 1.07c.37.38.88.59 1.41.59 1.1 0 2-.9 2-2V12c0-1.66-1.34-3-3-3z"/></svg>`,
-    verified: `<svg viewBox="0 0 24 24" fill="white" width="11" height="11"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`,
-    tag:      `<svg viewBox="0 0 24 24" fill="white" width="11" height="11"><path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58s1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41s-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/></svg>`,
-    pin:      `<svg viewBox="0 0 24 24" fill="white" width="11" height="11"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`,
-    trophy:   `<svg viewBox="0 0 24 24" fill="white" width="11" height="11"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94.63 1.5 1.98 2.63 3.61 2.96V19H7v2h10v-2h-4v-3.1c1.63-.33 2.98-1.46 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/></svg>`,
-    party:    `<svg viewBox="0 0 24 24" fill="white" width="11" height="11"><path d="M1.5 21.5L21 2l.5.5L2 22l-.5-.5zm6-16L9 7l1.5-1.5L9 4 7.5 5.5zM3.5 13L5 14.5 6.5 13 5 11.5 3.5 13zm10-1.5L15 13l1.5-1.5L15 10l-1.5 1.5zM11 9l1.5 1.5L14 9l-1.5-1.5L11 9z"/></svg>`
-  };
-  return `<div style="position:absolute;bottom:-3px;right:-3px;width:22px;height:22px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;border:2px solid #1c1e21;box-shadow:0 1px 4px rgba(0,0,0,.5);">${icons[svgIcon]||icons.bell}</div>`;
+  if(t.includes('Match')||t.includes('match')||t.includes('dieron like')) return {bg:'#e040fb', icon:'💖'};
+  if(t.includes('Super Like')||t.includes('super like')) return {bg:'#f9a825', icon:'⭐'};
+  if(t.includes('💘')||t.includes('le gustó tu perfil')) return {bg:'#f33e58', icon:'💘'};
+  if(t.includes('cumpleaños')||t.includes('🎂')) return {bg:'#e91e63', icon:'🎂'};
+  if(t.includes('reaccionó')||t.includes('❤️')||t.includes('😍')) return {bg:'#f02849', icon:'❤️'};
+  if(t.includes('comentó')||t.includes('💬')) return {bg:'#1877f2', icon:'💬'};
+  if(t.includes('compartió')||t.includes('🔁')) return {bg:'#1877f2', icon:'🔁'};
+  if(t.includes('etiquetó')||t.includes('🏷')) return {bg:'#1877f2', icon:'🏷️'};
+  if(t.includes('amigo')||t.includes('solicitud')||t.includes('aceptó')) return {bg:'#1877f2', icon:'👥'};
+  if(t.includes('spot')||t.includes('📍')) return {bg:'#43a047', icon:'📍'};
+  if(t.includes('trofeo')||t.includes('🏆')) return {bg:'#f9a825', icon:'🏆'};
+  if(t.includes('verificad')||t.includes('✅')) return {bg:'#ffd700', icon:'✅'};
+  if(t.includes('historia')||t.includes('📖')) return {bg:'#9c27b0', icon:'📖'};
+  if(t.includes('felicitó')||t.includes('🎉')) return {bg:'#e91e63', icon:'🎉'};
+  return {bg:'#1877f2', icon:'🔔'};
 }
 
 function renderNotifs(){
   const el = document.getElementById('notifList');
   if(!el) return;
+  // Excluir notificaciones de mensajes 💬 — esas van al ícono de chat, no a la campana
   const noMsg = _notifs.filter(n=>!(n.text&&n.text.startsWith('💬')));
+  // Ordenar por tiempo DESC (más nuevas primero)
   noMsg.sort((a,b)=>(b.time||0)-(a.time||0));
   const list = _notifTab==='unread' ? noMsg.filter(n=>!n.read) : noMsg;
-
   if(!list.length){
-    el.innerHTML = `<div style="text-align:center;padding:50px 20px;color:#65676b;">
-      <div style="font-size:3rem;margin-bottom:12px;">${_notifTab==='unread'?'✓':'🔔'}</div>
-      <div style="font-size:.88rem;font-weight:600;">${_notifTab==='unread'?'Todo al día':'Sin notificaciones aún'}</div>
+    el.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--muted);">
+      <div style="font-size:2.5rem;margin-bottom:10px;">${_notifTab==='unread'?'✓':'🔔'}</div>
+      <div style="font-size:.85rem;">${_notifTab==='unread'?'Todo al día, sin notificaciones sin leer':'Sin notificaciones aún'}</div>
     </div>`;
     el.onclick = null;
     return;
   }
 
+  // Agrupar por hoy / anteriores
+  const now = Date.now();
   const todayStart = new Date(); todayStart.setHours(0,0,0,0);
   const todayTs = todayStart.getTime();
-  const newItems  = list.filter(n=>(n.time||0)>=todayTs);
-  const prevItems = list.filter(n=>(n.time||0)<todayTs);
+  const todayItems = list.filter(n=>(n.time||0)>=todayTs);
+  const prevItems  = list.filter(n=>(n.time||0)<todayTs);
 
   function renderItem(n, i){
     const isRead = !!n.read;
-    const {bg, icon, svgIcon} = _notifIcon(n);
-    const rowBg   = isRead ? 'transparent' : 'rgba(0,132,255,.08)';
-    const fromAv  = n.fromAv || n.visitorAv || '';
-    const avInner = `<img src="${fromAv||getDefaultAv()}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.style.display='none'">`;
+    const {bg, icon} = _notifIcon(n);
+    const unreadBg = isRead ? '' : 'rgba(0,198,255,.05)';
+    const rowBg = isRead ? '' : 'background:rgba(0,198,255,.05);';
 
-    // Separar nick + acción del texto
-    const rawText = n.text||'';
-    const emojiNickMatch = rawText.match(/^([\u{1F300}-\u{1FFFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\uFE0F\u20E3\u200D]+)?\s*([\w.\-_À-ÿ]+)\s+(.+)$/u);
-    let notifTextHtml = '';
-    if(emojiNickMatch){
-      const [, emo, nick, rest] = emojiNickMatch;
-      notifTextHtml = `<strong style="color:#e4e6eb">${esc(nick)}</strong> <span style="color:#b0b3b8">${esc(rest)}</span>`;
-    } else {
-      notifTextHtml = `<span style="color:#b0b3b8">${esc(rawText)}</span>`;
-    }
+    // Avatar del que generó la notif
+    const fromAv = n.fromAv || n.visitorAv || '';
+    const avInner = `<img src="${fromAv||getDefaultAv()}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">`;
 
-    // Preview card
-    const postId  = n.postId||'';
-    const bdayUid = n.bdayUid||'';
-    const storyId = n.storyId||'';
-    const hasPostPreview = !!(n.postImg||n.postPreviewText) && postId;
-    let previewCard = '';
-    if(hasPostPreview && n.postImg){
-      previewCard = `<img src="${n.postImg}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0;margin-left:4px;" onerror="this.style.display='none'">`;
-    } else if(storyId && n.storyImg){
-      previewCard = `<img src="${n.storyImg}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0;margin-left:4px;">`;
-    }
-
-    const matchType    = n.type||'';
-    const matchUid     = n.matchUid||n.fromUid||'';
-    const isMatchNotif = matchType==='match_mutual'||matchType==='match_like'||matchType==='match_superlike';
-    const rowClickable = !!(postId||bdayUid||storyId||isMatchNotif);
-
-    // Solicitud de amistad: botones especiales
     if(n.type==='friendRequest'){
       const safeNick = (n.fromNick||'').replace(/['"<>&]/g,'');
-      return `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:${rowBg};cursor:pointer;transition:background .15s;border-radius:0;"
-        onmouseover="this.style.background='#2a2b2d'"
-        onmouseout="this.style.background='${rowBg}'">
+      return `<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;transition:background .15s;${rowBg}cursor:pointer;border-bottom:1px solid rgba(255,255,255,.04);"
+        onmouseover="this.style.background='var(--bg3)'"
+        onmouseout="this.style.background='${unreadBg}'">
         <div style="position:relative;flex-shrink:0;">
-          <div style="width:52px;height:52px;border-radius:50%;overflow:hidden;background:#3a3b3c;">${avInner}</div>
-          ${_notifSvgBadge('people','#1877f2')}
+          <div style="width:48px;height:48px;border-radius:50%;background:var(--bg3);overflow:hidden;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">${avInner}</div>
+          <div style="position:absolute;bottom:-2px;right:-2px;width:18px;height:18px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;font-size:.65rem;border:2px solid var(--bg2);">${icon}</div>
         </div>
         <div style="flex:1;min-width:0;">
-          <div style="font-size:.84rem;line-height:1.4;margin-bottom:6px;"><strong style="color:#e4e6eb">${esc(n.fromNick||'')}</strong> <span style="color:#b0b3b8">quiere ser tu amigo/a</span></div>
-          <div style="font-size:.72rem;color:#0084ff;font-weight:600;margin-bottom:8px;">${fmtT(n.time)}</div>
+          <div style="font-size:.84rem;line-height:1.4;margin-bottom:6px;color:var(--text);"><strong>${esc(n.fromNick||'')}</strong> <span style="color:var(--muted);">quiere ser tu amigo/a</span></div>
+          <div style="font-size:.7rem;color:var(--accent);margin-bottom:10px;">${fmtT(n.time)}</div>
           <div style="display:flex;gap:8px;">
             <button data-action="accept-friend" data-idx="${i}" data-uid="${n.fromId||''}" data-nick="${safeNick}"
-              style="flex:1;padding:8px;background:#0084ff;border:none;color:#fff;border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">Confirmar</button>
+              style="flex:1;padding:8px;background:var(--accent);border:none;color:#000;border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">Confirmar</button>
             <button data-action="reject-friend" data-idx="${i}" data-fromid="${n.fromId||''}"
-              style="flex:1;padding:8px;background:#3a3b3c;border:none;color:#e4e6eb;border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">Eliminar</button>
+              style="flex:1;padding:8px;background:var(--bg4);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">Eliminar</button>
           </div>
         </div>
-        ${!isRead?`<div style="width:10px;height:10px;background:#0084ff;border-radius:50%;flex-shrink:0;"></div>`:''}
+        ${!isRead?`<div style="width:8px;height:8px;background:var(--accent);border-radius:50%;flex-shrink:0;margin-top:6px;"></div>`:''}
       </div>`;
     }
 
-    return `<div data-action="notif-click" data-postid="${postId}" data-bdayuid="${bdayUid}" data-bdaynick="${n.bdayNick||''}" data-storyid="${storyId}" data-type="${matchType}" data-matchuid="${matchUid}" data-matchnick="${(n.fromNick||'').replace(/"/g,'&quot;')}" data-notifidx="${i}"
-      style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:${rowBg};cursor:${rowClickable?'pointer':'default'};transition:background .15s;position:relative;"
-      onmouseover="this.style.background='#2a2b2d';this.querySelector('.notif-del-btn')&&(this.querySelector('.notif-del-btn').style.opacity='1')"
-      onmouseout="this.style.background='${rowBg}';this.querySelector('.notif-del-btn')&&(this.querySelector('.notif-del-btn').style.opacity='0')">
-      <!-- Avatar + badge icono -->
+    // Notif normal
+    const postId = n.postId||'';
+    const bdayUid = n.bdayUid||'';
+    const storyId = n.storyId||'';
+    const clickable = !!(postId || bdayUid || storyId);
+
+    // Vista previa del contenido al que se reaccionó/comentó
+    const hasPostPreview = !!(n.postImg || n.postPreviewText) && postId;
+    const isReactionNotif = (n.text||'').includes('reaccionó') || (n.text||'').match(/^[👍❤️😂😮😢🔥]/u);
+
+    // Separar el texto en partes: actor + acción (para resaltar el nick)
+    let notifTextHtml = '';
+    const rawText = n.text||'';
+    const nickMatch = rawText.match(/^([^\s]+(?:\s[^\s]+)?)?\s*(.*)/);
+    // Intenta extraer emoji + nick del inicio
+    const emojiNickMatch = rawText.match(/^([\u{1F300}-\u{1FFFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\uFE0F\u20E3\u200D]+)?\s*([\w.\-_À-ÿ]+)\s+(.+)$/u);
+    if(emojiNickMatch){
+      const [, emo, nick, rest] = emojiNickMatch;
+      notifTextHtml = `${emo||''} <strong style="color:var(--text)">${esc(nick)}</strong> <span style="color:var(--muted)">${esc(rest)}</span>`;
+    } else {
+      notifTextHtml = rawText;
+    }
+
+    // Tarjeta de preview del post
+    let previewCard = '';
+    if(hasPostPreview){
+      if(n.postImg){
+        previewCard = `<div style="margin-top:8px;display:flex;align-items:stretch;border-radius:10px;overflow:hidden;border:1px solid rgba(46,196,182,.25);background:var(--bg3);">
+          <img src="${n.postImg}" style="width:64px;height:64px;object-fit:cover;flex-shrink:0;display:block;" onerror="this.parentElement.style.display='none'">
+          ${n.postPreviewText ? `<div style="padding:8px 10px;font-size:.75rem;color:var(--muted);line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${esc(n.postPreviewText)}</div>` : '<div style="padding:8px 10px;font-size:.72rem;color:var(--muted);font-style:italic;">Ver publicación</div>'}
+        </div>`;
+      } else if(n.postPreviewText){
+        previewCard = `<div style="margin-top:8px;border-radius:10px;border-left:3px solid ${bg};background:var(--bg3);padding:8px 12px;font-size:.76rem;color:var(--muted);line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${esc(n.postPreviewText)}</div>`;
+      }
+    } else if(storyId){
+      // Solo miniatura compacta como Facebook — sin imagen grande
+      if(n.storyImg){
+        previewCard = `<img src="${n.storyImg}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0;margin-left:4px;" onerror="this.style.display='none'">`;
+      }
+    }
+
+    const matchType   = n.type||'';
+    const matchUid    = n.matchUid||n.fromUid||'';
+    const isMatchNotif = matchType==='match_mutual'||matchType==='match_like'||matchType==='match_superlike';
+    const rowClickable = !!(postId || bdayUid || storyId || isMatchNotif);
+    const storyFromUid = storyId ? (n.fromUid || n.fromId || matchUid) : '';
+    const storyFromNick = storyId ? (n.fromNick || '') : '';
+    return `<div data-action="notif-click" data-postid="${postId}" data-bdayuid="${bdayUid}" data-bdaynick="${n.bdayNick||''}" data-storyid="${storyId}" data-type="${matchType}" data-matchuid="${storyId ? storyFromUid : matchUid}" data-matchnick="${storyId ? storyFromNick.replace(/"/g,'&quot;') : (n.fromNick||'').replace(/"/g,'&quot;')}"
+      style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;transition:background .15s;${rowBg}cursor:${rowClickable?'pointer':'default'};border-bottom:1px solid rgba(255,255,255,.04);position:relative;"
+      onmouseover="this.style.background='var(--bg3)';this.querySelector('.notif-del-btn')&&(this.querySelector('.notif-del-btn').style.opacity='1')"
+      onmouseout="this.style.background='${unreadBg}';this.querySelector('.notif-del-btn')&&(this.querySelector('.notif-del-btn').style.opacity='0')">
+      ${!isRead ? `<div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${bg};border-radius:0 2px 2px 0;"></div>` : ''}
       <div style="position:relative;flex-shrink:0;">
-        <div style="width:52px;height:52px;border-radius:50%;overflow:hidden;background:#3a3b3c;">${avInner}</div>
-        ${_notifSvgBadge(svgIcon||'bell', bg)}
+        <div style="width:46px;height:46px;border-radius:50%;background:var(--bg3);overflow:hidden;border:2px solid ${isRead?'var(--border)':bg};display:flex;align-items:center;justify-content:center;font-size:1.1rem;">${avInner}</div>
+        <div style="position:absolute;bottom:-2px;right:-2px;width:20px;height:20px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;font-size:.72rem;border:2px solid var(--bg2);box-shadow:0 1px 4px rgba(0,0,0,.4);">${icon}</div>
       </div>
-      <!-- Texto + tiempo -->
       <div style="flex:1;min-width:0;overflow:hidden;">
-        <div style="font-size:.84rem;line-height:1.4;margin-bottom:3px;">${notifTextHtml}</div>
-        <div style="font-size:.75rem;color:${isRead?'#65676b':'#0084ff'};font-weight:${isRead?'400':'700'};">${fmtT(n.time)}</div>
-      </div>
-      <!-- Preview imagen (si hay) + punto azul -->
-      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+        <div style="font-size:.83rem;line-height:1.45;color:var(--text);word-break:break-word;">${notifTextHtml}</div>
         ${previewCard}
-        ${!isRead?`<div style="width:10px;height:10px;background:#0084ff;border-radius:50%;flex-shrink:0;"></div>`:'<div style="width:10px;"></div>'}
+        <div style="font-size:.7rem;color:${isRead?'var(--muted)':bg};margin-top:5px;font-weight:${isRead?'400':'600'};">${fmtT(n.time)}</div>
       </div>
-      <!-- Botón eliminar (hover) -->
-      <button data-action="delete-notif" data-idx="${i}" onclick="event.stopPropagation()" class="notif-del-btn"
-        style="opacity:0;transition:opacity .2s;position:absolute;top:6px;right:6px;background:#3a3b3c;border:none;color:#b0b3b8;font-size:.75rem;cursor:pointer;padding:3px 6px;border-radius:12px;line-height:1;"
-        onmouseover="this.style.background='#4a4b4c';this.style.color='#e4e6eb'"
-        onmouseout="this.style.background='#3a3b3c';this.style.color='#b0b3b8'">✕</button>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;margin-left:2px;">
+        ${!isRead?`<div style="width:8px;height:8px;background:${bg};border-radius:50%;box-shadow:0 0 6px ${bg}88;flex-shrink:0;"></div>`:'<div style="width:8px;"></div>'}
+        <button data-action="delete-notif" data-idx="${i}" onclick="event.stopPropagation()" class="notif-del-btn"
+          style="opacity:0;transition:opacity .2s;background:none;border:none;color:var(--muted);font-size:.85rem;cursor:pointer;padding:4px;border-radius:50%;line-height:1;width:24px;height:24px;display:flex;align-items:center;justify-content:center;"
+          onmouseover="this.style.color='var(--red)';this.style.background='var(--bg4)'"
+          onmouseout="this.style.color='var(--muted)';this.style.background='none'">✕</button>
+      </div>
     </div>`;
   }
 
   let html = '';
-  if(newItems.length){
-    html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px 6px;">
-      <span style="font-size:.88rem;font-weight:800;color:#e4e6eb;">Nuevas</span>
-      <span onclick="switchNotifTab('unread')" style="font-size:.78rem;color:#0084ff;font-weight:600;cursor:pointer;">Ver todo</span>
-    </div>`;
-    html += newItems.map((n,i)=>renderItem(n,i)).join('');
+  if(todayItems.length){
+    html += `<div style="padding:10px 14px 5px;font-size:.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Hoy</div>`;
+    html += todayItems.map((n,i)=>renderItem(n,i)).join('');
   }
   if(prevItems.length){
-    html += `<div style="padding:12px 16px 6px;"><span style="font-size:.88rem;font-weight:800;color:#e4e6eb;">Anteriores</span></div>`;
-    html += prevItems.map((n,i)=>renderItem(n, newItems.length+i)).join('');
+    if(todayItems.length) html += `<div style="height:1px;background:var(--border);margin:4px 0;"></div>`;
+    html += `<div style="padding:10px 14px 5px;font-size:.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Anteriores</div>`;
+    html += prevItems.map((n,i)=>renderItem(n, todayItems.length+i)).join('');
   }
   el.innerHTML = html;
 
@@ -15246,7 +15241,18 @@ function renderNotifs(){
     const action = row.dataset.action;
     if(action==='notif-click'){
       const nType = row.dataset.type||'';
-      if(row.dataset.storyid){ closeNotifDropdown(); openStoryById(row.dataset.storyid); }
+      if(row.dataset.storyid){
+        closeNotifDropdown();
+        // Si es reacción/comentario a historia → abrir chat con esa persona
+        const _sFromUid = row.dataset.matchuid || '';
+        const _sFromNick = row.dataset.matchnick || '';
+        if(_sFromUid && _sFromUid !== window.CU?.id && typeof openChatWith === 'function'){
+          openChatWith(_sFromUid, _sFromNick);
+        } else {
+          // Si es notif de historia propia publicada → abrirla directo
+          openStoryById(row.dataset.storyid);
+        }
+      }
       else if(row.dataset.postid){ closeNotifDropdown(); scrollToPost(row.dataset.postid); }
       else if(row.dataset.bdayuid){ closeNotifDropdown(); openUserProfile(row.dataset.bdayuid, row.dataset.bdaynick); }
       else if(nType==='match_mutual'){
