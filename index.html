@@ -5068,8 +5068,8 @@ window._rechazarAlbumDesdeNotif = async function(visitorUid, ownerUid, btn) {
             🎬 Video
             <input type="file" accept="video/*" id="_storyYtFileInput" style="display:none">
           </div>
-          <div id="storyVideoUploadStatus" style="display:none;margin-top:6px;font-size:.76rem;"></div>
         </div>
+        <div id="storyVideoUploadStatus" style="display:none;margin-top:6px;font-size:.76rem;"></div>
         <div id="storyImgPrev" style="margin-top:4px;"></div>
         <div id="storyVideoPrev" style="margin-top:4px;"></div>
         <div>
@@ -5267,6 +5267,8 @@ window._rechazarAlbumDesdeNotif = async function(visitorUid, ownerUid, btn) {
         <div id="_scPreviewBg" style="position:absolute;inset:0;background:linear-gradient(160deg,#1877f2,#0a3d7c);"></div>
         
         <img id="_scPreviewImg" src="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;">
+
+        <iframe id="_scPreviewVideo" src="" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" style="position:absolute;inset:0;width:100%;height:100%;border:none;display:none;background:#000;"></iframe>
         
         <div id="_scPreviewText" style="position:relative;z-index:2;padding:20px;text-align:center;color:#fff;font-weight:700;font-size:1rem;text-shadow:0 2px 8px rgba(0,0,0,.5);word-break:break-word;max-width:100%;"></div>
         
@@ -11387,6 +11389,8 @@ function openStoryChooser(){
   if(storyVideoUploadStatus){ storyVideoUploadStatus.style.display='none'; storyVideoUploadStatus.innerHTML=''; }
   const storyVideoPrevReset = document.getElementById('storyVideoPrev');
   if(storyVideoPrevReset) storyVideoPrevReset.innerHTML = '';
+  const _scPVid = document.getElementById('_scPreviewVideo');
+  if(_scPVid){ _scPVid.src=''; _scPVid.style.display='none'; }
   // Set user info
   if(window.CU){
     const av = document.getElementById('_scUserAv');
@@ -12356,6 +12360,7 @@ async function submitStory(){
   const sv2 = document.getElementById('storyVideoPrev'); if(sv2) sv2.innerHTML='';
   const svSt = document.getElementById('storyVideoUploadStatus'); if(svSt){ svSt.style.display='none'; svSt.innerHTML=''; }
   const stBtn = document.getElementById('storyVideoBtn'); if(stBtn){ stBtn.style.opacity=''; stBtn.style.pointerEvents=''; }
+  const _svPVid = document.getElementById('_scPreviewVideo'); if(_svPVid){ _svPVid.src=''; _svPVid.style.display='none'; }
   const t1 = document.getElementById('storyText'); if(t1) t1.value='';
   const t2 = document.getElementById('storyTextText'); if(t2) t2.value='';
   const ip = document.getElementById('storyImgPrev'); if(ip) ip.innerHTML='';
@@ -30040,7 +30045,19 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
         // Guardar en window para que submitStory lo use
         window._storyYtUrl = data.videoUrl;
         window._storyYtId  = data.videoId;
-        _storySetStatus('✅ Video listo. Ahora escribí algo y publicá la historia.', 'var(--green)');
+        // Mostrar preview del video en el panel derecho
+        const _pvid = document.getElementById('_scPreviewVideo');
+        const _pimg = document.getElementById('_scPreviewImg');
+        const _pbg  = document.getElementById('_scPreviewBg');
+        const _pph  = document.getElementById('_scPreviewPlaceholder');
+        if(_pvid){
+          _pvid.src = 'https://www.youtube.com/embed/'+data.videoId+'?autoplay=1&rel=0&playsinline=1&mute=1';
+          _pvid.style.display = 'block';
+        }
+        if(_pimg) _pimg.style.display = 'none';
+        if(_pbg)  _pbg.style.background = '#000';
+        if(_pph)  _pph.style.display = 'none';
+        _storySetStatus('✅ Video listo. Escribí algo (opcional) y publicá la historia.', 'var(--green)');
         _toast('✅ Video listo — completá la historia y publicá','ok');
       }catch(e){
         window._storyYtUrl = null;
