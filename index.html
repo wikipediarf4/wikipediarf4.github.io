@@ -3758,6 +3758,19 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
     }
   }
 
+  // Helper: esperar hasta que window.uploadImage esté disponible (máx 5 seg)
+  function _waitForUploadImage(ms) {
+    return new Promise(function(resolve, reject) {
+      if (typeof window.uploadImage === 'function') { resolve(window.uploadImage); return; }
+      var elapsed = 0;
+      var iv = setInterval(function() {
+        elapsed += 100;
+        if (typeof window.uploadImage === 'function') { clearInterval(iv); resolve(window.uploadImage); }
+        else if (elapsed >= (ms || 5000)) { clearInterval(iv); reject(new Error('uploadImage no disponible. Recargá la página.')); }
+      }, 100);
+    });
+  }
+
   window.subirFotosAlbum = async function(input) {
     var files = Array.from(input.files);
     if (!files.length) return;
@@ -3777,12 +3790,21 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
     var subidos = 0;
     var errores = 0;
 
+    // Esperar a que uploadImage esté disponible antes de empezar
+    var _uploadFn;
+    try {
+      _uploadFn = await _waitForUploadImage(5000);
+    } catch(e) {
+      toast('❌ Error: ' + e.message, 'err');
+      input.value = '';
+      return;
+    }
+
     for (var file of files) {
       if (file.size > 5*1024*1024) { toast('Una foto supera 5MB, se omitió','err'); errores++; continue; }
       try {
-        // Usar uploadImage igual que posts e historias
-        var url = await (window.uploadImage || uploadImage)(file, 'albumPrivado');
-        await window.addDoc(window.collection(window.db,'albumPrivado',myUid,'fotos'), { url, subidaEn: Date.now(), ownerUid: myUid, estado: 'pendiente', ownerNick: window.CU.nick||'', ownerAv: window.CU.av||'' });
+        var url = await _uploadFn(file, 'albumPrivado');
+        await window.addDoc(window.collection(window.db,'albumPrivado',myUid,'fotos'), { url: url, subidaEn: Date.now(), ownerUid: myUid, estado: 'pendiente', ownerNick: window.CU.nick||'', ownerAv: window.CU.av||'' });
         subidos++;
       } catch(e) {
         console.error('Upload album error:', e);
@@ -9866,8 +9888,8 @@ function updateNavUI(){
   // User menu
   document.getElementById('userMenuNick').textContent = window.CU.nick;
   document.getElementById('userMenuEmail').textContent = window.CU.email||'';
-  // Admin button — visible solo para ruizgustavo12
-  const isAdmin = window.CU.nick === 'ruizgustavo12' || window.CU.nick === 'gustavo ruiz' || window.CU.nick === 'gustavoruiz' || window.CU.email === 'synxyes@gmail.com';
+  // Admin button — visible para admins
+  const isAdmin = window.CU.nick === 'ruizgustavo12' || window.CU.nick === 'gustavo ruiz' || window.CU.nick === 'gustavoruiz' || window.CU.email === 'synxyes@gmail.com' || window.CU.role === 'admin';
   const adminNavBtn = document.getElementById('adminNavBtn');
   const userMenuAdmin = document.getElementById('userMenuAdmin');
   const shopNavBtn = document.getElementById('shopNavBtn');
@@ -17444,11 +17466,12 @@ async function submitReport(){
 // ===== ADMIN TAB SWITCHER =====
 function swAdminTab(el, tabId){
   document.querySelectorAll('.adm-tab').forEach(t=>t.classList.remove('adm-on'));
-  el.classList.add('adm-on');
+  if(el) el.classList.add('adm-on');
   ['admt-reports','admt-posts','admt-users','admt-verif','admt-grupos','admt-ads','admt-live','admt-faq','admt-soporte','admt-album']
     .forEach(id=>{ const e=document.getElementById(id); if(e) e.style.display='none'; });
   const tab = document.getElementById(tabId);
   if(tab) tab.style.display='block';
+  if(tabId==='admt-reports' || tabId==='admt-posts') loadAdminData();
   if(tabId==='admt-grupos') loadAdminGrupos();
   if(tabId==='admt-users') loadAdminUsers();
   if(tabId==='admt-verif') loadVerifRequests();
@@ -17460,7 +17483,7 @@ function swAdminTab(el, tabId){
 }
 
 async function loadAdminData(){
-  if(!window.CU || (window.CU.nick !== 'ruizgustavo12' && window.CU.nick !== 'gustavo ruiz' && window.CU.nick !== 'gustavoruiz' && window.CU.email !== 'synxyes@gmail.com')) return;
+  if(!window.CU || (window.CU.nick !== 'ruizgustavo12' && window.CU.nick !== 'gustavo ruiz' && window.CU.nick !== 'gustavoruiz' && window.CU.email !== 'synxyes@gmail.com' && window.CU.role !== 'admin')) return;
 
   // config/stats: leer contadores desde 1 documento en vez de colecciones completas
   try{
