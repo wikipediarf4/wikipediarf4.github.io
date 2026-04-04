@@ -2750,22 +2750,15 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
       <div class="sl-item" onclick="gp('amigos');renderAmigosPage()"><span class="sl-item-icon">👥</span> Amigos</div>
       <div class="sl-item" onclick="gp('match')"><span class="sl-item-icon">💘</span> Match</div>
       <div class="sl-item" onclick="gp('fotos');initFotosPage()"><span class="sl-item-icon">📸</span> Fotos</div>
-
-      <!-- ══ FOTOS DE USUARIOS ══ -->
-      <div class="divider" style="margin:10px 0 6px;"></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:0 4px 6px;">
-        <span style="font-size:.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">📸 Fotos</span>
-        <button onclick="sideReelLoad()" style="background:none;border:1px solid var(--border);border-radius:6px;padding:1px 6px;font-size:.65rem;color:var(--muted);cursor:pointer;" title="Actualizar">↻</button>
-      </div>
-      <div id="sideReelFeed" style="display:flex;flex-direction:column;gap:8px;max-height:480px;overflow-y:auto;padding-right:2px;" class="custom-scroll">
-        <div style="text-align:center;padding:12px;color:var(--muted);font-size:.72rem;">Cargando...</div>
-      </div>
-      <!-- ══ /FOTOS DE USUARIOS ══ -->
       
       <div class="sl-item" onclick="gp('reels');setNav(document.querySelectorAll('.tb-nav-btn')[4])"><span class="sl-item-icon">🎬</span> Reels</div>
 
+
+
       <div class="sl-item"><span class="sl-item-icon">🔖</span> Guardados</div>
       <div class="sl-item" onclick="gp('privacidad')"><span class="sl-item-icon">🔒</span> Privacidad</div>
+
+
 
 
       
@@ -4046,7 +4039,8 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
       <div style="margin-bottom:10px;">
         <label style="font-size:.75rem;font-weight:700;color:#444;display:block;margin-bottom:4px;">País *</label>
         <select id="phCountry" style="width:100%;padding:10px 14px;border:1.5px solid #dddfe2;border-radius:8px;font-family:'Exo 2',sans-serif;font-size:.88rem;outline:none;box-sizing:border-box;background:#fff;"
-          onfocus="this.style.borderColor='#25d366'" onblur="this.style.borderColor='#dddfe2'" onchange="var opt=this.options[this.selectedIndex];var code=opt.getAttribute('data-code')||'';document.getElementById('phDialCode').value=code;">
+          onfocus="this.style.borderColor='#25d366'" onblur="this.style.borderColor='#dddfe2'"
+          onchange="var opt=this.options[this.selectedIndex];var code=opt.getAttribute('data-code')||'';document.getElementById('phDialCode').value=code;">
           <option value="">— Seleccioná tu país —</option>
           <option value="🇦🇷 Argentina" data-code="+54">🇦🇷 Argentina (+54)</option>
           <option value="🇺🇾 Uruguay" data-code="+598">🇺🇾 Uruguay (+598)</option>
@@ -8839,13 +8833,12 @@ window.sendPhoneSMS = async function(){
   if(!nick || nick.length < 2){
     errEl.textContent = 'Ingresá tu nick (mínimo 2 caracteres).'; errEl.style.display='block'; return;
   }
-  // Auto-agregar + si el usuario se olvidó
   if(dial && !dial.startsWith('+')) dial = '+' + dial;
   if(!dial || !dial.startsWith('+')){
     errEl.textContent = 'Seleccioná tu país o ingresá el código (ej: +54).'; errEl.style.display='block'; return;
   }
   if(!number || number.length < 6){
-    errEl.textContent = 'Ingresá tu número de celular (mínimo 6 dígitos).'; errEl.style.display='block'; return;
+    errEl.textContent = 'Ingresá tu número de celular.'; errEl.style.display='block'; return;
   }
   if(!terms){
     errEl.textContent = 'Debés aceptar los Términos y Condiciones.'; errEl.style.display='block'; return;
@@ -26343,7 +26336,78 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
   // SIDEBAR FOTOS — fotos de usuarios en sidebar izquierdo
   // ────────────────────────────────────────────────────────────
   var _sideReelItems = [];
-  var _sideReelLoading = false;
+  // ══ PÁGINA FOTOS ══
+  window.initFotosPage = async function(){
+    var grid = document.getElementById('fotosPageGrid');
+    var errEl = document.getElementById('fotosPageErr');
+    if(!grid) return;
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--muted);font-size:.9rem;">Cargando...</div>';
+    if(errEl) errEl.style.display='none';
+    var retries = 0;
+    while((!window.db || !window.firebaseFirestore) && retries < 20){
+      await new Promise(function(r){ setTimeout(r,500); });
+      retries++;
+    }
+    if(!window.db || !window.firebaseFirestore){
+      grid.innerHTML = '';
+      if(errEl){ errEl.textContent='Sin conexion a la base de datos.'; errEl.style.display='block'; }
+      return;
+    }
+    try {
+      var _ff = window.firebaseFirestore;
+      var snap = await _ff.getDocs(_ff.query(_ff.collection(window.db,'users'),_ff.limit(200)));
+      var users = snap.docs
+        .map(function(d){ return Object.assign({id:d.id},d.data()); })
+        .filter(function(u){ return u.av && typeof u.av==='string' && u.av.startsWith('http') && !u.banned; })
+        .sort(function(a,b){
+          var ta = a.lastSeen && a.lastSeen.toMillis ? a.lastSeen.toMillis() : (a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : 0);
+          var tb = b.lastSeen && b.lastSeen.toMillis ? b.lastSeen.toMillis() : (b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : 0);
+          return tb - ta;
+        });
+      if(!users.length){
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--muted);">No hay usuarios con foto aun.</div>';
+        return;
+      }
+      grid.innerHTML = users.map(function(u){
+        var esc = {'<':'&lt;','>':'&gt;','"':'&quot;','&':'&amp;'};
+        var nick = (u.nick||'Usuario').replace(/[<>"&]/g,function(c){ return esc[c]; });
+        var badge = u.verified ? ' ✅' : '';
+        var country = u.country ? u.country : '';
+        var isMe = window.CU && window.CU.id === u.id;
+        var isFriend = !isMe && window.CU && window._friends && window._friends.some(function(f){ return f.id===u.id; });
+        var uid = u.id;
+        var addBtn = '';
+        if(!isMe){
+          if(isFriend){
+            addBtn = '<button onclick="openUserProfile(\'' + uid + '\',\'' + nick + '\')" style="width:100%;padding:9px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;margin-bottom:6px;">Mensaje</button>';
+          } else {
+            addBtn = '<button onclick="sendFriendReq(\'' + uid + '\')" style="width:100%;padding:9px;background:#1877f2;color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;margin-bottom:6px;">Agregar a amigos</button>';
+          }
+        }
+        var profileBtn = '<button onclick="openUserProfile(\'' + uid + '\',\'' + nick + '\')" style="width:100%;padding:8px;background:none;color:var(--muted);border:1px solid var(--border);border-radius:8px;font-size:.8rem;cursor:pointer;">Ver perfil</button>';
+        return [
+          '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08);">',
+          '<div style="width:100%;padding-top:110%;position:relative;background:var(--bg3);overflow:hidden;cursor:pointer;" onclick="openUserProfile(\'' + uid + '\',\'' + nick + '\')">',
+          '<img src="' + u.av + '" loading="lazy" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:top;" onerror="this.style.opacity=.2">',
+          '</div>',
+          '<div style="padding:10px 12px 12px;">',
+          '<div style="font-weight:800;font-size:.9rem;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + nick + badge + '</div>',
+          country ? '<div style="font-size:.72rem;color:var(--muted);margin-bottom:8px;">' + country + '</div>' : '<div style="margin-bottom:8px;"></div>',
+          addBtn,
+          profileBtn,
+          '</div>',
+          '</div>'
+        ].join('');
+      }).join('');
+    } catch(e){
+      grid.innerHTML = '';
+      if(errEl){ errEl.textContent='Error al cargar: '+(e.message||e); errEl.style.display='block'; }
+      console.error('initFotosPage error:',e);
+    }
+  };
+
+
+    var _sideReelLoading = false;
 
   window.sideReelLoad = async function(){
     if(_sideReelLoading) return;
@@ -29532,6 +29596,26 @@ window._showBanScreen = _showBanScreen;
 </style>
 
 <!-- HTML de la sección MATCH -->
+
+<!-- ══════════════ PAGE FOTOS ══════════════ -->
+<div class="page" id="page-fotos" style="max-width:1100px;margin:0 auto;padding:24px 16px 80px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span style="font-size:1.5rem;">📸</span>
+      <div>
+        <div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:var(--text);">Fotos de usuarios</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:2px;">Explorá perfiles de la comunidad</div>
+      </div>
+    </div>
+    <button onclick="initFotosPage()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:.82rem;font-weight:700;font-family:'Exo 2',sans-serif;cursor:pointer;">↻ Actualizar</button>
+  </div>
+  <div id="fotosPageErr" style="display:none;color:var(--muted);text-align:center;padding:40px 0;font-size:.9rem;"></div>
+  <div id="fotosPageGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;">
+    <div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--muted);font-size:.9rem;">⏳ Cargando...</div>
+  </div>
+</div>
+<!-- ══════════════ /PAGE FOTOS ══════════════ -->
+
 <div class="page" id="page-match">
 
   <!-- Header -->
