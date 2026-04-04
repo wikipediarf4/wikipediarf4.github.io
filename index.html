@@ -3880,7 +3880,8 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
   var _albumLightboxFotoId = null;
 
   window.initAlbumPrivado = async function() {
-    _albumProfileUid = window._viewingProfileUid || (window.CU && window.CU.id);
+    _albumProfileUid = window._viewingProfileUid || null;
+    if (!_albumProfileUid) { console.warn('Album: no se encontró el UID del dueño del álbum'); return; }
     const myUid = window.CU && window.CU.id;
     const isOwner = _albumProfileUid === myUid;
 
