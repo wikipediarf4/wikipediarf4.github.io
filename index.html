@@ -1781,9 +1781,9 @@ select.fi option{background:var(--bg3);color:var(--text);}
 .btn-p:hover{opacity:.9;}
 .btn-s{background:#f0f2f5;color:var(--text);border:1px solid var(--border);}
 .active-map{background:rgba(0,198,255,.12)!important;border-color:var(--accent)!important;color:var(--accent)!important;}
-.adm-tab{background:#f0f2f5;border:1px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:var(--rs);font-size:.78rem;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:600;transition:all .15s;}
-.adm-tab:hover{color:var(--text);border-color:var(--accent);}
-.adm-on{background:rgba(0,198,255,.1)!important;border-color:var(--accent)!important;color:var(--accent)!important;}
+.adm-tab{background:var(--bg2);border:1px solid var(--border);color:var(--muted);padding:10px 6px;border-radius:10px;font-size:.78rem;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:600;transition:all .18s;text-align:center;}
+.adm-tab:hover{color:var(--text);border-color:var(--accent);background:var(--bg3);}
+.adm-on{background:rgba(0,198,255,.12)!important;border-color:var(--accent)!important;color:var(--accent)!important;box-shadow:0 0 0 1px var(--accent) inset;}
 .btn-s:hover{border-color:var(--accent);color:var(--accent);}
 .btn-full{width:100%;}
 
@@ -6677,202 +6677,232 @@ window.initSalasPage = window.initSalasPage;
 </script>
 <!-- ═══════════════════════════ FIN CHAT SALAS ════════════════════════════ -->
 
-<div class="page" id="page-admin" style="max-width:1000px;margin:0 auto;padding:24px 16px 80px;">
-  <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
-    <div style="width:42px;height:42px;border-radius:10px;background:rgba(255,68,68,.12);border:1px solid rgba(255,68,68,.3);display:flex;align-items:center;justify-content:center;font-size:1.3rem;">🛡️</div>
+<div class="page" id="page-admin" style="max-width:1100px;margin:0 auto;padding:20px 14px 80px;">
+
+<!-- ══ HEADER ══════════════════════════════════════════════════════════ -->
+<div style="display:flex;align-items:center;gap:14px;margin-bottom:22px;flex-wrap:wrap;">
+  <div style="width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,rgba(255,68,68,.18),rgba(255,68,68,.06));border:1px solid rgba(255,68,68,.35);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;">🛡️</div>
+  <div>
+    <div style="font-family:'Orbitron',monospace;font-size:1.05rem;font-weight:900;color:var(--red);letter-spacing:.04em;">Panel de Administración</div>
+    <div style="font-size:.72rem;color:var(--muted);margin-top:1px;">MiLatido.UY — acceso restringido</div>
+  </div>
+  <button onclick="loadAdminData()" style="margin-left:auto;background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:7px 16px;border-radius:var(--rs);font-size:.78rem;cursor:pointer;font-family:'Exo 2',sans-serif;display:flex;align-items:center;gap:5px;transition:border-color .15s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">🔄 Actualizar</button>
+</div>
+
+<!-- ══ STATS CARDS ═══════════════════════════════════════════════════ -->
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:24px;">
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 10px;text-align:center;transition:border-color .2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+    <div style="font-size:1.6rem;font-weight:900;color:var(--accent);font-family:'Orbitron',monospace;line-height:1;" id="adminStatPosts">0</div>
+    <div style="font-size:.65rem;color:var(--muted);margin-top:5px;font-weight:600;">POSTS</div>
+  </div>
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 10px;text-align:center;transition:border-color .2s;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">
+    <div style="font-size:1.6rem;font-weight:900;color:var(--green);font-family:'Orbitron',monospace;line-height:1;" id="adminStatUsers">0</div>
+    <div style="font-size:.65rem;color:var(--muted);margin-top:5px;font-weight:600;">USUARIOS</div>
+  </div>
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 10px;text-align:center;transition:border-color .2s;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">
+    <div style="font-size:1.6rem;font-weight:900;color:var(--red);font-family:'Orbitron',monospace;line-height:1;" id="adminStatReports">0</div>
+    <div style="font-size:.65rem;color:var(--muted);margin-top:5px;font-weight:600;">REPORTES</div>
+  </div>
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 10px;text-align:center;transition:border-color .2s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
+    <div style="font-size:1.6rem;font-weight:900;color:var(--gold);font-family:'Orbitron',monospace;line-height:1;" id="adminStatStories">0</div>
+    <div style="font-size:.65rem;color:var(--muted);margin-top:5px;font-weight:600;">HISTORIAS</div>
+  </div>
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 10px;text-align:center;transition:border-color .2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+    <div style="font-size:1.6rem;font-weight:900;color:var(--accent);font-family:'Orbitron',monospace;line-height:1;" id="adminStatGroups">0</div>
+    <div style="font-size:.65rem;color:var(--muted);margin-top:5px;font-weight:600;">GRUPOS</div>
+  </div>
+</div>
+
+<!-- ══ TABS NAV ══════════════════════════════════════════════════════ -->
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px;margin-bottom:20px;">
+
+  <button class="adm-tab adm-on" onclick="swAdminTab(this,'admt-reports')"
+    style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;">
+    <span style="font-size:1.2rem;">⚠️</span>
+    <span style="font-size:.67rem;font-weight:700;">Reportes</span>
+  </button>
+
+  <button class="adm-tab" onclick="swAdminTab(this,'admt-posts')"
+    style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;">
+    <span style="font-size:1.2rem;">📝</span>
+    <span style="font-size:.67rem;font-weight:700;">Posts</span>
+  </button>
+
+  <button class="adm-tab" onclick="swAdminTab(this,'admt-users')"
+    style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;">
+    <span style="font-size:1.2rem;">👥</span>
+    <span style="font-size:.67rem;font-weight:700;">Usuarios</span>
+  </button>
+
+  <button class="adm-tab" onclick="swAdminTab(this,'admt-verif')"
+    style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;">
+    <span style="font-size:1.2rem;">✅</span>
+    <span style="font-size:.67rem;font-weight:700;">Verificaciones</span>
+  </button>
+
+  <button class="adm-tab" onclick="swAdminTab(this,'admt-grupos')"
+    style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;">
+    <span style="font-size:1.2rem;">🎣</span>
+    <span style="font-size:.67rem;font-weight:700;">Grupos</span>
+  </button>
+
+  <button class="adm-tab" onclick="swAdminTab(this,'admt-ads')"
+    style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;">
+    <span style="font-size:1.2rem;">📢</span>
+    <span style="font-size:.67rem;font-weight:700;">Publicidad</span>
+  </button>
+
+  <button class="adm-tab" onclick="swAdminTab(this,'admt-live')"
+    style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;background:rgba(255,0,0,.08);border-color:rgba(255,0,0,.25);color:#ff4444;">
+    <span style="font-size:1.2rem;">🔴</span>
+    <span style="font-size:.67rem;font-weight:700;">Live</span>
+  </button>
+
+  <button class="adm-tab" onclick="swAdminTab(this,'admt-soporte');loadAdminSoporteTickets()"
+    style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;">
+    <span style="font-size:1.2rem;">🆘</span>
+    <span style="font-size:.67rem;font-weight:700;">Soporte</span>
+  </button>
+
+  <button class="adm-tab" onclick="swAdminTab(this,'admt-faq');loadAdminFaq()"
+    style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;background:rgba(46,196,182,.06);border-color:rgba(46,196,182,.25);color:var(--accent);">
+    <span style="font-size:1.2rem;">❓</span>
+    <span style="font-size:.67rem;font-weight:700;">FAQ <span id="admFaqBadge" style="display:none;background:var(--accent);color:#0d1117;border-radius:100px;padding:0 5px;font-size:.58rem;font-weight:800;margin-left:2px;">0</span></span>
+  </button>
+
+  <button class="adm-tab" onclick="swAdminTab(this,'admt-album');loadAdminAlbum()"
+    style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;background:rgba(200,0,40,.06);border-color:rgba(200,0,40,.25);color:#e74c3c;">
+    <span style="font-size:1.2rem;">🔒</span>
+    <span style="font-size:.67rem;font-weight:700;">Álbum <span id="admAlbumBadge" style="display:none;background:#e74c3c;color:#fff;border-radius:100px;padding:0 5px;font-size:.58rem;font-weight:800;margin-left:2px;">0</span></span>
+  </button>
+
+</div>
+
+<!-- ══ DIVISOR ═══════════════════════════════════════════════════════ -->
+<div style="height:1px;background:var(--border);margin-bottom:20px;"></div>
+
+<!-- ══ CONTENIDO TABS ════════════════════════════════════════════════ -->
+
+<div id="admt-reports">
+  <div id="adminReportsList"><div style="text-align:center;padding:40px;color:var(--muted);">Cargando reportes...</div></div>
+</div>
+
+<div id="admt-posts" style="display:none;">
+  <div id="adminPostsList"><div style="text-align:center;padding:40px;color:var(--muted);">Cargando...</div></div>
+</div>
+
+<div id="admt-users" style="display:none;">
+  <div id="adminUsersList"><div style="text-align:center;padding:40px;color:var(--muted);">Cargando usuarios...</div></div>
+</div>
+
+<div id="admt-verif" style="display:none;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+    <span style="font-size:.9rem;font-weight:800;color:var(--text);">Solicitudes de Verificación</span>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button onclick="loadVerifRequests()" style="background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:var(--rs);font-size:.75rem;cursor:pointer;font-family:'Exo 2',sans-serif;">🔄 Actualizar</button>
+      <button onclick="loadAllUsersForBulkVerif()" style="background:rgba(46,196,182,.12);border:1px solid rgba(46,196,182,.35);color:var(--accent);padding:5px 14px;border-radius:var(--rs);font-size:.75rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">🖼️ Verificar por fotos</button>
+    </div>
+  </div>
+  <div id="adminVerifList"><div style="text-align:center;padding:30px;color:var(--muted);">Cargando solicitudes...</div></div>
+  <div id="bulkVerifPanel" style="display:none;margin-top:18px;">
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px;">
+      <div style="font-size:.82rem;font-weight:700;color:var(--accent);margin-bottom:4px;">🖼️ Verificación por fotos de perfil</div>
+      <div style="font-size:.72rem;color:var(--muted);">Revisá cada foto y decidí si el usuario tiene foto de persona real. ✅ Verificar = foto real · ❌ Omitir = dibujo/anime/logo/etc.</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+      <span id="bulkVerifProgress" style="font-size:.8rem;color:var(--muted);font-weight:700;"></span>
+      <button onclick="_bulkVerifApproveAll()" style="background:rgba(0,200,0,.1);border:1px solid rgba(0,200,0,.3);color:#00c853;padding:5px 14px;border-radius:var(--rs);font-size:.73rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">✅ Verificar todos los pendientes</button>
+      <button onclick="document.getElementById('bulkVerifPanel').style.display='none'" style="background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:var(--rs);font-size:.73rem;cursor:pointer;">✕ Cerrar</button>
+    </div>
+    <div id="bulkVerifGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;"></div>
+  </div>
+</div>
+
+<div id="admt-live" style="display:none;">
+  <div style="background:var(--bg2);border:1px solid rgba(255,0,0,.2);border-radius:var(--r);padding:22px;">
+    <div style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:700;color:#ff4444;margin-bottom:18px;">🔴 Control de Live</div>
+    <div class="fg">
+      <label class="fl">URL del stream (YouTube o Twitch)</label>
+      <input class="fi" id="liveUrlInput" placeholder="https://www.youtube.com/watch?v=... o https://www.twitch.tv/canal">
+      <div style="font-size:.68rem;color:var(--muted);margin-top:4px;">Pegá la URL normal — se convierte automáticamente al embed.</div>
+    </div>
+    <div class="fg">
+      <label class="fl">Título del live</label>
+      <input class="fi" id="liveTitleInput" placeholder="Ej: 🎣 Pesca en vivo — Akhtuba River">
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+      <button onclick="adminSetLive(true)" style="flex:1;background:linear-gradient(135deg,#ff0000,#cc0000);color:#fff;border:none;border-radius:var(--rs);padding:11px;font-size:.85rem;font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;">🔴 Activar Live</button>
+      <button onclick="adminSetLive(false)" style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--muted);border-radius:var(--rs);padding:11px;font-size:.85rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">⏹ Terminar Live</button>
+    </div>
+    <div id="liveAdminStatus" style="margin-top:14px;font-size:.78rem;border-radius:var(--rs);padding:10px;display:none;"></div>
+  </div>
+</div>
+
+<div id="admt-ads" style="display:none;">
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px;">
+    <div style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:700;color:var(--accent);margin-bottom:14px;">📢 Crear Anuncio</div>
+    <div class="frow">
+      <div class="fg"><label class="fl">Título *</label><input class="fi" id="adTitle" placeholder="Ej: Salidas, eventos, novedades"></div>
+      <div class="fg"><label class="fl">Subtítulo / URL display</label><input class="fi" id="adSubtitle" placeholder="Ej: rf4game.com"></div>
+    </div>
+    <div class="fg"><label class="fl">URL al hacer click</label><input class="fi" id="adUrl" placeholder="https://..."></div>
+    <div class="fg"><label class="fl">Imagen del anuncio</label>
+      <label style="display:flex;align-items:center;gap:8px;padding:10px;border:2px dashed var(--border);border-radius:var(--rs);cursor:pointer;color:var(--muted);font-size:.85rem;">
+        📸 Subir imagen <input type="file" accept="image/*" id="adImgInput" style="display:none" onchange="previewAdminMedia(this,'adImgPrev',1)">
+      </label>
+      <div id="adImgPrev" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;"></div>
+    </div>
+    <div class="fg"><label class="fl">Orden (número)</label><input class="fi" type="number" id="adOrder" value="1"></div>
+    <button class="btn btn-p" style="font-size:.85rem;margin-top:4px;" onclick="submitAd()">📤 Publicar anuncio</button>
+  </div>
+  <div id="adminAdsList"><div style="text-align:center;padding:20px;color:var(--muted);">Cargando anuncios...</div></div>
+</div>
+
+<div id="admt-grupos" style="display:none;">
+  <div id="adminGruposList"><div style="text-align:center;padding:40px;color:var(--muted);">Cargando publicaciones...</div></div>
+</div>
+
+<div id="admt-soporte" style="display:none;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+    <div style="font-size:.92rem;font-weight:700;color:var(--text);">🆘 Tickets de Soporte</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+      <button onclick="filterSoporteTickets('todos')" class="cfbtn active">Todos</button>
+      <button onclick="filterSoporteTickets('nuevo')" class="cfbtn" style="color:var(--accent);">🆕 Nuevos</button>
+      <button onclick="filterSoporteTickets('en_proceso')" class="cfbtn" style="color:var(--warn);">⚙️ En proceso</button>
+      <button onclick="filterSoporteTickets('resuelto')" class="cfbtn" style="color:var(--green);">✅ Resueltos</button>
+      <button onclick="filterSoporteTickets('cerrado')" class="cfbtn" style="color:var(--muted);">🔒 Cerrados</button>
+    </div>
+  </div>
+  <div id="adminSoporteList"><div style="text-align:center;padding:32px;color:var(--muted);">Cargando tickets...</div></div>
+</div>
+
+<div id="admt-faq" style="display:none;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+    <div style="font-size:.92rem;font-weight:700;color:var(--text);">❓ Gestión de Preguntas Frecuentes</div>
+    <div style="display:flex;gap:6px;">
+      <button onclick="loadAdminFaq('pendiente')" id="faqf-pend" class="cfbtn" style="color:var(--warn);">⏳ Pendientes</button>
+      <button onclick="loadAdminFaq('aprobado')" id="faqf-apro" class="cfbtn" style="color:var(--green);">✅ Aprobadas</button>
+      <button onclick="loadAdminFaq('todas')" id="faqf-all" class="cfbtn active">Todas</button>
+    </div>
+  </div>
+  <div id="faqAdminList"><div style="text-align:center;padding:32px;color:var(--muted);">Cargando...</div></div>
+</div>
+
+<div id="admt-album" style="display:none;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
     <div>
-      <div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:var(--red);">Panel de Administración</div>
-      <div style="font-size:.75rem;color:var(--muted);">MiLatido — Panel de administración</div>
+      <div style="font-size:.92rem;font-weight:700;color:var(--text);">🔒 Moderación de Álbum Privado</div>
+      <div id="admAlbumResumen" style="font-size:.75rem;color:var(--muted);margin-top:3px;"></div>
     </div>
-    <button onclick="loadAdminData()" style="margin-left:auto;background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:var(--rs);font-size:.78rem;cursor:pointer;font-family:'Exo 2',sans-serif;">🔄 Actualizar</button>
-  </div>
-
-  
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px;">
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;text-align:center;">
-      <div style="font-family:'Orbitron',monospace;font-size:1.5rem;font-weight:900;color:var(--accent)" id="adminStatPosts">0</div>
-      <div style="font-size:.7rem;color:var(--muted);margin-top:3px;">Publicaciones</div>
-    </div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;text-align:center;">
-      <div style="font-family:'Orbitron',monospace;font-size:1.5rem;font-weight:900;color:var(--green)" id="adminStatUsers">0</div>
-      <div style="font-size:.7rem;color:var(--muted);margin-top:3px;">Usuarios</div>
-    </div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;text-align:center;">
-      <div style="font-family:'Orbitron',monospace;font-size:1.5rem;font-weight:900;color:var(--red)" id="adminStatReports">0</div>
-      <div style="font-size:.7rem;color:var(--muted);margin-top:3px;">Reportes</div>
-    </div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;text-align:center;">
-      <div style="font-family:'Orbitron',monospace;font-size:1.5rem;font-weight:900;color:var(--gold)" id="adminStatStories">0</div>
-      <div style="font-size:.7rem;color:var(--muted);margin-top:3px;">Historias</div>
-    </div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;text-align:center;">
-      <div style="font-family:'Orbitron',monospace;font-size:1.5rem;font-weight:900;color:var(--accent)" id="adminStatGroups">0</div>
-      <div style="font-size:.7rem;color:var(--muted);margin-top:3px;">Grupos</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+      <button onclick="loadAdminAlbum('pendiente')" id="albf-pend" class="cfbtn" style="color:#e67e22;">⏳ Pendientes</button>
+      <button onclick="loadAdminAlbum('aprobado')" id="albf-apro" class="cfbtn" style="color:var(--green);">✅ Aprobadas</button>
+      <button onclick="loadAdminAlbum('rechazado')" id="albf-rech" class="cfbtn" style="color:var(--red);">❌ Rechazadas</button>
+      <button onclick="loadAdminAlbum('todas')" id="albf-all" class="cfbtn active">Todas</button>
     </div>
   </div>
-
-  
-  
-  <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:8px;">
-    <button class="adm-tab adm-on" onclick="swAdminTab(this,'admt-reports')">⚠️ Reportes</button>
-    <button class="adm-tab" onclick="swAdminTab(this,'admt-posts')">📝 Posts</button>
-    <button class="adm-tab" onclick="swAdminTab(this,'admt-users')">👥 Usuarios</button>
-    <button class="adm-tab" onclick="swAdminTab(this,'admt-verif')">✅ Verificaciones</button>
-    
-    
-    
-    <button class="adm-tab" onclick="swAdminTab(this,'admt-grupos')">🎣 Grupos</button>
-    <button class="adm-tab" onclick="swAdminTab(this,'admt-ads')">📢 Publicidad</button>
-    <button class="adm-tab" onclick="swAdminTab(this,'admt-live')" style="background:rgba(255,0,0,.1);border-color:rgba(255,0,0,.3);color:#ff4444;">🔴 Live</button>
-    <button class="adm-tab" onclick="swAdminTab(this,'admt-soporte');loadAdminSoporteTickets()">🆘 Soporte</button>
-    
-    
-    
-    
-    
-    <button class="adm-tab" onclick="swAdminTab(this,'admt-faq');loadAdminFaq();" style="background:rgba(46,196,182,.08);border-color:rgba(46,196,182,.3);color:var(--accent);">❓ FAQ <span id="admFaqBadge" style="display:none;background:var(--accent);color:#0d1117;border-radius:100px;padding:1px 6px;font-size:.65rem;font-weight:800;margin-left:3px;">0</span></button>
-    <button class="adm-tab" onclick="swAdminTab(this,'admt-album');loadAdminAlbum()" style="background:rgba(200,0,40,.08);border-color:rgba(200,0,40,.3);color:#e74c3c;">🔒 Álbum <span id="admAlbumBadge" style="display:none;background:#e74c3c;color:#fff;border-radius:100px;padding:1px 6px;font-size:.65rem;font-weight:800;margin-left:3px;">0</span></button>
-
-  </div>
-
-  
-
-  <div id="admt-reports">
-    <div id="adminReportsList"><div style="text-align:center;padding:30px;color:var(--muted);">Cargando reportes...</div></div>
-  </div>
-
-  
-  <div id="admt-posts" style="display:none;">
-    <div id="adminPostsList"><div style="text-align:center;padding:30px;color:var(--muted);">Cargando...</div></div>
-  </div>
-
-  
-  <div id="admt-users" style="display:none;">
-    <div id="adminUsersList"><div style="text-align:center;padding:30px;color:var(--muted);">Cargando usuarios...</div></div>
-  </div>
-
-  
-  <div id="admt-verif" style="display:none;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
-      <span style="font-size:.9rem;font-weight:800;color:var(--text);">Solicitudes de Verificación</span>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button onclick="loadVerifRequests()" style="background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:var(--rs);font-size:.75rem;cursor:pointer;font-family:'Exo 2',sans-serif;">🔄 Actualizar</button>
-        <button onclick="loadAllUsersForBulkVerif()" style="background:rgba(46,196,182,.12);border:1px solid rgba(46,196,182,.35);color:var(--accent);padding:5px 14px;border-radius:var(--rs);font-size:.75rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">🖼️ Verificar por fotos</button>
-      </div>
-    </div>
-    <div id="adminVerifList"><div style="text-align:center;padding:30px;color:var(--muted);">Cargando solicitudes...</div></div>
-
-    <!-- Panel verificación masiva por fotos -->
-    <div id="bulkVerifPanel" style="display:none;margin-top:18px;">
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px;">
-        <div style="font-size:.82rem;font-weight:700;color:var(--accent);margin-bottom:4px;">🖼️ Verificación por fotos de perfil</div>
-        <div style="font-size:.72rem;color:var(--muted);">Revisá cada foto y decidí si el usuario tiene foto de persona real. ✅ Verificar = foto real · ❌ Omitir = dibujo/anime/logo/etc.</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
-        <span id="bulkVerifProgress" style="font-size:.8rem;color:var(--muted);font-weight:700;"></span>
-        <button onclick="_bulkVerifApproveAll()" style="background:rgba(0,200,0,.1);border:1px solid rgba(0,200,0,.3);color:#00c853;padding:5px 14px;border-radius:var(--rs);font-size:.73rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">✅ Verificar todos los pendientes</button>
-        <button onclick="document.getElementById('bulkVerifPanel').style.display='none'" style="background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:var(--rs);font-size:.73rem;cursor:pointer;">✕ Cerrar</button>
-      </div>
-      <div id="bulkVerifGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;"></div>
-    </div>
-  </div>
-
-  
-  
-
-  
-  
-
-  
-  
-
-  
-  
-  <div id="admt-live" style="display:none;">
-    <div style="background:var(--bg2);border:1px solid rgba(255,0,0,.25);border-radius:var(--r);padding:20px;margin-bottom:16px;">
-      <div style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:700;color:#ff4444;margin-bottom:16px;">🔴 Control de Live</div>
-      <div class="fg">
-        <label class="fl">URL del stream (YouTube o Twitch)</label>
-        <input class="fi" id="liveUrlInput" placeholder="https://www.youtube.com/watch?v=... o https://www.twitch.tv/canal">
-        <div style="font-size:.68rem;color:var(--muted);margin-top:4px;">Pegá la URL normal — se convierte automáticamente al embed.</div>
-      </div>
-      <div class="fg">
-        <label class="fl">Título del live</label>
-        <input class="fi" id="liveTitleInput" placeholder="Ej: 🎣 Pesca en vivo — Akhtuba River">
-      </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">
-        <button onclick="adminSetLive(true)" style="flex:1;background:linear-gradient(135deg,#ff0000,#cc0000);color:#fff;border:none;border-radius:var(--rs);padding:10px;font-size:.85rem;font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;">🔴 Activar Live</button>
-        <button onclick="adminSetLive(false)" style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--muted);border-radius:var(--rs);padding:10px;font-size:.85rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">⏹ Terminar Live</button>
-      </div>
-      <div id="liveAdminStatus" style="margin-top:14px;font-size:.78rem;border-radius:var(--rs);padding:10px;display:none;"></div>
-    </div>
-  </div>
-
-  <div id="admt-ads" style="display:none;">
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px;">
-      <div style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:700;color:var(--accent);margin-bottom:14px;">📢 Crear Anuncio</div>
-      <div class="frow">
-        <div class="fg"><label class="fl">Título *</label><input class="fi" id="adTitle" placeholder="Ej: Salidas, eventos, novedades"></div>
-        <div class="fg"><label class="fl">Subtítulo / URL display</label><input class="fi" id="adSubtitle" placeholder="Ej: rf4game.com"></div>
-      </div>
-      <div class="fg"><label class="fl">URL al hacer click</label><input class="fi" id="adUrl" placeholder="https://..."></div>
-      <div class="fg"><label class="fl">Imagen del anuncio</label>
-        <label style="display:flex;align-items:center;gap:8px;padding:10px;border:2px dashed var(--border);border-radius:var(--rs);cursor:pointer;color:var(--muted);font-size:.85rem;">
-          📸 Subir imagen <input type="file" accept="image/*" id="adImgInput" style="display:none" onchange="previewAdminMedia(this,'adImgPrev',1)">
-        </label>
-        <div id="adImgPrev" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;"></div>
-      </div>
-      <div class="fg"><label class="fl">Orden (número)</label><input class="fi" type="number" id="adOrder" value="1"></div>
-      <button class="btn btn-p" style="font-size:.85rem;margin-top:4px;" onclick="submitAd()">📤 Publicar anuncio</button>
-    </div>
-    <div id="adminAdsList"><div style="text-align:center;padding:20px;color:var(--muted);">Cargando anuncios...</div></div>
-  </div>
-
-  <div id="admt-grupos" style="display:none;">
-    <div id="adminGruposList"><div style="text-align:center;padding:20px;color:var(--muted);">Cargando publicaciones...</div></div>
-  </div>
-
-  <div id="admt-soporte" style="display:none;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
-      <div style="font-size:.92rem;font-weight:700;color:var(--text);">🆘 Tickets de Soporte</div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        <button onclick="filterSoporteTickets('todos')" class="cfbtn active">Todos</button>
-        <button onclick="filterSoporteTickets('nuevo')" class="cfbtn" style="color:var(--accent);">🆕 Nuevos</button>
-        <button onclick="filterSoporteTickets('en_proceso')" class="cfbtn" style="color:var(--warn);">⚙️ En proceso</button>
-        <button onclick="filterSoporteTickets('resuelto')" class="cfbtn" style="color:var(--green);">✅ Resueltos</button>
-        <button onclick="filterSoporteTickets('cerrado')" class="cfbtn" style="color:var(--muted);">🔒 Cerrados</button>
-      </div>
-    </div>
-    <div id="adminSoporteList"><div style="text-align:center;padding:32px;color:var(--muted);">Cargando tickets...</div></div>
-  </div>
-
-  <div id="admt-faq" style="display:none;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
-      <div style="font-size:.92rem;font-weight:700;color:var(--text);">❓ Gestión de Preguntas Frecuentes</div>
-      <div style="display:flex;gap:6px;">
-        <button onclick="loadAdminFaq('pendiente')" id="faqf-pend" class="cfbtn" style="color:var(--warn);">⏳ Pendientes</button>
-        <button onclick="loadAdminFaq('aprobado')" id="faqf-apro" class="cfbtn" style="color:var(--green);">✅ Aprobadas</button>
-        <button onclick="loadAdminFaq('todas')" id="faqf-all" class="cfbtn active">Todas</button>
-      </div>
-    </div>
-    <div id="faqAdminList"><div style="text-align:center;padding:32px;color:var(--muted);">Cargando...</div></div>
-  </div>
-
-  <div id="admt-album" style="display:none;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
-      <div>
-        <div style="font-size:.92rem;font-weight:700;color:var(--text);">🔒 Moderación de Álbum Privado</div>
-        <div id="admAlbumResumen" style="font-size:.75rem;color:var(--muted);margin-top:3px;"></div>
-      </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        <button onclick="loadAdminAlbum('pendiente')" id="albf-pend" class="cfbtn" style="color:#e67e22;">⏳ Pendientes</button>
-        <button onclick="loadAdminAlbum('aprobado')" id="albf-apro" class="cfbtn" style="color:var(--green);">✅ Aprobadas</button>
-        <button onclick="loadAdminAlbum('rechazado')" id="albf-rech" class="cfbtn" style="color:var(--red);">❌ Rechazadas</button>
-        <button onclick="loadAdminAlbum('todas')" id="albf-all" class="cfbtn active">Todas</button>
-      </div>
-    </div>
-    <div id="adminAlbumList"><div style="text-align:center;padding:32px;color:var(--muted);">Cargando fotos...</div></div>
-  </div>
+  <div id="adminAlbumList"><div style="text-align:center;padding:32px;color:var(--muted);">Cargando fotos...</div></div>
+</div>
 
 </div><!-- fin page-admin -->
 
