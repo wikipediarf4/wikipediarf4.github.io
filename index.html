@@ -22415,6 +22415,7 @@ async function _reelsHandleClick(e){
   const btn = e.target.closest('[data-action]');
   if(!btn) return;
   e.stopPropagation();
+  e.preventDefault();
   const action = btn.dataset.action;
   const pid = btn.dataset.pid;
 
@@ -22426,6 +22427,12 @@ async function _reelsHandleClick(e){
   if(action==='share' && pid){ sharePost(pid); return; }
 
   if(!pid) return;
+
+  // Verificar login antes de reaccionar o comentar
+  if((action==='like'||action==='comment') && !window.CU){
+    toast('Iniciá sesión para interactuar','err');
+    return;
+  }
 
   // Ensure post is in _posts cache before calling react/comment
   if(!(_posts||[]).find(p=>p.id===pid)){
@@ -22440,21 +22447,25 @@ async function _reelsHandleClick(e){
   }
 
   if(action==='like'){
-    await doReact(pid,'❤️');
-    // Update reel like button visually
-    const p = (_posts||[]).find(p=>p.id===pid);
-    if(p){
-      const likeBtn = document.querySelector('[data-reel-pid="'+pid+'"] [data-action="like"]');
-      if(likeBtn){
-        const fmtN = n=>n>999?(n/1000).toFixed(1)+'K':(n||'0');
-        const total = Object.values(p.reactionCounts||{}).reduce((a,b)=>a+(b||0),0);
-        const myRxn = p.reactions?.[window.CU?.id];
-        likeBtn.innerHTML = (myRxn||'❤️') + ' ' + fmtN(total||p.likes||0);
-        likeBtn.style.color = myRxn ? '#f85149' : '';
+    try {
+      await doReact(pid,'❤️');
+      // Update reel like button visually
+      const p = (_posts||[]).find(p=>p.id===pid);
+      if(p){
+        const likeBtn = document.querySelector('[data-reel-pid="'+pid+'"] [data-action="like"]');
+        if(likeBtn){
+          const fmtN = n=>n>999?(n/1000).toFixed(1)+'K':(n||'0');
+          const total = Object.values(p.reactionCounts||{}).reduce((a,b)=>a+(b||0),0);
+          const myRxn = p.reactions?.[window.CU?.id];
+          likeBtn.innerHTML = (myRxn||'❤️') + ' ' + fmtN(total||p.likes||0);
+          likeBtn.style.color = myRxn ? '#f85149' : '';
+        }
       }
-    }
+    } catch(err){ console.warn('reel like err',err); }
   }
-  if(action==='comment'){ toggleComments(pid); }
+  if(action==='comment'){
+    try { toggleComments(pid); } catch(err){ console.warn('reel comment err',err); }
+  }
 }
 
 function _renderReelsFeed(el, H){
