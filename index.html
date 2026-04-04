@@ -3478,65 +3478,72 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
   var _upAlbumLbIdx = -1;
   var _upAlbumLbFotoId = null;
 
-  window.initUpAlbum = async function() {
-    _upAlbumOwnerUid = window._viewingProfileUid || window._viewingUserId;
-    var myUid = window.CU && window.CU.id;
-    if (!_upAlbumOwnerUid || !myUid || !window.db) return;
-
-    var isAdmin = window.CU && (window.CU.role === 'admin' || window.CU.email === 'synxyes@gmail.com');
-
-    // Reset UI
-    ['upAlbumSolicitar','upAlbumPendiente','upAlbumGrid','upAlbumLoading'].forEach(function(id){
-      var el = document.getElementById(id);
-      if(el) el.style.display = 'none';
-    });
-    var loadEl = document.getElementById('upAlbumLoading');
-    if(loadEl) loadEl.style.display = 'block';
-
-    // Acciones
-    var actionsEl = document.getElementById('upAlbumActions');
-    if(actionsEl) actionsEl.innerHTML = isAdmin
-      ? '<span style="background:rgba(255,68,68,.12);border:1px solid rgba(255,68,68,.3);color:#c0392b;padding:4px 10px;border-radius:8px;font-size:.72rem;font-weight:800;">🛡️ Vista Admin</span>'
-      : '';
-
-    if(loadEl) loadEl.style.display = 'none';
-
-    if (isAdmin) {
-      await _upCargarFotos();
-      _upShowSec('upAlbumGrid');
-      return;
-    }
-
-    // Verificar acceso
-    try {
-      var snap = await window.getDoc(window.doc(window.db,'albumPrivado',_upAlbumOwnerUid,'accesos',myUid));
-      var estado = snap.exists() ? (snap.data().estado||'ninguno') : 'ninguno';
-      if (estado === 'aprobado') {
-        await _upCargarFotos();
-        _upShowSec('upAlbumGrid');
-      } else if (estado === 'pendiente') {
-        _upShowSec('upAlbumPendiente');
-      } else {
-        _upShowSec('upAlbumSolicitar');
-      }
-    } catch(e) {
-      _upShowSec('upAlbumSolicitar');
-    }
-  };
-
-  function _upShowSec(id) {
-    ['upAlbumSolicitar','upAlbumPendiente','upAlbumGrid'].forEach(function(s){
+  function _upShow(id) {
+    ['upAlbumSolicitar','upAlbumPendiente','upAlbumGrid','upAlbumLoading'].forEach(function(s){
       var el = document.getElementById(s);
       if(el) el.style.display = s === id ? 'block' : 'none';
     });
   }
 
+  window.initUpAlbum = async function() {
+    _upAlbumOwnerUid = window._viewingProfileUid || window._viewingUserId;
+    var myUid = window.CU && window.CU.id;
+
+    // Mostrar loading siempre primero
+    _upShow('upAlbumLoading');
+
+    if (!_upAlbumOwnerUid || !myUid) {
+      _upShow('upAlbumSolicitar');
+      return;
+    }
+
+    // Esperar db si todavía no está lista
+    var tries = 0;
+    while (!window.db && tries < 20) { await new Promise(function(r){ setTimeout(r,200); }); tries++; }
+    if (!window.db) { _upShow('upAlbumSolicitar'); return; }
+
+    var isAdmin = !!(window.CU.role === 'admin' || window.CU.email === 'synxyes@gmail.com');
+
+    // Acciones header
+    var actionsEl = document.getElementById('upAlbumActions');
+    if(actionsEl) actionsEl.innerHTML = isAdmin
+      ? '<span style="background:rgba(255,68,68,.12);border:1px solid rgba(255,68,68,.3);color:#c0392b;padding:4px 10px;border-radius:8px;font-size:.72rem;font-weight:800;">🛡️ Vista Admin</span>'
+      : '';
+
+    if (isAdmin) {
+      await _upCargarFotos();
+      _upShow('upAlbumGrid');
+      return;
+    }
+
+    // Visitante normal: verificar acceso
+    try {
+      var snap = await window.getDoc(window.doc(window.db,'albumPrivado',_upAlbumOwnerUid,'accesos',myUid));
+      var estado = snap.exists() ? (snap.data().estado||'ninguno') : 'ninguno';
+      if (estado === 'aprobado') {
+        await _upCargarFotos();
+        _upShow('upAlbumGrid');
+      } else if (estado === 'pendiente') {
+        _upShow('upAlbumPendiente');
+      } else {
+        _upShow('upAlbumSolicitar');
+      }
+    } catch(e) {
+      console.warn('[Album] Error verificando acceso:', e);
+      _upShow('upAlbumSolicitar');
+    }
+  };
+
+  // alias para compatibilidad interna
+  function _upShowSec(id) { _upShow(id); }
+
   async function _upCargarFotos() {
     var grid = document.getElementById('upAlbumFotosGrid');
     var vacio = document.getElementById('upAlbumVacio');
-    if(!grid) return;
-    var isAdmin = window.CU && (window.CU.role === 'admin' || window.CU.email === 'synxyes@gmail.com');
-    grid.innerHTML = '';
+    if(!grid || !_upAlbumOwnerUid) return;
+    var isAdmin = !!(window.CU && (window.CU.role === 'admin' || window.CU.email === 'synxyes@gmail.com'));
+    grid.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:20px;text-align:center;">Cargando fotos...</div>';
+    if(vacio) vacio.style.display = 'none';
     try {
       var snap = await window.getDocs(window.query(
         window.collection(window.db,'albumPrivado',_upAlbumOwnerUid,'fotos'),
@@ -3546,25 +3553,33 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
       _upAlbumFotos = [];
       snap.forEach(function(d){
         var fd = d.data();
-        if(fd.estado === 'aprobado' || isAdmin) {
-          _upAlbumFotos.push({id: d.id, ...fd});
+        // Admin ve todas, visitante solo aprobadas
+        if(isAdmin || fd.estado === 'aprobado') {
+          _upAlbumFotos.push(Object.assign({id: d.id}, fd));
         }
       });
       if(!_upAlbumFotos.length){
+        grid.innerHTML = '';
         if(vacio) vacio.style.display = 'block';
         return;
       }
       if(vacio) vacio.style.display = 'none';
-      grid.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;">'
-        + _upAlbumFotos.map(function(f,i){
-          return '<div style="position:relative;aspect-ratio:1;cursor:pointer;" onclick="upAbrirLightbox('+i+')">'
-            + '<img src="'+f.url+'" style="width:100%;height:100%;object-fit:cover;border-radius:6px;transition:transform .2s,opacity .2s;" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform=''>" loading="lazy">'
-            + '<div style="position:absolute;top:4px;right:4px;background:rgba(200,0,40,.85);color:#fff;font-size:.55rem;font-weight:900;border-radius:4px;padding:1px 5px;">+18</div>'
-            + '</div>';
-        }).join('')
-        + '</div>';
+      var html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;">';
+      for(var i=0; i<_upAlbumFotos.length; i++){
+        var f = _upAlbumFotos[i];
+        html += '<div style="position:relative;aspect-ratio:1;cursor:pointer;border-radius:6px;overflow:hidden;" onclick="upAbrirLightbox('+i+')">';
+        html += '<img src="'+f.url+'" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.style.opacity=.3">';
+        html += '<div style="position:absolute;top:4px;right:4px;background:rgba(200,0,40,.85);color:#fff;font-size:.55rem;font-weight:900;border-radius:4px;padding:1px 5px;">+18</div>';
+        if(isAdmin && f.estado !== 'aprobado'){
+          html += '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(230,126,34,.85);color:#fff;font-size:.6rem;font-weight:800;text-align:center;padding:2px;">PENDIENTE</div>';
+        }
+        html += '</div>';
+      }
+      html += '</div>';
+      grid.innerHTML = html;
     } catch(e) {
-      grid.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:20px;text-align:center;">Error al cargar fotos.</div>';
+      console.warn('[Album] Error cargando fotos:', e);
+      grid.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:20px;text-align:center;">Error al cargar fotos: '+e.message+'</div>';
     }
   }
 
