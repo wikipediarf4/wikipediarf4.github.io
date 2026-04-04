@@ -3647,6 +3647,10 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
 
     
     <audio id="svAudioEl" preload="none"></audio>
+    <div id="svLyricsBar" style="display:none;position:absolute;bottom:180px;left:16px;right:16px;z-index:26;text-align:center;pointer-events:none;">
+      <div id="svLyricsCurrent" style="font-size:1.05rem;font-weight:800;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.9),0 0 30px rgba(0,0,0,.6);line-height:1.4;padding:6px 14px;background:rgba(0,0,0,.35);border-radius:16px;backdrop-filter:blur(4px);transition:opacity .3s;"></div>
+      <div id="svLyricsNext" style="font-size:.82rem;font-weight:500;color:rgba(255,255,255,.5);text-shadow:0 1px 6px rgba(0,0,0,.8);margin-top:4px;transition:opacity .3s;"></div>
+    </div>
     <div id="svMusicBar" style="display:none;position:absolute;bottom:120px;left:12px;right:12px;z-index:25;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:100px;padding:7px 14px;align-items:center;gap:10px;">
       <img class="sv-music-cover" src="" style="width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1.5px solid rgba(255,255,255,.3);">
       <div style="flex:1;min-width:0;">
@@ -9740,6 +9744,10 @@ function closeSV(){
   window._svAudio = null;
   const svMusic = document.getElementById('svMusicBar');
   if(svMusic) svMusic.style.display = 'none';
+  // Limpiar lyrics
+  if(window._svLyricsInterval){ clearInterval(window._svLyricsInterval); window._svLyricsInterval = null; }
+  const _lb = document.getElementById('svLyricsBar');
+  if(_lb) _lb.style.display = 'none';
 }
 
 // Registra vista y escucha contador en tiempo real
@@ -10042,10 +10050,69 @@ function renderSV(){
     }
   }
 
+  // ── LYRICS SINCRONIZADAS ──────────────────────────────────────────────
+  const _lyricsBar    = document.getElementById('svLyricsBar');
+  const _lyricsCurrent = document.getElementById('svLyricsCurrent');
+  const _lyricsNext    = document.getElementById('svLyricsNext');
+
+  // Limpiar interval anterior
+  if(window._svLyricsInterval){ clearInterval(window._svLyricsInterval); window._svLyricsInterval = null; }
+
+  function _parseLRC(lrc){
+    if(!lrc) return [];
+    return lrc.split('\n')
+      .map(line => {
+        const m = line.match(/^\[(\d+):(\d+\.?\d*)\](.*)$/);
+        if(!m) return null;
+        return { time: parseInt(m[1])*60 + parseFloat(m[2]), text: m[3].trim() };
+      })
+      .filter(l => l && l.text);
+  }
+
+  function _startLyrics(lrcRaw){
+    if(!lrcRaw || !_lyricsBar || !_lyricsCurrent) return;
+    const lines = _parseLRC(lrcRaw);
+    if(!lines.length){ if(_lyricsBar) _lyricsBar.style.display='none'; return; }
+
+    _lyricsBar.style.display = 'block';
+    let _lastIdx = -1;
+
+    window._svLyricsInterval = setInterval(()=>{
+      if(audio.paused) return;
+      const t = audio.currentTime;
+      // Encontrar la línea actual
+      let idx = -1;
+      for(let i = lines.length-1; i >= 0; i--){
+        if(t >= lines[i].time){ idx = i; break; }
+      }
+      if(idx === _lastIdx) return;
+      _lastIdx = idx;
+
+      if(idx < 0){
+        _lyricsCurrent.textContent = '';
+        if(_lyricsNext) _lyricsNext.textContent = '';
+        return;
+      }
+      // Animar cambio
+      _lyricsCurrent.style.opacity = '0';
+      setTimeout(()=>{
+        _lyricsCurrent.textContent = lines[idx].text;
+        _lyricsCurrent.style.opacity = '1';
+        if(_lyricsNext) _lyricsNext.textContent = lines[idx+1] ? lines[idx+1].text : '';
+      }, 150);
+    }, 200);
+  }
+
   if(s.music && s.music.preview){
     _svPlayMusic(s.music.preview, s.music);
+    if(s.lyrics){
+      _startLyrics(s.lyrics);
+    } else {
+      if(_lyricsBar) _lyricsBar.style.display = 'none';
+    }
   } else {
     if(svMusic) svMusic.style.display = 'none';
+    if(_lyricsBar) _lyricsBar.style.display = 'none';
   }
 
   // progress bars
@@ -11138,12 +11205,30 @@ async function submitStory(){
   if(!text && !imgUrl && !videoUrl && !window._storyGif){ toast('Agregá algo a la historia','err'); return; }
   const _storyTTL = (window.CU?.verified) ? 172800000 : 86400000; // 48h verificados, 24h resto
   const _storyExpiresAt = new Date(Date.now() + _storyTTL);
+  // Buscar lyrics si hay música
+  let _lyricsData = null;
+  const _musicForLyrics = window._storyMusic || _storyMusic;
+  if(_musicForLyrics && _musicForLyrics.title){
+    try {
+      const _lrcQ = encodeURIComponent((_musicForLyrics.title||'') + ' ' + (_musicForLyrics.artist||''));
+      const _lrcRes = await fetch('https://lrclib.net/api/search?q=' + _lrcQ);
+      if(_lrcRes.ok){
+        const _lrcData = await _lrcRes.json();
+        const _lrcTrack = (_lrcData||[]).find(t => t.syncedLyrics) || _lrcData[0];
+        if(_lrcTrack && _lrcTrack.syncedLyrics){
+          _lyricsData = _lrcTrack.syncedLyrics;
+        }
+      }
+    } catch(e){ console.warn('lyrics fetch error:', e); }
+  }
+
   await addDoc(collection(db, 'stories'), {
     userId:window.CU.id, userNick:window.CU.nick, userAv:window.CU.av||'',
     text, emoji:_storyEmojiPick||'🎣', img:imgUrl, video:videoUrl, yt:'', time:serverTimestamp(),
     expiresAt: _storyExpiresAt, // ← usado para borrado automático y reglas
     userVerified:window.CU?.verified||false,
     music: window._storyMusic || _storyMusic || null,
+    lyrics: _lyricsData || null,
     bg: window._storyBg || null,
     gif: window._storyGif || null,
     textColor: window._storyTextColor || '#ffffff',
@@ -11161,28 +11246,16 @@ async function submitStory(){
   cm('mAddStory');
   toast('Historia publicada 📖','ok');
 
-  // ── Notificar a amigos que publicaste una historia ──
+  // ── Notificar a amigos ──
   try {
     const storySnap = await getDocs(query(collection(db,'stories'), where('userId','==',window.CU.id), orderBy('time','desc'), limit(1)));
     const newStoryId = storySnap.docs[0]?.id || '';
     const friends = window.CU?.friends || [];
     if(friends.length && newStoryId){
-      const notif = {
-        text: `📖 ${window.CU.nick} publicó una nueva historia`,
-        time: Date.now(),
-        read: false,
-        storyId: newStoryId,
-        storyImg: imgUrl || '',
-        fromAv: window.CU.av || '',
-        fromNick: window.CU.nick || '',
-        type: 'newStory'
-      };
-      const batch = friends.slice(0, 50);
-      await Promise.allSettled(batch.map(uid =>
-        updateDoc(doc(db,'users', uid), { notifs: arrayUnion(notif) })
-      ));
+      const notif = { text: `📖 ${window.CU.nick} publicó una nueva historia`, time: Date.now(), read: false, storyId: newStoryId, storyImg: imgUrl || '', fromAv: window.CU.av || '', fromNick: window.CU.nick || '', type: 'newStory' };
+      await Promise.allSettled(friends.slice(0,50).map(uid => updateDoc(doc(db,'users',uid),{ notifs: arrayUnion(notif) })));
     }
-  } catch(e){ console.warn('Error notificando historia a amigos:', e); }
+  } catch(e){ console.warn('Error notif historia:', e); }
 }
 
 function previewStoryImg(input){
@@ -12797,6 +12870,7 @@ async function toggleComments(pid){
     if(e.target===modal) modal.remove();
   });
   document.addEventListener('keydown', function _esc(e){ if(e.key==='Escape'){ modal.remove(); document.removeEventListener('keydown',_esc); }});
+  // Si estamos en reels, inyectar dentro del overlay para evitar z-index
   const _reelsOv = document.getElementById('reelsOverlay');
   const _cmtContainer = (_reelsOv && _reelsOv.style.display !== 'none') ? _reelsOv : document.body;
   _cmtContainer.appendChild(modal);
