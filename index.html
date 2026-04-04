@@ -3774,36 +3774,13 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
     for (var file of files) {
       if (file.size > 5*1024*1024) { toast('Una foto supera 5MB, se omitió','err'); errores++; continue; }
       try {
-        var formData = new FormData();
-        formData.append('file', file);
-        formData.append('upload_preset', CLOUDINARY_PRESET);
-        formData.append('folder', 'rf4/albumPrivado');
-        var res = await fetch('https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD + '/image/upload', { method:'POST', body:formData });
-        var data = await res.json();
-
-        // Error de Cloudinary — mostrar mensaje exacto
-        if (!res.ok || !data.secure_url) {
-          var errMsg = data?.error?.message || 'Error desconocido de Cloudinary';
-          toast('❌ ' + errMsg, 'err');
-          console.error('Cloudinary error:', JSON.stringify(data));
-          errores++;
-          continue;
-        }
-
-        // Moderación: solo bloquear si fue RECHAZADA (pending/approved se aceptan)
-        var modStatus = data?.moderation?.[0]?.status;
-        if (modStatus === 'rejected') {
-          toast('🚫 Foto rechazada por contenido inapropiado','err');
-          errores++;
-          continue;
-        }
-
-        var url = data.secure_url;
+        // Usar uploadImage igual que posts e historias
+        var url = await uploadImage(file, 'albumPrivado');
         await window.addDoc(window.collection(window.db,'albumPrivado',myUid,'fotos'), { url, subidaEn: Date.now(), ownerUid: myUid });
         subidos++;
       } catch(e) {
-        console.error('Upload error:', e);
-        toast('❌ Error al subir: ' + (e.message || 'Verificá tu conexión'), 'err');
+        console.error('Upload album error:', e);
+        toast('❌ ' + (e.message || 'Error al subir'), 'err');
         errores++;
       }
     }
@@ -8555,7 +8532,8 @@ function load(k,def){try{const v=localStorage.getItem('crf4_'+k);return v?JSON.p
 // ===== UPLOAD IMAGE TO IMGBB =====
 // ── Cloudinary config ──
 const CLOUDINARY_CLOUD = 'da0n5tg3g';
-const CLOUDINARY_PRESET = 'wikipediarf4';
+const CLOUDINARY_PRESET = 'wikipediarf4';         // Con moderacion Rekognition (solo avatars)
+const CLOUDINARY_PRESET_FOTOS = 'milatido_fotos'; // Sin moderacion (posts, album, historias)
 const CLOUDINARY_VIDEO_PRESET = 'milatido_video';
 
 /* ===== ADMIN: Sin restricciones en uploads ===== */
@@ -8619,7 +8597,10 @@ async function uploadImage(fileOrBase64, folder) {
 
   const formData = new FormData();
   formData.append('file', blob);
-  formData.append('upload_preset', CLOUDINARY_PRESET);
+  // Usar preset sin moderacion para fotos de usuarios (posts, album, historias, comentarios)
+  // Usar preset con Rekognition solo para avatars
+  const _presetToUse = (folder === 'avatars') ? CLOUDINARY_PRESET : CLOUDINARY_PRESET_FOTOS;
+  formData.append('upload_preset', _presetToUse);
   formData.append('folder', 'rf4/' + (folder || 'general'));
 
   let res, data;
@@ -8631,18 +8612,20 @@ async function uploadImage(fileOrBase64, folder) {
   }
 
   if (res.ok && data.secure_url) {
-    // Chequeo de moderación automática de Cloudinary (Rekognition)
+    // Moderación: solo bloquear si fue explícitamente rechazada
     const modStatus = data?.moderation?.[0]?.status;
     if (modStatus === 'rejected') {
-      throw new Error('🚫 Imagen rechazada por contenido inapropiado. No se permite este tipo de contenido en MiLatido.');
+      throw new Error('🚫 Imagen rechazada por contenido inapropiado.');
     }
+    // pending / approved / sin moderación → todo OK
     return data.secure_url;
   }
 
-  // Error descriptivo según respuesta de Cloudinary
+  // Error descriptivo
   const errMsg = data?.error?.message || '';
+  console.error('Cloudinary uploadImage error:', JSON.stringify(data));
   if (errMsg.toLowerCase().includes('preset')) {
-    throw new Error('El preset de Cloudinary no está configurado como Unsigned. Entrá a Settings → Upload → Upload presets → "' + CLOUDINARY_PRESET + '" → cambiá Signing mode a Unsigned.');
+    throw new Error('Preset de Cloudinary sin configurar como Unsigned.');
   }
   throw new Error(errMsg || 'Error al subir imagen. Intentá de nuevo.');
 }
