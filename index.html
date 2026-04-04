@@ -10082,7 +10082,7 @@ function onLogin(){
   if (_initPath && _initPath !== '/' && _initPath !== '/home') {
     setTimeout(() => {
       // Handle /<nick> -> user profile (URL legacy sin /u/)
-      if (!_initPath.startsWith('/u/') && !_initPath.startsWith('/mensajes') && !_initPath.startsWith('/notif') && ROUTES[_initPath] === undefined && _initPath.length > 1 && !_initPath.includes('.')) {
+      if (!_initPath.startsWith('/@') && !_initPath.startsWith('/mensajes') && !_initPath.startsWith('/notif') && ROUTES[_initPath] === undefined && _initPath.length > 1 && !_initPath.includes('.')) {
         const nickSlugLegacy = _initPath.slice(1);
         window.gp('userprofile', false);
         getDocs(query(collection(db,'users'), limit(100))).then(snap => {
@@ -10093,16 +10093,16 @@ function onLogin(){
           if(found){ 
             _loadUserProfilePage(found.id, found.data().nick||nickSlugLegacy);
             // Actualizar URL a formato correcto
-            history.replaceState({page:'userprofile',uid:found.id,nick:found.data().nick}, '', '/u/'+nickSlugLegacy);
+            history.replaceState({page:'userprofile',uid:found.id,nick:found.data().nick}, '', '/@'+nickSlugLegacy);
           } else {
             window.gp('home', false);
           }
         }).catch(()=>{ window.gp('home', false); });
         return;
       }
-      // Handle /u/nick -> user profile
-      if (_initPath.startsWith('/u/')) {
-        const nickSlug = _initPath.slice(3);
+      // Handle /@nick -> user profile
+      if (_initPath.startsWith('/@')) {
+        const nickSlug = _initPath.slice(2);
         window.gp('userprofile', false);
         // Try to find user by nick slug from Firestore
         getDocs(query(collection(db,'users'), limit(100))).then(snap => {
@@ -10338,8 +10338,8 @@ window.addEventListener('popstate', (e) => {
     if(nd) nd.style.display = 'none';
   }
   // Handle user profile URLs
-  if(path.startsWith('/u/')) {
-    const nickSlug = path.slice('/u/'.length);
+  if(path.startsWith('/@')) {
+    const nickSlug = path.slice('/@'.length);
     // Try to find user by nick slug
     if(window.CU) {
       window.gp('userprofile', false);
@@ -10403,7 +10403,7 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   const path = window.location.pathname;
-  // Save full path for after login (handles /u/nick, /mensajes/nick, etc.)
+  // Save full path for after login (handles /@nick, /mensajes/nick, etc.)
   if (path && path !== '/' && path !== '/home' && path !== '/') {
     window._initialPath = path;
   }
@@ -20386,7 +20386,7 @@ async function openUserProfile(uid, nick){
   if(!uid){ toast('Usuario no encontrado','err'); return; }
   // Push URL /<nick>
   const safeNick = (nick||'usuario').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
-  history.pushState({ page: 'userprofile', uid, nick }, '', '/u/' + safeNick);
+  history.pushState({ page: 'userprofile', uid, nick }, '', '/@' + safeNick);
 
   // Navega a la página de perfil
   gp('userprofile', false);
