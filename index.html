@@ -5353,7 +5353,7 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
     <div style="display:flex;border-top:1px solid #f0f2f5;padding:0 2px;">
       <button class="rf4-tab on" id="rf4TabJugadores" onclick="rf4SwitchTab('jugadores')" style="font-size:.66rem;padding:7px 2px;">👥 Usuarios</button>
       <button class="rf4-tab"   id="rf4TabMensajes"  onclick="rf4SwitchTab('mensajes')"  style="font-size:.66rem;padding:7px 2px;">✉️ Mensajes<span id="unreadChatBadge" style="display:none;background:var(--red);color:#fff;border-radius:50%;padding:0 4px;font-size:.58rem;margin-left:2px;"></span></button>
-      <button class="rf4-tab"   id="rf4TabReel"      onclick="rf4SwitchTab('reel')"      style="font-size:.66rem;padding:7px 2px;">📸 Reel</button>
+
     </div>
   </div>
 
@@ -11177,7 +11177,6 @@ async function submitStory(){
         fromNick: window.CU.nick || '',
         type: 'newStory'
       };
-      // Enviar en paralelo a todos los amigos (máx 50)
       const batch = friends.slice(0, 50);
       await Promise.allSettled(batch.map(uid =>
         updateDoc(doc(db,'users', uid), { notifs: arrayUnion(notif) })
@@ -12798,7 +12797,9 @@ async function toggleComments(pid){
     if(e.target===modal) modal.remove();
   });
   document.addEventListener('keydown', function _esc(e){ if(e.key==='Escape'){ modal.remove(); document.removeEventListener('keydown',_esc); }});
-  document.body.appendChild(modal);
+  const _reelsOv = document.getElementById('reelsOverlay');
+  const _cmtContainer = (_reelsOv && _reelsOv.style.display !== 'none') ? _reelsOv : document.body;
+  _cmtContainer.appendChild(modal);
   setTimeout(()=>{ const inp=document.getElementById('_cmtModalInp_'+pid); if(inp) inp.focus(); }, 100);
 }
 
