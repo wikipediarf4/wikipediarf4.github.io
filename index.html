@@ -31,7 +31,7 @@
   });
 
   // ── 3. DESHABILITAR SELECCIÓN Y COPIA DE TEXTO ───────────────────────────
-  document.addEventListener('selectstart', function(e){ e.preventDefault(); return false; });
+  document.addEventListener('selectstart', function(e){ if(e.target && e.target.closest && e.target.closest('#page-admin')) return; e.preventDefault(); return false; });
   document.addEventListener('copy',        function(e){ e.preventDefault(); return false; });
   document.addEventListener('cut',         function(e){ e.preventDefault(); return false; });
   document.addEventListener('dragstart',   function(e){ e.preventDefault(); return false; });
@@ -2681,7 +2681,7 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
         <div onclick="gp('profile');toggleUserMenu()" style="padding:10px 14px;cursor:pointer;font-size:.83rem;display:flex;align-items:center;gap:8px;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">👤 Mi perfil</div>
         <div onclick="openEditProfile();toggleUserMenu()" style="padding:10px 14px;cursor:pointer;font-size:.83rem;display:flex;align-items:center;gap:8px;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">✏️ Editar perfil</div>
         <div onclick="openLangModal();toggleUserMenu()" style="padding:10px 14px;cursor:pointer;font-size:.83rem;display:flex;align-items:center;gap:8px;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">🌐 <span data-i18n="menu_language">Idioma</span> <span id="langCurrentFlag" style="margin-left:auto;font-size:.8rem;color:var(--muted);">ES</span></div>
-        <div id="userMenuAdmin" style="display:none;" onclick="gp('admin');toggleUserMenu()" style="padding:10px 14px;cursor:pointer;font-size:.83rem;display:flex;align-items:center;gap:8px;transition:background .15s;color:var(--red);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">🛡️ Panel Admin</div>
+        <div id="userMenuAdmin" style="display:none;padding:10px 14px;cursor:pointer;font-size:.83rem;align-items:center;gap:8px;transition:background .15s;color:var(--red);" onclick="gp('admin');toggleUserMenu()" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">🛡️ Panel Admin</div>
         <div style="height:1px;background:var(--border);"></div>
         <div id="pushNotifMenuItem" onclick="requestPushPermission();toggleUserMenu()" style="padding:10px 14px;cursor:pointer;font-size:.83rem;display:flex;align-items:center;gap:8px;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">🔔 Activar notificaciones</div>
         <div style="height:1px;background:var(--border);"></div>
@@ -3695,7 +3695,7 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
     var wrap = document.getElementById('albumActions');
     if (!wrap) return;
     wrap.innerHTML = isOwner
-      ? '<label style="padding:8px 16px;background:#c0392b;color:#fff;border-radius:8px;font-weight:700;font-size:.82rem;cursor:pointer;display:flex;align-items:center;gap:6px;">📷 Subir fotos (máx. 5)<input type="file" accept="image/jpeg,image/png,image/webp" multiple style="display:none" onchange="subirFotosAlbum(this)"></label>'
+      ? '<button onclick="om(\'mCreatePost\');setTimeout(function(){var s=document.getElementById(\'postDestino\');if(s){s.value=\'album\';s.dispatchEvent(new Event(\'change\'));}},200)" style="padding:8px 16px;background:#c0392b;color:#fff;border-radius:8px;font-weight:700;font-size:.82rem;cursor:pointer;display:flex;align-items:center;gap:6px;border:none;">📷 Agregar fotos al álbum</button>'
       : '';
   }
 
@@ -4641,7 +4641,7 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
 
 <div class="mo" id="mCreatePost">
   <div class="modal modal-md">
-    <button class="mcx" onclick="cm('mCreatePost')">✕</button>
+    <button class="mcx" onclick="cm('mCreatePost');var _d=document.getElementById('postDestino');if(_d){_d.value='feed';_d.dispatchEvent(new Event('change'));}">✕</button>
     <div class="mt">📝 Crear Publicación</div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
       <div class="sl-av" id="cpAv" style="width:44px;height:44px">👤</div>
@@ -4655,11 +4655,27 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
           <option value="friends">👥 Solo amigos</option>
           <option value="only_me">🔒 Solo yo</option>
         </select>
+        <select id="postDestino" class="fi" style="width:auto;font-size:.72rem;padding:3px 9px;margin-top:3px;border-color:#c0392b;" onchange="
+          var isAlbum = this.value === 'album';
+          var privRow = document.getElementById('postPrivacy');
+          if(privRow) privRow.style.display = isAlbum ? 'none' : '';
+          var albumNotice = document.getElementById('postAlbumNotice');
+          if(albumNotice) albumNotice.style.display = isAlbum ? 'flex' : 'none';
+          var textArea = document.getElementById('postText');
+          if(textArea) textArea.placeholder = isAlbum ? '(Opcional) Descripción para el álbum privado...' : '¿Qué estás pensando? Comparte tu pesca... Usá @ para etiquetar personas';
+        ">
+          <option value="feed">📰 Feed</option>
+          <option value="album">🔒 Álbum Privado</option>
+        </select>
       </div>
     </div>
     <div style="position:relative;margin-bottom:8px;">
       <textarea class="fi" id="postText" placeholder="¿Qué estás pensando? Comparte tu pesca... Usá @ para etiquetar personas" style="min-height:100px;border-radius:var(--r);" oninput="handlePostMentionInput(this);_autoLinkDetect(this.value)"></textarea>
       <div id="mention_postText" style="display:none;position:absolute;bottom:calc(100% - 4px);left:0;right:0;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);min-width:200px;max-height:200px;overflow-y:auto;z-index:600;box-shadow:0 4px 16px rgba(0,0,0,.6);"></div>
+    </div>
+    <div id="postAlbumNotice" style="display:none;margin-bottom:10px;background:rgba(192,57,43,.1);border:1px solid rgba(192,57,43,.4);border-radius:var(--rs);padding:10px 12px;font-size:.78rem;color:#e67e22;align-items:center;gap:8px;">
+      <span style="font-size:1.1rem;">🔒</span>
+      <span>Las fotos irán a tu <strong>álbum privado</strong> y serán revisadas por un admin antes de mostrarse. <strong>No aparecen en el feed.</strong></span>
     </div>
 
     
@@ -10177,7 +10193,7 @@ window.gp = (id, pushState = true) => {
   if(id==='profile') renderProfile();
   if(id==='match') { if(typeof window.initMatchPage==='function') window.initMatchPage(); }
   if(id==='fotos') { if(typeof window.initFotosPage==='function') setTimeout(window.initFotosPage, 50); }
-  if(id==='admin') { loadAdminData(); loadPezSemana(); }
+  if(id==='admin') { loadAdminData(); loadAdminUsers(); loadPezSemana(); }
   // Show video button in posts only for verified users
   const pvBtn = document.getElementById('postVideoBtn');
   if(pvBtn) pvBtn.style.display = window.CU?.verified ? 'flex' : 'none';
@@ -12831,8 +12847,73 @@ async function submitPost(){
   const tech = document.getElementById('tagTech').value;
   const linkUrl = document.getElementById('postLinkInput')?.value.trim()||'';
   const videoUrl0 = document.getElementById('ytUrlInput')?.value.trim() || '';
+  const destino = document.getElementById('postDestino')?.value || 'feed';
+
   if(!text && !fish && !_postMediaFiles.length && !linkUrl && !videoUrl0){ toast('Escribe algo o agrega un video para publicar','err'); return; }
 
+  // ── DESTINO: ÁLBUM PRIVADO ──────────────────────────────────────────────
+  if(destino === 'album'){
+    const imgFiles = _postMediaFiles.filter(m => m.type === 'image');
+    if(!imgFiles.length){ toast('Agregá al menos una foto para el álbum privado','err'); return; }
+    if(imgFiles.length > 5){ toast('Podés subir máximo 5 fotos a la vez','err'); return; }
+
+    toast('Publicando...','inf');
+    const myUid = window.CU.id;
+
+    // Verificar límite total
+    try {
+      var countSnap = await getDocs(query(collection(db,'albumPrivado',myUid,'fotos'),limit(51)));
+      var noRechazadas = 0;
+      countSnap.forEach(function(d){ var est = d.data().estado||'pendiente'; if(est !== 'rechazado') noRechazadas++; });
+      if(noRechazadas + imgFiles.length > 50){ toast('Máximo 50 fotos en el álbum privado','err'); return; }
+    } catch(e){ console.warn('No se pudo verificar cantidad:', e); }
+
+    var subidos = 0;
+    for(var i = 0; i < imgFiles.length; i++){
+      var file = imgFiles[i].file;
+      toast('📤 Subiendo foto ' + (i+1) + ' de ' + imgFiles.length + '...');
+      if(file.size > 5*1024*1024){ toast('❌ Foto ' + (i+1) + ' supera 5MB, fue omitida','err'); continue; }
+      try {
+        var url = await uploadImage(file, 'albumPrivado');
+        await addDoc(collection(db,'albumPrivado',myUid,'fotos'), {
+          url: url,
+          subidaEn: Date.now(),
+          ownerUid: myUid,
+          ownerNick: window.CU.nick || '',
+          ownerAv: window.CU.av || '',
+          descripcion: text || '',
+          estado: 'pendiente'
+        });
+        subidos++;
+      } catch(e){
+        console.error('Album upload error:', e);
+        toast('❌ ' + (e.message || 'Error al subir foto ' + (i+1)), 'err');
+      }
+    }
+
+    // Limpiar formulario
+    _postMediaFiles = [];
+    document.getElementById('postText').value='';
+    document.getElementById('tagFish').value='';
+    document.getElementById('tagWeight').value='';
+    document.getElementById('tagMap').value='';
+    document.getElementById('tagTech').value='';
+    document.getElementById('fishTagRow').style.display='none';
+    document.getElementById('postMediaPreview').style.display='none';
+    document.getElementById('postMediaCount').textContent='';
+    var destSel = document.getElementById('postDestino');
+    if(destSel){ destSel.value='feed'; destSel.dispatchEvent(new Event('change')); }
+    cm('mCreatePost');
+
+    if(subidos > 0){
+      toast('⏳ ' + subidos + ' foto' + (subidos>1?'s':'') + ' enviada' + (subidos>1?'s':'') + ' para revisión. El admin la aprobará pronto.');
+    } else {
+      toast('❌ No se pudo subir ninguna foto. Verificá tu conexión.','err');
+    }
+    return;
+  }
+
+  // ── DESTINO: FEED (comportamiento original) ─────────────────────────────
   toast('Publicando...','inf');
   if(window.CU?.verified) launchGoldConfetti();
   const mediaUrls = [];
@@ -12916,6 +12997,8 @@ async function submitPost(){
   const tagChips = document.getElementById('taggedPeopleChips');
   if(tagRow) tagRow.style.display='none';
   if(tagChips) tagChips.innerHTML='';
+  var _destSel = document.getElementById('postDestino');
+  if(_destSel){ _destSel.value='feed'; _destSel.dispatchEvent(new Event('change')); }
   cm('mCreatePost');
   addNotif('📝 Publicaste una nueva captura'+(fish?`: ${fish} ${weight?fmtKg(weight):''}`:''));
   toast('¡Publicado! 🎣 +10 XP','ok');
@@ -25566,7 +25649,7 @@ async function loadAdminAlbum(filtro) {
     el.innerHTML = html;
   } catch(e) {
     console.error('loadAdminAlbum error:', e);
-    el.innerHTML = '<div style="text-align:center;padding:32px;color:var(--red);">Error: ' + e.message + '</div>';
+    el.innerHTML = '<div style="text-align:center;padding:32px;color:var(--red);">⚠️ Error al cargar: ' + e.message + '<br><small style="color:var(--muted);">Verificá las reglas de Firestore para la colección albumPrivado.</small></div>';
   }
 }
 
