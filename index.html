@@ -3354,6 +3354,7 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
         <div class="ptab" onclick="swUpTab(this,'upTabInfo')">Información</div>
         <div class="ptab" onclick="swUpTab(this,'upTabFotos')">🖼 Fotos</div>
         <div class="ptab" onclick="swUpTab(this,'upTabAmigos')">Amigos</div>
+        <div class="ptab" onclick="swUpTab(this,'upTabAlbum');initUpAlbum()">🔒 Álbum Privado</div>
       </div>
     </div>
   </div>
@@ -3414,6 +3415,44 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
 
     
     <div id="upTabAmigos" style="display:none;"></div>
+
+    <!-- ÁLBUM PRIVADO TAB -->
+    <div id="upTabAlbum" style="display:none;">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+        <!-- Header -->
+        <div style="padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div style="font-family:'Orbitron',monospace;font-size:.9rem;font-weight:900;color:#c0392b;display:flex;align-items:center;gap:7px;">
+              🔒 Álbum Privado
+              <span style="font-size:.58rem;background:rgba(200,0,40,.15);border:1px solid rgba(200,0,40,.3);color:#c0392b;border-radius:100px;padding:2px 8px;font-weight:800;">+18</span>
+            </div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:3px;">Visible para todos · Las fotos solo para quienes tengan acceso</div>
+          </div>
+          <div id="upAlbumActions"></div>
+        </div>
+        <!-- Solicitar acceso -->
+        <div id="upAlbumSolicitar" style="display:none;padding:32px 20px;text-align:center;">
+          <div style="font-size:3rem;margin-bottom:12px;">🔐</div>
+          <div style="font-weight:700;font-size:.95rem;color:var(--text);margin-bottom:6px;">Este álbum es privado</div>
+          <div style="font-size:.82rem;color:var(--muted);margin-bottom:18px;">Solicitá acceso para ver las fotos privadas de este álbum.</div>
+          <button onclick="upSolicitarAcceso()" id="upBtnSolicitarAcceso" style="padding:10px 24px;background:#c0392b;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:.88rem;">Solicitar acceso</button>
+        </div>
+        <!-- Pendiente -->
+        <div id="upAlbumPendiente" style="display:none;padding:32px 20px;text-align:center;">
+          <div style="font-size:3rem;margin-bottom:12px;">⏳</div>
+          <div style="font-weight:700;font-size:.95rem;color:var(--text);margin-bottom:6px;">Solicitud enviada</div>
+          <div style="font-size:.82rem;color:var(--muted);">Esperando que el usuario apruebe tu solicitud.</div>
+        </div>
+        <!-- Grid fotos -->
+        <div id="upAlbumGrid" style="display:none;padding:14px;">
+          <div id="upAlbumFotosGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;border-radius:10px;overflow:hidden;"></div>
+          <div id="upAlbumVacio" style="display:none;text-align:center;padding:30px;color:var(--muted);font-size:.85rem;">Sin fotos aún.</div>
+        </div>
+        <!-- Cargando -->
+        <div id="upAlbumLoading" style="padding:32px;text-align:center;color:var(--muted);font-size:.85rem;">⏳ Cargando...</div>
+      </div>
+    </div>
+
   </div>
 
   <style>
@@ -3423,6 +3462,178 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
     }
   </style>
 </div>
+
+<!-- LIGHTBOX ÁLBUM USERPROFILE -->
+<div id="upAlbumLightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:99999;align-items:center;justify-content:center;flex-direction:column;">
+  <button onclick="upCerrarLightbox()" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+  <button id="upAlbumLightboxDel" style="display:none;position:absolute;top:16px;left:16px;background:rgba(200,0,40,.65);border:1px solid rgba(200,0,40,.8);color:#fff;border-radius:8px;padding:7px 14px;font-size:.82rem;font-weight:700;cursor:pointer;" onclick="upEliminarFoto()">🛡️ Eliminar foto</button>
+  <img id="upAlbumLightboxImg" src="" style="max-width:90vw;max-height:80vh;border-radius:10px;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,.7);">
+  <div id="upAlbumLightboxCaption" style="color:rgba(255,255,255,.6);font-size:.75rem;margin-top:10px;"></div>
+</div>
+
+<script>
+(function(){
+  var _upAlbumOwnerUid = null;
+  var _upAlbumFotos = [];
+  var _upAlbumLbIdx = -1;
+  var _upAlbumLbFotoId = null;
+
+  window.initUpAlbum = async function() {
+    _upAlbumOwnerUid = window._viewingProfileUid || window._viewingUserId;
+    var myUid = window.CU && window.CU.id;
+    if (!_upAlbumOwnerUid || !myUid || !window.db) return;
+
+    var isAdmin = window.CU && (window.CU.role === 'admin' || window.CU.email === 'synxyes@gmail.com');
+
+    // Reset UI
+    ['upAlbumSolicitar','upAlbumPendiente','upAlbumGrid','upAlbumLoading'].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el) el.style.display = 'none';
+    });
+    var loadEl = document.getElementById('upAlbumLoading');
+    if(loadEl) loadEl.style.display = 'block';
+
+    // Acciones
+    var actionsEl = document.getElementById('upAlbumActions');
+    if(actionsEl) actionsEl.innerHTML = isAdmin
+      ? '<span style="background:rgba(255,68,68,.12);border:1px solid rgba(255,68,68,.3);color:#c0392b;padding:4px 10px;border-radius:8px;font-size:.72rem;font-weight:800;">🛡️ Vista Admin</span>'
+      : '';
+
+    if(loadEl) loadEl.style.display = 'none';
+
+    if (isAdmin) {
+      await _upCargarFotos();
+      _upShowSec('upAlbumGrid');
+      return;
+    }
+
+    // Verificar acceso
+    try {
+      var snap = await window.getDoc(window.doc(window.db,'albumPrivado',_upAlbumOwnerUid,'accesos',myUid));
+      var estado = snap.exists() ? (snap.data().estado||'ninguno') : 'ninguno';
+      if (estado === 'aprobado') {
+        await _upCargarFotos();
+        _upShowSec('upAlbumGrid');
+      } else if (estado === 'pendiente') {
+        _upShowSec('upAlbumPendiente');
+      } else {
+        _upShowSec('upAlbumSolicitar');
+      }
+    } catch(e) {
+      _upShowSec('upAlbumSolicitar');
+    }
+  };
+
+  function _upShowSec(id) {
+    ['upAlbumSolicitar','upAlbumPendiente','upAlbumGrid'].forEach(function(s){
+      var el = document.getElementById(s);
+      if(el) el.style.display = s === id ? 'block' : 'none';
+    });
+  }
+
+  async function _upCargarFotos() {
+    var grid = document.getElementById('upAlbumFotosGrid');
+    var vacio = document.getElementById('upAlbumVacio');
+    if(!grid) return;
+    var isAdmin = window.CU && (window.CU.role === 'admin' || window.CU.email === 'synxyes@gmail.com');
+    grid.innerHTML = '';
+    try {
+      var snap = await window.getDocs(window.query(
+        window.collection(window.db,'albumPrivado',_upAlbumOwnerUid,'fotos'),
+        window.orderBy('subidaEn','desc'),
+        window.limit(60)
+      ));
+      _upAlbumFotos = [];
+      snap.forEach(function(d){
+        var fd = d.data();
+        if(fd.estado === 'aprobado' || isAdmin) {
+          _upAlbumFotos.push({id: d.id, ...fd});
+        }
+      });
+      if(!_upAlbumFotos.length){
+        if(vacio) vacio.style.display = 'block';
+        return;
+      }
+      if(vacio) vacio.style.display = 'none';
+      grid.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;">'
+        + _upAlbumFotos.map(function(f,i){
+          return '<div style="position:relative;aspect-ratio:1;cursor:pointer;" onclick="upAbrirLightbox('+i+')">'
+            + '<img src="'+f.url+'" style="width:100%;height:100%;object-fit:cover;border-radius:6px;transition:transform .2s,opacity .2s;" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform=''>" loading="lazy">'
+            + '<div style="position:absolute;top:4px;right:4px;background:rgba(200,0,40,.85);color:#fff;font-size:.55rem;font-weight:900;border-radius:4px;padding:1px 5px;">+18</div>'
+            + '</div>';
+        }).join('')
+        + '</div>';
+    } catch(e) {
+      grid.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:20px;text-align:center;">Error al cargar fotos.</div>';
+    }
+  }
+
+  window.upSolicitarAcceso = async function() {
+    var myUid = window.CU && window.CU.id;
+    if(!myUid || !_upAlbumOwnerUid) return;
+    var btn = document.getElementById('upBtnSolicitarAcceso');
+    if(btn) btn.disabled = true;
+    try {
+      await window.setDoc(window.doc(window.db,'albumPrivado',_upAlbumOwnerUid,'accesos',myUid), {
+        estado:'pendiente', nick: window.CU.nick||'', av: window.CU.av||'', uid: myUid, solicitadoEn: Date.now()
+      });
+      try {
+        var notif = { text: '🔐 '+(window.CU.nick||'Alguien')+' solicita acceso a tu álbum privado', time: Date.now(), read: false, fromUid: myUid, fromAv: window.CU.av||'', fromNick: window.CU.nick||'', type:'albumAcceso', visitorUid: myUid, visitorNick: window.CU.nick||'', visitorAv: window.CU.av||'' };
+        await window.updateDoc(window.doc(window.db,'users',_upAlbumOwnerUid),{notifs: window.arrayUnion(notif)});
+      } catch(ne){}
+      _upShowSec('upAlbumPendiente');
+      toast('✅ Solicitud enviada.');
+    } catch(e) {
+      toast('Error al enviar solicitud','err');
+      if(btn) btn.disabled = false;
+    }
+  };
+
+  window.upAbrirLightbox = function(idx) {
+    var foto = _upAlbumFotos[idx];
+    if(!foto) return;
+    _upAlbumLbIdx = idx;
+    _upAlbumLbFotoId = foto.id;
+    var lb = document.getElementById('upAlbumLightbox');
+    var img = document.getElementById('upAlbumLightboxImg');
+    var delBtn = document.getElementById('upAlbumLightboxDel');
+    var caption = document.getElementById('upAlbumLightboxCaption');
+    if(img) img.src = foto.url;
+    if(caption) caption.textContent = 'Foto '+(idx+1)+' de '+_upAlbumFotos.length;
+    var isAdmin = window.CU && (window.CU.role === 'admin' || window.CU.email === 'synxyes@gmail.com');
+    if(delBtn) delBtn.style.display = isAdmin ? 'block' : 'none';
+    if(lb){ lb.style.display='flex'; }
+  };
+
+  window.upCerrarLightbox = function() {
+    var lb = document.getElementById('upAlbumLightbox');
+    if(lb) lb.style.display='none';
+    _upAlbumLbFotoId = null;
+    _upAlbumLbIdx = -1;
+  };
+
+  window.upEliminarFoto = async function() {
+    if(!_upAlbumLbFotoId || !_upAlbumOwnerUid) return;
+    var isAdmin = window.CU && (window.CU.role === 'admin' || window.CU.email === 'synxyes@gmail.com');
+    if(!isAdmin) return;
+    if(!confirm('🛡️ [Admin] ¿Eliminar esta foto por contenido inapropiado?')) return;
+    try {
+      await window.deleteDoc(window.doc(window.db,'albumPrivado',_upAlbumOwnerUid,'fotos',_upAlbumLbFotoId));
+      upCerrarLightbox();
+      toast('🛡️ Foto eliminada por el admin');
+      await _upCargarFotos();
+      _upShowSec('upAlbumGrid');
+    } catch(e){ toast('Error al eliminar','err'); }
+  };
+
+  document.addEventListener('keydown', function(e){
+    if(e.key==='Escape'){
+      var lb = document.getElementById('upAlbumLightbox');
+      if(lb && lb.style.display==='flex') upCerrarLightbox();
+    }
+  });
+})();
+</script>
 
 
 <div class="page" id="page-profile">
@@ -20814,7 +21025,7 @@ async function _loadUserProfilePage(uid, nick){
 function swUpTab(btn, tabId){
   document.querySelectorAll('#upTabs .ptab').forEach(t=>t.classList.remove('on'));
   if(btn) btn.classList.add('on');
-  ['upTabPosts','upTabInfo','upTabFotos','upTabAmigos'].forEach(id=>{
+  ['upTabPosts','upTabInfo','upTabFotos','upTabAmigos','upTabAlbum'].forEach(id=>{
     const el=document.getElementById(id);
     if(!el) return;
     el.style.display = id===tabId ? 'block' : 'none';
