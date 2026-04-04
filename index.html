@@ -3774,33 +3774,36 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
     for (var file of files) {
       if (file.size > 5*1024*1024) { toast('Una foto supera 5MB, se omitió','err'); errores++; continue; }
       try {
-        // Subir a Cloudinary (igual que el resto del sitio)
         var formData = new FormData();
         formData.append('file', file);
         formData.append('upload_preset', CLOUDINARY_PRESET);
         formData.append('folder', 'rf4/albumPrivado');
         var res = await fetch('https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD + '/image/upload', { method:'POST', body:formData });
         var data = await res.json();
+
+        // Error de Cloudinary — mostrar mensaje exacto
         if (!res.ok || !data.secure_url) {
-          var errMsg = data?.error?.message || 'Error al subir';
-          toast('Error: ' + errMsg, 'err');
+          var errMsg = data?.error?.message || 'Error desconocido de Cloudinary';
+          toast('❌ ' + errMsg, 'err');
+          console.error('Cloudinary error:', JSON.stringify(data));
           errores++;
           continue;
         }
-        // Chequeo de moderación automática
+
+        // Moderación: solo bloquear si fue RECHAZADA (pending/approved se aceptan)
         var modStatus = data?.moderation?.[0]?.status;
         if (modStatus === 'rejected') {
           toast('🚫 Foto rechazada por contenido inapropiado','err');
           errores++;
           continue;
         }
+
         var url = data.secure_url;
-        // Guardar URL en Firestore
         await window.addDoc(window.collection(window.db,'albumPrivado',myUid,'fotos'), { url, subidaEn: Date.now(), ownerUid: myUid });
         subidos++;
       } catch(e) {
         console.error('Upload error:', e);
-        toast('Error de conexión al subir una foto','err');
+        toast('❌ Error al subir: ' + (e.message || 'Verificá tu conexión'), 'err');
         errores++;
       }
     }
