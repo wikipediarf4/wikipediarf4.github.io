@@ -2643,6 +2643,7 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
 
 
     <button class="tb-nav-btn" onclick="gp('salas');setNav(this);initSalasPage();" title="Chat Salas" style="font-size:.75rem;font-weight:700;">💬 Chat</button>
+    <button class="tb-nav-btn" onclick="gp('reels');setNav(this);" title="Reels" style="font-size:.75rem;font-weight:700;">🎬 Reels</button>
     <button class="tb-nav-btn" id="adminNavBtn" style="display:none;font-size:.75rem;font-weight:700;" onclick="gp('admin');setNav(this)" title="Panel Admin">🛡️ Admin</button>
   </div>
   <div class="tb-right">
@@ -2756,6 +2757,17 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
 
       <div class="sl-item"><span class="sl-item-icon">🔖</span> Guardados</div>
       <div class="sl-item" onclick="gp('privacidad')"><span class="sl-item-icon">🔒</span> Privacidad</div>
+
+      <!-- ══ FOTOS DE USUARIOS ══ -->
+      <div class="divider" style="margin:10px 0 6px;"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:0 4px 6px;">
+        <span style="font-size:.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">📸 Fotos</span>
+        <button onclick="sideReelLoad()" style="background:none;border:1px solid var(--border);border-radius:6px;padding:1px 6px;font-size:.65rem;color:var(--muted);cursor:pointer;" title="Actualizar">↻</button>
+      </div>
+      <div id="sideReelFeed" style="display:flex;flex-direction:column;gap:8px;max-height:480px;overflow-y:auto;padding-right:2px;" class="custom-scroll">
+        <div style="text-align:center;padding:12px;color:var(--muted);font-size:.72rem;">Cargando...</div>
+      </div>
+      <!-- ══ /FOTOS DE USUARIOS ══ -->
 
 
       
@@ -26028,6 +26040,136 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
       btn.innerHTML = e2+(cnt ? '<span style="font-size:.68rem;color:var(--muted);">'+cnt+'</span>' : '');
     });
   };
+
+  // ────────────────────────────────────────────────────────────
+  // SIDEBAR FOTOS — fotos de usuarios en sidebar izquierdo
+  // ────────────────────────────────────────────────────────────
+  var _sideReelItems = [];
+  var _sideReelLoading = false;
+
+  window.sideReelLoad = async function(){
+    if(_sideReelLoading) return;
+    _sideReelLoading = true;
+    var feed = document.getElementById('sideReelFeed');
+    if(!feed){ _sideReelLoading=false; return; }
+    feed.innerHTML = '<div style="text-align:center;padding:12px;color:var(--muted);font-size:.72rem;">⚙️ Cargando...</div>';
+
+    var retries = 0;
+    while((!window.db || !window.firebaseFirestore) && retries < 20){
+      await new Promise(function(r){ setTimeout(r, 500); });
+      retries++;
+    }
+    if(!window.db || !window.firebaseFirestore){
+      feed.innerHTML = '<div style="text-align:center;padding:12px;color:var(--muted);font-size:.72rem;">Sin conexión.</div>';
+      _sideReelLoading = false; return;
+    }
+    try {
+      var _ff = window.firebaseFirestore;
+      var snap = await _ff.getDocs(_ff.query(
+        _ff.collection(window.db, 'users'),
+        _ff.limit(100)
+      ));
+      _sideReelItems = snap.docs
+        .map(function(d){ return Object.assign({id:d.id}, d.data()); })
+        .filter(function(u){ return u.av && typeof u.av==='string' && u.av.startsWith('http') && !u.banned; })
+        .sort(function(a,b){
+          var ta = a.lastSeen && a.lastSeen.toMillis ? a.lastSeen.toMillis()
+                 : a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : 0;
+          var tb = b.lastSeen && b.lastSeen.toMillis ? b.lastSeen.toMillis()
+                 : b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : 0;
+          return tb - ta;
+        });
+      sideReelRender();
+    } catch(e){
+      feed.innerHTML = '<div style="text-align:center;padding:12px;color:var(--muted);font-size:.72rem;">Error: '+(e.message||e)+'</div>';
+      console.error('sideReelLoad error:', e);
+    }
+    _sideReelLoading = false;
+  };
+
+  function sideReelRender(){
+    var feed = document.getElementById('sideReelFeed');
+    if(!feed) return;
+    if(!_sideReelItems.length){
+      feed.innerHTML = '<div style="text-align:center;padding:12px;color:var(--muted);font-size:.72rem;">No hay fotos.</div>';
+      return;
+    }
+    feed.innerHTML = _sideReelItems.map(function(u){
+      var ts = u.lastSeen && u.lastSeen.toMillis ? u.lastSeen.toMillis()
+             : u.createdAt && u.createdAt.toMillis ? u.createdAt.toMillis() : 0;
+      var tsStr = ts ? reelFmtTs(ts) : '';
+      var nick  = (u.nick||'Usuario').replace(/[<>"&]/g, function(c){return{'<':'&lt;','>':'&gt;','"':'&quot;','&':'&amp;'}[c];});
+      var badge = u.verified ? ' ✅' : '';
+      var storKey = 'sreelRxn_'+u.id;
+      var rxnData = {};
+      try { rxnData = JSON.parse(localStorage.getItem(storKey)||'{}'); } catch(e2){}
+      var myRxn = localStorage.getItem('sreelMyRxn_'+u.id);
+      var rxnBtns = REEL_RXNS.map(function(em){
+        var cnt  = rxnData[em]||0;
+        var mine = myRxn===em;
+        return '<button onclick="sideReelReact(\''+u.id+'\',\''+em+'\')" '
+          +'style="background:'+(mine?'rgba(46,196,182,.15)':'none')+';border:1px solid '+(mine?'var(--accent)':'transparent')+';'
+          +'border-radius:20px;padding:1px 5px;font-size:.72rem;cursor:pointer;transition:all .13s;line-height:1.5;" '
+          +'id="srreact_'+u.id+'_'+em.codePointAt(0)+'">'
+          +em+(cnt?'<span style="font-size:.58rem;color:var(--muted);">'+cnt+'</span>':'')
+          +'</button>';
+      }).join('');
+      return '<div style="background:#fff;border:1px solid #dddfe2;border-radius:10px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.06);">'
+        // Foto
+        +'<div style="position:relative;width:100%;padding-top:70%;background:#f0f2f5;overflow:hidden;cursor:pointer;" onclick="openUserProfile(\''+u.id+'\',\''+nick+'\')">'
+        +'<img src="'+u.av+'" loading="lazy" '
+        +'style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;" '
+        +'onerror="this.style.opacity=\'.2\'">'
+        +'<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.72));padding:14px 7px 5px;">'
+        +'<div style="color:#fff;font-size:.7rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+nick+badge+'</div>'
+        +(tsStr?'<div style="color:rgba(255,255,255,.65);font-size:.56rem;font-family:monospace;margin-top:1px;">🕐 '+tsStr+'</div>':'')
+        +'</div>'
+        +'</div>'
+        // Reacciones
+        +'<div style="padding:4px 5px;display:flex;flex-wrap:wrap;gap:2px;">'+rxnBtns+'</div>'
+        +'</div>';
+    }).join('');
+  }
+
+  window.sideReelReact = function(uid, em){
+    var storKey = 'sreelRxn_'+uid;
+    var rxnData = {};
+    try { rxnData = JSON.parse(localStorage.getItem(storKey)||'{}'); } catch(e){}
+    var myKey = 'sreelMyRxn_'+uid;
+    var prev  = localStorage.getItem(myKey);
+    if(prev && prev !== em && rxnData[prev]){
+      rxnData[prev] = Math.max(0,(rxnData[prev]||1)-1);
+      if(!rxnData[prev]) delete rxnData[prev];
+    }
+    if(prev === em){
+      rxnData[em] = Math.max(0,(rxnData[em]||1)-1);
+      if(!rxnData[em]) delete rxnData[em];
+      localStorage.removeItem(myKey);
+    } else {
+      rxnData[em] = (rxnData[em]||0)+1;
+      localStorage.setItem(myKey, em);
+    }
+    try { localStorage.setItem(storKey, JSON.stringify(rxnData)); } catch(e){}
+    REEL_RXNS.forEach(function(e2){
+      var btnId = 'srreact_'+uid+'_'+e2.codePointAt(0);
+      var btn   = document.getElementById(btnId);
+      if(!btn) return;
+      var cnt   = rxnData[e2]||0;
+      var active = localStorage.getItem(myKey) === e2;
+      btn.style.background  = active ? 'rgba(46,196,182,.15)' : 'none';
+      btn.style.borderColor = active ? 'var(--accent)' : 'transparent';
+      btn.innerHTML = e2+(cnt?'<span style="font-size:.58rem;color:var(--muted);">'+cnt+'</span>':'');
+    });
+  };
+
+  // Auto-cargar el sidebar de fotos cuando Firebase esté listo
+  (function _autoSideReel(){
+    if(window.db && window.firebaseFirestore){
+      sideReelLoad();
+    } else {
+      setTimeout(_autoSideReel, 1200);
+    }
+  })();
 
   // ────────────────────────────────────────────────────────────
   // JUGADORES
