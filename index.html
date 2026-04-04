@@ -4046,7 +4046,7 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
       <div style="margin-bottom:10px;">
         <label style="font-size:.75rem;font-weight:700;color:#444;display:block;margin-bottom:4px;">País *</label>
         <select id="phCountry" style="width:100%;padding:10px 14px;border:1.5px solid #dddfe2;border-radius:8px;font-family:'Exo 2',sans-serif;font-size:.88rem;outline:none;box-sizing:border-box;background:#fff;"
-          onfocus="this.style.borderColor='#25d366'" onblur="this.style.borderColor='#dddfe2'">
+          onfocus="this.style.borderColor='#25d366'" onblur="this.style.borderColor='#dddfe2'" onchange="var opt=this.options[this.selectedIndex];var code=opt.getAttribute('data-code')||'';document.getElementById('phDialCode').value=code;">
           <option value="">— Seleccioná tu país —</option>
           <option value="🇦🇷 Argentina" data-code="+54">🇦🇷 Argentina (+54)</option>
           <option value="🇺🇾 Uruguay" data-code="+598">🇺🇾 Uruguay (+598)</option>
@@ -8839,11 +8839,13 @@ window.sendPhoneSMS = async function(){
   if(!nick || nick.length < 2){
     errEl.textContent = 'Ingresá tu nick (mínimo 2 caracteres).'; errEl.style.display='block'; return;
   }
+  // Auto-agregar + si el usuario se olvidó
+  if(dial && !dial.startsWith('+')) dial = '+' + dial;
   if(!dial || !dial.startsWith('+')){
-    errEl.textContent = 'Ingresá el código de país (ej: +54).'; errEl.style.display='block'; return;
+    errEl.textContent = 'Seleccioná tu país o ingresá el código (ej: +54).'; errEl.style.display='block'; return;
   }
   if(!number || number.length < 6){
-    errEl.textContent = 'Ingresá tu número de celular.'; errEl.style.display='block'; return;
+    errEl.textContent = 'Ingresá tu número de celular (mínimo 6 dígitos).'; errEl.style.display='block'; return;
   }
   if(!terms){
     errEl.textContent = 'Debés aceptar los Términos y Condiciones.'; errEl.style.display='block'; return;
