@@ -9215,8 +9215,14 @@ function init(){
           const _isAdmin = window.CU.nick==='ruizgustavo12' || window.CU.nick==='gustavo ruiz' || window.CU.nick==='gustavoruiz' || window.CU.email==='synxyes@gmail.com' || window.CU.role==='admin';
           document.getElementById('mAuth').style.display = 'none';
           hideSplash();
-          if(_isAdmin && window._hideConstruction) window._hideConstruction();
-          if(!window.CU.country){
+          if(_isAdmin){
+            // Admin: forzar rol, pais y acceso directo sin bloqueos
+            window.CU.role = 'admin';
+            if(!window.CU.country) window.CU.country = 'UY';
+            if(!window.CU.nick) window.CU.nick = 'ruizgustavo12';
+            if(window._hideConstruction) window._hideConstruction();
+            onLogin();
+          } else if(!window.CU.country){
             window._pendingGoogleOnboard = false;
             const cpModal = document.getElementById('mCountryPick');
             if(cpModal){ cpModal.style.display='flex'; }
@@ -9414,7 +9420,18 @@ async function doGoogleLogin(){
     }
     // Admin bypass: si es admin no le pedimos país
     const _isAdminGoogle = window.CU.email === 'synxyes@gmail.com' || window.CU.nick === 'ruizgustavo12' || window.CU.nick === 'gustavo ruiz' || window.CU.nick === 'gustavoruiz' || window.CU.role === 'admin';
-    if(!window.CU.country && !_isAdminGoogle){
+    // Si es admin, forzar rol y país para evitar bloqueos por datos faltantes en Firestore
+    if(_isAdminGoogle){
+      window.CU.role = 'admin';
+      if(!window.CU.country) window.CU.country = 'UY';
+      if(!window.CU.nick) window.CU.nick = 'ruizgustavo12';
+      document.getElementById('mAuth').style.display = 'none';
+      if(window._hideConstruction) window._hideConstruction();
+      onLogin();
+      toast('¡Bienvenido ' + (window.CU.nick||'Admin') + '! 🛡️', 'ok');
+      return;
+    }
+    if(!window.CU.country){
       document.getElementById('mAuth').style.display = 'none';
       window._pendingGoogleOnboard = false;
       const cpModal = document.getElementById('mCountryPick');
@@ -9422,9 +9439,8 @@ async function doGoogleLogin(){
       return;
     }
     document.getElementById('mAuth').style.display = 'none';
-    if(_isAdminGoogle && window._hideConstruction) window._hideConstruction();
     onLogin();
-    toast('¡Bienvenido ' + (window.CU.nick||'Admin') + '! ' + (_isAdminGoogle ? '🛡️' : '🎣'), 'ok');
+    toast('¡Bienvenido ' + (window.CU.nick||'Admin') + '! 🎣', 'ok');
   } catch(e) {
     if(e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') return;
     let gMsg = e.message || 'Error desconocido';
@@ -30465,6 +30481,14 @@ setTimeout(function(){
     </div>
   </div>
 </div>
+
+<script>
+// ── ADMIN: Ocultar pantalla de construcción ──
+window._hideConstruction = function() {
+  var cs = document.getElementById('constructionScreen');
+  if (cs) cs.style.display = 'none';
+};
+</script>
 
 <script>
 function _showBanScreen(reason, note){
