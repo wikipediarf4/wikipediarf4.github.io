@@ -5064,9 +5064,11 @@ window._rechazarAlbumDesdeNotif = async function(visitorUid, ownerUid, btn) {
             📸 Foto
             <input type="file" accept="image/*" id="storyImgInput" style="display:none" onchange="previewStoryImg(this);_scUpdatePreview()">
           </label>
-          <div onclick="toast('🎬 Videos en historias — Próximamente. Por ahora solo imágenes 📸','inf')" style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;border:2px dashed #444;border-radius:12px;cursor:not-allowed;color:#666;font-size:.85rem;background:var(--bg3);opacity:.55;">
-            🎬 Video <span style="font-size:.65rem;background:rgba(255,200,0,.18);color:#f5c842;border-radius:100px;padding:1px 6px;font-weight:700;">Próximamente</span>
+          <div onclick="storyYtSubirVideo()" id="storyVideoBtn" style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;border:2px dashed var(--border);border-radius:12px;cursor:pointer;color:var(--muted);font-size:.85rem;background:var(--bg3);transition:border-color .2s,color .2s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+            🎬 Video
+            <input type="file" accept="video/*" id="_storyYtFileInput" style="display:none">
           </div>
+          <div id="storyVideoUploadStatus" style="display:none;margin-top:6px;font-size:.76rem;"></div>
         </div>
         <div id="storyImgPrev" style="margin-top:4px;"></div>
         <div id="storyVideoPrev" style="margin-top:4px;"></div>
@@ -8710,7 +8712,7 @@ function _stub(name){ return function(){ _q.push([name, arguments]); }; }
  'previewStoryImg','pickStoryEmoji','insertEmoji','insertFishTag',
  'toggleComments','_submitModalCmt','_editModalCmt','_delModalCmt','sharePost','toggleCmtMenu','editCmt','delCmt','quickCmtRxn','replyCmt','toggleReplies','showCmtRxnPop','hideCmtRxnPop','cancelHideCmtRxn','reactCmt','openImgLightbox','openImgLightboxById','toggleStickerPicker','closeStickerPicker','loadStickerCat','searchStickers','sendSticker','resetStickerCats','swPTab','setAppTheme','reactChatMsg','showMsgRxnBar','hideMsgRxnBar','keepMsgRxnBar','showCmtMenu','hideCmtMenu','setChatTyping','filterShopCat','toggleEquipItem',
  'showRxnPop','schedHideRxnPop','cancelHideRxnPop',
- 'openSV','closeSV','svNav','reactStory','submitStoryComment','deleteMyStory','doSearch',
+ 'openSV','closeSV','svNav','reactStory','submitStoryComment','deleteMyStory','storyYtSubirVideo','doSearch',
  'reportPost','submitReport','loadAdminData','deleteAdminPost','resolveReport',
  'doForgotPassword','quickLogin','createGroup','previewGroupImg',
  'submitMapPost','previewMapMedia','filterMapPosts',
@@ -10937,12 +10939,13 @@ function renderSV(){
   if(!svGifEl){ svGifEl = document.createElement('img'); svGifEl.id='_svGif'; svGifEl.style.cssText='position:absolute;bottom:140px;left:50%;transform:translateX(-50%);max-width:80%;border-radius:10px;z-index:11;pointer-events:none;'; bg.parentElement.appendChild(svGifEl); }
   svGifEl.src = s.gif || '';
   svGifEl.style.display = s.gif ? 'block' : 'none';
-  // Show delete (own) or report (others)
+  // Show delete (own or admin) or report (others)
   const delBtn = document.getElementById('svDeleteBtn');
   const repBtn = document.getElementById('svReportBtn');
   const isOwn  = window.CU && s.userId === window.CU.id;
-  if(delBtn) delBtn.style.display = isOwn ? 'block' : 'none';
-  if(repBtn) repBtn.style.display = (!isOwn && window.CU) ? 'block' : 'none';
+  const _isSVAdmin = window.CU && (window.CU.role==='admin' || window.CU.email==='synxyes@gmail.com' || window.CU.nick==='ruizgustavo12');
+  if(delBtn) delBtn.style.display = (isOwn || _isSVAdmin) ? 'block' : 'none';
+  if(repBtn) repBtn.style.display = (!isOwn && window.CU && !_isSVAdmin) ? 'block' : 'none';
   // Clear comment input
   const cinp = document.getElementById('svCommentInput');
   if(cinp) cinp.value = '';
@@ -11290,12 +11293,14 @@ async function submitStoryComment(){
 
 async function deleteMyStory(){
   const s = _stories[_svIdx];
-  if(!s || !window.CU || s.userId !== window.CU.id){ toast('No podés eliminar esta historia','err'); return; }
-  if(!confirm('¿Eliminar esta historia?')) return;
+  if(!s || !window.CU){ toast('No podés eliminar esta historia','err'); return; }
+  const _isAdminDel = window.CU.role==='admin' || window.CU.email==='synxyes@gmail.com' || window.CU.nick==='ruizgustavo12';
+  if(s.userId !== window.CU.id && !_isAdminDel){ toast('No podés eliminar esta historia','err'); return; }
+  if(!confirm(_isAdminDel && s.userId !== window.CU.id ? '🛡️ Eliminar esta historia como admin?' : '¿Eliminar esta historia?')) return;
   try {
     await deleteDoc(doc(db,'stories',s.id));
     closeSV();
-    toast('Historia eliminada','ok');
+    toast(_isAdminDel && s.userId !== window.CU.id ? '🛡️ Historia eliminada por el admin' : 'Historia eliminada','ok');
   } catch(e){
     toast('Error al eliminar','err');
   }
@@ -11362,6 +11367,8 @@ function openStoryChooser(){
   window._storyTextStyle = 'normal';
   window._storyGif = null;
   window._scMode = 'chooser';
+  window._storyYtUrl = null;
+  window._storyYtId = null;
   _storyImgData = null;
   _storyVideoData = null;
   // Limpiar previews de imagen
@@ -11369,6 +11376,10 @@ function openStoryChooser(){
   if(prevImg){ prevImg.src = ''; prevImg.style.display = 'none'; }
   const storyImgPrev = document.getElementById('storyImgPrev');
   if(storyImgPrev) storyImgPrev.innerHTML = '';
+  const storyVideoUploadStatus = document.getElementById('storyVideoUploadStatus');
+  if(storyVideoUploadStatus){ storyVideoUploadStatus.style.display='none'; storyVideoUploadStatus.innerHTML=''; }
+  const storyVideoPrevReset = document.getElementById('storyVideoPrev');
+  if(storyVideoPrevReset) storyVideoPrevReset.innerHTML = '';
   // Set user info
   if(window.CU){
     const av = document.getElementById('_scUserAv');
@@ -12232,12 +12243,15 @@ async function submitStory(){
   // In photo mode, music comes from storyMusicSearch flow (same window._storyMusic)
   const textEl = mode==='text' ? document.getElementById('storyTextText') : document.getElementById('storyText');
   const text = textEl?.value.trim() || '';
-  if(!text && !_storyImgData && !window._storyGif){ toast('Escribe algo o sube una imagen','err'); return; }
+  const hasYtVideo = !!(window._storyYtUrl);
+  if(!text && !_storyImgData && !window._storyGif && !hasYtVideo){ toast('Escribe algo o sube una imagen/video','err'); return; }
   toast('Publicando historia...','inf');
   let imgUrl = '';
   let videoUrl = '';
   if(_storyImgData) imgUrl = await uploadImage(_storyImgData, 'stories');
   if(_storyVideoData) videoUrl = await uploadVideo(_storyVideoData, 'stories');
+  // Si hay video YouTube subido via worker, usarlo directamente (sin aprobación)
+  if(hasYtVideo) videoUrl = window._storyYtUrl;
   if(!text && !imgUrl && !videoUrl && !window._storyGif){ toast('Agregá algo a la historia','err'); return; }
   const _storyTTL = (window.CU?.verified) ? 172800000 : 86400000; // 48h verificados, 24h resto
   const _storyExpiresAt = new Date(Date.now() + _storyTTL);
@@ -12331,7 +12345,10 @@ async function submitStory(){
   _storyImgData = null; _storyVideoData = null; _storyEmojiPick = ''; _storyMusic = null; window._storyMusic = null;
   window._storyBg = null; window._storyGif = null; window._scMode = 'chooser';
   window._storyTextColor = '#ffffff'; window._storyTextStyle = 'normal';
+  window._storyYtUrl = null; window._storyYtId = null;
   const sv2 = document.getElementById('storyVideoPrev'); if(sv2) sv2.innerHTML='';
+  const svSt = document.getElementById('storyVideoUploadStatus'); if(svSt){ svSt.style.display='none'; svSt.innerHTML=''; }
+  const stBtn = document.getElementById('storyVideoBtn'); if(stBtn){ stBtn.style.opacity=''; stBtn.style.pointerEvents=''; }
   const t1 = document.getElementById('storyText'); if(t1) t1.value='';
   const t2 = document.getElementById('storyTextText'); if(t2) t2.value='';
   const ip = document.getElementById('storyImgPrev'); if(ip) ip.innerHTML='';
@@ -29968,6 +29985,68 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
       _lockPublish(false);
     }
   }
+
+  // ── Subir video para HISTORIAS (sin aprobación) ──────────
+  var _storyYtUploading = false;
+
+  function _storySetStatus(msg, color){
+    var el = document.getElementById('storyVideoUploadStatus');
+    if(!el) return;
+    el.style.display = msg ? 'block' : 'none';
+    el.style.color = color || 'var(--muted)';
+    el.innerHTML = msg ? '<span style="padding:5px 10px;border-radius:8px;background:rgba(0,0,0,.15);display:inline-block;">'+msg+'</span>' : '';
+  }
+
+  window.storyYtSubirVideo = function(){
+    if(!window.CU){ alert('Tenés que estar logueado.'); return; }
+    if(_storyYtUploading){ _toast('Ya hay un video subiendo, esperá','inf'); return; }
+    var inp = document.getElementById('_storyYtFileInput');
+    if(!inp) return;
+    inp.value = '';
+    inp.onchange = async function(){
+      if(!inp.files || !inp.files[0]) return;
+      var file = inp.files[0];
+      _storyYtUploading = true;
+      // Deshabilitar botón
+      var btn = document.getElementById('storyVideoBtn');
+      if(btn){ btn.style.opacity='.5'; btn.style.pointerEvents='none'; }
+      // Preview local
+      var localUrl = URL.createObjectURL(file);
+      var prevEl = document.getElementById('storyVideoPrev');
+      if(prevEl) prevEl.innerHTML = '<video src="'+localUrl+'" controls style="width:100%;max-height:180px;border-radius:10px;background:#000;display:block;" preload="metadata"></video>';
+      _storySetStatus('⏳ Subiendo video a YouTube...', 'var(--warn)');
+      try{
+        var resp = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: {
+            'X-Action':    'yt_upload',
+            'X-File-Type': file.type,
+            'X-File-Size': String(file.size),
+            'X-User-Nick': window.CU.nick || window.CU.id,
+            'Content-Type': file.type
+          },
+          body: file
+        });
+        var data = await resp.json();
+        if(data.error) throw new Error(data.error);
+        if(!data.videoId) throw new Error('No se obtuvo ID del video');
+        // Guardar en window para que submitStory lo use
+        window._storyYtUrl = data.videoUrl;
+        window._storyYtId  = data.videoId;
+        _storySetStatus('✅ Video listo. Ahora escribí algo y publicá la historia.', 'var(--green)');
+        _toast('✅ Video listo — completá la historia y publicá','ok');
+      }catch(e){
+        window._storyYtUrl = null;
+        window._storyYtId  = null;
+        _storySetStatus('❌ Error: '+e.message, 'var(--red)');
+        _toast('Error al subir: '+e.message,'err');
+        if(prevEl) prevEl.innerHTML='';
+      }
+      _storyYtUploading = false;
+      if(btn){ btn.style.opacity=''; btn.style.pointerEvents=''; }
+    };
+    inp.click();
+  };
 
 })();
 </script>
