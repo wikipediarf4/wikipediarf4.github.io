@@ -10071,7 +10071,16 @@ function renderSV(){
 
   function _startLyrics(lrcRaw){
     if(!lrcRaw || !_lyricsBar || !_lyricsCurrent) return;
-    const lines = _parseLRC(lrcRaw);
+
+    // Parsear: puede venir como JSON con offset o como string LRC directo
+    let lrcStr = lrcRaw;
+    let offset = 0;
+    try {
+      const parsed = JSON.parse(lrcRaw);
+      if(parsed && parsed.lrc){ lrcStr = parsed.lrc; offset = parsed.offset || 0; }
+    } catch(e){ /* es string LRC directo, offset 0 */ }
+
+    const lines = _parseLRC(lrcStr);
     if(!lines.length){ if(_lyricsBar) _lyricsBar.style.display='none'; return; }
 
     _lyricsBar.style.display = 'block';
@@ -10079,7 +10088,8 @@ function renderSV(){
 
     window._svLyricsInterval = setInterval(()=>{
       if(audio.paused) return;
-      const t = audio.currentTime;
+      // Sumar offset al currentTime para mapear al tiempo real de la canción
+      const t = audio.currentTime + offset;
       // Encontrar la línea actual
       let idx = -1;
       for(let i = lines.length-1; i >= 0; i--){
@@ -10667,7 +10677,8 @@ async function _fetchDeezer(q){
           title: t.trackName || '',
           artist: t.artistName || '',
           cover: (t.artworkUrl100 || t.artworkUrl60 || '').replace('100x100bb','300x300bb'),
-          preview: t.previewUrl || ''
+          preview: t.previewUrl || '',
+          durationMs: t.trackTimeMillis || 0
         }));
       return mapped.length ? mapped : [];
     } catch(e){ clearTimeout(tId); return null; }
@@ -10693,7 +10704,8 @@ async function _fetchDeezer(q){
           title: t.trackName || '',
           artist: t.artistName || '',
           cover: (t.artworkUrl100 || '').replace('100x100bb','300x300bb'),
-          preview: t.previewUrl || ''
+          preview: t.previewUrl || '',
+          durationMs: t.trackTimeMillis || 0
         }));
     } catch(e){ return null; }
   };
@@ -11222,7 +11234,7 @@ async function submitStory(){
         .replace(/\[.*?\]/g,'')
         .trim();
       const _cleanArtist = (_musicForLyrics.artist||'')
-        .split(',')[0] // solo el primer artista
+        .split(',')[0]
         .replace(/\(feat\.?.*?\)/gi,'')
         .trim();
 
@@ -11231,10 +11243,12 @@ async function submitStory(){
         `https://lrclib.net/api/get?track_name=${encodeURIComponent(_cleanTitle)}&artist_name=${encodeURIComponent(_cleanArtist)}`
       ).catch(()=>null);
 
+      let _lrcFullData = null;
       if(_lrcExact && _lrcExact.ok){
         const _lrcExactData = await _lrcExact.json();
         if(_lrcExactData && _lrcExactData.syncedLyrics){
           _lyricsData = _lrcExactData.syncedLyrics;
+          _lrcFullData = _lrcExactData;
         }
       }
 
@@ -11244,7 +11258,6 @@ async function submitStory(){
         const _lrcRes = await fetch('https://lrclib.net/api/search?q=' + _lrcQ).catch(()=>null);
         if(_lrcRes && _lrcRes.ok){
           const _lrcData = await _lrcRes.json();
-          // Buscar la que más coincida: mismo artista primero
           const _artistLower = _cleanArtist.toLowerCase();
           const _titleLower  = _cleanTitle.toLowerCase();
           const _best = (_lrcData||[]).find(t =>
@@ -11252,7 +11265,28 @@ async function submitStory(){
             (t.artistName||'').toLowerCase().includes(_artistLower) &&
             (t.trackName||'').toLowerCase().includes(_titleLower)
           ) || (_lrcData||[]).find(t => t.syncedLyrics);
-          if(_best) _lyricsData = _best.syncedLyrics;
+          if(_best){ _lyricsData = _best.syncedLyrics; _lrcFullData = _best; }
+        }
+      }
+
+      // Calcular offset: el preview de iTunes empieza ~30% de la canción
+      // Usamos durationMs del track y durationSeconds de LRCLIB para calcular el segundo exacto
+      if(_lyricsData && _lrcFullData){
+        const _trackDurMs  = (_musicForLyrics.durationMs || 0);
+        const _lrcDurSec   = (_lrcFullData.duration || 0);
+        // Si tenemos ambas duraciones y coinciden ±20%, calcular offset
+        if(_trackDurMs > 0 && _lrcDurSec > 0){
+          const _trackDurSec = _trackDurMs / 1000;
+          const _ratio = _trackDurSec / _lrcDurSec;
+          if(_ratio > 0.8 && _ratio < 1.2){
+            // iTunes preview empieza aprox en el 30% de la canción
+            _lyricsData = JSON.stringify({ lrc: _lyricsData, offset: Math.floor(_trackDurSec * 0.30) });
+          } else {
+            _lyricsData = JSON.stringify({ lrc: _lyricsData, offset: 0 });
+          }
+        } else {
+          // Sin datos de duración, asumir offset de 60s (común en previews)
+          _lyricsData = JSON.stringify({ lrc: _lyricsData, offset: 60 });
         }
       }
     } catch(e){ console.warn('lyrics fetch error:', e); }
