@@ -2873,17 +2873,6 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
       
 
       
-      <!-- ═══════════ AMIGOS EN LÍNEA WIDGET ═══════════ -->
-      <div id="sidebarOnlineWidget" style="margin:0 0 12px;background:linear-gradient(135deg,rgba(0,230,118,.09),rgba(0,230,118,.04));border:1px solid rgba(0,230,118,.28);border-radius:14px;overflow:hidden;">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 11px 6px;">
-          <div style="font-size:.7rem;font-weight:900;color:#00e676;text-transform:uppercase;letter-spacing:.05em;">🟢 En línea ahora</div>
-          <span id="sidebarOnlineCount2" style="font-size:.62rem;background:rgba(0,230,118,.18);color:#00e676;font-weight:800;border-radius:20px;padding:1px 8px;">0</span>
-        </div>
-        <div id="sidebarOnlineList" style="padding:0 8px 10px;max-height:320px;overflow-y:auto;">
-          <div style="font-size:.72rem;color:var(--muted);padding:8px 4px;text-align:center;">Cargando...</div>
-        </div>
-      </div>
-      <!-- ═══════════ FIN AMIGOS EN LÍNEA WIDGET ═══════════ -->
 
       <!-- ═══════════ SUGERENCIAS MATCH WIDGET ═══════════ -->
       <div id="sidebarMatchWidget" style="margin:0 0 12px;background:linear-gradient(135deg,rgba(255,64,129,.09),rgba(255,64,129,.04));border:1px solid rgba(255,64,129,.28);border-radius:14px;overflow:hidden;">
@@ -2903,19 +2892,22 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
           if(!el) return;
           var myId = window.CU.id;
           var myGender = (window.CU.gender||'').toLowerCase();
-          var myCountry = window.CU.country||'';
-          // Buscar usuarios del género opuesto o todos si no hay género definido
+          // Género opuesto estricto: hombre ve mujeres, mujer ve hombres
           var targetGender = myGender === 'hombre' ? 'mujer' : myGender === 'mujer' ? 'hombre' : '';
           window.getDocs(window.query(
             window.collection(window.db,'users'),
-            window.limit(40)
+            window.limit(60)
           )).then(function(snap){
             var myFriends = window.CU.friends || [];
             var users = snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); })
               .filter(function(u){
                 if(u.id === myId) return false;
                 if(myFriends.includes(u.id)) return false;
-                if(targetGender && u.gender && u.gender.toLowerCase() !== targetGender) return false;
+                // Si tengo género definido, mostrar SOLO el género opuesto
+                if(targetGender) {
+                  if(!u.gender) return false; // excluir sin género
+                  if(u.gender.toLowerCase() !== targetGender) return false;
+                }
                 return true;
               });
             // Mezclar aleatoriamente y tomar 4
