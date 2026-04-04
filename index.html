@@ -2776,7 +2776,7 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
     <div class="feed">
       
       <div class="stories-row" id="storiesRow">
-        <div onclick="openStoryChooser()" style="border:none;border-radius:12px;overflow:hidden;cursor:pointer;position:relative;width:115px;height:200px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.15);transition:transform .2s,box-shadow .2s;" onmouseover="this.style.transform='scale(1.03)';this.style.boxShadow='0 4px 14px rgba(0,0,0,.22)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 2px 8px rgba(0,0,0,.15)'">
+        <div onclick="openStoryChooser()" style="border:none;border-radius:12px;overflow:hidden;cursor:pointer;position:relative;width:115px;height:200px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.15);transition:transform .2s,box-shadow .2s;background:var(--bg2);" onmouseover="this.style.transform='scale(1.03)';this.style.boxShadow='0 4px 14px rgba(0,0,0,.22)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 2px 8px rgba(0,0,0,.15)'">
           
           <div id="storyAddPhoto" style="position:absolute;top:0;left:0;right:0;height:65%;background:var(--bg3);overflow:hidden;display:flex;align-items:center;justify-content:center;">
             <span id="storyAddPhotoInner" style="font-size:2.2rem;opacity:.3;">👤</span>
@@ -2807,11 +2807,11 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
           })();
           </script>
           
-          <div style="position:absolute;bottom:0;left:0;right:0;height:38%;background:var(--bg2);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:7px;">
-            <div style="font-size:.58rem;font-weight:700;color:var(--text);text-align:center;line-height:1.2;margin-top:16px;">Crear historia</div>
+          <div style="position:absolute;bottom:0;left:0;right:0;height:38%;background:var(--bg2);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:10px;z-index:2;">
+            <div style="font-size:.62rem;font-weight:700;color:var(--text);text-align:center;line-height:1.3;margin-top:18px;">Crear historia</div>
           </div>
           
-          <div style="position:absolute;bottom:calc(38% - 14px);left:50%;transform:translateX(-50%);width:28px;height:28px;border-radius:50%;background:#1877f2;border:2px solid var(--bg2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:900;color:#fff;z-index:3;box-shadow:0 2px 6px rgba(24,119,242,.5);">+</div>
+          <div style="position:absolute;bottom:calc(38% - 15px);left:50%;transform:translateX(-50%);width:30px;height:30px;border-radius:50%;background:#1877f2;border:3px solid var(--bg2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:900;color:#fff;z-index:4;box-shadow:0 2px 8px rgba(24,119,242,.6);">+</div>
         </div>
         
       </div>
@@ -9049,7 +9049,7 @@ function onLogin(){
     if(!storyPhoto || !window.CU) return;
     window._storyCardFilled = true; // detener polling inline
     if(window.CU.av){
-      storyPhoto.innerHTML = `<img src="${window.CU.av}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" onerror="this.style.display='none'">`;
+      storyPhoto.innerHTML = `<img src="${window.CU.av}" style="width:100%;height:100%;object-fit:cover;object-position:top;" onerror="this.style.display='none'">`;
     } else {
       const ini = (window.CU.nick||'?')[0].toUpperCase();
       storyPhoto.innerHTML = `<span style="font-size:3.5rem;opacity:.7;font-weight:800;color:var(--accent);">${ini}</span>`;
