@@ -4165,7 +4165,7 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
         </button>
       </div>
       <div id="ytLinkBox" style="display:none;">
-        <input class="fi" id="ytUrlInput" placeholder="Pegá link de YouTube o TikTok..." style="font-size:.82rem;margin-bottom:0;" oninput="previewYtEmbed(this.value)">
+        <input class="fi" id="ytUrlInput" placeholder="Pegá link de YouTube, TikTok o Reel de Facebook..." style="font-size:.82rem;margin-bottom:0;" oninput="previewYtEmbed(this.value)">
       </div>
       <div id="ytPreview" style="margin-top:8px;border-radius:var(--rs);overflow:hidden;display:none;"></div>
       <div id="ytUploadStatus" style="display:none;margin-top:8px;font-size:.78rem;color:var(--muted);"></div>
@@ -11020,6 +11020,7 @@ function postHTML(p){
     } else {
       const ytId = extractYtId(p.video);
       const ttId = extractTikTokId(p.video);
+      const fbUrlPost = !ytId && !ttId ? extractFbReelUrl(p.video) : null;
       if(ytId){
         const _pendingBanner = _isPending ? `
           <div style="background:rgba(255,170,0,.12);border:1px solid rgba(255,170,0,.4);border-radius:var(--rs);padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
@@ -11043,6 +11044,8 @@ function postHTML(p){
               style="width:100%;height:100%;display:block;border:none;" loading="lazy"></iframe>
           </div>
         </div>`;
+      } else if(fbUrlPost){
+        videoHTML = `<div style="width:100%;aspect-ratio:16/9;border-radius:var(--rs);overflow:hidden;margin-bottom:10px;background:#000;"><iframe src="${fbEmbedUrl(fbUrlPost)}" frameborder="0" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" style="width:100%;height:100%;display:block;border:none;" loading="lazy"></iframe></div>`;
       } else {
         videoHTML = `<video src="${p.video}" controls style="width:100%;border-radius:var(--rs);margin-bottom:10px;max-height:320px;display:block;"></video>`;
       }
@@ -17261,6 +17264,26 @@ function extractTikTokId(url){
   return null;
 }
 
+function extractFbReelUrl(url){
+  if(!url) return null;
+  // facebook.com/reel/123, fb.watch/xxx, facebook.com/watch?v=123, facebook.com/.../videos/123
+  if(url.includes('facebook.com/reel/') ||
+     url.includes('fb.watch/') ||
+     url.includes('facebook.com/watch') ||
+     url.includes('/videos/')){
+    return url;
+  }
+  return null;
+}
+
+function isFbReel(url){
+  return !!extractFbReelUrl(url);
+}
+
+function fbEmbedUrl(url){
+  return 'https://www.facebook.com/plugins/video.php?href=' + encodeURIComponent(url) + '&show_text=false&autoplay=true';
+}
+
 function isTikTokShortLink(url){
   return url && (url.includes('vm.tiktok.com') || url.includes('vt.tiktok.com'));
 }
@@ -17297,6 +17320,7 @@ function previewYtEmbed(url){
   if(!prev) return;
   const ytId = extractYtId(url);
   const ttId = extractTikTokId(url);
+  const fbUrl2 = !ytId && !ttId ? extractFbReelUrl(url) : null;
   if(ytId){
     prev.style.display='block';
     prev.innerHTML = `<div style="width:100%;aspect-ratio:16/9;border-radius:var(--rs);overflow:hidden;background:#000;">
@@ -17309,12 +17333,18 @@ function previewYtEmbed(url){
       <iframe src="https://www.tiktok.com/embed/v2/${ttId}" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         style="width:100%;height:100%;display:block;border:none;"></iframe>
     </div><div style="font-size:.72rem;color:var(--green);margin-top:4px;">🎵 TikTok detectado correctamente</div>`;
+  } else if(isFbReel(url)){
+    prev.style.display='block';
+    prev.innerHTML = `<div style="width:100%;aspect-ratio:16/9;border-radius:var(--rs);overflow:hidden;background:#000;">
+      <iframe src="${fbEmbedUrl(url)}" frameborder="0" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+        style="width:100%;height:100%;display:block;border:none;"></iframe>
+    </div><div style="font-size:.72rem;color:var(--green);margin-top:4px;">📘 Reel de Facebook detectado correctamente</div>`;
   } else if(isTikTok(url) && url.length > 10){
     prev.style.display='block';
     prev.innerHTML='<div style="font-size:.72rem;color:var(--warn);padding:4px;">⚠️ Usá el link completo del video de TikTok (con /video/ID)</div>';
   } else if(url.length > 5){
     prev.style.display='block';
-    prev.innerHTML='<div style="font-size:.72rem;color:var(--red);padding:4px;">⚠️ URL no válida. Pegá un link de YouTube o TikTok</div>';
+    prev.innerHTML='<div style="font-size:.72rem;color:var(--red);padding:4px;">⚠️ URL no válida. Pegá un link de YouTube, TikTok o Reel de Facebook</div>';
   } else {
     prev.style.display='none';
     prev.innerHTML='';
@@ -22027,7 +22057,8 @@ function _reelCard(p, H){
   H = H || window.innerHeight;
   const ytId = extractYtId(p.video||'');
   const ttId = extractTikTokId(p.video||'');
-  const isCloudVideo = !ytId && !ttId && p.video;
+  const fbUrl = !ytId && !ttId ? extractFbReelUrl(p.video||'') : null;
+  const isCloudVideo = !ytId && !ttId && !fbUrl && p.video;
   const nick = p.userNick||'Usuario';
   const av   = p.userAv||getDefaultAv(p.userGender||'');
   const text = (p.text||'').slice(0,90);
@@ -22047,12 +22078,16 @@ function _reelCard(p, H){
     videoInner=`<iframe src="https://www.tiktok.com/embed/v2/${ttId}" frameborder="0" allowfullscreen allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" style="width:100%;height:100%;border:none;display:block;" loading="lazy"></iframe>`;
   } else if(isTikTok(p.video)){
     videoInner=`<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#111;"><div style="font-size:3rem;">🎵</div><div style="color:#fff;font-size:.9rem;font-weight:700;">Video de TikTok</div><a href="${p.video}" target="_blank" rel="noopener" style="background:linear-gradient(135deg,#69C9D0,#EE1D52);color:#fff;padding:10px 28px;border-radius:100px;font-weight:800;font-size:.85rem;text-decoration:none;">Ver en TikTok ↗</a></div>`;
+  } else if(fbUrl){
+    videoInner=`<iframe src="${fbEmbedUrl(fbUrl)}" frameborder="0" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" style="width:100%;height:100%;border:none;display:block;" loading="lazy"></iframe>`;
   } else if(isCloudVideo){
     videoInner=`<video src="${p.video}" controls playsinline style="width:100%;height:100%;object-fit:contain;display:block;"></video>`;
   }
 
   const badge = ytId
     ? `<span style="background:#FF0000;color:#fff;font-size:.58rem;font-weight:800;padding:1px 6px;border-radius:100px;flex-shrink:0;">YT</span>`
+    : fbUrl
+    ? `<span style="background:#1877f2;color:#fff;font-size:.58rem;font-weight:800;padding:1px 6px;border-radius:100px;flex-shrink:0;">FB</span>`
     : `<span style="background:#010101;color:#69C9D0;font-size:.58rem;font-weight:800;padding:1px 6px;border-radius:100px;border:1px solid #555;flex-shrink:0;">TT</span>`;
 
   // Use data-pid attribute and event delegation to avoid onclick scope issues
