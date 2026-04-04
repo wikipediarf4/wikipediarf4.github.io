@@ -3595,7 +3595,7 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
       try {
         var notif = { text: '🔐 '+(window.CU.nick||'Alguien')+' solicita acceso a tu álbum privado', time: Date.now(), read: false, fromUid: myUid, fromAv: window.CU.av||'', fromNick: window.CU.nick||'', type:'albumAcceso', visitorUid: myUid, visitorNick: window.CU.nick||'', visitorAv: window.CU.av||'' };
         await window.updateDoc(window.doc(window.db,'users',_upAlbumOwnerUid),{notifs: window.arrayUnion(notif)});
-      } catch(ne){}
+      } catch(ne){ console.warn("[Album] No se pudo notificar al dueño:", ne); }
       _upShowSec('upAlbumPendiente');
       toast('✅ Solicitud enviada.');
     } catch(e) {
@@ -8896,6 +8896,7 @@ window.setDoc = setDoc; window.getDoc = getDoc; window.deleteDoc = deleteDoc;
 window.onSnapshot = onSnapshot; window.query = query; window.where = where;
 window.orderBy = orderBy; window.limit = limit; window.addDoc = addDoc;
 window.updateDoc = updateDoc; window.serverTimestamp = serverTimestamp;
+window.arrayUnion = arrayUnion; window.arrayRemove = arrayRemove;
 
 
 // ===== MANEJAR RESULTADO DE REDIRECT (Google login con redirect) =====
