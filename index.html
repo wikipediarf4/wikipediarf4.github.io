@@ -23272,6 +23272,18 @@ async function _reelsHandleClick(e){
     }
   }
   if(action==='comment'){ toggleComments(pid); }
+  if(action==='delete-reel' && pid){
+    const isAdmin = window.CU && (window.CU.role==='admin' || window.CU.email==='synxyes@gmail.com');
+    if(!isAdmin){ toast('Sin permisos','err'); return; }
+    if(!confirm('¿Eliminar este reel?')) return;
+    try {
+      await deleteDoc(doc(db,'posts',pid));
+      // Quitar el card del DOM
+      const card = document.querySelector('[data-reel-pid="'+pid+'"]');
+      if(card) card.remove();
+      toast('🗑 Reel eliminado','ok');
+    } catch(err){ toast('Error al eliminar: '+err.message,'err'); }
+  }
 }
 
 function _renderReelsFeed(el, H){
@@ -23379,6 +23391,12 @@ function _reelCard(p, H){
         style="background:#f0f2f5;border:1px solid #dddfe2;color:#050505;padding:8px 12px;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;flex-shrink:0;pointer-events:auto;">
         ↗️
       </button>
+
+      ${(window.CU && (window.CU.role==='admin' || window.CU.email==='synxyes@gmail.com')) ? `
+      <button data-action="delete-reel" data-pid="${pid}"
+        style="background:#e74c3c;border:none;color:#fff;padding:8px 12px;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;flex-shrink:0;pointer-events:auto;" title="Eliminar reel">
+        🗑
+      </button>` : ''}
 
     </div>
   </div>`;
