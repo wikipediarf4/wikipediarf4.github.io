@@ -3839,7 +3839,7 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
     try {
       var countSnap = await window.getDocs(window.query(window.collection(window.db,'albumPrivado',myUid,'fotos'),window.limit(51)));
       var noRechazadas = 0;
-      countSnap.forEach(function(d){ var est = d.data().estado||'pendiente'; if(est !== 'rechazado') noRechazadas++; });
+      countSnap.forEach(function(d){ noRechazadas++; });
       if (noRechazadas + files.length > 50) { toast('Máximo 50 fotos en el álbum privado','err'); input.value=''; return; }
     } catch(e) { console.warn('No se pudo verificar cantidad:', e); }
 
@@ -10318,7 +10318,7 @@ window.gp = (id, pushState = true) => {
     siteFooter.style.display = (id === 'match') ? 'none' : 'block';
   }
   navigateTo(id, pushState);
-  if(id==='profile') renderProfile();
+  if(id==='profile'){ window._viewingProfileUid = window.CU ? window.CU.id : null; renderProfile(); }
   if(id==='match') { if(typeof window.initMatchPage==='function') window.initMatchPage(); }
   if(id==='fotos') { if(typeof window.initFotosPage==='function') setTimeout(window.initFotosPage, 50); }
   if(id==='admin') {
@@ -13005,7 +13005,7 @@ async function submitPost(){
     try {
       var countSnap = await getDocs(query(collection(db,'albumPrivado',myUid,'fotos'),limit(51)));
       var noRechazadas = 0;
-      countSnap.forEach(function(d){ var est = d.data().estado||'pendiente'; if(est !== 'rechazado') noRechazadas++; });
+      countSnap.forEach(function(d){ noRechazadas++; });
       if(noRechazadas + imgFiles.length > 50){ toast('Máximo 50 fotos en el álbum privado','err'); return; }
     } catch(e){ console.warn('No se pudo verificar cantidad:', e); }
 
@@ -13023,7 +13023,7 @@ async function submitPost(){
           ownerNick: window.CU.nick || '',
           ownerAv: window.CU.av || '',
           descripcion: text || '',
-          estado: 'pendiente'
+          estado: 'aprobado'
         });
         subidos++;
       } catch(e){
@@ -13047,7 +13047,7 @@ async function submitPost(){
     cm('mCreatePost');
 
     if(subidos > 0){
-      toast('⏳ ' + subidos + ' foto' + (subidos>1?'s':'') + ' enviada' + (subidos>1?'s':'') + ' para revisión. El admin la aprobará pronto.');
+      toast('✅ ' + subidos + ' foto' + (subidos>1?'s':'') + ' subida' + (subidos>1?'s':'') + ' al álbum privado correctamente.');
     } else {
       toast('❌ No se pudo subir ninguna foto. Verificá tu conexión.','err');
     }
@@ -20246,6 +20246,7 @@ async function _loadUserProfilePage(uid, nick){
   if(window._upPostsUnsub){ window._upPostsUnsub(); window._upPostsUnsub = null; }
   if(window._upPostsTimeoutId){ clearTimeout(window._upPostsTimeoutId); window._upPostsTimeoutId = null; }
   window._viewingUserId = uid; // track which profile we're viewing for photo modal
+  window._viewingProfileUid = uid; // usado por initAlbumPrivado
   if(!window._anonMode) registerProfileVisit(uid);
   // Reset
   const nameEl = document.getElementById('upName');
