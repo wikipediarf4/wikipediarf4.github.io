@@ -22144,22 +22144,22 @@ function _renderReelsFeed(el, H){
   el.addEventListener('click', _reelsHandleClick);
   requestAnimationFrame(()=>{ el.scrollTop=0; });
 
-  // ── Pausar YouTube via postMessage al salir de pantalla ──────────────────
+  // ── Inyectar/destruir iframe al entrar/salir de pantalla ───────────────────
   if(window._reelsObserver){ window._reelsObserver.disconnect(); }
   window._reelsObserver = new IntersectionObserver(function(entries){
     entries.forEach(function(entry){
       const card = entry.target;
-      const iframe = card.querySelector('iframe[src*="youtube.com"]');
-      if(!iframe) return;
-      if(!entry.isIntersecting){
-        try{
-          iframe.contentWindow.postMessage(JSON.stringify({
-            event:'command', func:'pauseVideo', args:[]
-          }),'*');
-        }catch(e){}
+      const slot = card.querySelector('[data-video-slot]');
+      if(!slot) return;
+      if(entry.isIntersecting){
+        if(!slot.querySelector('iframe,video')){
+          slot.innerHTML = slot.dataset.videoHtml;
+        }
+      } else {
+        slot.innerHTML = slot.dataset.videoThumb || '';
       }
     });
-  },{ threshold: 0.3 });
+  },{ threshold: 0.5 });
   el.querySelectorAll('[data-reel-pid]').forEach(function(card){
     window._reelsObserver.observe(card);
   });
@@ -22183,15 +22183,19 @@ function _reelCard(p, H){
   const PANEL = 112;
   const videoH = H - PANEL;
 
-  let videoInner='';
+  // iframe HTML para inyectar al entrar, thumbnail para mostrar antes
+  let iframeHtml = '';
+  let thumbHtml = '<div style="width:100%;height:100%;background:#000;display:flex;align-items:center;justify-content:center;"><div style="font-size:3rem;opacity:.4;">&#9654;</div></div>';
+
   if(ytId){
-    videoInner=`<iframe src="https://www.youtube.com/embed/${ytId}?rel=0&enablejsapi=1" frameborder="0" allowfullscreen allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" style="width:100%;height:100%;border:none;display:block;" loading="lazy"></iframe>`;
+    thumbHtml = '<div style="width:100%;height:100%;background:#000 url(https://img.youtube.com/vi/'+ytId+'/hqdefault.jpg) center/cover no-repeat;display:flex;align-items:center;justify-content:center;"><div style="width:56px;height:56px;background:rgba(255,0,0,.85);border-radius:50%;display:flex;align-items:center;justify-content:center;"><span style="color:#fff;font-size:1.5rem;margin-left:4px;">&#9654;</span></div></div>';
+    iframeHtml = '<iframe src="https://www.youtube.com/embed/'+ytId+'?rel=0&autoplay=1&enablejsapi=1" frameborder="0" allowfullscreen allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" style="width:100%;height:100%;border:none;display:block;"></iframe>';
   } else if(ttId && !isTikTokShortLink(p.video)){
-    videoInner=`<iframe src="https://www.tiktok.com/embed/v2/${ttId}" frameborder="0" allowfullscreen allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" style="width:100%;height:100%;border:none;display:block;" loading="lazy"></iframe>`;
+    iframeHtml = '<iframe src="https://www.tiktok.com/embed/v2/'+ttId+'" frameborder="0" allowfullscreen allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" style="width:100%;height:100%;border:none;display:block;"></iframe>';
   } else if(isTikTok(p.video)){
-    videoInner=`<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#111;"><div style="font-size:3rem;">🎵</div><div style="color:#fff;font-size:.9rem;font-weight:700;">Video de TikTok</div><a href="${p.video}" target="_blank" rel="noopener" style="background:linear-gradient(135deg,#69C9D0,#EE1D52);color:#fff;padding:10px 28px;border-radius:100px;font-weight:800;font-size:.85rem;text-decoration:none;">Ver en TikTok ↗</a></div>`;
+    iframeHtml = '<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#111;"><div style="font-size:3rem;">&#127925;</div><div style="color:#fff;font-size:.9rem;font-weight:700;">Video de TikTok</div><a href="'+p.video+'" target="_blank" rel="noopener" style="background:linear-gradient(135deg,#69C9D0,#EE1D52);color:#fff;padding:10px 28px;border-radius:100px;font-weight:800;font-size:.85rem;text-decoration:none;">Ver en TikTok &#8599;</a></div>';
   } else if(isCloudVideo){
-    videoInner=`<video src="${p.video}" controls playsinline style="width:100%;height:100%;object-fit:contain;display:block;"></video>`;
+    iframeHtml = '<video src="'+p.video+'" controls playsinline style="width:100%;height:100%;object-fit:contain;display:block;"></video>';
   }
 
   const badge = ytId
@@ -22202,10 +22206,7 @@ function _reelCard(p, H){
   return `<div data-reel-pid="${pid}" style="width:100%;height:${H}px;flex-shrink:0;scroll-snap-align:start;scroll-snap-stop:always;display:flex;flex-direction:column;background:#ffffff;overflow:hidden;">
 
     
-    <div style="width:100%;height:${videoH}px;flex-shrink:0;overflow:hidden;background:#000;">
-      ${videoInner}
-    </div>
-
+    <div data-video-slot data-video-html="${iframeHtml.replace(/"/g,'&quot;')}" data-video-thumb="${thumbHtml.replace(/"/g,'&quot;')}" style="width:100%;height:${videoH}px;flex-shrink:0;overflow:hidden;background:#000;">${thumbHtml}</div>
     
     <div style="width:100%;height:${PANEL}px;flex-shrink:0;background:#ffffff;border-top:2px solid #30363d;display:flex;flex-direction:row;align-items:center;padding:0 12px;gap:8px;box-sizing:border-box;position:relative;z-index:10;pointer-events:auto;">
 
