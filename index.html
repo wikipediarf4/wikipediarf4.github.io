@@ -3708,15 +3708,31 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
 
   window.solicitarAccesoAlbum = async function() {
     var myUid = window.CU && window.CU.id;
-    if (!myUid || !_albumProfileUid) return;
+    if (!myUid) { toast('Debés iniciar sesión primero','err'); return; }
+    if (!_albumProfileUid) return;
     var btn = document.getElementById('btnSolicitarAcceso');
     if (btn) btn.disabled = true;
     try {
       await window.setDoc(window.doc(window.db, 'albumPrivado', _albumProfileUid, 'accesos', myUid), {
-        estado: 'pendiente', nick: window.CU.nick||'', av: window.CU.av||'', solicitadoEn: Date.now()
+        estado: 'pendiente', nick: window.CU.nick||'', av: window.CU.av||'', uid: myUid, solicitadoEn: Date.now()
       });
+      // Notificar al dueño del álbum con botones de acción
+      try {
+        var notif = {
+          text: '🔐 ' + (window.CU.nick||'Alguien') + ' solicita acceso a tu álbum privado',
+          time: Date.now(), read: false,
+          fromUid: myUid,
+          fromAv: window.CU.av||'',
+          fromNick: window.CU.nick||'',
+          type: 'albumAcceso',
+          visitorUid: myUid,
+          visitorNick: window.CU.nick||'',
+          visitorAv: window.CU.av||''
+        };
+        await window.updateDoc(window.doc(window.db,'users',_albumProfileUid), {notifs: window.arrayUnion(notif)});
+      } catch(ne){ console.warn('No se pudo notificar al dueño:', ne); }
       _showAlbumSec('albumPendiente');
-      toast('✅ Solicitud enviada');
+      toast('✅ Solicitud enviada. El usuario recibirá una notificación.');
     } catch(e) {
       toast('Error al enviar solicitud','err');
       if(btn) btn.disabled = false;
@@ -3929,20 +3945,59 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
     } catch(e) { panel.style.display = 'none'; }
   }
 
-  window.gestionarAccesoAlbum = async function(visitorUid, decision) {
-    var myUid = window.CU && window.CU.id;
+  window.gestionarAccesoAlbum = async function(visitorUid, decision, ownerUid) {
+    var myUid = ownerUid || (window.CU && window.CU.id);
     if (!myUid) return;
     try {
       if (decision === 'rechazado') {
         await window.deleteDoc(window.doc(window.db,'albumPrivado',myUid,'accesos',visitorUid));
+        // Notificar al visitante que fue rechazado
+        try {
+          var notifR = { text: '❌ Tu solicitud de acceso al álbum privado de ' + (window.CU.nick||'') + ' fue rechazada.', time: Date.now(), read: false, fromUid: myUid, fromAv: window.CU?.av||'', fromNick: window.CU?.nick||'' };
+          await window.updateDoc(window.doc(window.db,'users',visitorUid), {notifs: window.arrayUnion(notifR)});
+        } catch(e){}
       } else {
         await window.setDoc(window.doc(window.db,'albumPrivado',myUid,'accesos',visitorUid), { estado:'aprobado', aprobadoEn: Date.now() }, { merge: true });
+        // Notificar al visitante que fue aprobado
+        try {
+          var notifA = { text: '✅ ' + (window.CU?.nick||'') + ' aprobó tu acceso al álbum privado. ¡Ya podés verlo!', time: Date.now(), read: false, fromUid: myUid, fromAv: window.CU?.av||'', fromNick: window.CU?.nick||'' };
+          await window.updateDoc(window.doc(window.db,'users',visitorUid), {notifs: window.arrayUnion(notifA)});
+        } catch(e){}
       }
-      toast(decision === 'aprobado' ? '✅ Acceso aprobado' : 'Solicitud rechazada');
+      toast(decision === 'aprobado' ? '✅ Acceso aprobado' : '✕ Solicitud rechazada');
       await _cargarSolicitudesAlbum();
     } catch(e) { toast('Error','err'); }
   };
 })();
+
+// Funciones globales para aprobar/rechazar álbum desde el panel de notificaciones
+window._aprobarAlbumDesdeNotif = async function(visitorUid, ownerUid, btn) {
+  if(btn){ btn.disabled=true; btn.textContent='⏳'; }
+  try {
+    await window.setDoc(window.doc(window.db,'albumPrivado',ownerUid,'accesos',visitorUid), { estado:'aprobado', aprobadoEn: Date.now() }, { merge:true });
+    try {
+      var notifA = { text: '✅ ' + (window.CU?.nick||'') + ' aprobó tu acceso al álbum privado. ¡Ya podés verlo!', time: Date.now(), read: false, fromUid: ownerUid, fromAv: window.CU?.av||'', fromNick: window.CU?.nick||'' };
+      await window.updateDoc(window.doc(window.db,'users',visitorUid), {notifs: window.arrayUnion(notifA)});
+    } catch(e){}
+    toast('✅ Acceso aprobado');
+    var btnsWrap = btn.closest('div[style*="gap:8px"]');
+    if(btnsWrap) btnsWrap.innerHTML='<span style="font-size:.78rem;color:#2da44e;font-weight:700;">✅ Acceso aprobado</span>';
+  } catch(e){ toast('Error al aprobar','err'); if(btn){ btn.disabled=false; btn.textContent='✅ Aprobar'; } }
+};
+
+window._rechazarAlbumDesdeNotif = async function(visitorUid, ownerUid, btn) {
+  if(btn){ btn.disabled=true; btn.textContent='⏳'; }
+  try {
+    await window.deleteDoc(window.doc(window.db,'albumPrivado',ownerUid,'accesos',visitorUid));
+    try {
+      var notifR = { text: '❌ Tu solicitud de acceso al álbum privado de ' + (window.CU?.nick||'') + ' fue rechazada.', time: Date.now(), read: false, fromUid: ownerUid, fromAv: window.CU?.av||'', fromNick: window.CU?.nick||'' };
+      await window.updateDoc(window.doc(window.db,'users',visitorUid), {notifs: window.arrayUnion(notifR)});
+    } catch(e){}
+    toast('✕ Solicitud rechazada');
+    var btnsWrap = btn.closest('div[style*="gap:8px"]');
+    if(btnsWrap) btnsWrap.innerHTML='<span style="font-size:.78rem;color:var(--muted);font-weight:700;">✕ Rechazada</span>';
+  } catch(e){ toast('Error al rechazar','err'); if(btn){ btn.disabled=false; btn.textContent='✕ Rechazar'; } }
+};
 </script>
 
       <div id="ptShop" style="display:none;margin-bottom:14px;">
@@ -15983,6 +16038,32 @@ function renderNotifs(){
           </div>
         </div>
         ${!isRead?`<div style="width:8px;height:8px;background:var(--accent);border-radius:50%;flex-shrink:0;margin-top:6px;"></div>`:''}
+      </div>`;
+    }
+
+    // Notif de solicitud de acceso al álbum privado
+    if(n.type==='albumAcceso'){
+      const safeNick = (n.visitorNick||n.fromNick||'').replace(/['"<>&]/g,'');
+      const visitorUid = n.visitorUid||n.fromUid||'';
+      const ownerUid = window.CU?.id||'';
+      return `<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;transition:background .15s;${rowBg}border-bottom:1px solid rgba(255,255,255,.04);"
+        onmouseover="this.style.background='var(--bg3)'"
+        onmouseout="this.style.background='${unreadBg}'">
+        <div style="position:relative;flex-shrink:0;">
+          <div style="width:48px;height:48px;border-radius:50%;background:var(--bg3);overflow:hidden;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">${avInner}</div>
+          <div style="position:absolute;bottom:-2px;right:-2px;width:18px;height:18px;border-radius:50%;background:#c0392b;display:flex;align-items:center;justify-content:center;font-size:.65rem;border:2px solid var(--bg2);">🔐</div>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:.84rem;line-height:1.4;margin-bottom:4px;color:var(--text);"><strong>${esc(n.visitorNick||n.fromNick||'Alguien')}</strong> <span style="color:var(--muted);">solicita acceso a tu álbum privado</span></div>
+          <div style="font-size:.7rem;color:#c0392b;margin-bottom:10px;">${fmtT(n.time)}</div>
+          <div style="display:flex;gap:8px;">
+            <button onclick="event.stopPropagation();_aprobarAlbumDesdeNotif('${visitorUid}','${ownerUid}',this)"
+              style="flex:1;padding:8px;background:#2da44e;border:none;color:#fff;border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">✅ Aprobar</button>
+            <button onclick="event.stopPropagation();_rechazarAlbumDesdeNotif('${visitorUid}','${ownerUid}',this)"
+              style="flex:1;padding:8px;background:var(--bg4);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">✕ Rechazar</button>
+          </div>
+        </div>
+        ${!isRead?`<div style="width:8px;height:8px;background:#c0392b;border-radius:50%;flex-shrink:0;margin-top:6px;"></div>`:''}
       </div>`;
     }
 
