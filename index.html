@@ -5227,8 +5227,9 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
     </div>
     
     <div style="display:flex;border-top:1px solid #f0f2f5;padding:0 4px;">
-      <button class="rf4-tab on" id="rf4TabJugadores" onclick="rf4SwitchTab('jugadores')" >👥 Usuarios conectados</button>
+      <button class="rf4-tab on" id="rf4TabJugadores" onclick="rf4SwitchTab('jugadores')" >👥 Usuarios</button>
       <button class="rf4-tab"   id="rf4TabMensajes"  onclick="rf4SwitchTab('mensajes')"  >✉️ Mensajes <span id="unreadChatBadge" style="display:none;background:var(--red);color:#fff;border-radius:50%;padding:0 4px;font-size:.6rem;"></span></button>
+      <button class="rf4-tab"   id="rf4TabReel"      onclick="rf4SwitchTab('reel')"      >📸 Reel</button>
     </div>
   </div>
 
@@ -5323,6 +5324,21 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
     </div>
   </div>
   </div>
+
+  <!-- ══════════════════ PANEL REEL ══════════════════ -->
+  <div id="rf4PanelReel" style="flex:1;display:none;flex-direction:column;min-height:0;overflow:hidden;">
+    <!-- Header con título y botón refresh -->
+    <div style="padding:8px 12px;border-bottom:1px solid #f0f2f5;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:#fff;">
+      <span style="font-size:.78rem;font-weight:700;color:var(--text);">📸 Fotos de usuarios</span>
+      <button onclick="reelLoad()" style="background:none;border:1px solid var(--border);border-radius:8px;padding:2px 8px;font-size:.7rem;color:var(--muted);cursor:pointer;" title="Actualizar">↻ Actualizar</button>
+    </div>
+    <!-- Feed de fotos -->
+    <div id="rf4ReelFeed" style="flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:10px;" class="custom-scroll">
+      <div style="text-align:center;padding:20px;color:var(--muted);font-size:.78rem;">Cargando fotos...</div>
+    </div>
+  </div>
+  <!-- ══════════════════ /PANEL REEL ══════════════════ -->
+
 </div>
 
 
@@ -25706,7 +25722,7 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
   window.rf4SwitchTab = function(tab){
     _rf4Tab = tab;
     // Tabs highlight
-    ['jugadores','mensajes'].forEach(function(t){
+    ['jugadores','mensajes','reel'].forEach(function(t){
       var btn = document.getElementById('rf4Tab'+t.charAt(0).toUpperCase()+t.slice(1));
       if(btn) btn.classList.toggle('on', t===tab);
     });
@@ -25714,15 +25730,18 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
     var pChat = document.getElementById('rf4PanelChat');
     var pJug  = document.getElementById('rf4PanelJugadores');
     var pMsg  = document.getElementById('rf4PanelMensajes');
+    var pReel = document.getElementById('rf4PanelReel');
     if(pChat) pChat.style.display = 'none';
     if(pJug)  pJug.style.display  = tab==='jugadores' ? 'flex' : 'none';
     if(pMsg)  pMsg.style.display  = tab==='mensajes'  ? 'flex' : 'none';
+    if(pReel) pReel.style.display = tab==='reel'      ? 'flex' : 'none';
 
     if(tab==='jugadores' && !_jLoaded)  loadJugadores();
     if(tab==='mensajes'){
       if(typeof renderMessengerList === 'function') renderMessengerList();
       else if(typeof window.renderMessengerList === 'function') window.renderMessengerList();
     }
+    if(tab==='reel') reelLoad();
   };
 
   // ────────────────────────────────────────────────────────────
@@ -25862,6 +25881,143 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
       // Fallback con _fsLib (no tiene addDoc pero intentamos igualmente)
       if(typeof toast==='function') toast('Chat global no disponible aún','warn');
     }
+  };
+
+  // ────────────────────────────────────────────────────────────
+  // PANEL REEL — fotos de usuarios con fecha/hora y reacciones
+  // ────────────────────────────────────────────────────────────
+  var _reelItems = [];
+  var _reelLoading = false;
+
+  // Emojis de reacción disponibles
+  var REEL_RXNS = ['❤️','😍','🔥','😂','👏','😮','💯'];
+
+  // Formatear timestamp a fecha/hora/segundo legible
+  function reelFmtTs(ts){
+    if(!ts) return '';
+    var d = new Date(ts);
+    var pad = function(n){ return n < 10 ? '0'+n : ''+n; };
+    var months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    return pad(d.getDate())+' '+months[d.getMonth()]+' '+d.getFullYear()
+      +' · '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+  }
+
+  window.reelLoad = async function(){
+    if(_reelLoading) return;
+    _reelLoading = true;
+    var feed = document.getElementById('rf4ReelFeed');
+    if(!feed) return;
+    feed.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.78rem;">⚙️ Cargando...</div>';
+
+    var fs = getFs();
+    if(!fs || !window.db){
+      feed.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.78rem;">Sin conexión con la base de datos.</div>';
+      _reelLoading = false;
+      return;
+    }
+    try {
+      // Traer últimos posts con foto de perfil del usuario
+      var snap = await fs.getDocs(fs.query(
+        fs.collection(window.db,'users'),
+        fs.limit(80)
+      ));
+      _reelItems = snap.docs
+        .map(function(d){ return Object.assign({id:d.id}, d.data()); })
+        .filter(function(u){ return u.av && typeof u.av==='string' && u.av.startsWith('http') && !u.banned; })
+        .sort(function(a,b){
+          var ta = a.lastSeen && a.lastSeen.toMillis ? a.lastSeen.toMillis() : (a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : 0);
+          var tb = b.lastSeen && b.lastSeen.toMillis ? b.lastSeen.toMillis() : (b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : 0);
+          return tb - ta;
+        });
+      reelRender();
+    } catch(e){
+      feed.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.78rem;">Error al cargar: '+(e.message||'')+'</div>';
+    }
+    _reelLoading = false;
+  };
+
+  function reelRender(){
+    var feed = document.getElementById('rf4ReelFeed');
+    if(!feed) return;
+    if(!_reelItems.length){
+      feed.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.78rem;">No hay fotos de usuarios aún.</div>';
+      return;
+    }
+    feed.innerHTML = _reelItems.map(function(u, idx){
+      var ts = u.lastSeen && u.lastSeen.toMillis ? u.lastSeen.toMillis()
+             : u.createdAt && u.createdAt.toMillis ? u.createdAt.toMillis() : 0;
+      var tsStr = ts ? reelFmtTs(ts) : 'Sin fecha';
+      var nick  = (u.nick||'Usuario').replace(/</g,'&lt;');
+      var badge = u.verified ? '✅' : '';
+      var role  = u.role ? '<span style="font-size:.6rem;background:var(--accent);color:#000;padding:1px 5px;border-radius:3px;margin-left:4px;font-weight:700;">'+(u.role==='admin'?'ADMIN':u.role==='premium'?'⭐ VIP':u.role)+'</span>' : '';
+      // Reacciones guardadas en localStorage (sin Firebase para no sobrecargar)
+      var storKey = 'reelRxn_'+u.id;
+      var rxnData = {};
+      try { rxnData = JSON.parse(localStorage.getItem(storKey)||'{}'); } catch(e){}
+      var rxnBtns = REEL_RXNS.map(function(em){
+        var cnt = rxnData[em] || 0;
+        return '<button onclick="reelReact(\''+u.id+'\',\''+em+'\')" '
+          +'style="background:'+(cnt?'rgba(46,196,182,.15)':'rgba(0,0,0,.04)')+';border:1px solid '+(cnt?'var(--accent)':'transparent')+';'
+          +'border-radius:20px;padding:2px 7px;font-size:.8rem;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:3px;" '
+          +'id="rreact_'+u.id+'_'+em.codePointAt(0)+'">'
+          +em+(cnt ? '<span style="font-size:.68rem;color:var(--muted);">'+cnt+'</span>' : '')
+          +'</button>';
+      }).join('');
+      return '<div style="background:#fff;border:1px solid #dddfe2;border-radius:14px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.07);">'
+        // Foto
+        +'<div style="position:relative;width:100%;padding-top:75%;background:#f0f2f5;overflow:hidden;">'
+        +'<img src="'+u.av+'" loading="lazy" '
+        +'style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;" '
+        +'onclick="openUserProfile(\''+u.id+'\',\''+nick+'\')" '
+        +'onerror="this.src=\'data:image/svg+xml,%3Csvg xmlns=\\\"http://www.w3.org/2000/svg\\\" viewBox=\\\"0 0 80 80\\\"/%3E\';this.style.opacity=\'.3\'">'
+        +'<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.6));padding:8px 10px 6px;">'
+        +'<div style="color:#fff;font-size:.75rem;font-weight:700;">'+nick+' '+badge+role+'</div>'
+        +'<div style="color:rgba(255,255,255,.75);font-size:.62rem;font-family:monospace;">🕐 '+tsStr+'</div>'
+        +'</div>'
+        +'</div>'
+        // Reacciones
+        +'<div style="padding:6px 8px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;">'
+        +rxnBtns
+        +'</div>'
+        +'</div>';
+    }).join('');
+  }
+
+  window.reelReact = function(uid, em){
+    var storKey = 'reelRxn_'+uid;
+    var rxnData = {};
+    try { rxnData = JSON.parse(localStorage.getItem(storKey)||'{}'); } catch(e){}
+    var myKey   = 'reelMyRxn_'+uid;
+    var prev    = localStorage.getItem(myKey);
+    // Toggle: si ya reaccioné con este, lo quito; si era otro, lo cambio
+    if(prev && prev !== em && rxnData[prev]){
+      rxnData[prev] = Math.max(0, (rxnData[prev]||1)-1);
+      if(!rxnData[prev]) delete rxnData[prev];
+    }
+    if(prev === em){
+      // quitar reacción
+      rxnData[em] = Math.max(0, (rxnData[em]||1)-1);
+      if(!rxnData[em]) delete rxnData[em];
+      localStorage.removeItem(myKey);
+    } else {
+      rxnData[em] = (rxnData[em]||0)+1;
+      localStorage.setItem(myKey, em);
+    }
+    try { localStorage.setItem(storKey, JSON.stringify(rxnData)); } catch(e){}
+    // Re-render sólo los botones de este usuario
+    var feed = document.getElementById('rf4ReelFeed');
+    if(!feed) return;
+    REEL_RXNS.forEach(function(e2){
+      var btnId = 'rreact_'+uid+'_'+e2.codePointAt(0);
+      var btn   = document.getElementById(btnId);
+      if(!btn) return;
+      var cnt   = rxnData[e2]||0;
+      var myNew = localStorage.getItem('reelMyRxn_'+uid);
+      var active = myNew === e2;
+      btn.style.background  = active ? 'rgba(46,196,182,.15)' : 'rgba(0,0,0,.04)';
+      btn.style.borderColor = active ? 'var(--accent)' : 'transparent';
+      btn.innerHTML = e2+(cnt ? '<span style="font-size:.68rem;color:var(--muted);">'+cnt+'</span>' : '');
+    });
   };
 
   // ────────────────────────────────────────────────────────────
