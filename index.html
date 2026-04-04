@@ -11160,6 +11160,30 @@ async function submitStory(){
   clearStoryMusic(); _fotoClearMusic(); _txtClearMusic();
   cm('mAddStory');
   toast('Historia publicada 📖','ok');
+
+  // ── Notificar a amigos que publicaste una historia ──
+  try {
+    const storySnap = await getDocs(query(collection(db,'stories'), where('userId','==',window.CU.id), orderBy('time','desc'), limit(1)));
+    const newStoryId = storySnap.docs[0]?.id || '';
+    const friends = window.CU?.friends || [];
+    if(friends.length && newStoryId){
+      const notif = {
+        text: `📖 ${window.CU.nick} publicó una nueva historia`,
+        time: Date.now(),
+        read: false,
+        storyId: newStoryId,
+        storyImg: imgUrl || '',
+        fromAv: window.CU.av || '',
+        fromNick: window.CU.nick || '',
+        type: 'newStory'
+      };
+      // Enviar en paralelo a todos los amigos (máx 50)
+      const batch = friends.slice(0, 50);
+      await Promise.allSettled(batch.map(uid =>
+        updateDoc(doc(db,'users', uid), { notifs: arrayUnion(notif) })
+      ));
+    }
+  } catch(e){ console.warn('Error notificando historia a amigos:', e); }
 }
 
 function previewStoryImg(input){
@@ -12774,10 +12798,7 @@ async function toggleComments(pid){
     if(e.target===modal) modal.remove();
   });
   document.addEventListener('keydown', function _esc(e){ if(e.key==='Escape'){ modal.remove(); document.removeEventListener('keydown',_esc); }});
-  // Si estamos en reels, inyectar dentro del overlay para evitar problemas de z-index
-  const _reelsOv = document.getElementById('reelsOverlay');
-  const _cmtContainer = (_reelsOv && _reelsOv.style.display !== 'none') ? _reelsOv : document.body;
-  _cmtContainer.appendChild(modal);
+  document.body.appendChild(modal);
   setTimeout(()=>{ const inp=document.getElementById('_cmtModalInp_'+pid); if(inp) inp.focus(); }, 100);
 }
 
