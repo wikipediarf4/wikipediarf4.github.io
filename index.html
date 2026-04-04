@@ -10193,7 +10193,7 @@ window.gp = (id, pushState = true) => {
   if(id==='profile') renderProfile();
   if(id==='match') { if(typeof window.initMatchPage==='function') window.initMatchPage(); }
   if(id==='fotos') { if(typeof window.initFotosPage==='function') setTimeout(window.initFotosPage, 50); }
-  if(id==='admin') { loadAdminData(); loadAdminUsers(); loadPezSemana(); }
+  if(id==='admin') { loadAdminData(); loadAdminUsers(); }
   // Show video button in posts only for verified users
   const pvBtn = document.getElementById('postVideoBtn');
   if(pvBtn) pvBtn.style.display = window.CU?.verified ? 'flex' : 'none';
