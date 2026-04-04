@@ -2763,6 +2763,7 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
 
 
       <div class="sl-item"><span class="sl-item-icon">🔖</span> Guardados</div>
+      <div class="sl-item" onclick="gp('cerca');initCercaDeMi()"><span class="sl-item-icon">📍</span> Cerca de Mí</div>
       <div class="sl-item" onclick="gp('privacidad')"><span class="sl-item-icon">🔒</span> Privacidad</div>
 
 
@@ -3496,6 +3497,7 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
         <div class="ptab" onclick="swPTab(this,'ptAbout')">Información</div>
         <div class="ptab" onclick="swPTab(this,'ptGallery')">🖼 Galería</div>
         <div class="ptab" onclick="swPTab(this,'ptFriends')">Amigos</div>
+        <div class="ptab" onclick="swPTab(this,'ptAlbum');initAlbumPrivado()">🔒 Álbum Privado</div>
         
       </div>
     </div>
@@ -3566,6 +3568,302 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
         </div>
       </div>
       
+<!-- ═══════════════════════════════════════════════════
+     PESTAÑA: ÁLBUM PRIVADO +18
+═══════════════════════════════════════════════════ -->
+<div id="ptAlbum" style="display:none;margin-bottom:14px;">
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;">
+
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,rgba(220,30,60,.08),rgba(180,0,40,.04));border-bottom:1px solid var(--border);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+      <div>
+        <div style="font-family:'Orbitron',monospace;font-size:.9rem;font-weight:900;color:#c0392b;display:flex;align-items:center;gap:7px;">
+          🔒 Álbum Privado
+          <span style="font-size:.58rem;background:rgba(200,0,40,.15);border:1px solid rgba(200,0,40,.3);color:#c0392b;border-radius:100px;padding:2px 8px;font-weight:800;">+18</span>
+        </div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:3px;">Solo visible para quien vos aprobés · Solo mayores de 18 años</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;" id="albumActions"></div>
+    </div>
+
+    <!-- Solicitar acceso -->
+    <div id="albumSolicitar" style="display:none;padding:32px 20px;text-align:center;">
+      <div style="font-size:3rem;margin-bottom:12px;">🔐</div>
+      <div style="font-weight:700;font-size:.95rem;color:var(--text);margin-bottom:6px;">Este álbum es privado</div>
+      <div style="font-size:.82rem;color:var(--muted);margin-bottom:18px;">El usuario debe aprobarte para ver el contenido.</div>
+      <button onclick="solicitarAccesoAlbum()" id="btnSolicitarAcceso" style="padding:10px 24px;background:#c0392b;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:.88rem;transition:background .2s;" onmouseover="this.style.background='#a93226'" onmouseout="this.style.background='#c0392b'">Solicitar acceso</button>
+    </div>
+
+    <!-- Pendiente -->
+    <div id="albumPendiente" style="display:none;padding:32px 20px;text-align:center;">
+      <div style="font-size:3rem;margin-bottom:12px;">⏳</div>
+      <div style="font-weight:700;font-size:.95rem;color:var(--text);margin-bottom:6px;">Solicitud enviada</div>
+      <div style="font-size:.82rem;color:var(--muted);">Esperando que el usuario apruebe tu solicitud.</div>
+    </div>
+
+    <!-- Grid de fotos -->
+    <div id="albumGrid" style="display:none;padding:14px;">
+      <div id="albumFotosGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;border-radius:10px;overflow:hidden;"></div>
+      <div id="albumVacio" style="display:none;text-align:center;padding:30px;color:var(--muted);font-size:.85rem;">Sin fotos aún. ¡Subí tu primera foto privada!</div>
+    </div>
+
+    <!-- Solicitudes pendientes (solo dueño) -->
+    <div id="albumSolicitudesPanel" style="display:none;border-top:1px solid var(--border);padding:14px 20px;">
+      <div style="font-size:.8rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">📬 Solicitudes de acceso</div>
+      <div id="albumSolicitudesList"></div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+#albumLightbox {
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:99999;
+  align-items:center;justify-content:center;flex-direction:column;
+}
+#albumLightbox.open { display:flex; }
+#albumLightboxImg { max-width:90vw;max-height:80vh;border-radius:10px;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,.7); }
+#albumLightboxClose {
+  position:absolute;top:16px;right:16px;background:rgba(255,255,255,.15);border:none;
+  color:#fff;width:36px;height:36px;border-radius:50%;font-size:1.1rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+#albumLightboxDel {
+  position:absolute;top:16px;left:16px;background:rgba(200,0,40,.5);border:1px solid rgba(200,0,40,.6);
+  color:#fff;border-radius:8px;padding:6px 12px;font-size:.8rem;font-weight:700;cursor:pointer;
+}
+.album-thumb { aspect-ratio:1;object-fit:cover;border-radius:6px;cursor:pointer;transition:transform .2s,opacity .2s;display:block;width:100%; }
+.album-thumb:hover { transform:scale(1.04);opacity:.9; }
+.album-thumb-wrap { position:relative; }
+.album-18-badge { position:absolute;top:4px;right:4px;background:rgba(200,0,40,.85);color:#fff;font-size:.55rem;font-weight:900;border-radius:4px;padding:1px 5px; }
+</style>
+
+<!-- Lightbox álbum -->
+<div id="albumLightbox">
+  <button id="albumLightboxClose" onclick="cerrarAlbumLightbox()">✕</button>
+  <button id="albumLightboxDel" style="display:none;" onclick="eliminarFotoAlbum()">🗑 Eliminar</button>
+  <img id="albumLightboxImg" src="" alt="Foto privada">
+  <div id="albumLightboxCaption" style="color:rgba(255,255,255,.6);font-size:.75rem;margin-top:10px;"></div>
+</div>
+
+<script>
+(function(){
+  var _albumProfileUid = null;
+  var _albumFotos = [];
+  var _albumLightboxIdx = -1;
+  var _albumLightboxFotoId = null;
+
+  window.initAlbumPrivado = async function() {
+    _albumProfileUid = window._viewingProfileUid || (window.CU && window.CU.id);
+    const myUid = window.CU && window.CU.id;
+    const isOwner = _albumProfileUid === myUid;
+
+    ['albumSolicitar','albumPendiente','albumGrid','albumSolicitudesPanel'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.style.display = 'none';
+    });
+
+    if (!window.db || !myUid) { _showAlbumSec('albumSolicitar'); return; }
+
+    if (isOwner) {
+      _renderAlbumAcciones(true);
+      await _cargarFotosAlbum(_albumProfileUid);
+      _showAlbumSec('albumGrid');
+      await _cargarSolicitudesAlbum();
+    } else {
+      _renderAlbumAcciones(false);
+      var acceso = await _verificarAccesoAlbum(_albumProfileUid, myUid);
+      if (acceso === 'aprobado') {
+        await _cargarFotosAlbum(_albumProfileUid);
+        _showAlbumSec('albumGrid');
+      } else if (acceso === 'pendiente') {
+        _showAlbumSec('albumPendiente');
+      } else {
+        _showAlbumSec('albumSolicitar');
+      }
+    }
+  };
+
+  function _showAlbumSec(id) {
+    ['albumSolicitar','albumPendiente','albumGrid'].forEach(s => {
+      const el = document.getElementById(s);
+      if(el) el.style.display = s === id ? 'block' : 'none';
+    });
+  }
+
+  function _renderAlbumAcciones(isOwner) {
+    var wrap = document.getElementById('albumActions');
+    if (!wrap) return;
+    wrap.innerHTML = isOwner
+      ? '<label style="padding:8px 16px;background:#c0392b;color:#fff;border-radius:8px;font-weight:700;font-size:.82rem;cursor:pointer;display:flex;align-items:center;gap:6px;">📷 Subir foto<input type="file" accept="image/jpeg,image/png,image/webp" multiple style="display:none" onchange="subirFotosAlbum(this)"></label>'
+      : '';
+  }
+
+  async function _verificarAccesoAlbum(ownerUid, visitorUid) {
+    try {
+      var snap = await window.getDoc(window.doc(window.db, 'albumPrivado', ownerUid, 'accesos', visitorUid));
+      return snap.exists() ? (snap.data().estado || 'ninguno') : 'ninguno';
+    } catch(e) { return 'ninguno'; }
+  }
+
+  window.solicitarAccesoAlbum = async function() {
+    var myUid = window.CU && window.CU.id;
+    if (!myUid || !_albumProfileUid) return;
+    var btn = document.getElementById('btnSolicitarAcceso');
+    if (btn) btn.disabled = true;
+    try {
+      await window.setDoc(window.doc(window.db, 'albumPrivado', _albumProfileUid, 'accesos', myUid), {
+        estado: 'pendiente', nick: window.CU.nick||'', av: window.CU.av||'', solicitadoEn: Date.now()
+      });
+      _showAlbumSec('albumPendiente');
+      toast('✅ Solicitud enviada');
+    } catch(e) {
+      toast('Error al enviar solicitud','err');
+      if(btn) btn.disabled = false;
+    }
+  };
+
+  async function _cargarFotosAlbum(ownerUid) {
+    var grid = document.getElementById('albumFotosGrid');
+    var vacio = document.getElementById('albumVacio');
+    if (!grid) return;
+    grid.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:20px;text-align:center;">Cargando fotos...</div>';
+    try {
+      var snap = await window.getDocs(
+        window.query(
+          window.collection(window.db, 'albumPrivado', ownerUid, 'fotos'),
+          window.orderBy('subidaEn', 'desc'),
+          window.limit(60)
+        )
+      );
+      _albumFotos = [];
+      snap.forEach(d => _albumFotos.push({ id: d.id, ...d.data() }));
+      if (!_albumFotos.length) {
+        grid.innerHTML = '';
+        if(vacio) vacio.style.display = 'block';
+        return;
+      }
+      if(vacio) vacio.style.display = 'none';
+      grid.innerHTML = _albumFotos.map((f,i) =>
+        `<div class="album-thumb-wrap" onclick="abrirAlbumLightbox(${i})"><img class="album-thumb" src="${f.url}" loading="lazy" onerror="this.style.opacity='.3'"><div class="album-18-badge">+18</div></div>`
+      ).join('');
+    } catch(e) {
+      grid.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:20px;text-align:center;">Error al cargar fotos.</div>';
+    }
+  }
+
+  window.subirFotosAlbum = async function(input) {
+    var files = Array.from(input.files);
+    if (!files.length) return;
+    var myUid = window.CU && window.CU.id;
+    if (!myUid) return;
+    var countSnap = await window.getDocs(window.query(window.collection(window.db,'albumPrivado',myUid,'fotos'),window.limit(51)));
+    if (countSnap.size + files.length > 50) { toast('Máximo 50 fotos en el álbum privado','err'); return; }
+    toast('Subiendo fotos... ⏳');
+    var fbStorage = window._fbStorage;
+    if (!fbStorage) { toast('Storage no disponible','err'); return; }
+    var subidos = 0;
+    for (var file of files) {
+      if (file.size > 5*1024*1024) { toast('Una foto supera 5MB, se omitió','err'); continue; }
+      try {
+        var { ref: sRef, uploadBytes: sUpload, getDownloadURL: sUrlFn } = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js');
+        var fileRef = sRef(fbStorage, 'albumPrivado/'+myUid+'/'+Date.now()+'_'+file.name.replace(/[^a-zA-Z0-9.]/g,'_'));
+        var snap2 = await sUpload(fileRef, file);
+        var url = await sUrlFn(snap2.ref);
+        await window.addDoc(window.collection(window.db,'albumPrivado',myUid,'fotos'), { url, subidaEn: Date.now(), ownerUid: myUid });
+        subidos++;
+      } catch(e) { console.error('Upload error:',e); }
+    }
+    if (subidos > 0) {
+      toast('✅ ' + subidos + ' foto' + (subidos>1?'s':'') + ' subida' + (subidos>1?'s':''));
+      await _cargarFotosAlbum(myUid);
+    }
+    input.value = '';
+  };
+
+  window.abrirAlbumLightbox = function(idx) {
+    var foto = _albumFotos[idx];
+    if (!foto) return;
+    _albumLightboxIdx = idx;
+    _albumLightboxFotoId = foto.id;
+    var lb = document.getElementById('albumLightbox');
+    var img = document.getElementById('albumLightboxImg');
+    var delBtn = document.getElementById('albumLightboxDel');
+    var caption = document.getElementById('albumLightboxCaption');
+    if(img) img.src = foto.url;
+    if(caption) caption.textContent = 'Foto '+(idx+1)+' de '+_albumFotos.length;
+    var isOwner = _albumProfileUid === (window.CU && window.CU.id);
+    if(delBtn) delBtn.style.display = isOwner ? 'block' : 'none';
+    if(lb) lb.classList.add('open');
+  };
+
+  window.cerrarAlbumLightbox = function() {
+    var lb = document.getElementById('albumLightbox');
+    if(lb) lb.classList.remove('open');
+    _albumLightboxFotoId = null;
+    _albumLightboxIdx = -1;
+  };
+
+  window.eliminarFotoAlbum = async function() {
+    if (!_albumLightboxFotoId || !_albumProfileUid) return;
+    var myUid = window.CU && window.CU.id;
+    if (_albumProfileUid !== myUid) return;
+    if (!confirm('¿Eliminar esta foto del álbum privado?')) return;
+    try {
+      await window.deleteDoc(window.doc(window.db,'albumPrivado',myUid,'fotos',_albumLightboxFotoId));
+      cerrarAlbumLightbox();
+      toast('Foto eliminada');
+      await _cargarFotosAlbum(myUid);
+    } catch(e) { toast('Error al eliminar','err'); }
+  };
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && document.getElementById('albumLightbox')?.classList.contains('open')) cerrarAlbumLightbox();
+  });
+
+  async function _cargarSolicitudesAlbum() {
+    var panel = document.getElementById('albumSolicitudesPanel');
+    var lista = document.getElementById('albumSolicitudesList');
+    if (!panel || !lista) return;
+    var myUid = window.CU && window.CU.id;
+    try {
+      var snap = await window.getDocs(
+        window.query(window.collection(window.db,'albumPrivado',myUid,'accesos'), window.where('estado','==','pendiente'))
+      );
+      if (snap.empty) { panel.style.display = 'none'; return; }
+      panel.style.display = 'block';
+      var html = '';
+      snap.forEach(d => {
+        var s = d.data();
+        html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">'
+          + '<div style="width:36px;height:36px;border-radius:50%;background:var(--bg3);overflow:hidden;flex-shrink:0;">'
+          + (s.av ? '<img src="'+s.av+'" style="width:100%;height:100%;object-fit:cover;">' : '<span style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;">'+(s.nick||'?')[0].toUpperCase()+'</span>')
+          + '</div>'
+          + '<div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:.85rem;color:var(--text);">'+(s.nick||'Usuario')+'</div><div style="font-size:.72rem;color:var(--muted);">Solicitud de acceso al álbum</div></div>'
+          + '<button onclick="gestionarAccesoAlbum(\''+d.id+'\',\'aprobado\')" style="padding:5px 12px;background:#2da44e;color:#fff;border:none;border-radius:7px;font-weight:700;font-size:.78rem;cursor:pointer;">✅ Aprobar</button>'
+          + '<button onclick="gestionarAccesoAlbum(\''+d.id+'\',\'rechazado\')" style="padding:5px 12px;background:var(--bg3);color:var(--muted);border:1px solid var(--border);border-radius:7px;font-weight:700;font-size:.78rem;cursor:pointer;">✕ Rechazar</button>'
+          + '</div>';
+      });
+      lista.innerHTML = html;
+    } catch(e) { panel.style.display = 'none'; }
+  }
+
+  window.gestionarAccesoAlbum = async function(visitorUid, decision) {
+    var myUid = window.CU && window.CU.id;
+    if (!myUid) return;
+    try {
+      if (decision === 'rechazado') {
+        await window.deleteDoc(window.doc(window.db,'albumPrivado',myUid,'accesos',visitorUid));
+      } else {
+        await window.setDoc(window.doc(window.db,'albumPrivado',myUid,'accesos',visitorUid), { estado:'aprobado', aprobadoEn: Date.now() }, { merge: true });
+      }
+      toast(decision === 'aprobado' ? '✅ Acceso aprobado' : 'Solicitud rechazada');
+      await _cargarSolicitudesAlbum();
+    } catch(e) { toast('Error','err'); }
+  };
+})();
+</script>
+
       <div id="ptShop" style="display:none;margin-bottom:14px;">
         <div style="background:linear-gradient(135deg,rgba(255,200,0,.08),rgba(255,100,0,.04));border:1px solid rgba(255,200,0,.25);border-radius:var(--r);padding:18px;">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
@@ -7394,6 +7692,268 @@ function initShopCoinsDisplay(){
 
 
 
+<!-- ═══════════════════════════════════════════════════
+     PÁGINA: CERCA DE MÍ
+═══════════════════════════════════════════════════ -->
+<div class="page" id="page-cerca" style="max-width:900px;margin:0 auto;padding:20px 16px 80px;">
+
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+    <div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:var(--accent);">📍 Cerca de Mí</div>
+    <div id="cercaDistLabel" style="font-size:.75rem;color:var(--muted);background:var(--bg3);border-radius:100px;padding:3px 10px;">Buscando tu ubicación...</div>
+    <div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <select id="cercaFiltroGenero" onchange="filtrarCerca()" style="font-size:.8rem;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text);cursor:pointer;">
+        <option value="">Todos los géneros</option>
+        <option value="Hombre">Hombres</option>
+        <option value="Mujer">Mujeres</option>
+        <option value="Otro">Otro</option>
+      </select>
+      <select id="cercaFiltroEdad" onchange="filtrarCerca()" style="font-size:.8rem;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text);cursor:pointer;">
+        <option value="">Todas las edades</option>
+        <option value="18-25">18–25</option>
+        <option value="26-35">26–35</option>
+        <option value="36-45">36–45</option>
+        <option value="46+">46+</option>
+      </select>
+      <select id="cercaFiltroRadio" onchange="filtrarCerca()" style="font-size:.8rem;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text);cursor:pointer;">
+        <option value="50">Hasta 50 km</option>
+        <option value="100">Hasta 100 km</option>
+        <option value="300">Hasta 300 km</option>
+        <option value="9999">Todo el país</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="cercaStatus" style="text-align:center;padding:40px 20px;color:var(--muted);font-size:.9rem;display:flex;flex-direction:column;align-items:center;gap:12px;">
+    <span style="font-size:2.5rem;">📡</span>
+    <span>Necesitamos tu ubicación para mostrar usuarios cercanos.</span>
+    <button onclick="pedirUbicacion()" style="padding:10px 22px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:.88rem;">Activar ubicación</button>
+  </div>
+
+  <div id="cercaGrid" style="display:none;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;"></div>
+
+  <div id="cercaEmpty" style="display:none;text-align:center;padding:50px 20px;color:var(--muted);">
+    <div style="font-size:3rem;margin-bottom:12px;">🗺️</div>
+    <div style="font-size:.9rem;">No hay usuarios en este radio.<br>Probá ampliar el filtro de distancia.</div>
+  </div>
+</div>
+
+<style>
+.cerca-card {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:16px;
+  text-align:center;
+  cursor:pointer;
+  transition:transform .2s, box-shadow .2s;
+  position:relative;
+  overflow:hidden;
+}
+.cerca-card:hover { transform:translateY(-3px); box-shadow:0 6px 20px rgba(0,0,0,.13); }
+.cerca-av {
+  width:72px; height:72px;
+  border-radius:50%;
+  object-fit:cover;
+  margin:0 auto 10px;
+  border:3px solid var(--accent);
+  display:block;
+}
+.cerca-av-placeholder {
+  width:72px; height:72px;
+  border-radius:50%;
+  background:var(--bg3);
+  margin:0 auto 10px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.8rem;
+  border:3px solid var(--border);
+}
+.cerca-nick { font-weight:800; font-size:.95rem; color:var(--text); margin-bottom:2px; }
+.cerca-meta { font-size:.75rem; color:var(--muted); margin-bottom:8px; }
+.cerca-dist-badge {
+  display:inline-block;
+  background:rgba(24,119,242,.1);
+  color:var(--accent);
+  border-radius:100px;
+  padding:2px 10px;
+  font-size:.72rem;
+  font-weight:700;
+  margin-bottom:10px;
+}
+.cerca-online-dot {
+  width:10px; height:10px;
+  background:#31a24c;
+  border-radius:50%;
+  border:2px solid var(--bg2);
+  position:absolute;
+  top:10px; right:10px;
+}
+.cerca-btn {
+  width:100%;
+  padding:7px;
+  border:none;
+  border-radius:8px;
+  background:var(--accent);
+  color:#fff;
+  font-weight:700;
+  font-size:.8rem;
+  cursor:pointer;
+  transition:background .2s;
+}
+.cerca-btn:hover { background:var(--accent2); }
+</style>
+
+<script>
+window._cercaCoords = null;
+window._cercaUsuarios = [];
+
+function initCercaDeMi() {
+  if (!window.CU) { toast('Iniciá sesión para ver usuarios cercanos','err'); return; }
+  const status = document.getElementById('cercaStatus');
+  const grid = document.getElementById('cercaGrid');
+  if (window._cercaCoords) {
+    cargarUsuariosCerca();
+    return;
+  }
+  if (status) status.style.display = 'flex';
+  if (grid) grid.style.display = 'none';
+}
+
+function pedirUbicacion() {
+  if (!navigator.geolocation) {
+    toast('Tu navegador no soporta geolocalización','err');
+    return;
+  }
+  const status = document.getElementById('cercaStatus');
+  if (status) status.innerHTML = '<span style="font-size:2rem;">⏳</span><span style="color:var(--muted);font-size:.88rem;">Obteniendo ubicación...</span>';
+
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      window._cercaCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      if (window.db && window.CU) {
+        try {
+          await window.setDoc(window.doc(window.db, 'users', window.CU.id), {
+            geo: { lat: window._cercaCoords.lat, lng: window._cercaCoords.lng },
+            geoUpdatedAt: Date.now()
+          }, { merge: true });
+        } catch(e) {}
+      }
+      cargarUsuariosCerca();
+    },
+    (err) => {
+      const status = document.getElementById('cercaStatus');
+      if (status) status.innerHTML = '<span style="font-size:2rem;">❌</span><span style="color:var(--muted);font-size:.88rem;">No se pudo obtener la ubicación. Verificá los permisos del navegador.</span><button onclick="pedirUbicacion()" style="padding:8px 18px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;margin-top:8px;">Reintentar</button>';
+    },
+    { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+  );
+}
+
+function _cercaDistKm(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+async function cargarUsuariosCerca() {
+  if (!window._cercaCoords || !window.db) return;
+  const status = document.getElementById('cercaStatus');
+  const grid = document.getElementById('cercaGrid');
+  const empty = document.getElementById('cercaEmpty');
+  const distLabel = document.getElementById('cercaDistLabel');
+
+  if (status) status.innerHTML = '<span style="font-size:1.5rem;">🔍</span><span style="color:var(--muted);font-size:.85rem;">Buscando usuarios cercanos...</span>';
+  if (status) status.style.display = 'flex';
+
+  try {
+    const snap = await window.getDocs(
+      window.query(
+        window.collection(window.db, 'users'),
+        window.where('geo', '!=', null),
+        window.limit(100)
+      )
+    );
+
+    const myId = window.CU.id;
+    const { lat: myLat, lng: myLng } = window._cercaCoords;
+    const results = [];
+
+    snap.forEach(d => {
+      if (d.id === myId) return;
+      const u = d.data();
+      if (!u.geo?.lat || !u.geo?.lng) return;
+      const dist = _cercaDistKm(myLat, myLng, u.geo.lat, u.geo.lng);
+      results.push({ id: d.id, ...u, _dist: dist });
+    });
+
+    results.sort((a,b) => a._dist - b._dist);
+    window._cercaUsuarios = results;
+
+    if (distLabel) distLabel.textContent = results.length + ' usuarios encontrados';
+    if (status) status.style.display = 'none';
+
+    filtrarCerca();
+  } catch(e) {
+    if (status) status.innerHTML = '<span style="font-size:1.5rem;">⚠️</span><span style="color:var(--muted);font-size:.85rem;">Error al cargar usuarios. Intentá de nuevo.</span>';
+    console.error('Error cargando cerca:', e);
+  }
+}
+
+function filtrarCerca() {
+  const genero = document.getElementById('cercaFiltroGenero')?.value || '';
+  const radioKm = parseInt(document.getElementById('cercaFiltroRadio')?.value || '50');
+  const edadRango = document.getElementById('cercaFiltroEdad')?.value || '';
+  const grid = document.getElementById('cercaGrid');
+  const empty = document.getElementById('cercaEmpty');
+
+  if (!window._cercaUsuarios.length) return;
+
+  let filtrados = window._cercaUsuarios.filter(u => {
+    if (u._dist > radioKm) return false;
+    if (genero && u.gender !== genero) return false;
+    if (edadRango && u.age) {
+      const age = parseInt(u.age);
+      if (edadRango === '18-25' && (age < 18 || age > 25)) return false;
+      if (edadRango === '26-35' && (age < 26 || age > 35)) return false;
+      if (edadRango === '36-45' && (age < 36 || age > 45)) return false;
+      if (edadRango === '46+' && age < 46) return false;
+    }
+    return true;
+  });
+
+  if (!grid || !empty) return;
+
+  if (!filtrados.length) {
+    grid.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+  grid.style.display = 'grid';
+  grid.innerHTML = filtrados.map(u => {
+    const dist = u._dist < 1 ? 'Menos de 1 km' : Math.round(u._dist) + ' km';
+    const avHtml = u.av ? `<img class="cerca-av" src="${u.av}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">` : '';
+    const placeholderStyle = u.av ? 'display:none' : 'display:flex';
+    const onlineReciente = u.geoUpdatedAt && (Date.now() - u.geoUpdatedAt) < 3600000;
+    const nickSafe = (u.nick||'').replace(/'/g,"\\'");
+    return `<div class="cerca-card" onclick="openUserProfile('${u.id}','${nickSafe}')">
+      ${onlineReciente ? '<div class="cerca-online-dot" title="Activo recientemente"></div>' : ''}
+      ${avHtml}
+      <div class="cerca-av-placeholder" style="${placeholderStyle}">${(u.nick||'?')[0].toUpperCase()}</div>
+      <div class="cerca-nick">${u.nick || 'Usuario'}</div>
+      <div class="cerca-meta">${u.age ? u.age+' años' : ''}${u.age && u.city ? ' · ' : ''}${u.city || ''}</div>
+      <div class="cerca-dist-badge">📍 ${dist}</div>
+      <button class="cerca-btn" onclick="event.stopPropagation();openUserProfile('${u.id}','${nickSafe}')">Ver perfil</button>
+    </div>`;
+  }).join('');
+}
+
+window.initCercaDeMi = initCercaDeMi;
+window.pedirUbicacion = pedirUbicacion;
+window.filtrarCerca = filtrarCerca;
+</script>
+
 <div class="page" id="page-privacidad" style="max-width:640px;margin:0 auto;padding:20px 16px 80px;">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
     <span style="font-size:1.4rem;">🔒</span>
@@ -7896,6 +8456,7 @@ window.requestPushPermission = async function() {
 };
 
 const storage = getStorage(app);
+window._fbStorage = storage;
 
 const auth = getAuth(app);
 // Set persistence immediately
@@ -14014,6 +14575,7 @@ function swPTab(el, tabId){
   const galleryEl = document.getElementById('ptGallery');
   const friendsEl = document.getElementById('ptFriends');
   const shopEl = document.getElementById('ptShop');
+  const albumEl = document.getElementById('ptAlbum');
   const feedEl = document.getElementById('profileFeed');
   const postBox = document.getElementById('profilePostBox');
   const leftCol = document.getElementById('profileLeftCol');
@@ -14021,6 +14583,7 @@ function swPTab(el, tabId){
   if(galleryEl) galleryEl.style.display = tabId==='ptGallery' ? 'block' : 'none';
   if(friendsEl) friendsEl.style.display = tabId==='ptFriends' ? 'block' : 'none';
   if(shopEl) shopEl.style.display = tabId==='ptShop' ? 'block' : 'none';
+  if(albumEl) albumEl.style.display = tabId==='ptAlbum' ? 'block' : 'none';
   if(feedEl) feedEl.style.display = tabId==='ptPosts' ? 'block' : 'none';
   if(postBox) postBox.style.display = tabId==='ptPosts' ? 'block' : 'none';
   if(leftCol) leftCol.style.display = (tabId==='ptAbout' || tabId==='ptFriends') ? 'none' : 'block';
