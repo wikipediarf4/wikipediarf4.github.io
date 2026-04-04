@@ -3727,6 +3727,8 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
     var grid = document.getElementById('albumFotosGrid');
     var vacio = document.getElementById('albumVacio');
     if (!grid) return;
+    var myUid = window.CU && window.CU.id;
+    var isOwner = ownerUid === myUid;
     grid.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:20px;text-align:center;">Cargando fotos...</div>';
     try {
       var snap = await window.getDocs(
@@ -3737,22 +3739,50 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
         )
       );
       _albumFotos = [];
+      var pendientesCount = 0;
       snap.forEach(d => {
         var fd = d.data();
-        // Solo mostrar aprobadas (o todas si es el dueño)
-        if(fd.estado === 'aprobado' || fd.estado === undefined || ownerUid === myUid) {
+        var estado = fd.estado || 'pendiente';
+        // Visitantes: solo ver aprobadas. Dueño: aprobadas + pendientes propias (no rechazadas)
+        if (estado === 'aprobado') {
           _albumFotos.push({ id: d.id, ...fd });
+        } else if (isOwner && estado === 'pendiente') {
+          _albumFotos.push({ id: d.id, ...fd, _isPending: true });
+          pendientesCount++;
         }
+        // rechazadas: no se muestran nunca en el grid
       });
       if (!_albumFotos.length) {
         grid.innerHTML = '';
         if(vacio) vacio.style.display = 'block';
+        // Si dueño y tiene pendientes, mostrar info
         return;
       }
       if(vacio) vacio.style.display = 'none';
-      grid.innerHTML = _albumFotos.map((f,i) =>
-        `<div class="album-thumb-wrap" onclick="abrirAlbumLightbox(${i})"><img class="album-thumb" src="${f.url}" loading="lazy" onerror="this.style.opacity='.3'"><div class="album-18-badge">+18</div></div>`
-      ).join('');
+      // Banner informativo si hay pendientes (solo para el dueño)
+      var pendBanner = '';
+      if (isOwner && pendientesCount > 0) {
+        pendBanner = '<div style="background:rgba(230,126,34,.12);border:1px solid rgba(230,126,34,.4);border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:.8rem;color:#e67e22;display:flex;align-items:center;gap:8px;">'
+          + '<span style="font-size:1.1rem;">⏳</span>'
+          + '<span><strong>' + pendientesCount + ' foto' + (pendientesCount > 1 ? 's' : '') + '</strong> en revisión — no visible' + (pendientesCount > 1 ? 's' : '') + ' aún para otros usuarios.</span>'
+          + '</div>';
+      }
+      grid.innerHTML = pendBanner + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;">'
+        + _albumFotos.map((f,i) => {
+          if (f._isPending) {
+            return '<div class="album-thumb-wrap" style="position:relative;opacity:.6;cursor:default;">'
+              + '<img class="album-thumb" src="' + f.url + '" loading="lazy" onerror="this.style.opacity=\'.3\'" style="filter:grayscale(.4);">'
+              + '<div class="album-18-badge">+18</div>'
+              + '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.45);border-radius:6px;">'
+              + '<span style="color:#e67e22;font-size:.62rem;font-weight:900;text-align:center;padding:4px 6px;background:rgba(0,0,0,.6);border-radius:4px;">⏳ PENDIENTE</span>'
+              + '</div></div>';
+          }
+          return '<div class="album-thumb-wrap" onclick="abrirAlbumLightbox(' + i + ')">'
+            + '<img class="album-thumb" src="' + f.url + '" loading="lazy" onerror="this.style.opacity=\'.3\'">'
+            + '<div class="album-18-badge">+18</div>'
+            + '</div>';
+        }).join('')
+        + '</div>';
     } catch(e) {
       grid.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:20px;text-align:center;">Error al cargar fotos.</div>';
     }
@@ -3780,31 +3810,45 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
     // Máximo 5 fotos por vez
     if (files.length > 5) { toast('Podés subir máximo 5 fotos a la vez','err'); input.value=''; return; }
 
-    // Verificar límite total de 50 fotos
+    // Verificar límite total de 50 fotos (contar solo no-rechazadas)
     try {
       var countSnap = await window.getDocs(window.query(window.collection(window.db,'albumPrivado',myUid,'fotos'),window.limit(51)));
-      if (countSnap.size + files.length > 50) { toast('Máximo 50 fotos en el álbum privado','err'); input.value=''; return; }
+      var noRechazadas = 0;
+      countSnap.forEach(function(d){ var est = d.data().estado||'pendiente'; if(est !== 'rechazado') noRechazadas++; });
+      if (noRechazadas + files.length > 50) { toast('Máximo 50 fotos en el álbum privado','err'); input.value=''; return; }
     } catch(e) { console.warn('No se pudo verificar cantidad:', e); }
 
     toast('Subiendo fotos... ⏳');
     var subidos = 0;
     var errores = 0;
 
-    // Esperar a que uploadImage esté disponible antes de empezar
-    var _uploadFn;
-    try {
-      _uploadFn = await _waitForUploadImage(5000);
-    } catch(e) {
-      toast('❌ Error: ' + e.message, 'err');
-      input.value = '';
-      return;
-    }
-
     for (var file of files) {
       if (file.size > 5*1024*1024) { toast('Una foto supera 5MB, se omitió','err'); errores++; continue; }
       try {
-        var url = await _uploadFn(file, 'albumPrivado');
-        await window.addDoc(window.collection(window.db,'albumPrivado',myUid,'fotos'), { url: url, subidaEn: Date.now(), ownerUid: myUid, estado: 'pendiente', ownerNick: window.CU.nick||'', ownerAv: window.CU.av||'' });
+        // Subir directamente a Cloudinary para obtener también el public_id
+        var blob = file;
+        if (blob.size > 800000) {
+          try { blob = await _compressImage(blob, 1200, 0.82); } catch(ce) { /* ignorar si no existe */ }
+        }
+        var fd = new FormData();
+        fd.append('file', blob);
+        fd.append('upload_preset', CLOUDINARY_PRESET_FOTOS);
+        fd.append('folder', 'rf4/albumPrivado');
+        var res = await fetch('https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD + '/image/upload', { method:'POST', body:fd });
+        var data = await res.json();
+        if (!res.ok || !data.secure_url) throw new Error(data?.error?.message || 'Error Cloudinary');
+        var cloudUrl = data.secure_url;
+        var publicId = data.public_id || '';
+        // Guardar en Firestore con estado siempre pendiente, url, public_id, usuario
+        await window.addDoc(window.collection(window.db,'albumPrivado',myUid,'fotos'), {
+          url: cloudUrl,
+          publicId: publicId,
+          subidaEn: Date.now(),
+          ownerUid: myUid,
+          ownerNick: window.CU.nick || '',
+          ownerAv: window.CU.av || '',
+          estado: 'pendiente'   // siempre pendiente hasta revisión admin
+        });
         subidos++;
       } catch(e) {
         console.error('Upload album error:', e);
@@ -3816,7 +3860,7 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
     if (subidos > 0) {
       toast('⏳ ' + subidos + ' foto' + (subidos>1?'s':'') + ' enviada' + (subidos>1?'s':'') + ' para revisión. Será visible cuando el admin la apruebe.');
       await _cargarFotosAlbum(myUid);
-    } else if (errores > 0) {
+    } else if (errores > 0 && subidos === 0) {
       toast('No se pudo subir ninguna foto. Verificá tu conexión.','err');
     }
     input.value = '';
@@ -6816,7 +6860,10 @@ window.initSalasPage = window.initSalasPage;
 
   <div id="admt-album" style="display:none;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
-      <div style="font-size:.92rem;font-weight:700;color:var(--text);">🔒 Moderación de Álbum Privado</div>
+      <div>
+        <div style="font-size:.92rem;font-weight:700;color:var(--text);">🔒 Moderación de Álbum Privado</div>
+        <div id="admAlbumResumen" style="font-size:.75rem;color:var(--muted);margin-top:3px;"></div>
+      </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
         <button onclick="loadAdminAlbum('pendiente')" id="albf-pend" class="cfbtn" style="color:#e67e22;">⏳ Pendientes</button>
         <button onclick="loadAdminAlbum('aprobado')" id="albf-apro" class="cfbtn" style="color:var(--green);">✅ Aprobadas</button>
@@ -25439,8 +25486,22 @@ async function loadAdminAlbum(filtro) {
     var pendCount = todasFotos.filter(function(f){ return !f.estado || f.estado === 'pendiente'; }).length;
     var badge = document.getElementById('admAlbumBadge');
     if(badge){ badge.style.display = pendCount > 0 ? 'inline' : 'none'; badge.textContent = pendCount; }
+    // Resumen
+    var resumen = document.getElementById('admAlbumResumen');
+    if(resumen) {
+      var allPend = 0, allApro = 0, allRech = 0;
+      // Contar globalmente desde el snapshot original (antes del filtro)
+      // usamos los datos disponibles en todasFotos antes de filtrar — actualizamos el resumen luego
+      resumen.textContent = pendCount + ' pendiente' + (pendCount!==1?'s':'') + ' de revisión';
+    }
     if(!todasFotos.length) {
-      el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:.88rem;">No hay fotos pendientes</div>';
+      var msgVacio = {
+        pendiente: 'No hay fotos pendientes de revisión ✅',
+        aprobado:  'No hay fotos aprobadas aún.',
+        rechazado: 'No hay fotos rechazadas.',
+        todas:     'No hay fotos en el álbum privado aún.'
+      };
+      el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:.88rem;">' + (msgVacio[filtro]||msgVacio.todas) + '</div>';
       return;
     }
     var html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;">';
@@ -25459,7 +25520,8 @@ async function loadAdminAlbum(filtro) {
       html += '</div>';
       html += '<div style="padding:10px;">';
       html += '<div style="font-size:.78rem;color:var(--muted);margin-bottom:2px;">👤 ' + (f.ownerNick||f.ownerUid) + '</div>';
-      html += '<div style="font-size:.7rem;color:var(--muted);margin-bottom:8px;">📅 ' + fecha + '</div>';
+      html += '<div style="font-size:.7rem;color:var(--muted);margin-bottom:4px;">📅 ' + fecha + '</div>';
+      if(f.publicId) html += '<div style="font-size:.6rem;color:var(--muted);margin-bottom:6px;word-break:break-all;opacity:.6;" title="Cloudinary public_id">🔗 ' + f.publicId + '</div>';
       html += '<div style="display:flex;gap:6px;">' + btnAprobar + btnRechazar + btnEliminar + '</div>';
       html += '</div></div>';
     });
@@ -25473,15 +25535,16 @@ async function loadAdminAlbum(filtro) {
 
 async function adminApproveAlbumFoto(ownerUid, fotoId) {
   try {
-    await updateDoc(doc(db, 'albumPrivado', ownerUid, 'fotos', fotoId), { estado: 'aprobado', revisadoEn: Date.now() });
+    await updateDoc(doc(db, 'albumPrivado', ownerUid, 'fotos', fotoId), { estado: 'aprobado', revisadoEn: Date.now(), revisadoPor: (window.CU&&window.CU.nick)||'admin' });
     toast('✅ Foto aprobada', 'ok');
     loadAdminAlbum(_adminAlbumFiltro);
   } catch(e) { toast('Error: ' + e.message, 'err'); }
 }
 
 async function adminRejectAlbumFoto(ownerUid, fotoId) {
+  if(!confirm('¿Rechazar esta foto?')) return;
   try {
-    await updateDoc(doc(db, 'albumPrivado', ownerUid, 'fotos', fotoId), { estado: 'rechazado', revisadoEn: Date.now() });
+    await updateDoc(doc(db, 'albumPrivado', ownerUid, 'fotos', fotoId), { estado: 'rechazado', revisadoEn: Date.now(), revisadoPor: (window.CU&&window.CU.nick)||'admin' });
     toast('❌ Foto rechazada', 'ok');
     loadAdminAlbum(_adminAlbumFiltro);
   } catch(e) { toast('Error: ' + e.message, 'err'); }
