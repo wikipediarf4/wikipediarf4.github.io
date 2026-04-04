@@ -3581,7 +3581,7 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
           🔒 Álbum Privado
           <span style="font-size:.58rem;background:rgba(200,0,40,.15);border:1px solid rgba(200,0,40,.3);color:#c0392b;border-radius:100px;padding:2px 8px;font-weight:800;">+18</span>
         </div>
-        <div style="font-size:.72rem;color:var(--muted);margin-top:3px;">Solo visible para quien vos aprobés · Solo mayores de 18 años</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:3px;">Solo visible para quien vos aprobés</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center;" id="albumActions"></div>
     </div>
@@ -3745,7 +3745,7 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
       }
       if(vacio) vacio.style.display = 'none';
       grid.innerHTML = _albumFotos.map((f,i) =>
-        `<div class="album-thumb-wrap" onclick="abrirAlbumLightbox(${i})"><img class="album-thumb" src="${f.url}" loading="lazy" onerror="this.style.opacity='.3'"><div class="album-18-badge">+18</div></div>`
+        `<div class="album-thumb-wrap" onclick="abrirAlbumLightbox(${i})"><img class="album-thumb" src="${f.url}" loading="lazy" onerror="this.style.opacity='.3'"></div>`
       ).join('');
     } catch(e) {
       grid.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:20px;text-align:center;">Error al cargar fotos.</div>';
@@ -3756,27 +3756,38 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
     var files = Array.from(input.files);
     if (!files.length) return;
     var myUid = window.CU && window.CU.id;
-    if (!myUid) return;
-    var countSnap = await window.getDocs(window.query(window.collection(window.db,'albumPrivado',myUid,'fotos'),window.limit(51)));
-    if (countSnap.size + files.length > 50) { toast('Máximo 50 fotos en el álbum privado','err'); return; }
-    toast('Subiendo fotos... ⏳');
+    if (!myUid) { toast('Debés iniciar sesión para subir fotos','err'); return; }
+    if (!window.db) { toast('Base de datos no disponible','err'); return; }
     var fbStorage = window._fbStorage;
-    if (!fbStorage) { toast('Storage no disponible','err'); return; }
+    if (!fbStorage) { toast('Storage no disponible. Recargá la página e intentá de nuevo.','err'); return; }
+    try {
+      var countSnap = await window.getDocs(window.query(window.collection(window.db,'albumPrivado',myUid,'fotos'),window.limit(51)));
+      if (countSnap.size + files.length > 50) { toast('Máximo 50 fotos en el álbum privado','err'); return; }
+    } catch(e) { console.error('Error contando fotos:',e); }
+    toast('Subiendo fotos... ⏳');
+    var { ref: sRef, uploadBytes: sUpload, getDownloadURL: sUrlFn } = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js');
     var subidos = 0;
+    var errores = 0;
     for (var file of files) {
-      if (file.size > 5*1024*1024) { toast('Una foto supera 5MB, se omitió','err'); continue; }
+      if (file.size > 5*1024*1024) { toast('Una foto supera 5MB, se omitió','err'); errores++; continue; }
       try {
-        var { ref: sRef, uploadBytes: sUpload, getDownloadURL: sUrlFn } = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js');
-        var fileRef = sRef(fbStorage, 'albumPrivado/'+myUid+'/'+Date.now()+'_'+file.name.replace(/[^a-zA-Z0-9.]/g,'_'));
-        var snap2 = await sUpload(fileRef, file);
-        var url = await sUrlFn(snap2.ref);
+        var safeName = file.name.replace(/[^a-zA-Z0-9.]/g,'_');
+        var fileRef = sRef(fbStorage, 'albumPrivado/'+myUid+'/'+Date.now()+'_'+safeName);
+        var uploadSnap = await sUpload(fileRef, file);
+        var url = await sUrlFn(uploadSnap.ref);
         await window.addDoc(window.collection(window.db,'albumPrivado',myUid,'fotos'), { url, subidaEn: Date.now(), ownerUid: myUid });
         subidos++;
-      } catch(e) { console.error('Upload error:',e); }
+      } catch(e) {
+        console.error('Upload error:',e);
+        errores++;
+        toast('Error al subir una foto: ' + (e.message || e.code || 'Error desconocido'), 'err');
+      }
     }
     if (subidos > 0) {
       toast('✅ ' + subidos + ' foto' + (subidos>1?'s':'') + ' subida' + (subidos>1?'s':''));
       await _cargarFotosAlbum(myUid);
+    } else if (errores > 0 && subidos === 0) {
+      toast('No se pudo subir ninguna foto. Verificá tu conexión.','err');
     }
     input.value = '';
   };
@@ -7864,13 +7875,14 @@ async function cargarUsuariosCerca() {
 
   if (status) status.innerHTML = '<span style="font-size:1.5rem;">🔍</span><span style="color:var(--muted);font-size:.85rem;">Buscando usuarios cercanos...</span>';
   if (status) status.style.display = 'flex';
+  if (grid) grid.style.display = 'none';
+  if (empty) empty.style.display = 'none';
 
   try {
     const snap = await window.getDocs(
       window.query(
         window.collection(window.db, 'users'),
-        window.where('geo', '!=', null),
-        window.limit(100)
+        window.limit(200)
       )
     );
 
@@ -7894,8 +7906,9 @@ async function cargarUsuariosCerca() {
 
     filtrarCerca();
   } catch(e) {
-    if (status) status.innerHTML = '<span style="font-size:1.5rem;">⚠️</span><span style="color:var(--muted);font-size:.85rem;">Error al cargar usuarios. Intentá de nuevo.</span>';
     console.error('Error cargando cerca:', e);
+    if (status) status.innerHTML = '<span style="font-size:1.5rem;">⚠️</span><span style="color:var(--muted);font-size:.85rem;">Error al cargar usuarios. Intentá de nuevo.</span><button onclick="cargarUsuariosCerca()" style="padding:8px 18px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;margin-top:8px;">Reintentar</button>';
+    if (status) status.style.display = 'flex';
   }
 }
 
