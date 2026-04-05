@@ -11695,7 +11695,8 @@ function renderProfile(){
   _renderCompatChips(window.CU, '_profCompatChips');
   }
   const _ab=document.getElementById('btnAnonMode'); if(_ab) _ab.style.display='none'; // Modo anónimo desactivado
-  if(isVerified){ loadProfileVisitors(); } else { const _vc=document.getElementById('profVisitorsCard'); if(_vc)_vc.style.display='none'; }
+  loadProfileVisitors();
+  { const _vc=document.getElementById('profVisitorsCard'); if(_vc)_vc.style.display='none'; }
 
   function setInfoField(rowId, elId, val, href){
     const row = document.getElementById(rowId);
@@ -21439,6 +21440,28 @@ async function registerProfileVisit(uid){
       visitorNick:window.CU.nick,visitorAv:window.CU.av||'',
       time:Date.now()
     });
+    // Send notification to visited user
+    const visitedSnap = await getDoc(doc(db,'users',uid));
+    if(visitedSnap.exists()){
+      const visitedData = visitedSnap.data();
+      const notifs = visitedData.notifs||[];
+      // Avoid duplicate notification within 1 hour
+      const oneHourAgo = Date.now() - 3600000;
+      const alreadyNotified = notifs.some(n=>n.visitorId===window.CU.id && n.time>oneHourAgo);
+      if(!alreadyNotified){
+        const newNotif = {
+          type:'profileVisit',
+          text:window.CU.nick+' visitó tu perfil',
+          visitorId:window.CU.id,
+          visitorNick:window.CU.nick,
+          visitorAv:window.CU.av||'',
+          time:Date.now(),
+          read:false
+        };
+        notifs.unshift(newNotif);
+        await updateDoc(doc(db,'users',uid),{notifs:notifs.slice(0,60)});
+      }
+    }
   }catch(e){}
 }
 
@@ -21452,7 +21475,7 @@ function toggleVisitorsPanel(){
 }
 
 async function loadProfileVisitors(){
-  if(!window.CU?.verified)return;
+  if(!window.CU)return;
   const card=document.getElementById('profVisitorsCard');
   const list=document.getElementById('profVisitorsList');
   if(!card||!list)return;
