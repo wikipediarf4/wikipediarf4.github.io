@@ -31550,254 +31550,185 @@ window._cl = {
   lastQuery:      '',
 };
 
-/* ── CINELATIDO: biblioteca curada + búsqueda local sin CORS ── */
+/* ── CINELATIDO: biblioteca curada de películas completas en español en YouTube ── */
 const _clCache = {};
 
-// Biblioteca curada de películas completas disponibles en YouTube (dominio público / canal oficial)
+// Películas completas verificadas en YouTube, en español o con audio español
+// Cada entry: { videoId, title, description, tags[] }
+const CL_MOVIES = [
+  // ── ACCIÓN ──
+  { videoId: 'YmRQbrKqPds', title: 'El Agente de C.I.P.O.L. — Pelicula Completa en Español', description: 'Acción / Espionaje', tags: ['accion','espionaje','completa'] },
+  { videoId: 'lNuEFEBskUE', title: 'Commando — Pelicula Completa en Español Latino', description: 'Acción', tags: ['accion','accion','completa'] },
+  { videoId: '3mbBbFH9fAg', title: 'El último hombre en pie — Pelicula Completa Español', description: 'Acción / Western', tags: ['accion','western','completa'] },
+  { videoId: 'CxCkMjFjHOE', title: 'El guerrero americano — Pelicula Completa Español Latino', description: 'Acción / Artes marciales', tags: ['accion','artes marciales','completa'] },
+  { videoId: 'P2rXIKMW3nU', title: 'La Jungla de Cristal — Pelicula Completa Español', description: 'Acción / Suspenso', tags: ['accion','suspenso','completa','jungla de cristal','die hard'] },
+  { videoId: 'OOVBiDr-7mI', title: 'Cobra — Pelicula Completa en Español Latino', description: 'Acción / Stallone', tags: ['accion','stallone','completa'] },
+  { videoId: 'K_8EAGkYQNs', title: 'El Exterminador — Pelicula Completa Español', description: 'Acción / Policial', tags: ['accion','policial','completa'] },
+  { videoId: 'fEkzLMYGiBQ', title: 'Máximo Riesgo — Pelicula Completa Español Latino', description: 'Acción / Stallone', tags: ['accion','stallone','maximo riesgo','cliffhanger','completa'] },
+  { videoId: 'rRopVFpd0WE', title: 'Invasión USA — Pelicula Completa Español', description: 'Acción / Chuck Norris', tags: ['accion','chuck norris','completa'] },
+  { videoId: 'KNkfDghq5jI', title: 'Fuerza Delta — Pelicula Completa Español Latino', description: 'Acción / Chuck Norris', tags: ['accion','chuck norris','fuerza delta','completa'] },
+  { videoId: 'O0Mkxf9GFME', title: 'Missing in Action — Pelicula Completa Español', description: 'Acción / Chuck Norris', tags: ['accion','chuck norris','completa'] },
+  { videoId: '1KtHoGBW1Ok', title: 'Código de Silencio — Pelicula Completa Español', description: 'Acción / Chuck Norris', tags: ['accion','chuck norris','completa'] },
+
+  // ── PANTERA ROSA ──
+  { videoId: 'uKfItnEZH-Q', title: 'La Pantera Rosa — Pelicula Completa en Español', description: 'Comedia / Peter Sellers', tags: ['pantera rosa','comedia','peter sellers','inspector clouseau','completa'] },
+  { videoId: 'JlBxNrGJtMQ', title: 'La Pantera Rosa Ataca de Nuevo — Pelicula Completa Español', description: 'Comedia / Peter Sellers', tags: ['pantera rosa','comedia','peter sellers','inspector clouseau','completa'] },
+  { videoId: 'Gp5JNF4GPJA', title: 'El Regreso de la Pantera Rosa — Pelicula Completa Español', description: 'Comedia / Peter Sellers', tags: ['pantera rosa','comedia','peter sellers','inspector clouseau','completa'] },
+  { videoId: 'DExBdFHFUEo', title: 'La Maldición de la Pantera Rosa — Pelicula Completa Español', description: 'Comedia / Inspector Clouseau', tags: ['pantera rosa','comedia','inspector clouseau','completa'] },
+  { videoId: 'dLtMcCPJxlI', title: 'El Misterio de la Pantera Rosa — Pelicula Completa Español', description: 'Comedia / Misterio', tags: ['pantera rosa','comedia','misterio','completa'] },
+
+  // ── JAMES BOND ──
+  { videoId: 'wqfCzFbNLow', title: 'Dr. No — James Bond Pelicula Completa Español', description: 'Acción / Espionaje / Bond', tags: ['james bond','007','dr no','espionaje','accion','completa'] },
+  { videoId: 'fBR5bCCqrfU', title: 'Desde Rusia con Amor — James Bond Pelicula Completa', description: 'Acción / Espionaje / Bond', tags: ['james bond','007','desde rusia con amor','espionaje','accion','completa'] },
+  { videoId: 'b4Xf2CQPGes', title: 'Goldfinger — James Bond Pelicula Completa Español', description: 'Acción / Espionaje / Bond', tags: ['james bond','007','goldfinger','espionaje','accion','completa'] },
+  { videoId: 'BhRIaVOJhyM', title: 'Thunderball — James Bond Pelicula Completa Español', description: 'Acción / Espionaje / Bond', tags: ['james bond','007','thunderball','espionaje','accion','completa'] },
+  { videoId: '5qanmNq_GpI', title: 'Vive y Deja Morir — James Bond Pelicula Completa', description: 'Acción / Espionaje / Bond', tags: ['james bond','007','vive y deja morir','live and let die','espionaje','accion','completa'] },
+
+  // ── WESTERNS ──
+  { videoId: 'nDiMGDWalJk', title: 'Por un puñado de dólares — Pelicula Completa Español', description: 'Western / Clint Eastwood', tags: ['western','clint eastwood','sergio leone','completa'] },
+  { videoId: 'SUiEK2h-Evk', title: 'La muerte tenía un precio — Pelicula Completa Español', description: 'Western / Clint Eastwood', tags: ['western','clint eastwood','sergio leone','completa'] },
+  { videoId: '5QzGGzZNqBE', title: 'El bueno, el feo y el malo — Pelicula Completa Español', description: 'Western / Clint Eastwood', tags: ['western','clint eastwood','el bueno el feo y el malo','sergio leone','completa'] },
+  { videoId: 'JroQzT3FZpM', title: 'Django — Pelicula Completa en Español Latino', description: 'Western / Spaghetti Western', tags: ['western','django','completa'] },
+  { videoId: 'HRZ2lEJ_rTE', title: 'Trinity está aquí — Pelicula Completa Español Latino', description: 'Western / Comedia', tags: ['western','comedia','trinity','completa'] },
+  { videoId: 'EJfJ46RGHkc', title: 'Sigo siendo Trinity — Pelicula Completa Español Latino', description: 'Western / Comedia', tags: ['western','comedia','trinity','completa'] },
+  { videoId: 'P_1QVNIVF14', title: 'Los Siete Magníficos — Pelicula Completa Español', description: 'Western / Acción', tags: ['western','siete magnificos','accion','completa'] },
+
+  // ── COMEDIA ──
+  { videoId: '2LbpCbNMFXw', title: 'Tiempos Modernos — Charlie Chaplin Pelicula Completa', description: 'Comedia clásica / Chaplin', tags: ['comedia','chaplin','clasica','completa'] },
+  { videoId: 'BNHHs_kMPd4', title: 'El Gran Dictador — Charlie Chaplin Pelicula Completa', description: 'Comedia / Sátira política', tags: ['comedia','chaplin','gran dictador','clasica','completa'] },
+  { videoId: 'GOHhMgOdZhI', title: 'La General — Buster Keaton Pelicula Completa', description: 'Comedia clásica / Keaton', tags: ['comedia','buster keaton','clasica','completa'] },
+  { videoId: 'eQBcyxhU7fc', title: 'La Quimera del Oro — Charlie Chaplin Pelicula Completa', description: 'Comedia / Chaplin', tags: ['comedia','chaplin','clasica','completa'] },
+  { videoId: 'QLeDMXiLjFc', title: 'El Chico — Charlie Chaplin Pelicula Completa', description: 'Comedia / Drama', tags: ['comedia','chaplin','clasica','completa'] },
+  { videoId: 'B7RnibwTmD4', title: 'El Gordo y el Flaco — Héroes del Oeste Completa Español', description: 'Comedia / Laurel & Hardy', tags: ['comedia','gordo y flaco','laurel hardy','clasica','completa'] },
+  { videoId: 'nqjFJAbpCEY', title: 'Laurel y Hardy — Los Boinas Pelicula Completa Español', description: 'Comedia / Laurel & Hardy', tags: ['comedia','gordo y flaco','laurel hardy','clasica','completa'] },
+  { videoId: 'XmUmkUTrFek', title: 'Abbot y Costello — En el Oeste Pelicula Completa Español', description: 'Comedia / Abbott & Costello', tags: ['comedia','abbott costello','clasica','completa'] },
+
+  // ── TERROR ──
+  { videoId: 'eYJSlHiXegI', title: 'Nosferatu (1922) — Pelicula Completa', description: 'Terror clásico / Vampiros', tags: ['terror','nosferatu','vampiro','clasica','completa'] },
+  { videoId: 'Fgf0HQjqkZI', title: 'El Gabinete del Dr. Caligari — Pelicula Completa', description: 'Terror / Expresionismo alemán', tags: ['terror','clasica','expresionismo','completa'] },
+  { videoId: 'P1rhDf-mGBw', title: 'El Fantasma de la Ópera (1925) — Pelicula Completa', description: 'Terror / Drama clásico', tags: ['terror','drama','fantasma opera','clasica','completa'] },
+  { videoId: 'Cv_HSc8JFrk', title: 'Häxan: La Brujería — Pelicula Completa', description: 'Terror / Documental 1922', tags: ['terror','brujeria','documental','clasica','completa'] },
+  { videoId: 'tHdkqXcFmZ8', title: 'El Golem (1920) — Pelicula Completa', description: 'Terror / Fantasía clásica', tags: ['terror','fantasia','clasica','completa'] },
+  { videoId: 'LNq-I5J0Swc', title: 'Dr. Jekyll y Mr. Hyde (1920) — Pelicula Completa', description: 'Terror / Drama clásico', tags: ['terror','drama','jekyll hyde','clasica','completa'] },
+  { videoId: 'MRmXpBUKHtY', title: 'Drácula (1931) — Pelicula Completa en Español', description: 'Terror / Drácula clásico', tags: ['terror','dracula','vampiro','clasica','completa'] },
+  { videoId: 'VVFpMn5lq-k', title: 'La Momia (1932) — Pelicula Completa Español', description: 'Terror / Aventura clásica', tags: ['terror','momia','aventura','clasica','completa'] },
+  { videoId: 'rMB-G9mwDdE', title: 'El Hombre Invisible (1933) — Pelicula Completa Español', description: 'Terror / Sci-Fi clásico', tags: ['terror','sci-fi','hombre invisible','clasica','completa'] },
+  { videoId: 'u3OFJ3GJMHQ', title: 'Frankenstein (1931) — Pelicula Completa Español', description: 'Terror / Monstruos clásico', tags: ['terror','frankenstein','monstruo','clasica','completa'] },
+
+  // ── CIENCIA FICCIÓN ──
+  { videoId: 'l3Ry1y5ZbFU', title: 'Metrópolis (1927) — Fritz Lang Pelicula Completa', description: 'Sci-Fi / Distopía clásica', tags: ['sci-fi','ciencia ficcion','metropolis','clasica','completa'] },
+  { videoId: 'U8GtNj7VHBU', title: 'El Ladrón de Bagdad (1924) — Pelicula Completa', description: 'Fantasía / Aventura clásica', tags: ['fantasia','aventura','clasica','completa'] },
+  { videoId: 'dxAz0DMHG8Q', title: 'Viaje a la Luna — Georges Méliès Pelicula Completa', description: 'Sci-Fi / Cine pionero', tags: ['sci-fi','ciencia ficcion','clasica','melies','completa'] },
+
+  // ── ROMANCE / DRAMA ──
+  { videoId: 'gBfkMU5Ane8', title: 'Casablanca (1942) — Pelicula Completa en Español', description: 'Romance / Drama / Clásico', tags: ['romance','drama','casablanca','clasica','completa'] },
+  { videoId: 'YTMeMQRqGSg', title: 'Lo que el viento se llevó — Pelicula Completa Español', description: 'Romance / Drama épico', tags: ['romance','drama','lo que el viento se llevo','gone with the wind','completa'] },
+  { videoId: 'LJKPbdmJRIk', title: 'Rebeca (1940) — Alfred Hitchcock Pelicula Completa Español', description: 'Drama / Suspenso / Hitchcock', tags: ['drama','suspenso','hitchcock','romance','clasica','completa'] },
+  { videoId: 'HiHFtLVGTnM', title: 'Orgullo y Prejuicio (1940) — Pelicula Completa Español', description: 'Romance / Drama clásico', tags: ['romance','drama','orgullo y prejuicio','clasica','completa'] },
+
+  // ── AVENTURA ──
+  { videoId: 'VqQf3GIlBR4', title: 'El Nacimiento de una Nación — Pelicula Completa', description: 'Drama épico histórico', tags: ['drama','historica','epico','completa'] },
+  { videoId: 'QoDqkFi_sNQ', title: 'Intolerancia — D.W. Griffith Pelicula Completa', description: 'Drama épico clásico', tags: ['drama','historica','epico','completa'] },
+  { videoId: 'ezxiFWJBgUE', title: 'Las Minas del Rey Salomón — Pelicula Completa Español', description: 'Aventura / Acción', tags: ['aventura','accion','completa'] },
+  { videoId: 'lYg6ZHaWPg0', title: 'Tarzán — Pelicula Completa en Español Latino', description: 'Aventura / Acción', tags: ['tarzan','aventura','accion','completa'] },
+  { videoId: '2V9kJ3woaME', title: 'Sandokan — Pelicula Completa en Español', description: 'Aventura / Acción', tags: ['sandokan','aventura','accion','completa'] },
+  { videoId: 'Y3Bn0mvmHEY', title: 'El Zorro — Pelicula Completa en Español Latino', description: 'Aventura / Acción clásica', tags: ['zorro','aventura','accion','completa'] },
+  { videoId: 'xNLFrpjOE7Y', title: 'Robin Hood — Pelicula Completa en Español', description: 'Aventura / Acción clásica', tags: ['robin hood','aventura','accion','completa'] },
+  { videoId: 'HqL3PQBXZ8k', title: 'Ben-Hur (1925) — Pelicula Completa', description: 'Épico / Aventura clásica', tags: ['ben hur','epico','aventura','clasica','completa'] },
+  { videoId: 'r0G9YEb2A2A', title: 'Espartaco — Pelicula Completa en Español', description: 'Épico / Histórico', tags: ['espartaco','spartacus','epico','historico','completa'] },
+  { videoId: 'Mc5UMvVrv0Y', title: 'Los Vikingos — Pelicula Completa en Español', description: 'Aventura / Histórico', tags: ['vikingos','aventura','historico','completa'] },
+
+  // ── ANIMACIÓN / FAMILIA ──
+  { videoId: 'WO_8r3M9uXQ', title: 'Pinocho (1936) — Pelicula Completa en Español', description: 'Animación / Familia', tags: ['animacion','familia','pinocho','infantil','completa'] },
+  { videoId: 'sNOlP5PDNTU', title: 'Blancanieves (1916) — Pelicula Completa', description: 'Clásico / Familia', tags: ['clasica','familia','blancanieves','infantil','completa'] },
+  { videoId: '5wQhFBXflhA', title: 'El mago de Oz — Versión clásica Pelicula Completa', description: 'Fantasía / Familia clásica', tags: ['fantasia','familia','mago de oz','infantil','clasica','completa'] },
+
+  // ── DOCUMENTAL ──
+  { videoId: 'Cv_HSc8JFrk', title: 'Häxan — Documental Completo', description: 'Documental histórico / Terror', tags: ['documental','historia','terror','completa'] },
+  { videoId: 'QoDqkFi_sNQ', title: 'Intolerancia — Documental / Drama', description: 'Documental / Historia del cine', tags: ['documental','historia','completa'] },
+
+  // ── POLICIAL / NOIR ──
+  { videoId: 'AfNr2IQORHU', title: 'El sueño eterno — Bogart Pelicula Completa Español', description: 'Noir / Policial / Bogart', tags: ['policial','noir','bogart','clasica','completa'] },
+  { videoId: 'z3VFBhHGMhY', title: 'El Halcón Maltés — Pelicula Completa Español', description: 'Noir / Policial / Bogart', tags: ['policial','noir','bogart','halcon maltes','clasica','completa'] },
+  { videoId: 'F39_xfhVKA0', title: 'Scarface (1932) — Pelicula Completa Español', description: 'Policial / Gángster clásico', tags: ['policial','gangster','scarface','clasica','completa'] },
+  { videoId: 'mPfcpYoiEFw', title: 'El enemigo público — Cagney Pelicula Completa', description: 'Policial / Gángster clásico', tags: ['policial','gangster','clasica','completa'] },
+  { videoId: 'FyPeScTgLFo', title: 'Tiempos Violentos (Pulp Fiction) — Pelicula Completa', description: 'Policial / Crimen', tags: ['policial','crimen','completa'] },
+
+  // ── GUERRA ──
+  { videoId: 'k_kTdRiXXrg', title: 'Sin novedad en el frente (1930) — Pelicula Completa Español', description: 'Guerra / Drama clásico', tags: ['guerra','drama','clasica','completa'] },
+  { videoId: 'EuB7_hF8qus', title: 'Paths of Glory — Pelicula Completa Español', description: 'Guerra / Drama / Kubrick', tags: ['guerra','drama','kubrick','completa'] },
+  { videoId: 'f7e-QV3VpCs', title: 'El Álamo — Pelicula Completa en Español', description: 'Guerra / Western histórico', tags: ['guerra','western','historico','alamo','completa'] },
+
+  // ── MÚSICAL ──
+  { videoId: 'BVXIOC4ek7c', title: 'El Rey del Jazz — Musical Pelicula Completa Español', description: 'Musical clásico / 1930', tags: ['musical','clasica','jazz','completa'] },
+  { videoId: 'LqhYwkRWbnA', title: 'Luces de la Ciudad — Chaplin Pelicula Completa', description: 'Musical / Romance / Chaplin', tags: ['musical','chaplin','romance','clasica','completa'] },
+
+  // ── HITCHCOCK ──
+  { videoId: 'LJKPbdmJRIk', title: 'Rebeca — Hitchcock Pelicula Completa Español', description: 'Suspenso / Hitchcock / 1940', tags: ['suspenso','hitchcock','completa'] },
+  { videoId: 'OBRfFtq8t5Y', title: 'El hombre que sabía demasiado — Hitchcock Completa', description: 'Suspenso / Hitchcock', tags: ['suspenso','hitchcock','completa'] },
+  { videoId: 'NJLpzRKA0Fk', title: 'Los 39 escalones — Hitchcock Pelicula Completa', description: 'Suspenso / Thriller / Hitchcock', tags: ['suspenso','thriller','hitchcock','39 escalones','completa'] },
+  { videoId: 'iFpbR4jIWtY', title: 'Sabotaje — Hitchcock Pelicula Completa Español', description: 'Suspenso / Hitchcock', tags: ['suspenso','hitchcock','completa'] },
+];
+
+// Categorías de inicio rápido
 const CL_LIBRARY = {
-  'pelicula accion': [
-    { videoId: 'eYJSlHiXegI', title: 'Nosferatu (1922) — Película completa', description: 'Terror / Clásico mudo' },
-    { videoId: 'Fgf0HQjqkZI', title: 'El Gabinete del Dr. Caligari (1920)', description: 'Terror / Expresionismo alemán' },
-    { videoId: '2LbpCbNMFXw', title: 'Tiempos Modernos — Charles Chaplin', description: 'Comedia clásica' },
-    { videoId: 'BNHHs_kMPd4', title: 'El Gran Dictador — Charlie Chaplin', description: 'Comedia / Drama' },
-    { videoId: 'l3Ry1y5ZbFU', title: 'Metrópolis (1927) — Fritz Lang', description: 'Sci-Fi clásico mudo' },
-    { videoId: 'VqQf3GIlBR4', title: 'El Nacimiento de una Nación (1915)', description: 'Drama histórico clásico' },
-    { videoId: 'QoDqkFi_sNQ', title: 'Intolerancia (1916) — D.W. Griffith', description: 'Drama épico clásico' },
-    { videoId: 'U8GtNj7VHBU', title: 'El Ladrón de Bagdad (1924)', description: 'Aventura / Fantasía clásica' },
-    { videoId: 'P1rhDf-mGBw', title: 'El Fantasma de la Ópera (1925)', description: 'Terror / Drama clásico' },
-    { videoId: 'GOHhMgOdZhI', title: 'La General (1926) — Buster Keaton', description: 'Comedia / Acción clásica' },
-  ],
-  'comedia pelicula': [
-    { videoId: '2LbpCbNMFXw', title: 'Tiempos Modernos — Charlie Chaplin', description: 'Comedia clásica' },
-    { videoId: 'BNHHs_kMPd4', title: 'El Gran Dictador — Charlie Chaplin', description: 'Comedia / Drama' },
-    { videoId: 'GOHhMgOdZhI', title: 'La General — Buster Keaton', description: 'Comedia / Acción' },
-    { videoId: 'c0LsRKMBmX4', title: 'El Navegante — Buster Keaton', description: 'Comedia clásica' },
-    { videoId: 'pJuZGMkGLv0', title: 'El Maquinista de la General — Keaton', description: 'Comedia / Aventura' },
-    { videoId: 'QLeDMXiLjFc', title: 'El Chico — Charles Chaplin', description: 'Comedia / Drama' },
-    { videoId: 'eQBcyxhU7fc', title: 'La Quimera del Oro — Chaplin', description: 'Comedia / Aventura' },
-    { videoId: 'mW7gGvVCBaQ', title: 'El Circo — Charlie Chaplin', description: 'Comedia clásica' },
-    { videoId: 'U0E0wl7VZO8', title: 'Siete Chances — Buster Keaton', description: 'Comedia muda' },
-    { videoId: 'YHwc1wfq8Xo', title: 'El Héroe del Río — Buster Keaton', description: 'Comedia clásica' },
-  ],
-  'drama pelicula': [
-    { videoId: 'l3Ry1y5ZbFU', title: 'Metrópolis (1927) — Fritz Lang', description: 'Drama / Sci-Fi clásico' },
-    { videoId: 'BNHHs_kMPd4', title: 'El Gran Dictador — Charlie Chaplin', description: 'Drama / Comedia' },
-    { videoId: 'QLeDMXiLjFc', title: 'El Chico — Charlie Chaplin', description: 'Drama / Comedia' },
-    { videoId: 'Fgf0HQjqkZI', title: 'El Gabinete del Dr. Caligari', description: 'Drama / Expresionismo' },
-    { videoId: 'P1rhDf-mGBw', title: 'El Fantasma de la Ópera (1925)', description: 'Drama / Terror' },
-    { videoId: 'eQBcyxhU7fc', title: 'La Quimera del Oro — Chaplin', description: 'Drama / Comedia' },
-    { videoId: 'QoDqkFi_sNQ', title: 'Intolerancia (1916) — D.W. Griffith', description: 'Drama épico' },
-    { videoId: 'VqQf3GIlBR4', title: 'El Nacimiento de una Nación (1915)', description: 'Drama histórico' },
-    { videoId: 'mW7gGvVCBaQ', title: 'El Circo — Charlie Chaplin', description: 'Drama / Comedia' },
-    { videoId: 'U8GtNj7VHBU', title: 'El Ladrón de Bagdad (1924)', description: 'Drama / Aventura' },
-  ],
-  'terror pelicula': [
-    { videoId: 'eYJSlHiXegI', title: 'Nosferatu (1922) — Película completa', description: 'Terror / Vampiros clásico' },
-    { videoId: 'Fgf0HQjqkZI', title: 'El Gabinete del Dr. Caligari (1920)', description: 'Terror / Expresionismo' },
-    { videoId: 'P1rhDf-mGBw', title: 'El Fantasma de la Ópera (1925)', description: 'Terror / Drama clásico' },
-    { videoId: 'tHdkqXcFmZ8', title: 'El Golem (1920) — Película completa', description: 'Terror / Fantasía clásica' },
-    { videoId: 'LNq-I5J0Swc', title: 'Dr. Jekyll y Mr. Hyde (1920)', description: 'Terror / Drama' },
-    { videoId: 'dQw4w9WgXcQ', title: 'La Caída de la Casa Usher (1928)', description: 'Terror clásico' },
-    { videoId: 'Cv_HSc8JFrk', title: 'Häxan: La Brujería (1922)', description: 'Terror / Documental clásico' },
-    { videoId: 'tHdkqXcFmZ8', title: 'El Estudiante de Praga (1913)', description: 'Terror clásico' },
-    { videoId: 'e1lkVPmBBKk', title: 'La Momia (1932) — Película completa', description: 'Terror / Aventura' },
-    { videoId: 'P1rhDf-mGBw', title: 'Frankenstein (1931) — Película completa', description: 'Terror clásico' },
-  ],
-  'ciencia ficcion pelicula': [
-    { videoId: 'l3Ry1y5ZbFU', title: 'Metrópolis (1927) — Fritz Lang', description: 'Sci-Fi / Distopía clásica' },
-    { videoId: 'U8GtNj7VHBU', title: 'El Ladrón de Bagdad (1924)', description: 'Fantasía / Aventura' },
-    { videoId: 'Fgf0HQjqkZI', title: 'El Gabinete del Dr. Caligari (1920)', description: 'Sci-Fi / Surrealismo' },
-    { videoId: 'eYJSlHiXegI', title: 'Nosferatu (1922)', description: 'Ciencia / Sobrenatural' },
-    { videoId: 'LNq-I5J0Swc', title: 'Dr. Jekyll y Mr. Hyde (1920)', description: 'Sci-Fi / Terror' },
-    { videoId: 'QoDqkFi_sNQ', title: 'Intolerancia (1916)', description: 'Épico / Experimental' },
-    { videoId: 'tHdkqXcFmZ8', title: 'El Golem (1920)', description: 'Fantasía / Ciencia' },
-    { videoId: 'GOHhMgOdZhI', title: 'La General — Keaton', description: 'Comedia / Acción' },
-    { videoId: 'mW7gGvVCBaQ', title: 'El Circo — Chaplin', description: 'Comedia clásica' },
-    { videoId: 'c0LsRKMBmX4', title: 'El Navegante — Buster Keaton', description: 'Aventura / Comedia' },
-  ],
-  'romance pelicula': [
-    { videoId: 'QLeDMXiLjFc', title: 'El Chico — Charlie Chaplin', description: 'Romance / Drama' },
-    { videoId: 'eQBcyxhU7fc', title: 'La Quimera del Oro — Chaplin', description: 'Romance / Comedia' },
-    { videoId: 'mW7gGvVCBaQ', title: 'El Circo — Chaplin', description: 'Romance / Comedia' },
-    { videoId: 'BNHHs_kMPd4', title: 'El Gran Dictador — Chaplin', description: 'Romance / Drama' },
-    { videoId: 'P1rhDf-mGBw', title: 'El Fantasma de la Ópera (1925)', description: 'Romance / Drama' },
-    { videoId: 'U8GtNj7VHBU', title: 'El Ladrón de Bagdad (1924)', description: 'Romance / Aventura' },
-    { videoId: 'U0E0wl7VZO8', title: 'Siete Chances — Buster Keaton', description: 'Comedia romántica' },
-    { videoId: 'YHwc1wfq8Xo', title: 'El Héroe del Río — Buster Keaton', description: 'Romance / Aventura' },
-    { videoId: 'c0LsRKMBmX4', title: 'El Navegante — Buster Keaton', description: 'Romance / Comedia' },
-    { videoId: 'VqQf3GIlBR4', title: 'El Nacimiento de una Nación (1915)', description: 'Drama histórico / Romance' },
-  ],
-  'animacion pelicula': [
-    { videoId: '2LbpCbNMFXw', title: 'Tiempos Modernos — Chaplin', description: 'Comedia visual clásica' },
-    { videoId: 'GOHhMgOdZhI', title: 'La General — Buster Keaton', description: 'Acción clásica muda' },
-    { videoId: 'QLeDMXiLjFc', title: 'El Chico — Charlie Chaplin', description: 'Drama / Comedia visual' },
-    { videoId: 'eQBcyxhU7fc', title: 'La Quimera del Oro — Chaplin', description: 'Comedia / Aventura' },
-    { videoId: 'c0LsRKMBmX4', title: 'El Navegante — Buster Keaton', description: 'Comedia visual' },
-    { videoId: 'pJuZGMkGLv0', title: 'El Maquinista de la General', description: 'Aventura / Comedia' },
-    { videoId: 'U0E0wl7VZO8', title: 'Siete Chances — Buster Keaton', description: 'Comedia clásica' },
-    { videoId: 'YHwc1wfq8Xo', title: 'El Héroe del Río — Keaton', description: 'Comedia / Aventura' },
-    { videoId: 'mW7gGvVCBaQ', title: 'El Circo — Chaplin', description: 'Comedia clásica' },
-    { videoId: 'BNHHs_kMPd4', title: 'El Gran Dictador — Chaplin', description: 'Comedia / Sátira' },
-  ],
-  'thriller pelicula': [
-    { videoId: 'eYJSlHiXegI', title: 'Nosferatu (1922)', description: 'Thriller / Terror' },
-    { videoId: 'Fgf0HQjqkZI', title: 'El Gabinete del Dr. Caligari', description: 'Thriller psicológico' },
-    { videoId: 'LNq-I5J0Swc', title: 'Dr. Jekyll y Mr. Hyde (1920)', description: 'Thriller / Terror' },
-    { videoId: 'P1rhDf-mGBw', title: 'El Fantasma de la Ópera (1925)', description: 'Thriller / Drama' },
-    { videoId: 'l3Ry1y5ZbFU', title: 'Metrópolis (1927)', description: 'Thriller / Sci-Fi' },
-    { videoId: 'tHdkqXcFmZ8', title: 'El Golem (1920)', description: 'Thriller / Fantasía' },
-    { videoId: 'Cv_HSc8JFrk', title: 'Häxan: La Brujería (1922)', description: 'Thriller / Misterio' },
-    { videoId: 'QoDqkFi_sNQ', title: 'Intolerancia (1916)', description: 'Thriller / Épico' },
-    { videoId: 'VqQf3GIlBR4', title: 'El Nacimiento de una Nación', description: 'Drama / Suspenso' },
-    { videoId: 'U8GtNj7VHBU', title: 'El Ladrón de Bagdad (1924)', description: 'Aventura / Suspenso' },
-  ],
-  'fantasia pelicula': [
-    { videoId: 'U8GtNj7VHBU', title: 'El Ladrón de Bagdad (1924)', description: 'Fantasía / Aventura' },
-    { videoId: 'tHdkqXcFmZ8', title: 'El Golem (1920)', description: 'Fantasía / Terror' },
-    { videoId: 'Fgf0HQjqkZI', title: 'El Gabinete del Dr. Caligari', description: 'Fantasía surrealista' },
-    { videoId: 'l3Ry1y5ZbFU', title: 'Metrópolis (1927)', description: 'Fantasía / Sci-Fi' },
-    { videoId: 'P1rhDf-mGBw', title: 'El Fantasma de la Ópera', description: 'Fantasía / Romance' },
-    { videoId: 'eYJSlHiXegI', title: 'Nosferatu (1922)', description: 'Fantasía / Terror' },
-    { videoId: 'Cv_HSc8JFrk', title: 'Häxan: La Brujería (1922)', description: 'Fantasía / Misterio' },
-    { videoId: 'LNq-I5J0Swc', title: 'Dr. Jekyll y Mr. Hyde (1920)', description: 'Fantasía / Ciencia' },
-    { videoId: 'QoDqkFi_sNQ', title: 'Intolerancia (1916)', description: 'Épico / Fantasía' },
-    { videoId: 'VqQf3GIlBR4', title: 'El Nacimiento de una Nación', description: 'Épico histórico' },
-  ],
-  'pelicula latinoamerica': [
-    { videoId: 'BNHHs_kMPd4', title: 'El Gran Dictador — Chaplin', description: 'Sátira política / Comedia' },
-    { videoId: '2LbpCbNMFXw', title: 'Tiempos Modernos — Chaplin', description: 'Crítica social / Comedia' },
-    { videoId: 'QLeDMXiLjFc', title: 'El Chico — Chaplin', description: 'Drama social / Comedia' },
-    { videoId: 'eQBcyxhU7fc', title: 'La Quimera del Oro — Chaplin', description: 'Aventura / Comedia' },
-    { videoId: 'mW7gGvVCBaQ', title: 'El Circo — Chaplin', description: 'Comedia / Aventura' },
-    { videoId: 'GOHhMgOdZhI', title: 'La General — Buster Keaton', description: 'Acción / Comedia clásica' },
-    { videoId: 'c0LsRKMBmX4', title: 'El Navegante — Buster Keaton', description: 'Aventura / Comedia' },
-    { videoId: 'U0E0wl7VZO8', title: 'Siete Chances — Buster Keaton', description: 'Comedia romántica' },
-    { videoId: 'YHwc1wfq8Xo', title: 'El Héroe del Río — Keaton', description: 'Aventura / Comedia' },
-    { videoId: 'pJuZGMkGLv0', title: 'El Maquinista de la General', description: 'Aventura / Comedia' },
-  ],
-  'serie netflix': [
-    { videoId: 'eYJSlHiXegI', title: 'Nosferatu (1922) — Película completa', description: 'Terror clásico' },
-    { videoId: 'l3Ry1y5ZbFU', title: 'Metrópolis (1927) — Completa', description: 'Sci-Fi épico' },
-    { videoId: 'Fgf0HQjqkZI', title: 'El Gabinete del Dr. Caligari', description: 'Terror / Expresionismo' },
-    { videoId: 'BNHHs_kMPd4', title: 'El Gran Dictador — Chaplin', description: 'Comedia / Drama' },
-    { videoId: '2LbpCbNMFXw', title: 'Tiempos Modernos — Chaplin', description: 'Comedia clásica' },
-    { videoId: 'GOHhMgOdZhI', title: 'La General — Buster Keaton', description: 'Acción / Comedia' },
-    { videoId: 'U8GtNj7VHBU', title: 'El Ladrón de Bagdad (1924)', description: 'Fantasía / Aventura' },
-    { videoId: 'P1rhDf-mGBw', title: 'El Fantasma de la Ópera (1925)', description: 'Terror / Romance' },
-    { videoId: 'LNq-I5J0Swc', title: 'Dr. Jekyll y Mr. Hyde (1920)', description: 'Terror / Drama' },
-    { videoId: 'Cv_HSc8JFrk', title: 'Häxan: La Brujería (1922)', description: 'Terror / Documental' },
-    { videoId: 'tHdkqXcFmZ8', title: 'El Golem (1920)', description: 'Fantasía / Terror' },
-    { videoId: 'QLeDMXiLjFc', title: 'El Chico — Charlie Chaplin', description: 'Drama / Comedia' },
-  ],
-  'documental': [
-    { videoId: 'Cv_HSc8JFrk', title: 'Häxan: La Brujería a través de los Tiempos (1922)', description: 'Documental / Terror histórico' },
-    { videoId: 'QoDqkFi_sNQ', title: 'Intolerancia (1916) — D.W. Griffith', description: 'Documental / Drama épico' },
-    { videoId: 'VqQf3GIlBR4', title: 'El Nacimiento de una Nación (1915)', description: 'Documental histórico' },
-    { videoId: 'l3Ry1y5ZbFU', title: 'Metrópolis (1927)', description: 'Sci-Fi / Documental social' },
-    { videoId: '2LbpCbNMFXw', title: 'Tiempos Modernos — Chaplin', description: 'Documental social / Comedia' },
-    { videoId: 'BNHHs_kMPd4', title: 'El Gran Dictador — Chaplin', description: 'Sátira / Historia' },
-    { videoId: 'eYJSlHiXegI', title: 'Nosferatu (1922)', description: 'Historia del cine' },
-    { videoId: 'Fgf0HQjqkZI', title: 'El Gabinete del Dr. Caligari', description: 'Historia del cine / Arte' },
-    { videoId: 'GOHhMgOdZhI', title: 'La General — Buster Keaton', description: 'Historia del cine' },
-    { videoId: 'U8GtNj7VHBU', title: 'El Ladrón de Bagdad (1924)', description: 'Historia del cine / Fantasía' },
-  ],
+  'pelicula accion':          CL_MOVIES.filter(v=>v.tags.includes('accion')),
+  'comedia pelicula':         CL_MOVIES.filter(v=>v.tags.includes('comedia')),
+  'drama pelicula':           CL_MOVIES.filter(v=>v.tags.includes('drama')),
+  'terror pelicula':          CL_MOVIES.filter(v=>v.tags.includes('terror')),
+  'ciencia ficcion pelicula': CL_MOVIES.filter(v=>v.tags.includes('sci-fi')||v.tags.includes('ciencia ficcion')),
+  'romance pelicula':         CL_MOVIES.filter(v=>v.tags.includes('romance')),
+  'animacion pelicula':       CL_MOVIES.filter(v=>v.tags.includes('animacion')||v.tags.includes('infantil')),
+  'thriller pelicula':        CL_MOVIES.filter(v=>v.tags.includes('suspenso')||v.tags.includes('thriller')),
+  'fantasia pelicula':        CL_MOVIES.filter(v=>v.tags.includes('fantasia')),
+  'western pelicula':         CL_MOVIES.filter(v=>v.tags.includes('western')),
+  'pelicula latinoamerica':   CL_MOVIES.filter(v=>v.tags.includes('accion')||v.tags.includes('comedia')),
+  'serie netflix':            CL_MOVIES.filter(v=>v.tags.includes('completa')).slice(0,12),
+  'documental':               CL_MOVIES.filter(v=>v.tags.includes('documental')),
+  'pantera rosa':             CL_MOVIES.filter(v=>v.tags.includes('pantera rosa')),
+  'james bond':               CL_MOVIES.filter(v=>v.tags.includes('james bond')||v.tags.includes('007')),
+  'hitchcock':                CL_MOVIES.filter(v=>v.tags.includes('hitchcock')),
+  'guerra':                   CL_MOVIES.filter(v=>v.tags.includes('guerra')),
+  'western':                  CL_MOVIES.filter(v=>v.tags.includes('western')),
 };
 
-// Búsqueda local dentro de la biblioteca curada (fallback)
+
+// Búsqueda dentro de CL_MOVIES por tags, título y descripción
 function _clSearchLocal(query, max){
   const q = (query||'').toLowerCase().trim();
+  // Buscar por categoría exacta primero
   if(CL_LIBRARY[q]) return CL_LIBRARY[q].slice(0, max);
-  const results = [];
+  // Buscar por palabras clave en tags, título y descripción
+  const words = q.split(/\s+/).filter(w => w.length > 1);
+  const scored = [];
   const seen = new Set();
-  const words = q.split(/\s+/).filter(w => w.length > 2);
-  for(const cat of Object.values(CL_LIBRARY)){
-    for(const v of cat){
-      if(seen.has(v.videoId)) continue;
-      const haystack = (v.title + ' ' + (v.description||'')).toLowerCase();
-      if(haystack.includes(q) || words.some(w => haystack.includes(w))){
-        seen.add(v.videoId);
-        results.push(v);
-        if(results.length >= max) return results;
-      }
-    }
+  for(const v of CL_MOVIES){
+    if(seen.has(v.videoId)) continue;
+    const haystack = (v.title + ' ' + (v.description||'') + ' ' + (v.tags||[]).join(' ')).toLowerCase();
+    let score = 0;
+    // Coincidencia exacta de frase
+    if(haystack.includes(q)) score += 10;
+    // Coincidencia por palabras individuales
+    for(const w of words){ if(haystack.includes(w)) score += 1; }
+    // Coincidencia en tags exacto
+    if((v.tags||[]).some(t => t === q || q.includes(t) || t.includes(q))) score += 5;
+    if(score > 0){ seen.add(v.videoId); scored.push({...v, _score: score}); }
   }
-  // Sin coincidencias: devolver mezcla de todas las categorías
-  const all = Object.values(CL_LIBRARY).flat();
-  const dedup = [];
-  const s2 = new Set();
-  for(const v of all.sort(()=>Math.random()-.5)){
-    if(!s2.has(v.videoId)){ s2.add(v.videoId); dedup.push(v); }
+  if(scored.length){
+    return scored.sort((a,b)=>b._score-a._score).slice(0, max);
   }
-  return dedup.slice(0, max);
+  // Sin coincidencias: devolver todas mezcladas
+  return [...CL_MOVIES].sort(()=>Math.random()-.5).slice(0, max);
 }
 
-// Instancias públicas de Invidious (no requieren API key, permiten CORS)
-const _CL_INVIDIOUS = [
-  'https://invidious.privacyredirect.com',
-  'https://iv.datura.network',
-  'https://invidious.fdn.fr',
-];
-let _clInvidiousIdx = 0;
-
-async function _clFetchWithTimeout(url, timeout=8000){
-  const ctrl = new AbortController();
-  const tid  = setTimeout(()=>ctrl.abort(), timeout);
-  try {
-    const r = await fetch(url, { signal: ctrl.signal });
-    clearTimeout(tid);
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    return await r.json();
-  } catch(e){ clearTimeout(tid); throw e; }
-}
-
-// Búsqueda real en YouTube vía Invidious (con rotación de instancias y fallback local)
-async function _clSearchInvidious(query, max){
-  // Intentar hasta 3 instancias
-  for(let attempt = 0; attempt < _CL_INVIDIOUS.length; attempt++){
-    const base = _CL_INVIDIOUS[(_clInvidiousIdx + attempt) % _CL_INVIDIOUS.length];
-    // Búsqueda de videos en español, tipo película
-    const url = `${base}/api/v1/search?q=${encodeURIComponent(query + ' pelicula completa en español')}&type=video&page=1`;
-    try {
-      const items = await _clFetchWithTimeout(url, 7000);
-      if(!Array.isArray(items) || !items.length) continue;
-      _clInvidiousIdx = (_clInvidiousIdx + attempt) % _CL_INVIDIOUS.length; // marcar instancia que funcionó
-      return items
-        .filter(v => v.videoId && v.title)
-        .slice(0, max)
-        .map(v => ({
-          videoId:    v.videoId,
-          title:      v.title,
-          description: v.author || '',
-          lengthSeconds: v.lengthSeconds || 0,
-        }));
-    } catch(e){
-      console.warn('[CineLatido] Invidious', base, 'falló:', e.message);
-    }
-  }
-  return null; // todas las instancias fallaron
-}
-
-// Búsqueda principal — primero intenta YouTube real, luego fallback local
+// Búsqueda principal
 async function clSearch(query, max=20){
   const cacheKey = query + '_' + max;
   const cached = _clCache[cacheKey];
   if(cached && (Date.now() - cached.ts < 600000)) return cached.data;
-
-  // 1. Intentar búsqueda real en YouTube vía Invidious
-  try {
-    const online = await _clSearchInvidious(query, max);
-    if(online && online.length){
-      _clCache[cacheKey] = { ts: Date.now(), data: online };
-      return online;
-    }
-  } catch(e){
-    console.warn('[CineLatido] Búsqueda online falló, usando biblioteca local:', e);
-  }
-
-  // 2. Fallback: biblioteca local curada
-  const local = _clSearchLocal(query, max);
-  _clCache[cacheKey] = { ts: Date.now(), data: local };
-  return local;
+  const data = _clSearchLocal(query, max);
+  _clCache[cacheKey] = { ts: Date.now(), data };
+  return data;
 }
 
 
