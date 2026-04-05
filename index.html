@@ -34192,7 +34192,7 @@ function _esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
     <button onclick="initFotosPopularesPage()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:.82rem;font-weight:700;font-family:'Exo 2',sans-serif;cursor:pointer;">↻ Actualizar</button>
   </div>
   <div id="fotosPopularesErr" style="display:none;color:var(--muted);text-align:center;padding:40px 0;font-size:.9rem;"></div>
-  <div id="fotosPopularesGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px;">
+  <div id="fotosPopularesGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
     <div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--muted);font-size:.9rem;">⏳ Cargando...</div>
   </div>
 </div>
@@ -34323,55 +34323,156 @@ function _esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
         return true;
       }).slice(0, 80);
 
-      // ── 4. Renderizar ────────────────────────────────────────────
-      grid.innerHTML = allItems.map(function(f){
+      // ── 4. Renderizar con numeración cada 3 filas (12 fotos) ───
+      var myFriends = (window.CU && window.CU.friends) ? window.CU.friends : [];
+      var myId      = (window.CU && window.CU.id) ? window.CU.id : '';
+
+      var htmlParts = [];
+      allItems.forEach(function(f, idx){
+        var pos    = idx + 1;
         var nick   = escStr(f.ownerNick);
         var uid    = f.ownerUid || '';
-        var emoji  = f.emoji || '';
         var score  = f.score || 0;
-        var cmts   = f.cmts  || 0;
         var av     = f.ownerAv || '';
+        var itemId = 'fp_' + idx + '_' + uid.slice(0,6);
+        var isFriend = myFriends.indexOf(uid) !== -1;
+        var isMe     = uid === myId;
+        var canCmt   = isFriend || isMe;
+
         var avHtml = av
-          ? '<img src="'+av+'" style="width:26px;height:26px;border-radius:50%;object-fit:cover;border:2px solid var(--bg2);flex-shrink:0;">'
-          : '<div style="width:26px;height:26px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:900;color:#fff;flex-shrink:0;">'+nick[0].toUpperCase()+'</div>';
+          ? '<img src="'+av+'" style="width:22px;height:22px;border-radius:50%;object-fit:cover;border:2px solid var(--bg2);flex-shrink:0;">'
+          : '<div style="width:22px;height:22px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:900;color:#fff;flex-shrink:0;">'+nick[0].toUpperCase()+'</div>';
 
-        return [
-          '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08);transition:transform .15s,box-shadow .15s;cursor:pointer;" onmouseover="this.style.transform=&apos;translateY(-2px)&apos;;this.style.boxShadow=&apos;0 6px 18px rgba(0,0,0,.13)&apos;" onmouseout="this.style.transform=&apos;&apos;;this.style.boxShadow=&apos;0 1px 4px rgba(0,0,0,.08)&apos;" onclick="openUserProfile(&apos;'+uid+'&apos;,&apos;'+nick+'&apos;)">',
+        // Separador numérico cada 12 items (3 filas de 4)
+        if(idx > 0 && idx % 12 === 0){
+          htmlParts.push('<div style="grid-column:1/-1;display:flex;align-items:center;gap:10px;margin:6px 0;">'
+            + '<div style="flex:1;height:1px;background:var(--border);"></div>'
+            + '<span style="font-family:\'Orbitron\',monospace;font-size:.7rem;font-weight:900;color:var(--accent);white-space:nowrap;"># '+(idx+1)+' \u2014 '+(idx+12)+'</span>'
+            + '<div style="flex:1;height:1px;background:var(--border);"></div>'
+            + '</div>');
+        }
 
-            // Foto
-            '<div style="width:100%;padding-top:105%;position:relative;background:var(--bg3);overflow:hidden;">',
-              '<img src="'+f.url+'" loading="lazy" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:top;" onerror="this.parentElement.style.background=&apos;var(--bg4)&apos;">',
-            '</div>',
+        htmlParts.push(
+          '<div id="'+itemId+'" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08);transition:transform .15s,box-shadow .15s;">'
 
-            // Info inferior
-            '<div style="padding:8px 10px 10px;">',
-              // Nick + avatar mini
-              '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">',
-                avHtml,
-                '<span style="font-size:.83rem;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;">'+nick+'</span>',
-              '</div>',
-              // Stats
-              '<div style="display:flex;align-items:center;gap:10px;">',
-                score > 0
-                  ? '<span style="display:flex;align-items:center;gap:3px;font-size:.8rem;color:var(--text);font-weight:600;"><span>'+emoji+'</span><span>'+score+'</span></span>'
-                  : '<span style="font-size:.8rem;color:var(--muted);">Sin reacciones</span>',
-                cmts > 0
-                  ? '<span style="display:flex;align-items:center;gap:3px;font-size:.8rem;color:var(--muted);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>'+cmts+'</span></span>'
-                  : '',
-                '<span style="margin-left:auto;color:var(--muted);font-size:1.1rem;line-height:1;" onclick="event.stopPropagation()">\u22EE</span>',
-              '</div>',
-            '</div>',
+          // Foto
+          + '<div style="width:100%;padding-top:100%;position:relative;background:var(--bg3);overflow:hidden;cursor:pointer;" onclick="openUserProfile(\''+uid+'\',\''+nick+'\')">'
+          +   '<img src="'+f.url+'" loading="lazy" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:top;" onerror="this.parentElement.style.background=\'var(--bg4)\'">'
+          +   '<div style="position:absolute;top:7px;left:8px;background:rgba(0,0,0,.55);color:#fff;font-size:.68rem;font-weight:900;font-family:\'Orbitron\',monospace;padding:2px 7px;border-radius:20px;line-height:1.5;">#'+pos+'</div>'
+          + '</div>'
 
-          '</div>'
-        ].join('');
-      }).join('');
+          // Nick
+          + '<div style="padding:7px 9px 0;display:flex;align-items:center;gap:5px;cursor:pointer;" onclick="openUserProfile(\''+uid+'\',\''+nick+'\')">'
+          +   avHtml
+          +   '<span style="font-size:.78rem;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;">'+nick+'</span>'
+          + '</div>'
+
+          // Corazón
+          + '<div style="padding:5px 9px 0;display:flex;align-items:center;gap:5px;">'
+          +   '<button id="'+itemId+'_hb" onclick="event.stopPropagation();fpToggleHeart(\''+itemId+'\',\''+uid+'\',\''+escStr(f.url)+'\')" style="background:none;border:none;cursor:pointer;font-size:1.2rem;line-height:1;padding:2px 3px;border-radius:50%;transition:transform .15s;" title="Me encanta">\u{1F90D}</button>'
+          +   '<span id="'+itemId+'_hc" style="font-size:.78rem;font-weight:700;color:var(--muted);">'+(score>0?score:'')+'</span>'
+          + '</div>'
+
+          // Comentario
+          + '<div style="padding:5px 9px 9px;">'
+          + (canCmt
+              ? '<div style="display:flex;gap:5px;align-items:center;">'
+                + '<input id="'+itemId+'_ci" type="text" maxlength="200" placeholder="Comentar..." style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:5px 11px;font-size:.73rem;color:var(--text);outline:none;font-family:\'Exo 2\',sans-serif;" onkeydown="if(event.key===\'Enter\'){event.preventDefault();fpSendComment(\''+itemId+'\',\''+uid+'\',\''+escStr(f.url)+'\')}">'
+                + '<button onclick="event.stopPropagation();fpSendComment(\''+itemId+'\',\''+uid+'\',\''+escStr(f.url)+'\')" style="flex-shrink:0;background:var(--accent);border:none;border-radius:50%;width:27px;height:27px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.8rem;" title="Enviar">\u27a4</button>'
+                + '</div>'
+                + '<div id="'+itemId+'_cl" style="margin-top:4px;font-size:.72rem;color:var(--muted);max-height:58px;overflow-y:auto;"></div>'
+              : '<div style="font-size:.7rem;color:var(--muted);text-align:center;padding:2px 0;">\ud83d\udcac Solo amigos pueden comentar</div>'
+            )
+          + '</div>'
+
+          + '</div>'
+        );
+      });
+
+      grid.innerHTML = htmlParts.join('');
+
+      // Restaurar corazones desde localStorage
+      allItems.forEach(function(f, idx){
+        var itemId = 'fp_' + idx + '_' + (f.ownerUid||'').slice(0,6);
+        var key = 'fp_heart_' + (f.ownerUid||'') + '_' + encodeURIComponent(f.url).slice(0,40);
+        var liked = localStorage.getItem(key) === '1';
+        var hb = document.getElementById(itemId+'_hb');
+        if(hb && liked) hb.textContent = '\u2764\uFE0F';
+      });
 
     } catch(e){
       var msg = e.message||String(e);
-      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px 16px;color:var(--muted);font-size:.85rem;">⚠️ Error al cargar fotos.<br><small>'+msg+'</small><br><br><button onclick="initFotosPopularesPage()" style="margin-top:8px;padding:8px 18px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;">↻ Reintentar</button></div>';
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px 16px;color:var(--muted);font-size:.85rem;">\u26a0\ufe0f Error al cargar fotos.<br><small>'+msg+'</small><br><br><button onclick="initFotosPopularesPage()" style="margin-top:8px;padding:8px 18px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;">\u21bb Reintentar</button></div>';
       if(errEl){ errEl.textContent='Error al cargar: '+msg; errEl.style.display='block'; }
       console.error('initFotosPopularesPage error:', e);
     }
+  };
+
+  // ── Corazón fotos populares ──────────────────────────────────────────
+  window.fpToggleHeart = async function(itemId, ownerUid, photoUrl){
+    if(!window.CU || !window.CU.id){ toast('Iniciá sesión para reaccionar','err'); return; }
+    var hb  = document.getElementById(itemId+'_hb');
+    var hc  = document.getElementById(itemId+'_hc');
+    if(!hb) return;
+    var key   = 'fp_heart_' + ownerUid + '_' + encodeURIComponent(photoUrl).slice(0,40);
+    var liked = localStorage.getItem(key) === '1';
+    if(liked){
+      localStorage.removeItem(key);
+      hb.textContent = '\u{1F90D}';
+      var cur = parseInt(hc.textContent)||0;
+      hc.textContent = cur > 1 ? cur-1 : '';
+    } else {
+      localStorage.setItem(key,'1');
+      hb.textContent = '\u2764\uFE0F';
+      hb.style.transform = 'scale(1.4)';
+      setTimeout(function(){ if(hb) hb.style.transform='scale(1)'; },200);
+      var cur2 = parseInt(hc.textContent)||0;
+      hc.textContent = cur2+1;
+      try {
+        if(window.db && window.setDoc && window.doc){
+          await window.setDoc(
+            window.doc(window.db,'fpHearts', window.CU.id+'__'+ownerUid+'__'+encodeURIComponent(photoUrl).slice(0,40)),
+            { fromUid:window.CU.id, fromNick:window.CU.nick||'', toUid:ownerUid, photoUrl:photoUrl, time:Date.now() },
+            { merge:true }
+          );
+        }
+      } catch(e){ console.warn('fpHeart Firestore:', e); }
+    }
+  };
+
+  // ── Comentario fotos populares ───────────────────────────────────────
+  window.fpSendComment = async function(itemId, ownerUid, photoUrl){
+    var inp = document.getElementById(itemId+'_ci');
+    var cl  = document.getElementById(itemId+'_cl');
+    if(!inp) return;
+    var txt = inp.value.trim();
+    if(!txt) return;
+    if(!window.CU || !window.CU.id){ toast('Iniciá sesión para comentar','err'); return; }
+    var myFriends = (window.CU && window.CU.friends) ? window.CU.friends : [];
+    var isMe = ownerUid === window.CU.id;
+    if(!isMe && myFriends.indexOf(ownerUid) === -1){
+      toast('Solo podés comentar en fotos de tus amigos','err'); return;
+    }
+    inp.value = '';
+    inp.disabled = true;
+    var nick = window.CU.nick || 'Vos';
+    if(cl){
+      var row = document.createElement('div');
+      row.style.cssText = 'padding:2px 0;border-bottom:1px solid var(--border);';
+      row.innerHTML = '<strong style="color:var(--accent);font-size:.71rem;">'+nick+':</strong> <span style="color:var(--text);font-size:.71rem;">'+txt+'</span>';
+      cl.appendChild(row);
+      cl.scrollTop = cl.scrollHeight;
+    }
+    try {
+      if(window.db && window.addDoc && window.collection){
+        await window.addDoc(window.collection(window.db,'fpComments'),{
+          fromUid:window.CU.id, fromNick:window.CU.nick||'', fromAv:window.CU.av||'',
+          toUid:ownerUid, photoUrl:photoUrl, text:txt, time:Date.now()
+        });
+      }
+    } catch(e){ console.warn('fpComment Firestore:', e); }
+    inp.disabled = false;
+    inp.focus();
   };
 
   // ══════════════════════════════════════════════════
