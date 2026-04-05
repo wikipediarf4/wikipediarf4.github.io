@@ -34266,6 +34266,7 @@ function _esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
         var p = d.data();
         if(!p.images || !p.images.length) return;
         if(p.privacy && p.privacy !== 'public') return;
+        if(p.destino === 'album') return; // excluir fotos de álbum privado
         var score = totalRxn(p.reactionCounts, p.likes);
         var emoji = topEmoji(p.reactionCounts, p.likes);
         var cmts  = Array.isArray(p.comments) ? p.comments.length : (p.commentsCount||0);
@@ -34309,10 +34310,9 @@ function _esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
       // ── 3. Ordenar: posts con más reacciones primero, luego avatares ──
       allItems.sort(function(a,b){
         if(b.score !== a.score) return b.score - a.score;
-        // Priorizar posts con imagen sobre avatares sin reacciones
-        if(a.type==='post' && b.type!=='post') return -1;
-        if(b.type==='post' && a.type!=='post') return 1;
-        return 0;
+        // Mismo score: priorizar avatar y portada sobre posts anónimos
+        var order = { avatar: 0, cover: 1, post: 2 };
+        return (order[a.type]||2) - (order[b.type]||2);
       });
 
       // Top 80, desduplicar por URL
