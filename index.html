@@ -34202,94 +34202,117 @@ function _esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
 (function(){
 
   // ══════════════════════════════════════════════════
-  // FOTOS POPULARES — perfiles ordenados por reacciones
+  // FOTOS POPULARES — fotos individuales más reaccionadas
   // ══════════════════════════════════════════════════
   window.initFotosPopularesPage = async function(){
     var grid = document.getElementById('fotosPopularesGrid');
     var errEl = document.getElementById('fotosPopularesErr');
     if(!grid) return;
-    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--muted);font-size:.9rem;">⏳ Cargando...</div>';
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--muted);font-size:.9rem;">⏳ Cargando fotos populares...</div>';
     if(errEl) errEl.style.display = 'none';
 
     // Esperar Firebase
     var retries = 0;
-    while((!window.db || !window.firebaseFirestore) && retries < 20){
-      await new Promise(function(r){ setTimeout(r,500); });
+    while((!window.db || !window.getDocs || !window.collection || !window.query) && retries < 30){
+      await new Promise(function(r){ setTimeout(r,400); });
       retries++;
     }
-    if(!window.db || !window.firebaseFirestore){
+    if(!window.db || !window.getDocs){
       grid.innerHTML = '';
       if(errEl){ errEl.textContent='Sin conexión a la base de datos.'; errEl.style.display='block'; }
       return;
     }
 
-    try {
-      var _ff = window.firebaseFirestore;
-      // Traer usuarios con foto
-      var snap = await _ff.getDocs(_ff.query(_ff.collection(window.db,'users'), _ff.limit(300)));
-      var users = snap.docs
-        .map(function(d){ return Object.assign({id:d.id}, d.data()); })
-        .filter(function(u){ return u.av && typeof u.av==='string' && u.av.startsWith('http') && !u.banned; });
+    var esc = {'<':'&lt;','>':'&gt;','"':'&quot;','&':'&amp;'};
+    function escStr(s){ return (s||'').replace(/[<>"&]/g,function(c){ return esc[c]; }); }
+    function totalReactions(reactions){
+      if(!reactions || typeof reactions !== 'object') return 0;
+      return Object.values(reactions).reduce(function(s,v){ return s + (v||0); }, 0);
+    }
+    function topReactionEmoji(reactions){
+      if(!reactions || typeof reactions !== 'object') return '❤️';
+      var entries = Object.entries(reactions).filter(function(e){ return e[1]>0; });
+      if(!entries.length) return '❤️';
+      entries.sort(function(a,b){ return b[1]-a[1]; });
+      return entries[0][0];
+    }
 
-      if(!users.length){
-        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--muted);">No hay usuarios con foto aún.</div>';
+    try {
+      // 1. Obtener todos los usuarios del album
+      var usersSnap = await window.getDocs(window.collection(window.db, 'albumPrivado'));
+      var todasFotos = [];
+
+      // 2. Por cada usuario, traer sus fotos aprobadas
+      var promises = usersSnap.docs.map(async function(userDoc){
+        var ownerUid = userDoc.id;
+        try {
+          var fotosSnap = await window.getDocs(
+            window.query(
+              window.collection(window.db, 'albumPrivado', ownerUid, 'fotos'),
+              window.limit(30)
+            )
+          );
+          fotosSnap.forEach(function(fd){
+            var d = fd.data();
+            if(d.estado === 'rechazado') return;
+            if(!d.url) return;
+            todasFotos.push(Object.assign({ _id: fd.id, _ownerUid: ownerUid }, d));
+          });
+        } catch(e){}
+      });
+      await Promise.all(promises);
+
+      if(!todasFotos.length){
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--muted);">No hay fotos aún.</div>';
         return;
       }
 
-      // Calcular total de reacciones: sumar likes de sus posts
-      var allPosts = window._posts || [];
-      var likesByUser = {};
-      allPosts.forEach(function(p){
-        if(!p.uid) return;
-        var l = Array.isArray(p.likes) ? p.likes.length : (p.likesCount || 0);
-        likesByUser[p.uid] = (likesByUser[p.uid]||0) + l;
+      // 3. Ordenar por total de reacciones desc, tomar top 60
+      todasFotos.sort(function(a,b){
+        return totalReactions(b.reactions) - totalReactions(a.reactions);
       });
+      todasFotos = todasFotos.slice(0, 60);
 
-      // Ordenar por likes descendente (caer en visitas si no hay posts)
-      users.sort(function(a,b){
-        var la = likesByUser[a.id] || a.totalLikes || a.likesCount || 0;
-        var lb = likesByUser[b.id] || b.totalLikes || b.likesCount || 0;
-        return lb - la;
-      });
+      // 4. Renderizar tarjetas igual a la imagen de referencia
+      grid.innerHTML = todasFotos.map(function(f){
+        var nick    = escStr(f.ownerNick || 'Usuario');
+        var uid     = f._ownerUid || f.ownerUid || '';
+        var total   = totalReactions(f.reactions);
+        var emoji   = topReactionEmoji(f.reactions);
+        var cmts    = f.comments || 0;
+        var online  = ''; // no tenemos online aquí fácilmente, omitir
+        // Intentar detectar online desde window._onlineUsers si existe
+        if(window._onlineUsers && window._onlineUsers[uid]) online = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#31a24c;margin-left:4px;vertical-align:middle;flex-shrink:0;"></span>';
 
-      // Tomar top 50
-      users = users.slice(0, 50);
-
-      var esc = {'<':'&lt;','>':'&gt;','"':'&quot;','&':'&amp;'};
-      function escStr(s){ return (s||'').replace(/[<>"&]/g,function(c){ return esc[c]; }); }
-
-      grid.innerHTML = users.map(function(u){
-        var nick    = escStr(u.nick || u.displayName || 'Usuario');
-        var uid     = u.id;
-        var badge   = u.verified ? ' ✅' : '';
-        var online  = u.online ? '<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#31a24c;border:2px solid var(--bg2);vertical-align:middle;margin-left:3px;"></span>' : '';
-        var likes   = likesByUser[uid] || u.totalLikes || u.likesCount || 0;
-        var cmts    = u.totalComments || u.commentsCount || 0;
-        var country = escStr(u.country || '');
-        var isMe    = window.CU && window.CU.id === uid;
-        var isFriend= !isMe && window.CU && window._friends && window._friends.some(function(f){ return f.id===uid; });
-        var btn = '';
-        if(!isMe){
-          btn = isFriend
-            ? '<button onclick="openUserProfile(\''+uid+'\',\''+nick+'\')" style="width:100%;padding:9px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;margin-bottom:6px;font-family:\'Exo 2\',sans-serif;">💬 Mensaje</button>'
-            : '<button onclick="sendFriendReq(\''+uid+'\')" style="width:100%;padding:9px;background:#1877f2;color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;margin-bottom:6px;font-family:\'Exo 2\',sans-serif;">+ Agregar</button>';
-        }
         return [
-          '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.09);transition:transform .15s,box-shadow .15s;" onmouseover="this.style.transform=\'translateY(-3px)\';this.style.boxShadow=\'0 6px 20px rgba(0,0,0,.13)\'" onmouseout="this.style.transform=\'\';this.style.boxShadow=\'0 1px 6px rgba(0,0,0,.09)\'">',
-            '<div style="width:100%;padding-top:115%;position:relative;background:var(--bg3);overflow:hidden;cursor:pointer;" onclick="openUserProfile(\''+uid+'\',\''+nick+'\')">',
-              '<img src="'+u.av+'" loading="lazy" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:top;" onerror="this.parentElement.style.background=\'var(--bg4)\'">',
+          '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08);transition:transform .15s,box-shadow .15s;cursor:pointer;" onmouseover="this.style.transform=\'translateY(-2px)\';this.style.boxShadow=\'0 6px 18px rgba(0,0,0,.13)\'" onmouseout="this.style.transform=\'\';this.style.boxShadow=\'0 1px 4px rgba(0,0,0,.08)\'" onclick="openUserProfile(\''+uid+'\',\''+nick+'\')">',
+
+            // Foto
+            '<div style="width:100%;padding-top:105%;position:relative;background:var(--bg3);overflow:hidden;">',
+              '<img src="'+f.url+'" loading="lazy" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:top;" onerror="this.parentElement.style.background=\'var(--bg4)\'">',
             '</div>',
-            '<div style="padding:10px 12px 12px;">',
-              '<div style="font-weight:800;font-size:.92rem;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+nick+badge+online+'</div>',
-              country ? '<div style="font-size:.7rem;color:var(--muted);margin-bottom:6px;">'+country+'</div>' : '<div style="margin-bottom:6px;"></div>',
-              '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">',
-                '<span style="font-size:.78rem;color:var(--text);font-weight:600;">❤️ '+likes+'</span>',
-                '<span style="font-size:.78rem;color:var(--text);font-weight:600;">💬 '+cmts+'</span>',
-                '<span style="margin-left:auto;cursor:pointer;font-size:1rem;color:var(--muted);" onclick="event.stopPropagation()">⋮</span>',
+
+            // Info inferior
+            '<div style="padding:8px 10px 10px;">',
+              // Nick + online
+              '<div style="display:flex;align-items:center;gap:4px;margin-bottom:6px;">',
+                '<span style="font-size:.85rem;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;">'+nick+'</span>',
+                online,
               '</div>',
-              btn,
-              '<button onclick="openUserProfile(\''+uid+'\',\''+nick+'\')" style="width:100%;padding:8px;background:none;color:var(--muted);border:1px solid var(--border);border-radius:8px;font-size:.8rem;cursor:pointer;font-family:\'Exo 2\',sans-serif;">Ver perfil</button>',
+              // Stats row: reacciones izq · comentarios der · menú
+              '<div style="display:flex;align-items:center;gap:10px;">',
+                '<span style="display:flex;align-items:center;gap:3px;font-size:.8rem;color:var(--text);font-weight:600;">',
+                  '<span style="font-size:.9rem;">'+emoji+'</span>',
+                  '<span>'+total+'</span>',
+                '</span>',
+                '<span style="display:flex;align-items:center;gap:3px;font-size:.8rem;color:var(--muted);font-weight:500;">',
+                  '<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+                  '<span>'+cmts+'</span>',
+                '</span>',
+                '<span style="margin-left:auto;color:var(--muted);font-size:1.1rem;line-height:1;" onclick="event.stopPropagation()">⋮</span>',
+              '</div>',
             '</div>',
+
           '</div>'
         ].join('');
       }).join('');
