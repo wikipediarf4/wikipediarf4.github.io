@@ -1030,6 +1030,7 @@ input::placeholder,textarea::placeholder{color:#5e4a7a !important}
           </div>
 
           <div id="upBio" style="font-size:.88rem;color:var(--muted);margin-top:6px;line-height:1.6;"></div>
+          <div id="upRelBadge" style="display:none;margin-top:6px;"></div>
           <div id="upMeta" style="font-size:.78rem;color:var(--muted);margin-top:4px;display:flex;gap:12px;flex-wrap:wrap;"></div>
           <div id="upLevel" style="margin-top:4px;"></div>
           <div id="upLastSeen" style="margin-top:3px;"></div>
@@ -1461,6 +1462,7 @@ input::placeholder,textarea::placeholder{color:#5e4a7a !important}
           </div>
 
           <div class="profile-bio" id="profBioEl" style="margin-top:6px;font-size:.88rem;"></div>
+          <div id="profRelBadge" style="display:none;margin-top:6px;"></div>
           <div id="profMetaRow" class="prof-meta-row" style="display:none;margin-top:6px;"></div>
           <div style="display:none;" id="profBadges"></div>
 
@@ -3250,11 +3252,21 @@ window._rechazarAlbumDesdeNotif = async function(visitorUid, ownerUid, btn) {
         </select>
       </div>
       <div class="fg"><label class="fl">💍 Situación sentimental</label>
-        <select class="fi" id="epRelStatus">
+        <select class="fi" id="epRelStatus" onchange="window._onRelStatusChange(this.value)">
           <option value="">No especificado</option>
           <option>💚 Soltero/a</option><option>💔 Separado/a</option>
           <option>📄 Divorciado/a</option><option>🖤 Viudo/a</option>
+          <option value="💑 En relación">💑 En relación</option>
         </select>
+        <div id="epPartnerBox" style="display:none;margin-top:8px;background:rgba(255,105,180,.07);border:1px solid rgba(255,105,180,.25);border-radius:8px;padding:10px 12px;">
+          <div style="font-size:.75rem;font-weight:700;color:#e91e8c;margin-bottom:6px;">💑 ¿Con quién estás en relación?</div>
+          <div id="epPartnerCurrent" style="display:none;margin-bottom:8px;"></div>
+          <div style="display:flex;gap:6px;">
+            <input id="epPartnerSearch" class="fi" placeholder="Buscar por nick..." style="flex:1;font-size:.82rem;padding:7px 10px;" oninput="window._searchPartner(this.value)">
+            <button type="button" onclick="window._clearPartner()" style="background:rgba(255,100,100,.12);border:1px solid rgba(255,100,100,.3);color:#e53935;border-radius:8px;padding:7px 12px;font-size:.78rem;cursor:pointer;white-space:nowrap;">✕ Quitar</button>
+          </div>
+          <div id="epPartnerResults" style="margin-top:4px;"></div>
+        </div>
       </div>
     </div>
     <div class="frow">
@@ -30769,6 +30781,239 @@ window.playDailymotionVideo = function(id, title) {
   window.cfStopCmts   = cfStopCmts;
 
 })();
+</script>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   SISTEMA DE RELACIÓN — MiLatido
+   Permite vincular pareja en el perfil y mostrar badge
+   ══════════════════════════════════════════════════════ */
+
+// ── Estado temporal de búsqueda de pareja ──
+window._partnerSearchTimer = null;
+window._pendingPartnerId   = null;  // id del usuario seleccionado
+window._pendingPartnerNick = null;  // nick del usuario seleccionado
+
+// ── Mostrar/ocultar el box de pareja según relStatus ──
+window._onRelStatusChange = function(val) {
+  const box = document.getElementById('epPartnerBox');
+  if (!box) return;
+  if (val === '💑 En relación') {
+    box.style.display = 'block';
+    _renderPartnerCurrent();
+  } else {
+    box.style.display = 'none';
+    window._pendingPartnerId   = null;
+    window._pendingPartnerNick = null;
+  }
+};
+
+// ── Mostrar pareja actualmente guardada ──
+function _renderPartnerCurrent() {
+  const el = document.getElementById('epPartnerCurrent');
+  if (!el) return;
+  const pid  = window._pendingPartnerId  || (window.CU && window.CU.partnerUid);
+  const pnick= window._pendingPartnerNick|| (window.CU && window.CU.partnerNick);
+  if (pid && pnick) {
+    el.style.display = 'block';
+    el.innerHTML = `<div style="display:flex;align-items:center;gap:8px;background:rgba(233,30,140,.08);border:1px solid rgba(233,30,140,.2);border-radius:8px;padding:6px 10px;">
+      <span style="font-size:1.1rem;">💑</span>
+      <span style="font-size:.82rem;font-weight:700;color:#e91e8c;">En relación con <strong>${pnick}</strong></span>
+    </div>`;
+  } else {
+    el.style.display = 'none';
+    el.innerHTML = '';
+  }
+}
+
+// ── Buscar usuarios por nick ──
+window._searchPartner = function(query) {
+  clearTimeout(window._partnerSearchTimer);
+  const resultsEl = document.getElementById('epPartnerResults');
+  if (!query || query.length < 2) { if(resultsEl) resultsEl.innerHTML=''; return; }
+  window._partnerSearchTimer = setTimeout(async () => {
+    if (!window.db || !window.collection || !window.getDocs || !window.query || !window.where) {
+      if(resultsEl) resultsEl.innerHTML='<div style="font-size:.75rem;color:var(--muted);padding:4px;">Busqueda no disponible offline</div>';
+      return;
+    }
+    try {
+      const q = window.query(
+        window.collection(window.db, 'users'),
+        window.where('nick', '>=', query),
+        window.where('nick', '<=', query + '\uf8ff')
+      );
+      const snap = await window.getDocs(q);
+      if (!resultsEl) return;
+      const users = [];
+      snap.forEach(d => {
+        const data = d.data();
+        if (window.CU && d.id === window.CU.id) return; // skip self
+        users.push({ id: d.id, nick: data.nick, av: data.av });
+      });
+      if (!users.length) { resultsEl.innerHTML='<div style="font-size:.75rem;color:var(--muted);padding:4px 0;">Sin resultados</div>'; return; }
+      resultsEl.innerHTML = users.slice(0,5).map(u => {
+        const avSrc = u.av || '';
+        const avHtml = avSrc ? `<img src="${avSrc}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;">` : `<div style="width:28px;height:28px;border-radius:50%;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:.75rem;">👤</div>`;
+        return `<div onclick="window._selectPartner('${u.id}','${u.nick.replace(/'/g,"\\'")}')" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+          ${avHtml}
+          <span style="font-size:.85rem;font-weight:700;">${u.nick}</span>
+        </div>`;
+      }).join('');
+    } catch(e) { if(resultsEl) resultsEl.innerHTML='<div style="font-size:.75rem;color:var(--red);padding:4px;">Error al buscar</div>'; }
+  }, 350);
+};
+
+// ── Seleccionar pareja ──
+window._selectPartner = function(uid, nick) {
+  window._pendingPartnerId   = uid;
+  window._pendingPartnerNick = nick;
+  const inp = document.getElementById('epPartnerSearch');
+  const res = document.getElementById('epPartnerResults');
+  if (inp) inp.value = '';
+  if (res) res.innerHTML = '';
+  _renderPartnerCurrent();
+};
+
+// ── Quitar pareja ──
+window._clearPartner = function() {
+  window._pendingPartnerId   = null;
+  window._pendingPartnerNick = null;
+  if (window.CU) { window.CU.partnerUid = ''; window.CU.partnerNick = ''; }
+  _renderPartnerCurrent();
+};
+
+// ── Hook: al abrir editar perfil, cargar estado de relación ──
+const _origOpenEditProfile = window.openEditProfile;
+window.openEditProfile = function() {
+  _origOpenEditProfile && _origOpenEditProfile();
+  // cargar partner
+  window._pendingPartnerId   = (window.CU && window.CU.partnerUid)  || null;
+  window._pendingPartnerNick = (window.CU && window.CU.partnerNick) || null;
+  _renderPartnerCurrent();
+  // mostrar box si ya está en relación
+  if (window.CU && window.CU.relStatus === '💑 En relación') {
+    const box = document.getElementById('epPartnerBox');
+    if (box) box.style.display = 'block';
+  }
+};
+
+// ── Hook: al guardar perfil, guardar partner ──
+const _origSaveProfile = window.saveProfile;
+window.saveProfile = async function() {
+  // guardar partner antes de llamar al original
+  if (window.CU) {
+    const relStatus = document.getElementById('epRelStatus')?.value || '';
+    if (relStatus === '💑 En relación' && window._pendingPartnerId) {
+      window.CU.partnerUid  = window._pendingPartnerId;
+      window.CU.partnerNick = window._pendingPartnerNick;
+    } else if (relStatus !== '💑 En relación') {
+      window.CU.partnerUid  = '';
+      window.CU.partnerNick = '';
+    }
+  }
+  await _origSaveProfile();
+  _renderRelBadgeOwn();
+};
+
+// ── Renderizar badge en perfil propio ──
+function _renderRelBadgeOwn() {
+  const el = document.getElementById('profRelBadge');
+  if (!el || !window.CU) return;
+  const isRel = window.CU.relStatus === '💑 En relación';
+  const pnick = window.CU.partnerNick;
+  const puid  = window.CU.partnerUid;
+  if (isRel) {
+    if (pnick && puid) {
+      el.style.display = 'block';
+      el.innerHTML = `<span onclick="openUserProfile('${puid}','${pnick.replace(/'/g,"\\'")}','${pnick.replace(/'/g,"\\'")}',null)" style="display:inline-flex;align-items:center;gap:6px;background:rgba(233,30,140,.1);border:1px solid rgba(233,30,140,.3);border-radius:100px;padding:5px 14px;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgba(233,30,140,.18)'" onmouseout="this.style.background='rgba(233,30,140,.1)'">
+        <span style="font-size:.95rem;">💑</span>
+        <span style="font-size:.8rem;font-weight:700;color:#e91e8c;">En relación con <strong>${pnick}</strong> ❤️</span>
+      </span>`;
+    } else {
+      el.style.display = 'block';
+      el.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(233,30,140,.08);border:1px solid rgba(233,30,140,.2);border-radius:100px;padding:5px 14px;">
+        <span style="font-size:.95rem;">💑</span>
+        <span style="font-size:.8rem;font-weight:700;color:#e91e8c;">En relación</span>
+      </span>`;
+    }
+  } else {
+    el.style.display = 'none';
+    el.innerHTML = '';
+  }
+}
+
+// ── Renderizar badge en perfil visitado ──
+function _renderRelBadgeUser(u) {
+  const el = document.getElementById('upRelBadge');
+  if (!el) return;
+  const isRel = u && u.relStatus === '💑 En relación';
+  const pnick = u && u.partnerNick;
+  const puid  = u && u.partnerUid;
+  if (isRel) {
+    if (pnick && puid) {
+      el.style.display = 'block';
+      el.innerHTML = `<span onclick="openUserProfile('${puid}','${pnick.replace(/'/g,"\\'")}','${pnick.replace(/'/g,"\\'")}',null)" style="display:inline-flex;align-items:center;gap:6px;background:rgba(233,30,140,.1);border:1px solid rgba(233,30,140,.3);border-radius:100px;padding:5px 14px;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgba(233,30,140,.18)'" onmouseout="this.style.background='rgba(233,30,140,.1)'">
+        <span style="font-size:.95rem;">💑</span>
+        <span style="font-size:.8rem;font-weight:700;color:#e91e8c;">En relación con <strong>${pnick}</strong> ❤️</span>
+      </span>`;
+    } else {
+      el.style.display = 'block';
+      el.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(233,30,140,.08);border:1px solid rgba(233,30,140,.2);border-radius:100px;padding:5px 14px;">
+        <span style="font-size:.95rem;">💑</span>
+        <span style="font-size:.8rem;font-weight:700;color:#e91e8c;">En relación</span>
+      </span>`;
+    }
+  } else {
+    el.style.display = 'none';
+    el.innerHTML = '';
+  }
+}
+
+// ── Hook: al renderizar perfil propio, mostrar badge ──
+const _origRenderProfile = window.renderProfile;
+window.renderProfile = function() {
+  _origRenderProfile && _origRenderProfile();
+  _renderRelBadgeOwn();
+};
+
+// ── Hook en openUserProfile: inyectar badge después de cargar el perfil ──
+// Escuchamos cambios en upBio con MutationObserver para detectar cuando se renderiza
+(function() {
+  let _relObserver = null;
+  const _origOUP = window.openUserProfile;
+  window.openUserProfile = function(uid, nick, displayNick, extra) {
+    // limpiar badge mientras carga
+    const el = document.getElementById('upRelBadge');
+    if (el) { el.style.display='none'; el.innerHTML=''; }
+    // llamar al original
+    const result = _origOUP && _origOUP(uid, nick, displayNick, extra);
+    // observar cuando se actualice upBio (señal de que el perfil terminó de cargar)
+    if (_relObserver) { _relObserver.disconnect(); _relObserver = null; }
+    const bioEl = document.getElementById('upBio');
+    if (!bioEl) return result;
+    let _fired = false;
+    _relObserver = new MutationObserver(() => {
+      if (_fired) return;
+      _fired = true;
+      _relObserver.disconnect();
+      _relObserver = null;
+      // buscar datos del usuario en window._viewingUserData o via db
+      setTimeout(async () => {
+        try {
+          if (window.db && window.doc && window.getDoc) {
+            const snap = await window.getDoc(window.doc(window.db, 'users', uid));
+            if (snap.exists()) {
+              _renderRelBadgeUser(snap.data());
+            }
+          }
+        } catch(e) {}
+      }, 200);
+    });
+    _relObserver.observe(bioEl, { childList: true, characterData: true, subtree: true });
+    return result;
+  };
+})();
+
 </script>
 </html>
 
