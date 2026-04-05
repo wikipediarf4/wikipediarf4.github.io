@@ -422,6 +422,7 @@ input::placeholder,textarea::placeholder{color:#5e4a7a !important}
       </div>
       <div class="divider"></div>
       <div class="sl-item" onclick="gp('musica')"><span class="sl-item-icon">🎵</span> Videos Musicales</div>
+      <div class="sl-item" onclick="gp('cinelatido');initCineLatido()"><span class="sl-item-icon">🎬</span> CineLatido</div>
       <div class="sl-item" onclick="gp('profile')"><span class="sl-item-icon">👤</span> Mi Perfil</div>
       <div class="sl-item" onclick="gp('amigos');renderAmigosPage()"><span class="sl-item-icon">👥</span> Amigos</div>
       <div class="sl-item" onclick="gp('match')"><span class="sl-item-icon">💘</span> Match</div>
@@ -861,6 +862,164 @@ input::placeholder,textarea::placeholder{color:#5e4a7a !important}
   </div>
   <div id="dmResults" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;"></div>
 </div>
+
+<!-- ══════════════════════════════════════════════
+     CINELATIDO 🎬 — Sección de películas estilo Netflix
+     ══════════════════════════════════════════════ -->
+<div class="page" id="page-cinelatido" style="min-height:100vh;background:#0a0a0a;padding:0;max-width:100%;">
+
+  <!-- HERO BANNER -->
+  <div id="clHero" style="position:relative;width:100%;height:420px;background:linear-gradient(180deg,rgba(0,0,0,.1) 0%,rgba(0,0,0,.8) 100%),#111;overflow:hidden;display:flex;align-items:flex-end;">
+    <div id="clHeroBg" style="position:absolute;inset:0;background-size:cover;background-position:center;transition:opacity .8s;"></div>
+    <div style="position:relative;z-index:2;padding:32px 40px 36px;max-width:600px;">
+      <div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:#e50914;letter-spacing:2px;margin-bottom:8px;">🎬 CINELATIDO</div>
+      <div id="clHeroTitle" style="font-size:2rem;font-weight:900;color:#fff;line-height:1.2;margin-bottom:10px;text-shadow:0 2px 8px rgba(0,0,0,.8);"></div>
+      <div id="clHeroDesc" style="font-size:.88rem;color:rgba(255,255,255,.8);line-height:1.5;margin-bottom:18px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;"></div>
+      <div style="display:flex;gap:10px;">
+        <button id="clHeroPlay" onclick="clPlayHero()" style="background:#e50914;border:none;border-radius:6px;padding:10px 24px;color:#fff;font-weight:800;font-family:'Exo 2',sans-serif;font-size:.95rem;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .2s;" onmouseover="this.style.background='#b20610'" onmouseout="this.style.background='#e50914'">▶ Ver ahora</button>
+        <button onclick="clInfoHero()" style="background:rgba(255,255,255,.2);border:none;border-radius:6px;padding:10px 20px;color:#fff;font-weight:700;font-family:'Exo 2',sans-serif;font-size:.9rem;cursor:pointer;backdrop-filter:blur(4px);transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.2)'">ℹ️ Más info</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOPBAR DE BÚSQUEDA + CATEGORÍAS -->
+  <div style="background:#0a0a0a;padding:20px 28px 0;sticky;top:48px;z-index:10;">
+    <!-- Búsqueda -->
+    <div style="display:flex;gap:10px;margin-bottom:16px;">
+      <div style="flex:1;display:flex;align-items:center;background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:0 14px;gap:10px;">
+        <span style="color:#888;font-size:1rem;">🔍</span>
+        <input id="clSearch" type="text" placeholder="Buscar película, serie, director..."
+          style="flex:1;background:none;border:none;outline:none;color:#fff;font-family:'Exo 2',sans-serif;font-size:.9rem;padding:11px 0;"
+          onkeydown="if(event.key==='Enter')clDoSearch()"
+          oninput="clearTimeout(window._clDebounce);window._clDebounce=setTimeout(clDoSearch,600)">
+        <button onclick="clDoSearch()" style="background:#e50914;border:none;border-radius:6px;padding:6px 14px;color:#fff;font-weight:700;font-family:'Exo 2',sans-serif;font-size:.82rem;cursor:pointer;">Buscar</button>
+      </div>
+    </div>
+    <!-- Categorías -->
+    <div id="clCats" style="display:flex;gap:8px;flex-wrap:wrap;padding-bottom:16px;border-bottom:1px solid #1a1a1a;">
+      <button onclick="clSelectCat(this,'pelicula accion')" class="cl-cat active-cat" data-q="pelicula accion">🔥 Acción</button>
+      <button onclick="clSelectCat(this,'comedia pelicula')" class="cl-cat" data-q="comedia pelicula">😂 Comedia</button>
+      <button onclick="clSelectCat(this,'drama pelicula')" class="cl-cat" data-q="drama pelicula">🎭 Drama</button>
+      <button onclick="clSelectCat(this,'terror pelicula')" class="cl-cat" data-q="terror pelicula">👻 Terror</button>
+      <button onclick="clSelectCat(this,'ciencia ficcion pelicula')" class="cl-cat" data-q="ciencia ficcion pelicula">🚀 Sci-Fi</button>
+      <button onclick="clSelectCat(this,'romance pelicula')" class="cl-cat" data-q="romance pelicula">💕 Romance</button>
+      <button onclick="clSelectCat(this,'animacion pelicula')" class="cl-cat" data-q="animacion pelicula">🎨 Animación</button>
+      <button onclick="clSelectCat(this,'thriller pelicula')" class="cl-cat" data-q="thriller pelicula">🕵️ Thriller</button>
+      <button onclick="clSelectCat(this,'fantasia pelicula')" class="cl-cat" data-q="fantasia pelicula">🧙 Fantasía</button>
+      <button onclick="clSelectCat(this,'pelicula latinoamerica')" class="cl-cat" data-q="pelicula latinoamerica">🌎 Latina</button>
+      <button onclick="clSelectCat(this,'serie netflix')" class="cl-cat" data-q="serie netflix">📺 Series</button>
+      <button onclick="clSelectCat(this,'documental')" class="cl-cat" data-q="documental">🎥 Documental</button>
+    </div>
+  </div>
+
+  <!-- PLAYER MODAL -->
+  <div id="clPlayerModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;flex-direction:column;align-items:center;justify-content:center;">
+    <div style="width:min(860px,95vw);background:#141414;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.8);">
+      <div style="position:relative;padding-bottom:56.25%;background:#000;">
+        <iframe id="clPlayerIframe" style="position:absolute;inset:0;width:100%;height:100%;border:none;" allowfullscreen allow="autoplay;encrypted-media"></iframe>
+      </div>
+      <!-- Info del modal -->
+      <div style="padding:20px 24px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+          <div style="flex:1;">
+            <div id="clModalTitle" style="font-size:1.3rem;font-weight:900;color:#fff;margin-bottom:6px;"></div>
+            <div id="clModalDesc" style="font-size:.82rem;color:#aaa;line-height:1.5;margin-bottom:14px;"></div>
+            <!-- Reacciones en tiempo real -->
+            <div style="margin-bottom:12px;">
+              <div style="font-size:.72rem;color:#666;font-weight:700;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Reacciones en tiempo real</div>
+              <div id="clReactions" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+            </div>
+          </div>
+          <button onclick="clClosePlayer()" style="background:#333;border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:1.1rem;flex-shrink:0;transition:background .2s;" onmouseover="this.style.background='#555'" onmouseout="this.style.background='#333'">✕</button>
+        </div>
+        <!-- Comentarios -->
+        <div style="border-top:1px solid #2a2a2a;padding-top:14px;">
+          <div style="font-size:.78rem;font-weight:700;color:#aaa;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">💬 Comentarios</div>
+          <div id="clComments" style="max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:12px;"></div>
+          <div style="display:flex;gap:8px;">
+            <input id="clCommentInput" type="text" placeholder="Escribí tu comentario..."
+              style="flex:1;background:#1e1e1e;border:1px solid #333;border-radius:8px;padding:9px 14px;color:#fff;font-family:'Exo 2',sans-serif;font-size:.85rem;outline:none;"
+              onkeydown="if(event.key==='Enter')clSendComment()"
+              onfocus="this.style.borderColor='#e50914'" onblur="this.style.borderColor='#333'">
+            <button onclick="clSendComment()" style="background:#e50914;border:none;border-radius:8px;padding:9px 18px;color:#fff;font-weight:700;font-family:'Exo 2',sans-serif;cursor:pointer;font-size:.85rem;">Enviar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRID DE RESULTADOS -->
+  <div style="padding:20px 28px 80px;">
+    <div id="clSectionTitle" style="font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:14px;">🔥 Acción</div>
+    <div id="clGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px;"></div>
+    <div id="clLoading" style="display:none;text-align:center;padding:40px;color:#666;">
+      <div style="font-size:2.5rem;margin-bottom:10px;animation:spin 1s linear infinite;display:inline-block;">🎬</div>
+      <div>Cargando películas...</div>
+    </div>
+  </div>
+
+</div>
+
+<style>
+/* ── CineLatido styles ── */
+@keyframes clFadeIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+.cl-cat {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 100px;
+  padding: 7px 16px;
+  color: #ccc;
+  cursor: pointer;
+  font-family: 'Exo 2', sans-serif;
+  font-size: .8rem;
+  font-weight: 700;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.cl-cat:hover { border-color: #e50914; color: #fff; }
+.cl-cat.active-cat { background: #e50914; border-color: #e50914; color: #fff; }
+.cl-card {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  background: #1a1a1a;
+  transition: transform .22s, box-shadow .22s;
+  animation: clFadeIn .35s ease both;
+}
+.cl-card:hover { transform: scale(1.06) translateY(-4px); box-shadow: 0 12px 32px rgba(229,9,20,.3); z-index: 2; }
+.cl-card-thumb { width:100%; aspect-ratio:9/13; object-fit:cover; display:block; background:#222; }
+.cl-card-overlay {
+  position:absolute; inset:0;
+  background: linear-gradient(0deg, rgba(0,0,0,.9) 0%, rgba(0,0,0,.3) 50%, transparent 100%);
+  display:flex; flex-direction:column; justify-content:flex-end; padding:10px;
+  opacity:0; transition:opacity .2s;
+}
+.cl-card:hover .cl-card-overlay { opacity:1; }
+.cl-card-title { font-size:.78rem; font-weight:800; color:#fff; line-height:1.3; margin-bottom:4px; }
+.cl-card-play { background:#e50914; border:none; border-radius:50%; width:36px; height:36px; color:#fff; font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform .15s; margin-bottom:6px; }
+.cl-card-play:hover { transform:scale(1.15); }
+.cl-rxn-btn { background:#1a1a1a; border:1px solid #333; border-radius:100px; padding:6px 14px; color:#fff; cursor:pointer; font-size:.9rem; font-family:'Exo 2',sans-serif; font-weight:700; transition:all .15s; display:flex; align-items:center; gap:5px; }
+.cl-rxn-btn:hover { border-color:#e50914; transform:scale(1.05); }
+.cl-rxn-btn.my-rxn { background:#e50914; border-color:#e50914; }
+.cl-comment { display:flex; gap:10px; align-items:flex-start; }
+.cl-comment-av { width:30px; height:30px; border-radius:50%; background:#333; flex-shrink:0; overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:.75rem; font-weight:700; color:#fff; }
+.cl-comment-av img { width:100%; height:100%; object-fit:cover; }
+.cl-comment-body { flex:1; background:#1e1e1e; border-radius:12px; padding:8px 12px; }
+.cl-comment-nick { font-size:.75rem; font-weight:800; color:#e50914; margin-bottom:2px; }
+.cl-comment-text { font-size:.82rem; color:#ddd; line-height:1.4; }
+.cl-comment-time { font-size:.65rem; color:#555; margin-top:2px; }
+#clComments::-webkit-scrollbar { width:3px; }
+#clComments::-webkit-scrollbar-thumb { background:#333; border-radius:3px; }
+@media(max-width:768px) {
+  #clHero { height:300px; }
+  #clHero .clHeroTitle { font-size:1.4rem; }
+  .cl-card-thumb { aspect-ratio:16/9; }
+  #clGrid { grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px; }
+  #page-cinelatido [style*="padding:20px 28px"] { padding:12px 12px !important; }
+  #page-cinelatido [style*="padding:20px 28px 0"] { padding:12px 12px 0 !important; }
+}
+</style>
 
 <div class="page" id="page-amigos" style="max-width:1100px;margin:0 auto;padding:0;gap:0;min-height:100vh;">
 
@@ -7506,6 +7665,7 @@ function acceptTermsAndRegister(){
 
 const ROUTES = {
   '/musica': 'musica',
+  '/cinelatido': 'cinelatido',
   '/': 'home',
   '/home': 'home',
   '/': 'home',
@@ -7532,6 +7692,7 @@ const ROUTES = {
 
 const PAGE_TO_URL = {
   'musica':        '/musica',
+  'cinelatido':    '/cinelatido',
   'home':          '/',
   'amigos':        '/amigos',
   'shop':          '/tienda',
@@ -7721,7 +7882,8 @@ window.gp = (id, pushState = true) => {
   }
   const pvBtn = document.getElementById('postVideoBtn');
   if(pvBtn) pvBtn.style.display = window.CU?.verified ? 'flex' : 'none';
-  if(id==='spots'){ loadSpots(); loadFriendSpots(); }
+  if(id==='musica') { /* musica loaded on demand */ }
+  if(id==='cinelatido') { if(typeof window.initCineLatido==='function') setTimeout(window.initCineLatido, 50); }
   if(id==='compartir-spot') {
     spLoadData().then(()=>{ spRenderHome(); });
     const isAdmin = window.CU?.nick === 'Administrador' || window.CU?.nick === 'Administrador' || window.CU?.nick === 'Administrador' || window.CU?.email === 'synxyes@gmail.com' || window.CU?.role === 'admin';
@@ -24553,12 +24715,13 @@ window._MM_SECTIONS = [
   { icon:'🔥', label:'Fotos Pop.',      action:()=>{ gp('fotospopulares'); initFotosPopularesPage?.(); closeMobileMenu(); } },
   { icon:'👁️', label:'Visitantes',     action:()=>{ gp('visitantes'); initVisitantesPage?.();   closeMobileMenu(); } },
   { icon:'🎵', label:'Videos Mus.',    action:()=>{ gp('musica');                                closeMobileMenu(); } },
+  { icon:'🎬', label:'CineLatido',     action:()=>{ gp('cinelatido'); initCineLatido?.();        closeMobileMenu(); } },
   { icon:'🔒', label:'Privacidad',     action:()=>{ gp('privacidad');                            closeMobileMenu(); } },
 ];
 
 // Auto-detecta secciones del sidebar que no estén ya en la lista
 function _mmAutoDetect(){
-  const known = new Set(['home','profile','amigos','match','fotos','reels','salas','confesionario','cerca','fotospopulares','visitantes','musica','privacidad','superadmin']);
+  const known = new Set(['home','profile','amigos','match','fotos','reels','salas','confesionario','cerca','fotospopulares','visitantes','musica','cinelatido','privacidad','superadmin']);
   document.querySelectorAll('.sl-item[onclick]').forEach(el=>{
     const m = el.getAttribute('onclick').match(/gp\('([^']+)'\)/);
     if(!m) return;
@@ -31003,15 +31166,6 @@ async function _publishRelationshipPost(partnerUid, partnerNick) {
 
     await window.addDoc(window.collection(window.db, 'posts'), postData);
     toast('💑 ¡Tu relación apareció en el feed!', 'ok');
-
-    // ── Notificar a la pareja ──
-    try {
-      if (typeof sendNotifToUser === 'function') {
-        await sendNotifToUser(partnerUid, `💑 ${myNick} te marcó como pareja en su perfil ❤️`);
-      }
-    } catch(ne) {
-      console.warn('No se pudo notificar a la pareja:', ne);
-    }
   } catch(e) {
     console.warn('No se pudo publicar el post de relación:', e);
   }
@@ -31117,6 +31271,339 @@ window.renderProfile = function() {
   };
 })();
 
+</script>
+
+<!-- ══════════════════════════════════════════════
+     CINELATIDO — JavaScript principal
+     ══════════════════════════════════════════════ -->
+<script>
+(function(){
+'use strict';
+
+/* ── Estado global CineLatido ── */
+window._cl = {
+  currentVideoId: null,   // YouTube videoId activo en el player
+  currentDocId:   null,   // Firestore docId de la película activa
+  heroPeliculas:  [],     // array de resultados para el hero
+  heroIdx:        0,
+  heroTimer:      null,
+  rxnUnsub:       null,
+  cmtUnsub:       null,
+  loading:        false,
+  lastQuery:      '',
+};
+
+/* ── YOUTUBE DATA API (no-key iframe search via oEmbed proxy) ──
+   Usamos la API de búsqueda pública de invidious / piped como fallback
+   para obtener resultados sin API key. ── */
+const CL_INVIDIOUS = 'https://iv.ggtyler.dev'; // instancia pública
+
+async function clFetch(url){
+  const r = await fetch(url);
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  return r.json();
+}
+
+async function clSearch(query, max=18){
+  const url = `${CL_INVIDIOUS}/api/v1/search?q=${encodeURIComponent(query)}&type=video&page=1`;
+  const data = await clFetch(url);
+  return (data || []).slice(0, max).filter(v=>v.videoId && v.title);
+}
+
+/* ── Thumbnail YouTube ── */
+function clThumb(videoId){ return `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`; }
+function clEmbed(videoId){ return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`; }
+
+/* ── Formatear duración (segundos → mm:ss) ── */
+function clDuration(s){
+  if(!s) return '';
+  const m = Math.floor(s/60), ss = s%60;
+  return `${m}:${ss.toString().padStart(2,'0')}`;
+}
+
+/* ── Tiempo relativo ── */
+function clTimeAgo(ms){
+  const d = Date.now() - ms;
+  if(d < 60000) return 'ahora';
+  if(d < 3600000) return Math.floor(d/60000)+'m';
+  if(d < 86400000) return Math.floor(d/3600000)+'h';
+  return Math.floor(d/86400000)+'d';
+}
+
+/* ══ INIT ══ */
+window.initCineLatido = async function(){
+  if(window._cl.loading) return;
+  const grid = document.getElementById('clGrid');
+  if(!grid) return;
+  // Si ya hay contenido cargado no recargar
+  if(grid.children.length > 0) return;
+  clLoadCat('pelicula accion', '🔥 Acción');
+};
+
+/* ══ SELECCIONAR CATEGORÍA ══ */
+window.clSelectCat = function(btn, query){
+  document.querySelectorAll('.cl-cat').forEach(b=>b.classList.remove('active-cat'));
+  btn.classList.add('active-cat');
+  const label = btn.textContent.trim();
+  clLoadCat(query, label);
+};
+
+/* ══ BUSCAR ══ */
+window.clDoSearch = function(){
+  const q = document.getElementById('clSearch')?.value?.trim();
+  if(!q) return;
+  // Quitar activo de cats
+  document.querySelectorAll('.cl-cat').forEach(b=>b.classList.remove('active-cat'));
+  clLoadCat(q, '🔍 ' + q);
+};
+
+/* ══ CARGAR CATEGORÍA ══ */
+async function clLoadCat(query, label){
+  if(window._cl.loading) return;
+  window._cl.loading = true;
+  window._cl.lastQuery = query;
+
+  const grid   = document.getElementById('clGrid');
+  const loader = document.getElementById('clLoading');
+  const secTitle = document.getElementById('clSectionTitle');
+
+  if(secTitle) secTitle.textContent = label || query;
+  if(grid)   grid.innerHTML = '';
+  if(loader) loader.style.display = 'block';
+
+  try {
+    const results = await clSearch(query, 20);
+    if(loader) loader.style.display = 'none';
+    window._cl.loading = false;
+
+    if(!results.length){
+      if(grid) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#555;font-size:.9rem;">Sin resultados 🎬</div>';
+      return;
+    }
+
+    // Actualizar hero con primeros 5
+    window._cl.heroPeliculas = results.slice(0, 5);
+    window._cl.heroIdx = 0;
+    clUpdateHero();
+    clearInterval(window._cl.heroTimer);
+    window._cl.heroTimer = setInterval(()=>{
+      window._cl.heroIdx = (window._cl.heroIdx + 1) % window._cl.heroPeliculas.length;
+      clUpdateHero();
+    }, 6000);
+
+    // Render tarjetas
+    results.forEach((v, i) => {
+      const card = document.createElement('div');
+      card.className = 'cl-card';
+      card.style.animationDelay = (i*0.04)+'s';
+      card.innerHTML = `
+        <img class="cl-card-thumb" src="${clThumb(v.videoId)}" loading="lazy"
+          onerror="this.src='https://i.ytimg.com/vi/${v.videoId}/hqdefault.jpg'">
+        <div class="cl-card-overlay">
+          <button class="cl-card-play" onclick="event.stopPropagation();clOpenPlayer('${v.videoId}','${esc4attr(v.title)}','${esc4attr(v.description||'')}')">▶</button>
+          <div class="cl-card-title">${escHtml(v.title)}</div>
+          ${v.lengthSeconds ? `<div style="font-size:.65rem;color:#aaa;">${clDuration(v.lengthSeconds)}</div>` : ''}
+        </div>
+      `;
+      card.onclick = () => clOpenPlayer(v.videoId, v.title, v.description||'');
+      if(grid) grid.appendChild(card);
+    });
+
+  } catch(e){
+    console.warn('[CineLatido] Error cargando:', e);
+    if(loader) loader.style.display = 'none';
+    window._cl.loading = false;
+    if(grid) grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:#e50914;font-size:.88rem;">⚠️ Error al cargar. Revisá tu conexión e intentá de nuevo.</div>`;
+  }
+}
+
+function esc4attr(s){ return (s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;').slice(0,120); }
+function escHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ══ HERO ══ */
+function clUpdateHero(){
+  const v = window._cl.heroPeliculas[window._cl.heroIdx];
+  if(!v) return;
+  const bg    = document.getElementById('clHeroBg');
+  const title = document.getElementById('clHeroTitle');
+  const desc  = document.getElementById('clHeroDesc');
+  if(bg)    bg.style.backgroundImage = `url(https://i.ytimg.com/vi/${v.videoId}/maxresdefault.jpg)`;
+  if(title) title.textContent = v.title;
+  if(desc)  desc.textContent  = v.description || '';
+  window._cl._heroVideoId = v.videoId;
+  window._cl._heroTitle   = v.title;
+  window._cl._heroDesc    = v.description||'';
+}
+
+window.clPlayHero = function(){
+  if(window._cl._heroVideoId)
+    clOpenPlayer(window._cl._heroVideoId, window._cl._heroTitle, window._cl._heroDesc);
+};
+window.clInfoHero = window.clPlayHero;
+
+/* ══ ABRIR PLAYER ══ */
+window.clOpenPlayer = function(videoId, title, desc){
+  const modal   = document.getElementById('clPlayerModal');
+  const iframe  = document.getElementById('clPlayerIframe');
+  const mtitle  = document.getElementById('clModalTitle');
+  const mdesc   = document.getElementById('clModalDesc');
+  if(!modal || !iframe) return;
+
+  // Detach previous listeners
+  if(window._cl.rxnUnsub){ window._cl.rxnUnsub(); window._cl.rxnUnsub = null; }
+  if(window._cl.cmtUnsub){ window._cl.cmtUnsub(); window._cl.cmtUnsub = null; }
+
+  window._cl.currentVideoId = videoId;
+  window._cl.currentDocId   = 'cl_' + videoId;
+
+  iframe.src = clEmbed(videoId);
+  if(mtitle) mtitle.textContent = title || '';
+  if(mdesc)  mdesc.textContent  = desc  || '';
+
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+
+  // Cargar reacciones y comentarios de Firebase
+  clListenRxns(window._cl.currentDocId);
+  clListenComments(window._cl.currentDocId);
+};
+
+window.clClosePlayer = function(){
+  const modal  = document.getElementById('clPlayerModal');
+  const iframe = document.getElementById('clPlayerIframe');
+  if(iframe) iframe.src = '';
+  if(modal)  modal.style.display = 'none';
+  document.body.style.overflow = '';
+  if(window._cl.rxnUnsub){ window._cl.rxnUnsub(); window._cl.rxnUnsub = null; }
+  if(window._cl.cmtUnsub){ window._cl.cmtUnsub(); window._cl.cmtUnsub = null; }
+};
+
+// Cerrar con Escape
+document.addEventListener('keydown', e=>{
+  if(e.key === 'Escape') window.clClosePlayer();
+});
+
+// Cerrar clickeando fondo del modal
+document.addEventListener('click', function(e){
+  if(e.target && e.target.id === 'clPlayerModal') window.clClosePlayer();
+});
+
+/* ══ REACCIONES EN TIEMPO REAL (Firebase) ══ */
+const CL_EMOJIS = ['❤️','😂','😱','🔥','👏','😢','🤩','💯'];
+
+function clListenRxns(docId){
+  const el = document.getElementById('clReactions');
+  if(!el) return;
+
+  // Render botones de reacción
+  function renderRxns(data){
+    const myUid = window.CU?.id || null;
+    el.innerHTML = CL_EMOJIS.map(emoji => {
+      const count = (data?.rxns?.[emoji] || []).length;
+      const myRxn = myUid && (data?.rxns?.[emoji] || []).includes(myUid);
+      return `<button class="cl-rxn-btn${myRxn?' my-rxn':''}" onclick="clToggleRxn('${emoji}')" title="${emoji}">
+        ${emoji} <span style="font-size:.78rem;color:${myRxn?'#fff':'#aaa'};">${count||''}</span>
+      </button>`;
+    }).join('');
+  }
+
+  renderRxns({}); // skeleton
+
+  if(!window.db || !window.doc || !window.onSnapshot) return;
+
+  const ref = window.doc(window.db, 'cinelatido', docId);
+  window._cl.rxnUnsub = window.onSnapshot(ref, snap => {
+    renderRxns(snap.exists() ? snap.data() : {});
+  });
+}
+
+window.clToggleRxn = async function(emoji){
+  if(!window.CU){ toast('Iniciá sesión para reaccionar','err'); return; }
+  const docId = window._cl.currentDocId;
+  if(!docId) return;
+  if(!window.db || !window.doc || !window.getDoc || !window.setDoc || !window.updateDoc) return;
+
+  const ref  = window.doc(window.db, 'cinelatido', docId);
+  const snap = await window.getDoc(ref);
+  const data = snap.exists() ? snap.data() : {};
+  const rxns = data.rxns || {};
+  const arr  = rxns[emoji] || [];
+  const uid  = window.CU.id;
+
+  if(arr.includes(uid)){
+    rxns[emoji] = arr.filter(x => x !== uid);
+  } else {
+    rxns[emoji] = [...arr, uid];
+  }
+
+  await window.setDoc(ref, { rxns, videoId: window._cl.currentVideoId }, { merge: true });
+};
+
+/* ══ COMENTARIOS EN TIEMPO REAL (Firebase) ══ */
+function clListenComments(docId){
+  const el = document.getElementById('clComments');
+  if(!el) return;
+  el.innerHTML = '';
+
+  if(!window.db || !window.collection || !window.query || !window.orderBy || !window.limit || !window.onSnapshot) return;
+
+  const ref = window.collection(window.db, 'cinelatido', docId, 'comments');
+  const q   = window.query(ref, window.orderBy('time','asc'), window.limit(50));
+
+  window._cl.cmtUnsub = window.onSnapshot(q, snap => {
+    el.innerHTML = '';
+    if(snap.empty){
+      el.innerHTML = '<div style="text-align:center;color:#444;font-size:.8rem;padding:16px;">Sé el primero en comentar 🎬</div>';
+      return;
+    }
+    snap.forEach(d => {
+      const c  = d.data();
+      const av = c.av
+        ? `<img src="${c.av}" alt="">`
+        : `<div style="width:100%;height:100%;background:#e50914;display:flex;align-items:center;justify-content:center;">${(c.nick||'?')[0].toUpperCase()}</div>`;
+      const div = document.createElement('div');
+      div.className = 'cl-comment';
+      div.innerHTML = `
+        <div class="cl-comment-av">${av}</div>
+        <div class="cl-comment-body">
+          <div class="cl-comment-nick">${escHtml(c.nick||'Usuario')}</div>
+          <div class="cl-comment-text">${escHtml(c.text||'')}</div>
+          <div class="cl-comment-time">${clTimeAgo(c.time||0)}</div>
+        </div>`;
+      el.appendChild(div);
+    });
+    el.scrollTop = el.scrollHeight;
+  });
+}
+
+window.clSendComment = async function(){
+  if(!window.CU){ toast('Iniciá sesión para comentar','err'); return; }
+  const inp   = document.getElementById('clCommentInput');
+  const text  = inp?.value?.trim();
+  if(!text) return;
+  const docId = window._cl.currentDocId;
+  if(!docId) return;
+  if(!window.db || !window.collection || !window.addDoc) return;
+
+  inp.value = '';
+  try {
+    await window.addDoc(
+      window.collection(window.db, 'cinelatido', docId, 'comments'),
+      {
+        text,
+        uid:  window.CU.id,
+        nick: window.CU.nick || 'Usuario',
+        av:   window.CU.av   || '',
+        time: Date.now(),
+      }
+    );
+  } catch(e){
+    console.warn('[CineLatido] Error comentando:', e);
+    toast('Error al enviar comentario','err');
+  }
+};
+
+})();
 </script>
 </html>
 
