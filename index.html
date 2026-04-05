@@ -22854,6 +22854,8 @@ function openChatWith(uid, nick){
   if(inputRow) inputRow.style.display='flex';
 
   if(_unsubChat){ _unsubChat(); _unsubChat=null; }
+  // Limpiar cache de reacciones al cambiar de chat
+  window._chatRxnCache = {};
   if(_presenceUnsub){ _presenceUnsub(); _presenceUnsub=null; }
   // Listen to the chat user's presence
   if(uid){
@@ -22958,7 +22960,12 @@ function openChatWith(uid, nick){
               if(m.time) return `<span class="cm-read-tick sent"><span class="cm-tick-icon">✓</span><span class="cm-tick-label">No leído</span></span>`;
               return `<span class="cm-read-tick sending"><span class="cm-tick-icon">○</span><span class="cm-tick-label">Enviando...</span></span>`;
             })() : '';
-            const msgRxns = m.reactions || {};
+            // Usar cache local si existe (para mantener optimistic update hasta que Firebase confirme)
+            const _serverRxns = m.reactions || {};
+            if(!window._chatRxnCache) window._chatRxnCache = {};
+            // Sincronizar cache con datos del servidor (el servidor es fuente de verdad)
+            window._chatRxnCache[m.id] = Object.assign({}, _serverRxns);
+            const msgRxns = _serverRxns;
             const rxnEntries = Object.entries(msgRxns).filter(([,v])=>v);
             const msgRxnTotal = rxnEntries.length;
             const msgTopRxns = rxnEntries.slice(0,3).map(([,v])=>v).join('');
@@ -23267,25 +23274,96 @@ function keepMsgRxnBar(msgId){
 }
 async function reactChatMsg(chatId, msgId, emoji){
   if(!window.CU){ toast('Iniciá sesión','err'); return; }
+
+  // ── OPTIMISTIC UPDATE: actualizar el DOM antes de esperar Firebase ──
+  const uid = window.CU.id;
+  const CHAT_RXNS_OPT = window.CU?.verified
+    ? ['👍','❤️','😂','😮','😢','🔥','🎣','🏅','🎖️','👑']
+    : ['👍','❤️','😂','😮','😢','🔥'];
+
+  // Encontrar la fila del mensaje y leer las reacciones actuales del DOM
+  // Las guardamos en un cache local por msgId para poder operar sin ir a Firestore
+  if(!window._chatRxnCache) window._chatRxnCache = {};
+  if(!window._chatRxnCache[msgId]) window._chatRxnCache[msgId] = {};
+  const localRxns = window._chatRxnCache[msgId];
+
+  const prev = localRxns[uid] || '';
+  if(!emoji || prev === emoji){
+    delete localRxns[uid];   // toggle off
+  } else {
+    localRxns[uid] = emoji;  // toggle on / cambiar
+  }
+
+  // Recalcular badge visual
+  function _updateRxnBadge(rxns){
+    // Badge total (cm-rxns div)
+    const entries = Object.entries(rxns).filter(([,v])=>v);
+    const total = entries.length;
+    const topEmojis = entries.slice(0,3).map(([,v])=>v).join('');
+    // Buscar el cm-body que contiene este mensaje
+    const bar = document.getElementById('mrxnbar_'+msgId);
+    if(!bar) return;
+    const body = bar.closest('.cm-body');
+    if(!body) return;
+    // Actualizar o crear el badge
+    let badge = body.querySelector('.cm-rxns');
+    if(total > 0){
+      if(!badge){
+        badge = document.createElement('div');
+        badge.className = 'cm-rxns';
+        // Insertarlo después del div con onmouseenter (contenido del burbuja)
+        const bubbleDiv = bar.nextElementSibling;
+        if(bubbleDiv) bubbleDiv.insertAdjacentElement('afterend', badge);
+        else body.appendChild(badge);
+      }
+      badge.innerHTML = `<span class="cm-rxn-badge" onclick="reactChatMsg('${chatId}','${msgId}','')">${topEmojis} ${total}</span>`;
+    } else if(badge){
+      badge.remove();
+    }
+    // Actualizar highlight del botón activo en la barra de emojis
+    bar.querySelectorAll('button').forEach(btn=>{
+      const em = btn.textContent.trim();
+      btn.style.background = (rxns[uid] === em) ? 'rgba(0,198,255,.2)' : 'none';
+    });
+  }
+
+  _updateRxnBadge(localRxns);
+  // Ocultar barra de emojis
+  const bar = document.getElementById('mrxnbar_'+msgId);
+  if(bar) bar.style.display = 'none';
+  // ──────────────────────────────────────────────────────────────────────
+
   const msgRef = doc(db,'chats',chatId,'messages',msgId);
   try {
     const snap = await getDoc(msgRef);
     if(!snap.exists()) return;
     const data = snap.data();
-    const rxns = Object.assign({}, data.reactions||{});
-    const prev = rxns[window.CU.id]||'';
-    if(!emoji || prev===emoji){ delete rxns[window.CU.id]; }
-    else {
-      rxns[window.CU.id] = emoji;
-      // ✅ Notificar al autor del mensaje si no soy yo
-      if(data.uid && data.uid !== window.CU.id){
-        await sendNotifToUser(data.uid, `💬 ${emoji} ${window.CU.nick} reaccionó a tu mensaje`);
+    // Sincronizar el cache local con los datos reales de Firestore (otros users pueden haber reaccionado)
+    const serverRxns = Object.assign({}, data.reactions||{});
+    // Aplicar nuestra acción encima de los datos del servidor
+    if(!emoji || prev === emoji){
+      delete serverRxns[uid];
+    } else {
+      serverRxns[uid] = emoji;
+      // Notificar al autor del mensaje si no soy yo
+      if(data.uid && data.uid !== uid){
+        sendNotifToUser(data.uid, `💬 ${emoji} ${window.CU.nick} reaccionó a tu mensaje`).catch(()=>{});
       }
     }
-    await updateDoc(msgRef, {reactions: rxns});
-    const bar = document.getElementById('mrxnbar_'+msgId);
-    if(bar) bar.style.display='none';
-  } catch(err){ console.error('reactChatMsg error',err); }
+    // Actualizar cache con datos reales + nuestra acción
+    window._chatRxnCache[msgId] = Object.assign({}, serverRxns);
+    await updateDoc(msgRef, {reactions: serverRxns});
+  } catch(err){
+    console.error('reactChatMsg error',err);
+    // Revertir el optimistic update si falló
+    if(!emoji || prev === emoji){
+      if(prev) localRxns[uid] = prev; else delete localRxns[uid];
+    } else {
+      if(prev) localRxns[uid] = prev; else delete localRxns[uid];
+    }
+    _updateRxnBadge(localRxns);
+    toast('Error al reaccionar','err');
+  }
 }
 
 let _typingTimer = null;
