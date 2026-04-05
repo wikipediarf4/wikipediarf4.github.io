@@ -32933,7 +32933,24 @@ function _doRenderSwipe(direction){
   }
   const u = _filtered[_idx];
   if(!u){
-    area.innerHTML=`<div class="mc-empty"><div class="mc-empty-icon">🎉</div><div class="mc-empty-title">¡Ya viste todos los perfiles!</div><div class="mc-empty-sub">Volvé más tarde o cambiá los filtros.</div><button onclick="window.initMatchPage()" style="margin-top:16px;padding:10px 24px;background:linear-gradient(135deg,#f33e58,#c4164b);border:none;border-radius:100px;color:#fff;font-weight:800;cursor:pointer;font-size:.85rem;">🔄 Ver de nuevo</button></div>`;
+    // Fin de perfiles: mostrar cartel amigable sin repetir los mismos
+    area.innerHTML=`
+      <div class="mc-empty" style="padding:40px 24px 32px;text-align:center;">
+        <div style="font-size:3.5rem;margin-bottom:12px;animation:heartbeat 1.6s ease-in-out infinite;display:inline-block;">💘</div>
+        <div class="mc-empty-title" style="font-size:1.15rem;margin-bottom:8px;">¡Ya viste todos los perfiles disponibles!</div>
+        <div class="mc-empty-sub" style="margin-bottom:20px;line-height:1.6;">
+          Por ahora no hay más personas que coincidan con tu perfil.<br>
+          Volvé más tarde, seguro aparecen nuevos encuentros. ✨
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;align-items:center;">
+          <button onclick="_resetMatchFilters()" style="padding:11px 28px;background:linear-gradient(135deg,#f33e58,#c4164b);border:none;border-radius:100px;color:#fff;font-weight:800;cursor:pointer;font-size:.85rem;">
+            🔍 Ampliar filtros
+          </button>
+          <button onclick="(function(){ window._matchAllUsers=null; _all=[]; _filtered=[]; _idx=0; _loadUsers(); })()" style="padding:9px 24px;background:transparent;border:1px solid rgba(255,64,129,.4);border-radius:100px;color:#f33e58;font-weight:700;cursor:pointer;font-size:.82rem;">
+            🔄 Buscar perfiles nuevos
+          </button>
+        </div>
+      </div>`;
     _setActionVis(false); return;
   }
   _setActionVis(true);
@@ -33408,8 +33425,14 @@ async function _checkMutualMatch(uid){
    AVANZAR / RETROCEDER
 ───────────────────────────────────────────── */
 function _advance(){
-  if(_idx<_filtered.length-1){ _idx++; _renderSwipeCard('next'); }
-  else { _renderSwipeCard(null); }
+  if(_idx<_filtered.length-1){
+    _idx++;
+    _renderSwipeCard('next');
+  } else {
+    // Llegamos al final: mostrar cartel de fin, no reusar perfiles
+    _idx = _filtered.length; // índice fuera de rango → disparará el cartel de fin
+    _renderSwipeCard('next');
+  }
   _updateNav();
 }
 
@@ -33417,7 +33440,14 @@ window._matchPrev = function(){
   if(_idx<=0) return; _idx--; _renderSwipeCard('prev'); _updateNav();
 };
 window._matchNext = function(){
-  if(_idx>=_filtered.length-1) return; _idx++; _renderSwipeCard('next'); _updateNav();
+  if(_idx>=_filtered.length-1){
+    // Llegamos al último: mostrar cartel de fin
+    _idx = _filtered.length;
+    _renderSwipeCard('next');
+    _updateNav();
+    return;
+  }
+  _idx++; _renderSwipeCard('next'); _updateNav();
 };
 
 function _updateNav(){
