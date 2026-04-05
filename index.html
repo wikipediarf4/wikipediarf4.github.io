@@ -18369,6 +18369,29 @@ function swAdminTab(el, tabId){
   if(tabId==='admt-ageverif') { if(typeof loadAdminAgeVerif==='function') loadAdminAgeVerif('all'); }
 }
 
+// Exponer swSuperAdminTab globalmente de forma temprana para que los botones del panel la encuentren
+// (la definición real está más abajo, pero la registramos en window aquí para evitar ReferenceError)
+window.swSuperAdminTab = function(el, tabId){
+  document.querySelectorAll('.sa-tab').forEach(t => t.classList.remove('sa-on'));
+  if(el) el.classList.add('sa-on');
+  ['sat-usuarios','sat-roles','sat-bans','sat-reportes','sat-contenido','sat-logs','sat-config','sat-broadcast','sat-ageverif']
+    .forEach(id => { const e = document.getElementById(id); if(e) e.style.display = 'none'; });
+  const tab = document.getElementById(tabId);
+  if(tab) tab.style.display = 'block';
+  if(tabId === 'sat-bans') { if(typeof saLoadBanned==='function') saLoadBanned(); }
+  if(tabId === 'sat-reportes') { if(typeof saLoadReports==='function') saLoadReports('todos'); }
+  if(tabId === 'sat-logs') { if(typeof saLoadLogs==='function') saLoadLogs(); }
+  if(tabId === 'sat-ageverif') {
+    const wrapper = document.getElementById('saAgeVerifListWrapper');
+    const sharedList = document.getElementById('adminAgeVerifList');
+    if(wrapper && sharedList && !wrapper.contains(sharedList)){ wrapper.innerHTML = ''; wrapper.appendChild(sharedList); }
+    if(typeof loadAdminAgeVerif === 'function') loadAdminAgeVerif('pending');
+    const badge = document.getElementById('saAgeVerifBadge');
+    const admBadge = document.getElementById('admAgeVerifBadge');
+    if(badge && admBadge) { badge.textContent = admBadge.textContent; badge.style.display = admBadge.style.display; }
+  }
+};
+
 async function loadAdminData(){
   if(!window.CU || (window.CU.nick !== 'Administrador' && window.CU.nick !== 'Administrador' && window.CU.nick !== 'Administrador' && window.CU.email !== 'synxyes@gmail.com' && window.CU.role !== 'admin')) return;
 
