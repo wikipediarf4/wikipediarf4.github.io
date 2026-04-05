@@ -29195,5 +29195,449 @@ function _triggerGoogleLogin() {
   }
 }
 </script>
+<!-- ══════════════════════════════════════════════════════════════
+     MILATIDO — SISTEMA DE LIVES CON AGORA
+     Pegá todo este bloque justo antes de </body> en tu index.html
+     ══════════════════════════════════════════════════════════════ -->
+
+<!-- SDK de Agora -->
+<script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
+
+<!-- ── MODAL: SALA DE LIVE (espectador) ─────────────────────────── -->
+<div id="modalLiveViewer" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.92);flex-direction:column;">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.1);">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span style="background:#ff0000;color:#fff;font-size:.7rem;font-weight:900;padding:3px 10px;border-radius:100px;animation:livePulse 1.5s ease-in-out infinite;">🔴 EN VIVO</span>
+      <span id="liveViewerTitle" style="color:#fff;font-size:.9rem;font-weight:700;"></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span id="liveViewerCount" style="color:#fff;font-size:.8rem;opacity:.7;">👁 0 viendo</span>
+      <button onclick="closeLiveViewer()" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:1rem;">✕</button>
+    </div>
+  </div>
+  <div style="display:flex;flex:1;overflow:hidden;">
+    <div style="flex:1;position:relative;background:#000;" id="liveRemoteContainer">
+      <div id="liveNoSignal" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:rgba(255,255,255,.4);">
+        <div style="font-size:2rem;">📡</div>
+        <div style="font-size:.85rem;">Esperando señal...</div>
+      </div>
+    </div>
+    <div style="width:280px;display:flex;flex-direction:column;border-left:1px solid rgba(255,255,255,.1);">
+      <div style="padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.1);">
+        <div style="font-size:.75rem;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.05em;">CHAT EN VIVO</div>
+      </div>
+      <div id="liveChatMessages" style="flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;"></div>
+      <div style="padding:10px 12px;border-top:1px solid rgba(255,255,255,.1);display:flex;gap:8px;">
+        <input id="liveChatInput" type="text" placeholder="Escribí algo..." maxlength="120"
+          style="flex:1;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:7px 12px;color:#fff;font-size:.82rem;outline:none;"
+          onkeydown="if(event.key==='Enter')sendLiveChat()">
+        <button onclick="sendLiveChat()" style="background:#ff0000;border:none;color:#fff;border-radius:50%;width:34px;height:34px;cursor:pointer;font-size:.9rem;flex-shrink:0;">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: INICIAR LIVE (streamer) ──────────────────────────── -->
+<div id="modalLiveStreamer" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.95);flex-direction:column;">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.1);">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span id="streamerBadge" style="background:#555;color:#fff;font-size:.7rem;font-weight:900;padding:3px 10px;border-radius:100px;">⏸ OFFLINE</span>
+      <span style="color:#fff;font-size:.9rem;font-weight:700;">Tu transmisión</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span id="streamerViewers" style="color:#fff;font-size:.8rem;opacity:.7;">👁 0 viendo</span>
+      <button onclick="stopLiveStream()" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:1rem;">✕</button>
+    </div>
+  </div>
+  <div style="display:flex;flex:1;overflow:hidden;">
+    <div style="flex:1;position:relative;background:#111;" id="liveLocalContainer">
+      <div id="livePreviewMsg" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:rgba(255,255,255,.5);">
+        <div style="font-size:2.5rem;">📹</div>
+        <div style="font-size:.9rem;">Configurá tu live antes de comenzar</div>
+        <div style="display:flex;flex-direction:column;gap:8px;width:280px;">
+          <input id="liveTitleInput" type="text" placeholder="Título de tu live..." maxlength="60"
+            style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:10px 14px;color:#fff;font-size:.85rem;outline:none;text-align:center;">
+          <button onclick="startLiveStream()" style="background:#ff0000;border:none;color:#fff;border-radius:8px;padding:12px;font-size:.9rem;font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;">
+            🔴 Comenzar transmisión
+          </button>
+        </div>
+      </div>
+    </div>
+    <div style="width:280px;display:flex;flex-direction:column;border-left:1px solid rgba(255,255,255,.1);">
+      <div style="padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.1);">
+        <div style="font-size:.75rem;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.05em;">CHAT EN VIVO</div>
+      </div>
+      <div id="streamerChatMessages" style="flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;"></div>
+      <div style="padding:10px 12px;border-top:1px solid rgba(255,255,255,.1);">
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          <button onclick="toggleMic()" id="btnMic" style="flex:1;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:8px;cursor:pointer;font-size:.78rem;">🎙 Mic ON</button>
+          <button onclick="toggleCam()" id="btnCam" style="flex:1;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:8px;cursor:pointer;font-size:.78rem;">📹 Cam ON</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SCRIPT PRINCIPAL ─────────────────────────────────────────── -->
+<script>
+(function(){
+'use strict';
+
+// ── CONFIG ──────────────────────────────────────────────────────
+var AGORA_APP_ID = 'e7f6e9aeecf14b2ba10e3f40be9f56e7';
+var LIVE_COLLECTION = 'milatido_lives';
+
+// ── ESTADO ──────────────────────────────────────────────────────
+var _client       = null;
+var _localTracks  = { audio: null, video: null };
+var _isStreaming  = false;
+var _micOn        = true;
+var _camOn        = true;
+var _currentLiveId = null;
+var _chatUnsub    = null;
+var _viewersUnsub = null;
+var _liveChannel  = null;
+
+// ── UTILIDADES ──────────────────────────────────────────────────
+function _cu(){ return window.CU || null; }
+function _db(){ return window.db || null; }
+function _toast(msg){ if(typeof window.showToast==='function') window.showToast(msg); else alert(msg); }
+
+function _randomChannel(){
+  return 'live_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+}
+
+// ── ABRIR PANEL STREAMER ─────────────────────────────────────────
+window.openLiveStreamer = function(){
+  var cu = _cu();
+  if(!cu){ _toast('Tenés que iniciar sesión para ir en vivo'); return; }
+  document.getElementById('modalLiveStreamer').style.display = 'flex';
+};
+
+// ── INICIAR TRANSMISIÓN ──────────────────────────────────────────
+window.startLiveStream = async function(){
+  var cu = _cu();
+  if(!cu || _isStreaming) return;
+  var titulo = (document.getElementById('liveTitleInput').value || '').trim();
+  if(!titulo){ _toast('Poné un título para tu live'); return; }
+
+  try {
+    _client = AgoraRTC.createClient({ mode:'live', codec:'vp8' });
+    await _client.setClientRole('host');
+    _liveChannel = _randomChannel();
+    await _client.join(AGORA_APP_ID, _liveChannel, null, cu.id);
+
+    _localTracks.audio = await AgoraRTC.createMicrophoneAudioTrack();
+    _localTracks.video = await AgoraRTC.createCameraVideoTrack();
+    await _client.publish([_localTracks.audio, _localTracks.video]);
+
+    var container = document.getElementById('liveLocalContainer');
+    document.getElementById('livePreviewMsg').style.display = 'none';
+    _localTracks.video.play(container);
+
+    _isStreaming = true;
+    document.getElementById('streamerBadge').style.background = '#ff0000';
+    document.getElementById('streamerBadge').textContent = '🔴 EN VIVO';
+
+    // Guardar live en Firestore
+    if(_db()){
+      var liveRef = await window.addDoc(window.collection(_db(), LIVE_COLLECTION), {
+        uid: cu.id,
+        nick: cu.nick || 'Anónimo',
+        av: cu.av || '',
+        titulo: titulo,
+        channel: _liveChannel,
+        viewers: 0,
+        active: true,
+        createdAt: window.serverTimestamp ? window.serverTimestamp() : new Date()
+      });
+      _currentLiveId = liveRef.id;
+      _listenChat('streamerChatMessages', _currentLiveId);
+      _listenViewers();
+    }
+
+    // Notificar amigos
+    _notifyFriends(cu, titulo);
+    _toast('¡Estás en vivo! Tus amigos fueron notificados 🔴');
+
+  } catch(e){
+    console.error('Error iniciando live:', e);
+    _toast('No se pudo iniciar el live. Revisá permisos de cámara y micrófono.');
+  }
+};
+
+// ── DETENER TRANSMISIÓN ──────────────────────────────────────────
+window.stopLiveStream = async function(){
+  if(_localTracks.audio){ _localTracks.audio.stop(); _localTracks.audio.close(); }
+  if(_localTracks.video){ _localTracks.video.stop(); _localTracks.video.close(); }
+  if(_client){ await _client.leave(); _client = null; }
+  if(_chatUnsub){ _chatUnsub(); _chatUnsub = null; }
+  if(_viewersUnsub){ _viewersUnsub(); _viewersUnsub = null; }
+
+  if(_db() && _currentLiveId){
+    window.updateDoc(window.doc(_db(), LIVE_COLLECTION, _currentLiveId), { active: false })
+      .catch(function(){});
+  }
+
+  _isStreaming = false;
+  _currentLiveId = null;
+  document.getElementById('liveLocalContainer').innerHTML = '';
+  document.getElementById('livePreviewMsg').style.display = 'flex';
+  document.getElementById('streamerBadge').style.background = '#555';
+  document.getElementById('streamerBadge').textContent = '⏸ OFFLINE';
+  document.getElementById('modalLiveStreamer').style.display = 'none';
+  _toast('Transmisión finalizada');
+};
+
+// ── UNIRSE COMO ESPECTADOR ───────────────────────────────────────
+window.joinLiveAsViewer = async function(liveId, titulo, channel){
+  try {
+    var cu = _cu();
+    _client = AgoraRTC.createClient({ mode:'live', codec:'vp8' });
+    await _client.setClientRole('audience');
+    await _client.join(AGORA_APP_ID, channel, null, cu ? cu.id : null);
+
+    _client.on('user-published', async function(user, mediaType){
+      await _client.subscribe(user, mediaType);
+      if(mediaType === 'video'){
+        var container = document.getElementById('liveRemoteContainer');
+        document.getElementById('liveNoSignal').style.display = 'none';
+        var playerDiv = document.createElement('div');
+        playerDiv.id = 'remote-player-' + user.uid;
+        playerDiv.style.cssText = 'width:100%;height:100%;';
+        container.appendChild(playerDiv);
+        user.videoTrack.play(playerDiv);
+      }
+      if(mediaType === 'audio'){ user.audioTrack.play(); }
+    });
+
+    _client.on('user-unpublished', function(user){
+      var el = document.getElementById('remote-player-' + user.uid);
+      if(el) el.remove();
+      document.getElementById('liveNoSignal').style.display = 'flex';
+    });
+
+    _currentLiveId = liveId;
+    document.getElementById('liveViewerTitle').textContent = titulo;
+    document.getElementById('modalLiveViewer').style.display = 'flex';
+    _listenChat('liveChatMessages', liveId);
+
+    // Sumar viewer
+    if(_db()){
+      window.updateDoc(window.doc(_db(), LIVE_COLLECTION, liveId), {
+        viewers: window.increment ? window.increment(1) : 1
+      }).catch(function(){});
+    }
+
+  } catch(e){
+    console.error('Error uniéndose al live:', e);
+    _toast('No se pudo conectar al live');
+  }
+};
+
+// ── CERRAR VISOR ────────────────────────────────────────────────
+window.closeLiveViewer = async function(){
+  if(_client){ await _client.leave(); _client = null; }
+  if(_chatUnsub){ _chatUnsub(); _chatUnsub = null; }
+  if(_db() && _currentLiveId){
+    window.updateDoc(window.doc(_db(), LIVE_COLLECTION, _currentLiveId), {
+      viewers: window.increment ? window.increment(-1) : 0
+    }).catch(function(){});
+  }
+  document.getElementById('liveRemoteContainer').innerHTML =
+    '<div id="liveNoSignal" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:rgba(255,255,255,.4);"><div style="font-size:2rem;">📡</div><div style="font-size:.85rem;">Esperando señal...</div></div>';
+  document.getElementById('liveChatMessages').innerHTML = '';
+  document.getElementById('modalLiveViewer').style.display = 'none';
+  _currentLiveId = null;
+};
+
+// ── CHAT EN VIVO ────────────────────────────────────────────────
+window.sendLiveChat = function(){
+  var isStreamer = document.getElementById('modalLiveStreamer').style.display !== 'none';
+  var inputId = isStreamer ? 'streamerChatMessages' : 'liveChatInput';
+  var input = document.getElementById(isStreamer ? 'liveTitleInput' : 'liveChatInput');
+  var realInput = document.getElementById('liveChatInput');
+  var msgInput = isStreamer ? document.getElementById('liveTitleInput') : realInput;
+
+  // Usar siempre liveChatInput para espectador
+  var inp = document.getElementById('liveChatInput');
+  if(!inp || !_currentLiveId || !_db()) return;
+  var msg = inp.value.trim();
+  if(!msg) return;
+  var cu = _cu();
+  window.addDoc(window.collection(_db(), LIVE_COLLECTION, _currentLiveId, 'chat'), {
+    uid: cu ? cu.id : 'anon',
+    nick: cu ? (cu.nick || 'Anónimo') : 'Anónimo',
+    msg: msg,
+    ts: new Date()
+  }).catch(function(){});
+  inp.value = '';
+};
+
+function _listenChat(containerId, liveId){
+  if(!_db()) return;
+  var chatCol = window.collection(_db(), LIVE_COLLECTION, liveId, 'chat');
+  var q = window.query(chatCol, window.orderBy('ts','asc'), window.limit(100));
+  _chatUnsub = window.onSnapshot(q, function(snap){
+    var container = document.getElementById(containerId);
+    if(!container) return;
+    snap.docChanges().forEach(function(change){
+      if(change.type === 'added'){
+        var d = change.doc.data();
+        var el = document.createElement('div');
+        el.style.cssText = 'font-size:.8rem;line-height:1.4;';
+        el.innerHTML = '<span style="color:#ff6b6b;font-weight:700;">' +
+          (d.nick||'?').replace(/</g,'&lt;').slice(0,20) +
+          ':</span> <span style="color:rgba(255,255,255,.85);">' +
+          (d.msg||'').replace(/</g,'&lt;').slice(0,120) + '</span>';
+        container.appendChild(el);
+        container.scrollTop = container.scrollHeight;
+      }
+    });
+  });
+}
+
+function _listenViewers(){
+  if(!_db() || !_currentLiveId) return;
+  _viewersUnsub = window.onSnapshot(
+    window.doc(_db(), LIVE_COLLECTION, _currentLiveId),
+    function(snap){
+      if(!snap.exists()) return;
+      var v = snap.data().viewers || 0;
+      var el = document.getElementById('streamerViewers');
+      if(el) el.textContent = '👁 ' + v + ' viendo';
+    }
+  );
+}
+
+// ── MIC / CAM TOGGLE ────────────────────────────────────────────
+window.toggleMic = function(){
+  if(!_localTracks.audio) return;
+  _micOn = !_micOn;
+  _localTracks.audio.setEnabled(_micOn);
+  document.getElementById('btnMic').textContent = _micOn ? '🎙 Mic ON' : '🔇 Mic OFF';
+  document.getElementById('btnMic').style.opacity = _micOn ? '1' : '.5';
+};
+
+window.toggleCam = function(){
+  if(!_localTracks.video) return;
+  _camOn = !_camOn;
+  _localTracks.video.setEnabled(_camOn);
+  document.getElementById('btnCam').textContent = _camOn ? '📹 Cam ON' : '🚫 Cam OFF';
+  document.getElementById('btnCam').style.opacity = _camOn ? '1' : '.5';
+};
+
+// ── NOTIFICAR AMIGOS ────────────────────────────────────────────
+function _notifyFriends(cu, titulo){
+  if(!_db() || !cu || !cu.friends || !cu.friends.length) return;
+  var batch = window.writeBatch ? window.writeBatch(_db()) : null;
+  if(!batch) return;
+  cu.friends.slice(0,30).forEach(function(fid){
+    var ref = window.doc(window.collection(_db(),'notificaciones'));
+    batch.set(ref, {
+      to: fid,
+      from: cu.id,
+      fromNick: cu.nick || 'Alguien',
+      tipo: 'live',
+      msg: (cu.nick || 'Alguien') + ' está en vivo: ' + titulo,
+      liveId: _currentLiveId,
+      leida: false,
+      ts: new Date()
+    });
+  });
+  batch.commit().catch(function(){});
+}
+
+// ── WIDGET EN EL FEED: LIVES ACTIVOS ────────────────────────────
+window.loadActiveLives = function(){
+  if(!_db()) return;
+  var q = window.query(
+    window.collection(_db(), LIVE_COLLECTION),
+    window.where('active','==',true),
+    window.orderBy('createdAt','desc'),
+    window.limit(10)
+  );
+  window.onSnapshot(q, function(snap){
+    var lives = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+    _renderLiveWidget(lives);
+  });
+};
+
+function _renderLiveWidget(lives){
+  var el = document.getElementById('liveWidget');
+  if(!el) return;
+  if(!lives.length){ el.style.display = 'none'; return; }
+  var live = lives[0];
+  el.style.display = 'block';
+  var titleEl = document.getElementById('liveWidgetTitle');
+  if(titleEl) titleEl.textContent = (live.nick||'Alguien') + ': ' + (live.titulo||'Live');
+  var iframe = document.getElementById('liveIframe');
+  if(iframe) iframe.src = '';
+  el.onclick = function(){
+    joinLiveAsViewer(live.id, live.titulo, live.channel);
+  };
+  el.style.cursor = 'pointer';
+}
+
+// ── BOTÓN "IR EN VIVO" EN EL PERFIL ─────────────────────────────
+window.injectGoLiveBtn = function(){
+  var target = document.getElementById('profileGoLiveSlot');
+  if(!target) return;
+  target.innerHTML =
+    '<button onclick="openLiveStreamer()" style="display:flex;align-items:center;gap:6px;background:#ff0000;color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:.82rem;font-weight:800;cursor:pointer;font-family:\'Exo 2\',sans-serif;transition:opacity .2s;" onmouseover="this.style.opacity=\'.85\'" onmouseout="this.style.opacity=\'1\'">' +
+    '<span style="font-size:.8rem;">🔴</span> Ir en vivo</button>';
+};
+
+// ── INIT ────────────────────────────────────────────────────────
+function _init(){
+  if(window.db && window.CU){
+    loadActiveLives();
+    injectGoLiveBtn();
+  } else {
+    setTimeout(_init, 1000);
+  }
+}
+_init();
+
+})();
+</script>
+
+<!--
+══════════════════════════════════════════════════════════════════
+  INSTRUCCIONES PARA COMPLETAR LA INTEGRACIÓN
+══════════════════════════════════════════════════════════════════
+
+1. BOTÓN "IR EN VIVO" EN EL PERFIL
+   Agregá este div donde quieras que aparezca el botón en el perfil:
+   <div id="profileGoLiveSlot"></div>
+
+2. REGLAS DE FIRESTORE
+   En Firebase Console → Firestore → Reglas, asegurate de permitir
+   lectura/escritura en la colección "milatido_lives":
+
+   match /milatido_lives/{liveId} {
+     allow read: if request.auth != null;
+     allow write: if request.auth != null;
+     match /chat/{msgId} {
+       allow read, write: if request.auth != null;
+     }
+   }
+
+3. IMPORTACIONES DE FIRESTORE
+   Asegurate de tener estas funciones disponibles globalmente
+   (ya deberían estar si usás Firebase en el resto del proyecto):
+   - addDoc, updateDoc, collection, doc, query, orderBy,
+     where, limit, onSnapshot, serverTimestamp, increment, writeBatch
+
+4. ESTILOS OPCIONALES
+   El @keyframes livePulse ya debería estar en tu index.html.
+   Si no está, agregalo:
+   @keyframes livePulse {
+     0%,100% { opacity:1; }
+     50%      { opacity:.6; }
+   }
+
+══════════════════════════════════════════════════════════════════
+-->
 </body>
 </html>
