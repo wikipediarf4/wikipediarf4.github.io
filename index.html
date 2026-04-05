@@ -601,6 +601,92 @@ from var(--admin-angle,0deg),#ff0040,#ff8c00,#ffd700,#fffbe6,#ffd700,#ff8c00,#ff
       </script>
       <!-- ═══════════ FIN SUGERENCIAS MATCH WIDGET ═══════════ -->
 
+      <!-- ═══════════ RULETA DE PERFILES WIDGET ═══════════ -->
+      <div id="ruletaPerfilesWidget" style="margin:0 0 12px;background:linear-gradient(135deg,rgba(46,196,182,.09),rgba(46,196,182,.03));border:1px solid rgba(46,196,182,.3);border-radius:14px;overflow:hidden;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 11px 6px;">
+          <div style="font-size:.7rem;font-weight:900;color:var(--accent);text-transform:uppercase;letter-spacing:.05em;">🎰 Ruleta de Perfiles</div>
+        </div>
+        <div id="ruletaCardArea" style="padding:0 10px 10px;">
+          <div style="text-align:center;padding:10px 4px;font-size:.72rem;color:var(--muted);">Descubrí gente activa recientemente</div>
+        </div>
+        <div style="padding:0 10px 10px;">
+          <button id="ruletaSpinBtn" onclick="spinRuleta()" style="width:100%;padding:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:10px;font-size:.82rem;font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;transition:opacity .2s;">
+            🎲 ¡Girar!
+          </button>
+        </div>
+      </div>
+      <script>
+      (function(){
+        var _ruletaUsers = [];
+        var _ruletaLoaded = false;
+
+        function _loadRuleta(){
+          if(!window.db || !window.getDocs || !window.CU){ setTimeout(_loadRuleta, 700); return; }
+          var cutoff = Date.now() - (7 * 24 * 60 * 60 * 1000); // activos en los últimos 7 días
+          window.getDocs(
+            window.query(window.collection(window.db,'users'), window.limit(200))
+          ).then(function(snap){
+            var myId = window.CU ? window.CU.id : null;
+            _ruletaUsers = snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); })
+              .filter(function(u){
+                if(!u.nick) return false;
+                if(u.id === myId) return false;
+                if(u.banned) return false;
+                // activo recientemente: lastSeen o createdAt
+                var ls = u.lastSeen ? (u.lastSeen.seconds ? u.lastSeen.seconds*1000 : u.lastSeen) : 0;
+                var ca = u.createdAt ? (u.createdAt.seconds ? u.createdAt.seconds*1000 : u.createdAt) : 0;
+                return (ls >= cutoff || ca >= cutoff);
+              });
+            _ruletaLoaded = true;
+            // Mostrar un perfil inicial
+            _showRuletaCard();
+          }).catch(function(){ _ruletaLoaded = true; });
+        }
+
+        function _showRuletaCard(){
+          var area = document.getElementById('ruletaCardArea');
+          if(!area) return;
+          if(!_ruletaUsers.length){
+            area.innerHTML = '<div style="text-align:center;padding:10px 4px;font-size:.72rem;color:var(--muted);">Sin usuarios activos recientes.</div>';
+            return;
+          }
+          var u = _ruletaUsers[Math.floor(Math.random() * _ruletaUsers.length)];
+          var nick = (u.nick||'?').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+          var safeNick = (u.nick||'').replace(/'/g,"\\'");
+          var av = u.av||'';
+          var bio = (u.bio||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').slice(0,60);
+          var avHtml = av
+            ? '<img src="'+av+'" style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);display:block;">'
+            : '<div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:900;color:#fff;flex-shrink:0;">'+nick[0].toUpperCase()+'</div>';
+          area.innerHTML = '<div onclick="openUserProfile(\''+u.id+'\',\''+safeNick+'\')" style="display:flex;align-items:center;gap:9px;padding:6px 0;cursor:pointer;border-radius:10px;transition:background .15s;" onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\'\'">'+avHtml+'<div style="min-width:0;flex:1;"><div style="font-size:.82rem;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+nick+'</div>'+(bio?'<div style="font-size:.7rem;color:var(--muted);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+bio+'</div>':'')+'<div style="font-size:.65rem;color:var(--accent);margin-top:2px;font-weight:700;">🟢 Activo recientemente</div></div></div>';
+        }
+
+        window.spinRuleta = function(){
+          var btn = document.getElementById('ruletaSpinBtn');
+          var area = document.getElementById('ruletaCardArea');
+          if(!area) return;
+          if(btn){ btn.disabled=true; btn.style.opacity='.6'; }
+          area.innerHTML = '<div style="text-align:center;padding:12px 4px;"><div style="font-size:1.4rem;animation:_rSpin .5s linear infinite;">🎲</div></div>';
+          setTimeout(function(){
+            _showRuletaCard();
+            if(btn){ btn.disabled=false; btn.style.opacity='1'; }
+          }, 500);
+        };
+
+        if(document.head && !document.getElementById('_rSpinStyle')){
+          var s = document.createElement('style');
+          s.id = '_rSpinStyle';
+          s.textContent = '@keyframes _rSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}';
+          document.head.appendChild(s);
+        }
+
+        var _rt = setInterval(function(){
+          if(window.CU && window.db){ clearInterval(_rt); _loadRuleta(); }
+        }, 700);
+      })();
+      </script>
+      <!-- ═══════════ FIN RULETA DE PERFILES WIDGET ═══════════ -->
+
     </div>
 
     </div>
@@ -28312,6 +28398,13 @@ function _esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
 
 <!-- ══════════════ PAGE FOTOS POPULARES ══════════════ -->
 <div class="page" id="page-fotospopulares" style="max-width:1100px;margin:0 auto;padding:24px 16px 80px;">
+
+  <!-- ══════════════ FOTO DEL DÍA ══════════════ -->
+  <div id="fotoDiaSection" style="margin-bottom:22px;">
+    <!-- Se renderiza dinámicamente -->
+  </div>
+  <!-- ══════════════ /FOTO DEL DÍA ══════════════ -->
+
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
     <div style="display:flex;align-items:center;gap:10px;">
       <span style="font-size:1.5rem;">🔥</span>
@@ -28443,6 +28536,57 @@ function _esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
         seen[item.url] = true;
         return true;
       }).slice(0, 80);
+
+      // ── FOTO DEL DÍA ──────────────────────────────────────────
+      (function renderFotoDia(){
+        var sec = document.getElementById('fotoDiaSection');
+        if(!sec) return;
+        // Foto con más reacciones en las últimas 24hs (solo de posts, no avatares ni covers)
+        var now = Date.now();
+        var h24 = 24 * 60 * 60 * 1000;
+        // Filtrar posts con fecha reciente y mayor score
+        var recentItems = allItems.filter(function(it){
+          if(it.type !== 'post') return false;
+          var ts = it.createdAt ? (it.createdAt.seconds ? it.createdAt.seconds*1000 : it.createdAt) : 0;
+          // Si no hay timestamp, incluir igual para no quedarse vacío pero bajar prioridad
+          return true;
+        });
+        // Ordenar por score desc para tomar la mejor foto de post
+        recentItems.sort(function(a,b){ return b.score - a.score; });
+        var best = recentItems[0] || allItems[0];
+        if(!best){ sec.innerHTML=''; return; }
+        var nick   = (best.ownerNick||'Usuario').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+        var safeNick = (best.ownerNick||'').replace(/'/g,"\\'");
+        var uid    = best.ownerUid || '';
+        var av     = best.ownerAv || '';
+        var score  = best.score || 0;
+        var avHtml = av
+          ? '<img src="'+av+'" style="width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,215,0,.7);flex-shrink:0;">'
+          : '<div style="width:38px;height:38px;border-radius:50%;background:gold;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:900;color:#000;flex-shrink:0;">'+nick[0].toUpperCase()+'</div>';
+        sec.innerHTML = ''
+          + '<div style="border-radius:16px;overflow:hidden;border:2px solid rgba(255,215,0,.55);box-shadow:0 0 28px rgba(255,215,0,.18);background:linear-gradient(135deg,rgba(255,215,0,.06),rgba(255,165,0,.04));position:relative;">'
+          +   '<div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:linear-gradient(90deg,rgba(255,215,0,.15),transparent);">'
+          +     '<span style="font-size:1.3rem;">☀️</span>'
+          +     '<div>'
+          +       '<div style="font-family:\'Orbitron\',monospace;font-size:.78rem;font-weight:900;color:#d4a017;text-transform:uppercase;letter-spacing:.06em;">Foto del Día</div>'
+          +       '<div style="font-size:.65rem;color:var(--muted);">La foto con más reacciones en las últimas 24 horas</div>'
+          +     '</div>'
+          +     '<span style="margin-left:auto;background:linear-gradient(135deg,#ffd700,#ff8c00);color:#000;font-size:.65rem;font-weight:900;padding:3px 10px;border-radius:100px;letter-spacing:.04em;">🏆 #1 hoy</span>'
+          +   '</div>'
+          +   '<div onclick="openUserProfile(\''+uid+'\',\''+safeNick+'\')" style="cursor:pointer;position:relative;">'
+          +     '<img src="'+best.url+'" style="width:100%;max-height:340px;object-fit:cover;object-position:top;display:block;" onerror="this.style.display=\'none\'">'
+          +     '<div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 50%,rgba(0,0,0,.65) 100%);"></div>'
+          +     '<div style="position:absolute;bottom:12px;left:14px;display:flex;align-items:center;gap:8px;">'
+          +       avHtml
+          +       '<div>'
+          +         '<div style="font-size:.88rem;font-weight:800;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.7);">'+nick+'</div>'
+          +         '<div style="font-size:.7rem;color:rgba(255,215,0,.9);font-weight:700;">❤️ '+score+' reacciones</div>'
+          +       '</div>'
+          +     '</div>'
+          +   '</div>'
+          + '</div>';
+      })();
+      // ── /FOTO DEL DÍA ─────────────────────────────────────────
 
       var htmlParts = [];
       allItems.forEach(function(f, idx){
