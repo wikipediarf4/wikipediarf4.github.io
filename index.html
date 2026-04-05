@@ -507,6 +507,150 @@ from var(--admin-angle,0deg),#ff0040,#ff8c00,#ffd700,#fffbe6,#ffd700,#ff8c00,#ff
 
       <div id="memoriesWidget" style="display:none;"></div>
 
+      <!-- ── WIDGETS MOBILE (solo cel/tablet) ─────────────────────── -->
+      <div id="mobileWidgetsRow" style="display:none;margin-bottom:14px;">
+
+        <!-- Accesos rápidos -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+          <div onclick="gp('fotospopulares');initFotosPopularesPage()" style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #dddfe2;border-radius:12px;padding:10px 12px;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='#f0f2f5'" onmouseout="this.style.background='#fff'">
+            <span style="font-size:1.3rem;">☀️</span>
+            <div>
+              <div style="font-size:.72rem;font-weight:800;color:#050505;">Foto del Día</div>
+              <div style="font-size:.62rem;color:#65676b;">La más popular</div>
+            </div>
+          </div>
+          <div onclick="gp('visitantes');initVisitantesPage()" style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #dddfe2;border-radius:12px;padding:10px 12px;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='#f0f2f5'" onmouseout="this.style.background='#fff'">
+            <span style="font-size:1.3rem;">👁️</span>
+            <div>
+              <div style="font-size:.72rem;font-weight:800;color:#050505;">Visitantes</div>
+              <div style="font-size:.62rem;color:#65676b;">¿Quién te vio?</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sugerencias Match compacto -->
+        <div style="background:linear-gradient(135deg,rgba(255,64,129,.09),rgba(255,64,129,.04));border:1px solid rgba(255,64,129,.28);border-radius:12px;overflow:hidden;margin-bottom:10px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 11px 5px;">
+            <div style="font-size:.68rem;font-weight:900;color:#ff4081;text-transform:uppercase;letter-spacing:.05em;">💘 Sugerencias para vos</div>
+            <button onclick="if(typeof gp==='function')gp('match')" style="font-size:.6rem;color:#ff4081;font-weight:700;cursor:pointer;background:none;border:none;padding:0;font-family:'Exo 2',sans-serif;">Ver más →</button>
+          </div>
+          <div id="mobileMatchList" style="padding:0 8px 10px;">
+            <div style="font-size:.7rem;color:var(--muted);padding:6px 4px;text-align:center;">Cargando...</div>
+          </div>
+        </div>
+
+        <!-- Ruleta de perfiles compacto -->
+        <div style="background:linear-gradient(135deg,rgba(46,196,182,.09),rgba(46,196,182,.03));border:1px solid rgba(46,196,182,.3);border-radius:12px;overflow:hidden;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 11px 5px;">
+            <div style="font-size:.68rem;font-weight:900;color:var(--accent);text-transform:uppercase;letter-spacing:.05em;">🎰 Ruleta de Perfiles</div>
+          </div>
+          <div id="mobileRuletaCard" style="padding:0 10px 6px;">
+            <div style="text-align:center;font-size:.7rem;color:var(--muted);padding:6px;">Descubrí gente nueva</div>
+          </div>
+          <div style="padding:0 10px 10px;">
+            <button onclick="spinRuletaMobile()" id="mobileRuletaBtn" style="width:100%;padding:7px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:8px;font-size:.78rem;font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;display:flex;align-items:center;justify-content:center;gap:5px;">
+              🎲 ¡Girar!
+            </button>
+          </div>
+        </div>
+
+      </div>
+      <!-- ── /WIDGETS MOBILE ─────────────────────────────────────── -->
+
+      <script>
+      (function(){
+        // Mostrar solo en mobile/tablet
+        function _checkMobileWidgets(){
+          var el = document.getElementById('mobileWidgetsRow');
+          if(!el) return;
+          el.style.display = window.innerWidth <= 1100 ? 'block' : 'none';
+        }
+        _checkMobileWidgets();
+        window.addEventListener('resize', _checkMobileWidgets);
+
+        // Cargar sugerencias match mobile
+        function _loadMobileMatch(){
+          if(!window.db || !window.CU){ setTimeout(_loadMobileMatch, 800); return; }
+          var el = document.getElementById('mobileMatchList');
+          if(!el) return;
+          var myId = window.CU.id;
+          var myGender = (window.CU.gender||'').toLowerCase();
+          var targetGender = myGender === 'hombre' ? 'mujer' : myGender === 'mujer' ? 'hombre' : '';
+          window.getDocs(window.query(window.collection(window.db,'users'), window.limit(60))).then(function(snap){
+            var myFriends = window.CU.friends || [];
+            var users = snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); })
+              .filter(function(u){
+                if(u.id === myId) return false;
+                if(myFriends.includes(u.id)) return false;
+                if(u.banned) return false;
+                if(targetGender && (!u.gender || u.gender.toLowerCase() !== targetGender)) return false;
+                return true;
+              });
+            users.sort(function(){ return Math.random()-.5; });
+            users = users.slice(0,4);
+            if(!users.length){ el.innerHTML='<div style="font-size:.7rem;color:var(--muted);padding:6px 4px;text-align:center;">Sin sugerencias por ahora</div>'; return; }
+            var html = '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:2px 0;">';
+            users.forEach(function(u){
+              var nick = (u.nick||'?').slice(0,10).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+              var safeNick = (u.nick||'').replace(/'/g,"\\'");
+              var av = u.av||'';
+              var ini = (u.nick||'?')[0].toUpperCase();
+              html += '<div onclick="openUserProfile(\''+u.id+'\',\''+safeNick+'\')" style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 2px;border-radius:8px;transition:background .15s;" onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\'\'">'
+                + (av ? '<img src="'+av+'" style="width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,64,129,.3);">'
+                      : '<div style="width:44px;height:44px;border-radius:50%;background:rgba(255,64,129,.15);display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:900;color:#ff4081;">'+ini+'</div>')
+                + '<div style="font-size:.6rem;font-weight:700;color:var(--text);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:52px;">'+nick+'</div>'
+                + '</div>';
+            });
+            html += '</div>';
+            el.innerHTML = html;
+          }).catch(function(){ el.innerHTML=''; });
+        }
+
+        // Ruleta mobile
+        var _mobileRuletaUsers = [];
+        function _loadMobileRuleta(){
+          if(!window.db || !window.CU){ setTimeout(_loadMobileRuleta, 800); return; }
+          var cutoff = Date.now() - (7*24*60*60*1000);
+          window.getDocs(window.query(window.collection(window.db,'users'), window.limit(200))).then(function(snap){
+            var myId = window.CU ? window.CU.id : null;
+            _mobileRuletaUsers = snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); })
+              .filter(function(u){
+                if(!u.nick || u.id === myId || u.banned) return false;
+                var ls = u.lastSeen ? (u.lastSeen.seconds ? u.lastSeen.seconds*1000 : u.lastSeen) : 0;
+                var ca = u.createdAt ? (u.createdAt.seconds ? u.createdAt.seconds*1000 : u.createdAt) : 0;
+                return ls >= cutoff || ca >= cutoff;
+              });
+            _showMobileRuletaCard();
+          });
+        }
+        function _showMobileRuletaCard(){
+          var area = document.getElementById('mobileRuletaCard');
+          if(!area || !_mobileRuletaUsers.length){ if(area) area.innerHTML='<div style="text-align:center;padding:6px;font-size:.7rem;color:var(--muted);">Sin usuarios activos.</div>'; return; }
+          var u = _mobileRuletaUsers[Math.floor(Math.random()*_mobileRuletaUsers.length)];
+          var nick = (u.nick||'?').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+          var safeNick = (u.nick||'').replace(/'/g,"\\'");
+          var av = u.av||'';
+          var bio = (u.bio||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').slice(0,50);
+          var avHtml = av
+            ? '<img src="'+av+'" style="width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);flex-shrink:0;">'
+            : '<div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:900;color:#fff;flex-shrink:0;">'+nick[0].toUpperCase()+'</div>';
+          area.innerHTML = '<div onclick="openUserProfile(\''+u.id+'\',\''+safeNick+'\')" style="display:flex;align-items:center;gap:8px;padding:4px 0 8px;cursor:pointer;border-radius:8px;" onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\'\'">'+avHtml+'<div style="min-width:0;flex:1;"><div style="font-size:.75rem;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+nick+'</div>'+(bio?'<div style="font-size:.65rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+bio+'</div>':'')+'<div style="font-size:.6rem;color:var(--accent);font-weight:700;margin-top:1px;">🟢 Activo recientemente</div></div></div>';
+        }
+        window.spinRuletaMobile = function(){
+          var btn = document.getElementById('mobileRuletaBtn');
+          var area = document.getElementById('mobileRuletaCard');
+          if(!area) return;
+          if(btn){ btn.disabled=true; btn.style.opacity='.6'; }
+          area.innerHTML='<div style="text-align:center;padding:10px;"><div style="font-size:1.2rem;animation:_rSpin .5s linear infinite;">🎲</div></div>';
+          setTimeout(function(){ _showMobileRuletaCard(); if(btn){btn.disabled=false;btn.style.opacity='1';} }, 500);
+        };
+
+        var _mt = setInterval(function(){
+          if(window.CU && window.db){ clearInterval(_mt); _loadMobileMatch(); _loadMobileRuleta(); }
+        }, 700);
+      })();
+      </script>
+
       <!-- ── FEED SIEMPRE VISIBLE (estilo Facebook) ──────────────────── -->
       <div id="homeFeedBtnWrap" style="display:none;"></div>
       <div id="homeFeedPanel">
