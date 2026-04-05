@@ -23368,34 +23368,41 @@ async function reactChatMsg(chatId, msgId, emoji){
 
   const msgRef = doc(db,'chats',chatId,'messages',msgId);
   try {
-    const snap = await getDoc(msgRef);
-    if(!snap.exists()) return;
-    const data = snap.data();
-    // Sincronizar el cache local con los datos reales de Firestore (otros users pueden haber reaccionado)
-    const serverRxns = Object.assign({}, data.reactions||{});
-    // Aplicar nuestra acción encima de los datos del servidor
+    // Usar updateDoc con campo específico por usuario — evita getDoc y es compatible
+    // con reglas de Firestore que solo permiten escribir los propios campos.
+    // reactions.{uid} = emoji  (o deleteField() para quitar)
+    const fieldKey = `reactions.${uid}`;
     if(!emoji || prev === emoji){
-      delete serverRxns[uid];
+      // Quitar reacción
+      await updateDoc(msgRef, { [fieldKey]: deleteField() });
     } else {
-      serverRxns[uid] = emoji;
-      // Notificar al autor del mensaje si no soy yo
-      if(data.uid && data.uid !== uid){
-        sendNotifToUser(data.uid, `💬 ${emoji} ${window.CU.nick} reaccionó a tu mensaje`).catch(()=>{});
-      }
+      // Poner reacción
+      await updateDoc(msgRef, { [fieldKey]: emoji });
+      // Notificar al autor — leer solo el campo uid del mensaje para saber a quién notificar
+      try {
+        const snap = await getDoc(msgRef);
+        if(snap.exists()){
+          const authorUid = snap.data().uid;
+          if(authorUid && authorUid !== uid){
+            sendNotifToUser(authorUid, `💬 ${emoji} ${window.CU.nick} reaccionó a tu mensaje`).catch(()=>{});
+          }
+        }
+      } catch(_){}  // la notificación no es crítica, ignorar si falla
     }
-    // Actualizar cache con datos reales + nuestra acción
-    window._chatRxnCache[msgId] = Object.assign({}, serverRxns);
-    await updateDoc(msgRef, {reactions: serverRxns});
+    // Actualizar cache con el estado real post-escritura
+    if(!window._chatRxnCache) window._chatRxnCache = {};
+    if(!window._chatRxnCache[msgId]) window._chatRxnCache[msgId] = {};
+    if(!emoji || prev === emoji){
+      delete window._chatRxnCache[msgId][uid];
+    } else {
+      window._chatRxnCache[msgId][uid] = emoji;
+    }
   } catch(err){
-    console.error('reactChatMsg error',err);
-    // Revertir el optimistic update si falló
-    if(!emoji || prev === emoji){
-      if(prev) localRxns[uid] = prev; else delete localRxns[uid];
-    } else {
-      if(prev) localRxns[uid] = prev; else delete localRxns[uid];
-    }
+    console.error('reactChatMsg error', err.code || err.message || err);
+    // Revertir el optimistic update
+    if(prev) localRxns[uid] = prev; else delete localRxns[uid];
     _updateRxnBadge(localRxns);
-    toast('Error al reaccionar','err');
+    toast('No se pudo guardar la reacción: ' + (err.code || err.message || 'error desconocido'), 'err');
   }
 }
 
