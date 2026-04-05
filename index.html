@@ -6296,19 +6296,16 @@ function _compressImage(blob, maxW, quality) {
 async function uploadVideo(file, folder) {
   const formData = new FormData();
   formData.append('file', file);
-  // Usar el preset de fotos que ya funciona (Cloudinary acepta video con él)
-  formData.append('upload_preset', CLOUDINARY_PRESET_FOTOS);
+  formData.append('upload_preset', CLOUDINARY_VIDEO_PRESET);
   formData.append('folder', 'rf4/' + (folder || 'videos'));
   formData.append('resource_type', 'video');
-  if(file.type && file.type.includes('webm')){
-    formData.append('format', 'mp4');
-  }
   const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/video/upload`, {
     method: 'POST',
     body: formData
   });
   const data = await res.json();
-  if(!data.secure_url) throw new Error(data.error?.message || 'Error subiendo video');
+  console.error('Cloudinary video response:', JSON.stringify(data));
+  if(!data.secure_url) throw new Error(JSON.stringify(data.error) || 'Error subiendo video');
   return data.secure_url;
 }
 
