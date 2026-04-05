@@ -26333,6 +26333,70 @@ if(typeof onLogin === 'function') {
 }
 // ===== FIN ADMIN ALBUM PRIVADO =====
 
+// ===== EXPONER FUNCIONES AL SCOPE GLOBAL (necesario por type="module") =====
+const _globalFns = {
+  _avatarPopupGoProfile, _avatarPopupViewPhoto, _avatarPopupViewStory,
+  _bulkApproveOne, _bulkRevokeOne, _bulkVerifApproveAll,
+  _cmtOpenGif, _gridCardClick, _matchBoost,
+  _memoriesDismiss, _memoriesGo, _resetMatchFilters,
+  _setGender, _setSeek, _submitModalCmt, _svToggleRxnPop, _toggleMatchFilters,
+  abrirAlbumLightbox, abrirAvisoGoogle, acceptTermsAndRegister,
+  adminApproveVerif, adminAprobarVideo, adminRechazarVideo,
+  adminRejectVerif, adminRevokeVerif,
+  asbSwitch, backToMessengerList, banUser, bdaySendWish,
+  cafeDeleteOrder, cancelEmailChange, cancelVoiceRecord,
+  cerrarAlbumLightbox, clearPostLink, closeGifPicker,
+  closeMessenger, closeNotifDropdown, closeSV, closeStickerPicker, closeTerms,
+  createGroup, delCmt, deleteAdminContent, deleteAdminPost,
+  deleteGlobalMsg, deleteMyStory, deleteSpot,
+  doForgotPassword, doLogin, doLogout, doReact,
+  editCmt, eliminarFotoAlbum,
+  faqAdminAction, faqAdminDelete, faqToggle,
+  filterShopCat, filterShopCat2, filterSoporteTickets,
+  gestionarAccesoAlbum,
+  igDownload, igNav, igNavTo, igQuickRxnCmt, igReact, igReactCmt,
+  igReplyCmt, igReport, igSendGifComment, igShare, igSubmitComment,
+  igToggleGifPicker, igToggleStkPicker,
+  initFotosPage, insertFishTag, installPwa,
+  joinGroup, leaveGroup, listenPosts,
+  loadAdminData, loadAdminFaq, loadAllUsersForBulkVerif,
+  loadRankingSemanal, loadVerifRequests,
+  markAllNotifsRead, maximizeMessenger, minimizeMessenger,
+  openChatMenu, openChatWith, openEditProfile, openEditSpot,
+  openEmojiPicker, openGroupPost, openImgLightbox,
+  openMessenger, openPostWithYt, openReactionsModal, openUserProfile,
+  photoDoReact, quickCmtRxn, quickGenreSearch, quickLogin, quickReact,
+  reactChatMsg, reactCmt, reelLoad, reelReact,
+  removeGroupPostImg, removePostMedia, removeSavedAccount, removeSpotImg,
+  renderAmigosPage, renderSuggestedUsers, replyCmt, reportStory, resolveReport,
+  rf4CancelSelect, rf4CtxLeerCompleta, rf4CtxLeerZoom,
+  rf4SwitchTab, rf4ToggleSelect, rf4TranslateSelection,
+  saveEditPost, saveEditSpot, saveProfile, scrollToPost,
+  searchDeezer, searchMentionedUser,
+  sendChatMsg, sendCmtGif, sendFriendReq, sendFriendRequest,
+  sendFriendRequestFromProfile, sendGif, sendGlobalMsg, sendVerifEmailForChange,
+  sharePost, showAvatarPopup, showLogin, showReg, showTerms,
+  sideReelReact, solicitarAccesoAlbum,
+  startEmailChange, stopAndSendVoice,
+  storyCamCambiarCamara, storyCamCancelar, storyCamToggleRec,
+  storyGrabarVideo, storyYtSubirVideo,
+  submitAd, submitMapPost, submitPhotoComment, submitPost,
+  submitReport, submitSoporte, submitSpot, submitStoryComment,
+  svNav, svToggleViewersList, swAdminTab, swPTab, swUpTab,
+  switchNotifTab, switchRankTab,
+  tiendaAbrirIA, tiendaDelete, tiendaIAPublicar, tiendaIAReset,
+  toast, toggleAd, toggleComments, toggleEquipItem,
+  toggleGifPicker, toggleLinkInput, toggleNotifDropdown, togglePassVis,
+  togglePostMenu, toggleReplies, toggleStickerPicker, toggleUserMenu,
+  toggleVoicePlay, toggleVoiceRecord,
+  upAbrirLightbox, upCerrarLightbox, upEliminarFoto, upSolicitarAcceso,
+  ytSubirVideo, ytToggleLink
+};
+for (const [name, fn] of Object.entries(_globalFns)) {
+  if (typeof fn === 'function') window[name] = fn;
+}
+// ===== FIN EXPOSICIÓN GLOBAL =====
+
 
 </script>
 
