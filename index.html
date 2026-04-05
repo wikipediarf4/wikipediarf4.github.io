@@ -38,7 +38,7 @@
 
   // CSS para deshabilitar selección visual
   var selStyle = document.createElement('style');
-  selStyle.textContent = '*{-webkit-user-select:none!important;-moz-user-select:none!important;-ms-user-select:none!important;user-select:none!important;}input,textarea{-webkit-user-select:text!important;-moz-user-select:text!important;user-select:text!important;}';
+  selStyle.textContent = '*{-webkit-user-select:none!important;-moz-user-select:none!important;-ms-user-select:none!important;user-select:none!important;}input,textarea{-webkit-user-select:text!important;-moz-user-select:text!important;user-select:text!important;}#page-admin,#page-admin *,#page-superadmin,#page-superadmin *{-webkit-user-select:text!important;-moz-user-select:text!important;-ms-user-select:text!important;user-select:text!important;}';
   document.head.appendChild(selStyle);
 
   // ── 4. DETECTAR DEVTOOLS ABIERTO ─────────────────────────────────────────
