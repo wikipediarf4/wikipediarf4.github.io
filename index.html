@@ -15328,7 +15328,7 @@ function _parseLiveUrl(url){
 
 async function adminSetLive(activate){
   const url = document.getElementById('liveUrlInput')?.value.trim() || '';
-  const title = document.getElementById('liveTitleInput')?.value.trim() || '🔴 Stream en vivo';
+  const title = document.getElementById('liveStreamerTitleInput')?.value.trim() || '🔴 Stream en vivo';
   const statusEl = document.getElementById('liveAdminStatus');
   if(activate && !url){ toast('Pegá la URL del stream','err'); return; }
   const embedUrl = activate ? _parseLiveUrl(url) : '';
@@ -15353,7 +15353,7 @@ async function loadAdminLive(){
     const data = snap.exists() ? snap.data() : {};
     const statusEl = document.getElementById('liveAdminStatus');
     if(document.getElementById('liveUrlInput')) document.getElementById('liveUrlInput').value = data.rawUrl||'';
-    if(document.getElementById('liveTitleInput')) document.getElementById('liveTitleInput').value = data.title||'';
+    if(document.getElementById('liveStreamerTitleInput')) document.getElementById('liveStreamerTitleInput').value = data.title||'';
     if(statusEl){
       statusEl.style.display = 'block';
       const active = data.active || false;
@@ -29256,7 +29256,7 @@ function _triggerGoogleLogin() {
         <div style="font-size:2.5rem;">📹</div>
         <div style="font-size:.9rem;">Configurá tu live antes de comenzar</div>
         <div style="display:flex;flex-direction:column;gap:8px;width:280px;">
-          <input id="liveTitleInput" type="text" placeholder="Título de tu live..." maxlength="60"
+          <input id="liveStreamerTitleInput" type="text" placeholder="Título de tu live..." maxlength="60"
             style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:10px 14px;color:#fff;font-size:.85rem;outline:none;text-align:center;">
           <button onclick="startLiveStream()" style="background:#ff0000;border:none;color:#fff;border-radius:8px;padding:12px;font-size:.9rem;font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;">
             🔴 Comenzar transmisión
@@ -29319,7 +29319,7 @@ window.openLiveStreamer = function(){
 window.startLiveStream = async function(){
   var cu = _cu();
   if(!cu || _isStreaming) return;
-  var titulo = (document.getElementById('liveTitleInput').value || '').trim();
+  var titulo = (document.getElementById('liveStreamerTitleInput').value || '').trim();
   if(!titulo){ _toast('Poné un título para tu live'); return; }
 
   try {
@@ -29456,9 +29456,9 @@ window.closeLiveViewer = async function(){
 window.sendLiveChat = function(){
   var isStreamer = document.getElementById('modalLiveStreamer').style.display !== 'none';
   var inputId = isStreamer ? 'streamerChatMessages' : 'liveChatInput';
-  var input = document.getElementById(isStreamer ? 'liveTitleInput' : 'liveChatInput');
+  var input = document.getElementById(isStreamer ? 'liveStreamerTitleInput' : 'liveChatInput');
   var realInput = document.getElementById('liveChatInput');
-  var msgInput = isStreamer ? document.getElementById('liveTitleInput') : realInput;
+  var msgInput = isStreamer ? document.getElementById('liveStreamerTitleInput') : realInput;
 
   // Usar siempre liveChatInput para espectador
   var inp = document.getElementById('liveChatInput');
