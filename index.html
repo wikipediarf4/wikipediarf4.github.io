@@ -4429,7 +4429,7 @@ window._rechazarAlbumDesdeNotif = async function(visitorUid, ownerUid, btn) {
           <div style="display:flex;gap:10px;align-items:flex-start;background:rgba(243,62,88,.08);border:1px solid rgba(243,62,88,.25);border-radius:var(--rs);padding:10px 14px;font-size:.83rem;color:#f33e58;">🔞 <span><strong>Baneo inmediato y permanente</strong> — Por ser menor de 18 años, acoso grave, suplantación de identidad, catfishing, extorsión o cualquier violación gravísima. Sin apelación.</span></div>
           <div style="display:flex;gap:10px;align-items:flex-start;background:rgba(243,62,88,.08);border:1px solid rgba(243,62,88,.25);border-radius:var(--rs);padding:10px 14px;font-size:.83rem;color:var(--muted);">🚫 <span><strong style="color:#f33e58;">Reporte a autoridades</strong> — En casos de actividad ilegal, amenazas, extorsión o cualquier situación que lo amerite, se reserva el derecho de colaborar con las autoridades competentes.</span></div>
         </div>
-        <p style="color:var(--muted);margin-top:12px;">El administrador <strong style="color:var(--text)">ruizgustavo12</strong> tiene la decisión final en todos los casos de moderación. Las decisiones de baneo son inapelables.</p>
+        <p style="color:var(--muted);margin-top:12px;">El administrador <strong style="color:var(--text)">Administrador</strong> tiene la decisión final en todos los casos de moderación. Las decisiones de baneo son inapelables.</p>
       </section>
 
       <!-- 11 -->
@@ -4456,7 +4456,7 @@ window._rechazarAlbumDesdeNotif = async function(visitorUid, ownerUid, btn) {
       </div>
     </div>
 
-    <div style="text-align:center;margin-top:24px;color:var(--muted);font-size:.72rem;">© 2026 MiLatido · Creado por <strong style="color:var(--text)">ruizgustavo12</strong> · Red social de citas para mayores de 18 años</div>
+    <div style="text-align:center;margin-top:24px;color:var(--muted);font-size:.72rem;">© 2026 MiLatido · Creado por <strong style="color:var(--text)">Administrador</strong> · Red social de citas para mayores de 18 años</div>
   </div>
 </div>
 
@@ -7041,12 +7041,6 @@ window.initSalasPage = window.initSalasPage;
     <span style="font-size:.67rem;font-weight:700;">Álbum <span id="admAlbumBadge" style="display:none;background:#e74c3c;color:#fff;border-radius:100px;padding:0 5px;font-size:.58rem;font-weight:800;margin-left:2px;">0</span></span>
   </button>
 
-  <button class="adm-tab" onclick="swAdminTab(this,'admt-ageverif');loadAdminAgeVerif()"
-    style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;background:rgba(255,165,0,.06);border-color:rgba(255,165,0,.3);color:orange;">
-    <span style="font-size:1.2rem;">🪪</span>
-    <span style="font-size:.67rem;font-weight:700;">Edad +18 <span id="admAgeVerifBadge" style="display:none;background:orange;color:#000;border-radius:100px;padding:0 5px;font-size:.58rem;font-weight:800;margin-left:2px;">0</span></span>
-  </button>
-
 </div>
 
 <!-- ══ DIVISOR ═══════════════════════════════════════════════════════ -->
@@ -7173,39 +7167,7 @@ window.initSalasPage = window.initSalasPage;
   <div id="adminAlbumList"><div style="text-align:center;padding:32px;color:var(--muted);">Cargando fotos...</div></div>
 </div>
 
-<div id="admt-ageverif" style="display:none;">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
-    <div>
-      <div style="font-size:.92rem;font-weight:800;color:orange;">🪪 Verificación de Edad +18</div>
-      <div style="font-size:.72rem;color:var(--muted);margin-top:2px;">Revisá el documento de identidad y aprobá o rechazá cada solicitud.</div>
-    </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;">
-      <button onclick="loadAdminAgeVerif('pending')" id="agef-pend" class="cfbtn" style="color:orange;">⏳ Pendientes</button>
-      <button onclick="loadAdminAgeVerif('approved')" id="agef-apro" class="cfbtn" style="color:var(--green);">✅ Aprobados</button>
-      <button onclick="loadAdminAgeVerif('rejected')" id="agef-rej" class="cfbtn" style="color:var(--red);">❌ Rechazados</button>
-      <button onclick="loadAdminAgeVerif('all')" id="agef-all" class="cfbtn active">Todos</button>
-    </div>
-  </div>
-  <div id="adminAgeVerifList"><div style="text-align:center;padding:32px;color:var(--muted);">Cargando...</div></div>
-</div>
-
 </div><!-- fin page-admin -->
-
-<!-- ══ MODAL VER DOCUMENTO DNI (ADMIN) ════════════════════════════════ -->
-<div id="modalAdminVerDoc" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.85);align-items:center;justify-content:center;padding:16px;">
-  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;max-width:480px;width:100%;padding:20px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-      <div style="font-weight:800;font-size:.95rem;color:var(--text);">🪪 Documento de identidad</div>
-      <button onclick="document.getElementById('modalAdminVerDoc').style.display='none'" style="background:var(--bg3);border:1px solid var(--border);color:var(--muted);border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:1rem;">✕</button>
-    </div>
-    <img id="modalAdminVerDocImg" src="" style="width:100%;border-radius:10px;object-fit:contain;max-height:340px;background:#000;">
-    <div id="modalAdminVerDocInfo" style="margin-top:10px;font-size:.78rem;color:var(--muted);"></div>
-    <div style="display:flex;gap:8px;margin-top:14px;">
-      <button id="modalAdminVerDocApprove" style="flex:1;background:rgba(0,200,0,.12);border:1px solid rgba(0,200,0,.3);color:#00c853;padding:10px;border-radius:var(--rs);font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.85rem;">✅ Aprobar edad</button>
-      <button id="modalAdminVerDocReject" style="flex:1;background:rgba(255,0,0,.08);border:1px solid rgba(255,0,0,.2);color:var(--red);padding:10px;border-radius:var(--rs);font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.85rem;">❌ Rechazar</button>
-    </div>
-  </div>
-</div>
 
 
 <div class="page" id="page-shop" style="max-width:860px;margin:0 auto;padding:20px 16px 80px;display:none!important;">
@@ -8604,7 +8566,7 @@ window.filtrarCerca = filtrarCerca;
   <div id="sp-admin" style="display:none;">
     <div class="section">
       <div class="stitle">⚙ Admin · Compartir Spot</div>
-      <div class="ssub">Solo ruizgustavo12</div>
+      <div class="ssub">Solo Administrador</div>
       <div id="spAdminList" style="margin-top:16px;"></div>
     </div>
   </div>
@@ -8915,7 +8877,7 @@ window.CU = null;
 // ── HELPER: detectar si un usuario es admin ──
 function isAdminUser(u){
   if(!u) return false;
-  return u.role==='admin' || u.nick==='ruizgustavo12' || u.nick==='gustavo ruiz' || u.nick==='gustavoruiz' || u.email==='synxyes@gmail.com';
+  return u.role==='admin' || u.nick==='Administrador' || u.nick==='Administrador' || u.nick==='Administrador' || u.email==='synxyes@gmail.com';
 }
 function isAdminUid(uid){
   // Check against known admin uid or loaded profile data
@@ -8964,9 +8926,9 @@ const CLOUDINARY_VIDEO_PRESET = 'milatido_video';
 function applyAdminUploadUnlock(){
   const isAdmin = window.CU && (
     window.CU.role === 'admin' ||
-    window.CU.nick === 'ruizgustavo12' ||
-    window.CU.nick === 'gustavo ruiz' ||
-    window.CU.nick === 'gustavoruiz' ||
+    window.CU.nick === 'Administrador' ||
+    window.CU.nick === 'Administrador' ||
+    window.CU.nick === 'Administrador' ||
     window.CU.email === 'synxyes@gmail.com'
   );
   if(!isAdmin) return;
@@ -9447,14 +9409,14 @@ function init(){
           if(window._userInfoCache) window._userInfoCache[user.uid] = {nick: window.CU.nick||'', av: window.CU.av||'', gender: window.CU.gender||'', country: window.CU.country||''};
 
           // Chequear si es admin
-          const _isAdmin = window.CU.nick==='ruizgustavo12' || window.CU.nick==='gustavo ruiz' || window.CU.nick==='gustavoruiz' || window.CU.email==='synxyes@gmail.com' || window.CU.role==='admin';
+          const _isAdmin = window.CU.nick==='Administrador' || window.CU.nick==='Administrador' || window.CU.nick==='Administrador' || window.CU.email==='synxyes@gmail.com' || window.CU.role==='admin';
           document.getElementById('mAuth').style.display = 'none';
           hideSplash();
           if(_isAdmin){
             // Admin: forzar rol, pais y acceso directo sin bloqueos
             window.CU.role = 'admin';
             if(!window.CU.country) window.CU.country = 'UY';
-            if(!window.CU.nick) window.CU.nick = 'ruizgustavo12';
+            if(!window.CU.nick) window.CU.nick = 'Administrador';
             if(window._hideConstruction) window._hideConstruction();
             onLogin();
           } else if(!window.CU.country){
@@ -9470,7 +9432,7 @@ function init(){
           hideSplash();
           const _isAdminByEmail = user.email === 'synxyes@gmail.com';
           if(_isAdminByEmail && window._hideConstruction) {
-            window.CU = { id: user.uid, email: user.email, nick: 'ruizgustavo12', role: 'admin' };
+            window.CU = { id: user.uid, email: user.email, nick: 'Administrador', role: 'admin' };
             window._hideConstruction();
             if(typeof onLogin === 'function') onLogin();
           }
@@ -9492,7 +9454,7 @@ function init(){
                 window.CU = {id: user.uid, ...snap2.data()};
                 applyAdminUploadUnlock();
                 hideSplash();
-                const _isAdmin2 = window.CU.nick==='ruizgustavo12' || window.CU.nick==='gustavo ruiz' || window.CU.nick==='gustavoruiz' || window.CU.email==='synxyes@gmail.com' || window.CU.role==='admin';
+                const _isAdmin2 = window.CU.nick==='Administrador' || window.CU.nick==='Administrador' || window.CU.nick==='Administrador' || window.CU.email==='synxyes@gmail.com' || window.CU.role==='admin';
                 if(_isAdmin2 && window._hideConstruction) window._hideConstruction();
                 if(document.getElementById('mAuth')) document.getElementById('mAuth').style.display = 'none';
                 if(typeof onLogin === 'function') onLogin();
@@ -9654,12 +9616,12 @@ async function doGoogleLogin(){
       window.CU = { id: user.uid, ...userSnap.data() };
     }
     // Admin bypass: si es admin no le pedimos país
-    const _isAdminGoogle = window.CU.email === 'synxyes@gmail.com' || window.CU.nick === 'ruizgustavo12' || window.CU.nick === 'gustavo ruiz' || window.CU.nick === 'gustavoruiz' || window.CU.role === 'admin';
+    const _isAdminGoogle = window.CU.email === 'synxyes@gmail.com' || window.CU.nick === 'Administrador' || window.CU.nick === 'Administrador' || window.CU.nick === 'Administrador' || window.CU.role === 'admin';
     // Si es admin, forzar rol y país para evitar bloqueos por datos faltantes en Firestore
     if(_isAdminGoogle){
       window.CU.role = 'admin';
       if(!window.CU.country) window.CU.country = 'UY';
-      if(!window.CU.nick) window.CU.nick = 'ruizgustavo12';
+      if(!window.CU.nick) window.CU.nick = 'Administrador';
       document.getElementById('mAuth').style.display = 'none';
       if(window._hideConstruction) window._hideConstruction();
       onLogin();
@@ -9788,7 +9750,7 @@ async function doLogin(){
       // Fallback admin: si el email es el del admin, permitir entrada aunque no tenga doc en Firestore
       const _adminEmails = ['synxyes@gmail.com'];
       if(_adminEmails.includes(cred.user.email)){
-        window.CU = { id: cred.user.uid, email: cred.user.email, nick: 'ruizgustavo12', role: 'admin', country: 'UY' };
+        window.CU = { id: cred.user.uid, email: cred.user.email, nick: 'Administrador', role: 'admin', country: 'UY' };
         document.getElementById('mAuth').style.display='none';
         if(window._hideConstruction) window._hideConstruction();
         onLogin();
@@ -10296,7 +10258,7 @@ function updateNavUI(){
   document.getElementById('userMenuNick').textContent = window.CU.nick;
   document.getElementById('userMenuEmail').textContent = window.CU.email||'';
   // Admin button — visible para admins
-  const isAdmin = window.CU.nick === 'ruizgustavo12' || window.CU.nick === 'gustavo ruiz' || window.CU.nick === 'gustavoruiz' || window.CU.email === 'synxyes@gmail.com' || window.CU.role === 'admin';
+  const isAdmin = window.CU.nick === 'Administrador' || window.CU.nick === 'Administrador' || window.CU.nick === 'Administrador' || window.CU.email === 'synxyes@gmail.com' || window.CU.role === 'admin';
   const adminNavBtn = document.getElementById('adminNavBtn');
   const userMenuAdmin = document.getElementById('userMenuAdmin');
   const shopNavBtn = document.getElementById('shopNavBtn');
@@ -10556,7 +10518,7 @@ window.gp = (id, pushState = true) => {
   if(id==='compartir-spot') {
     spLoadData().then(()=>{ spRenderHome(); });
     // Mostrar botón publicar y admin si aplica
-    const isAdmin = window.CU?.nick === 'ruizgustavo12' || window.CU?.nick === 'gustavo ruiz' || window.CU?.nick === 'gustavoruiz' || window.CU?.email === 'synxyes@gmail.com' || window.CU?.role === 'admin';
+    const isAdmin = window.CU?.nick === 'Administrador' || window.CU?.nick === 'Administrador' || window.CU?.nick === 'Administrador' || window.CU?.email === 'synxyes@gmail.com' || window.CU?.role === 'admin';
     const spPub = document.getElementById('spNbPublish');
     const spAdm = document.getElementById('spNbAdmin');
     const spPubBtn = document.getElementById('spPubBtn');
@@ -11010,7 +10972,7 @@ function renderSV(){
   const delBtn = document.getElementById('svDeleteBtn');
   const repBtn = document.getElementById('svReportBtn');
   const isOwn  = window.CU && s.userId === window.CU.id;
-  const _isSVAdmin = window.CU && (window.CU.role==='admin' || window.CU.email==='synxyes@gmail.com' || window.CU.nick==='ruizgustavo12');
+  const _isSVAdmin = window.CU && (window.CU.role==='admin' || window.CU.email==='synxyes@gmail.com' || window.CU.nick==='Administrador');
   if(delBtn) delBtn.style.display = (isOwn || _isSVAdmin) ? 'block' : 'none';
   if(repBtn) repBtn.style.display = (!isOwn && window.CU && !_isSVAdmin) ? 'block' : 'none';
   // Clear comment input
@@ -11361,7 +11323,7 @@ async function submitStoryComment(){
 async function deleteMyStory(){
   const s = _stories[_svIdx];
   if(!s || !window.CU){ toast('No podés eliminar esta historia','err'); return; }
-  const _isAdminDel = window.CU.role==='admin' || window.CU.email==='synxyes@gmail.com' || window.CU.nick==='ruizgustavo12';
+  const _isAdminDel = window.CU.role==='admin' || window.CU.email==='synxyes@gmail.com' || window.CU.nick==='Administrador';
   if(s.userId !== window.CU.id && !_isAdminDel){ toast('No podés eliminar esta historia','err'); return; }
   if(!confirm(_isAdminDel && s.userId !== window.CU.id ? '🛡️ Eliminar esta historia como admin?' : '¿Eliminar esta historia?')) return;
   try {
@@ -12762,7 +12724,7 @@ function postHTML(p){
   }
   let videoHTML = '';
   if(p.video){
-    const _isAdmin = window.CU && (window.CU.nick === 'ruizgustavo12' || window.CU.nick === 'gustavo ruiz' || window.CU.nick === 'gustavoruiz' || window.CU.email === 'synxyes@gmail.com' || window.CU.role === 'admin');
+    const _isAdmin = window.CU && (window.CU.nick === 'Administrador' || window.CU.nick === 'Administrador' || window.CU.nick === 'Administrador' || window.CU.email === 'synxyes@gmail.com' || window.CU.role === 'admin');
     const _isPending = p.videoStatus === 'pending';
     // Si el video está pendiente y no soy admin, no mostrar nada
     if(_isPending && !_isAdmin){
@@ -13016,7 +12978,7 @@ function postHTML(p){
       <div class="post-meta" style="cursor:pointer" onclick="openUserProfile('${p.userId}','${esc(p.userNick)}')">
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
           <div class="post-author">${(()=>{
-            const _isAdm = p.userNick==='ruizgustavo12'||p.userRole==='admin';
+            const _isAdm = p.userNick==='Administrador'||p.userRole==='admin';
             const _isVerif = !!p.userVerified;
             const _nick = esc(p.userNick);
             if(_isAdm) return `<span class="admin-name">${_nick}</span><span class="admin-crown">👑</span>`;
@@ -14008,7 +13970,7 @@ async function toggleComments(pid){
       const cTopRxnM = Object.entries(cRxnsM).filter(e=>e[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,2).map(e=>e[0]).join('');
       const nameColor = isVerified ? '#f5a623' : isAuthor ? '#1877f2' : '#e6edf3';
       const verifiedBadge = (isVerified && c.av) ? `<img src="data:image/png;base64,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" title="Verificado" style="width:14px;height:14px;object-fit:contain;vertical-align:middle;margin-left:2px;flex-shrink:0;filter:drop-shadow(0 0 2px gold);" draggable="false">` : '';
-      const isAdminCmt = c.nick==='ruizgustavo12' || c.role==='admin';
+      const isAdminCmt = c.nick==='Administrador' || c.role==='admin';
       const adminNameHtml = isAdminCmt
         ? `<span class="admin-name" style="font-size:.82rem;">${esc(c.nick||'')}</span><span class="admin-crown" style="font-size:.72rem;">👑</span>`
         : `<span style="color:${nameColor};">${esc(c.nick||'')}</span>`;
@@ -14830,23 +14792,6 @@ function renderProfile(){
   // ── BOTÓN VERIFICACIÓN ──
   const verifBtn = document.getElementById('profVerifBtn');
   if(verifBtn) verifBtn.style.display='none';
-
-  // ── BOTÓN VERIFICACIÓN DE EDAD +18 ──
-  let ageVerifBtnEl = document.getElementById('profAgeVerifBtn');
-  if(!ageVerifBtnEl){
-    ageVerifBtnEl = document.createElement('div');
-    ageVerifBtnEl.id = 'profAgeVerifBtn';
-    ageVerifBtnEl.style.marginTop = '6px';
-    const vb = document.getElementById('profVerifBtn');
-    if(vb && vb.parentNode) vb.parentNode.insertBefore(ageVerifBtnEl, vb.nextSibling);
-  }
-  if(window.CU.ageVerified){
-    ageVerifBtnEl.innerHTML = '<span style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,165,0,.12);border:1px solid rgba(255,165,0,.35);border-radius:100px;padding:4px 12px;font-size:.72rem;font-weight:800;color:orange;">🪪 Edad verificada +18</span>';
-  } else if(window.CU.ageVerifPending){
-    ageVerifBtnEl.innerHTML = '<span style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,165,0,.08);border:1px solid rgba(255,165,0,.2);border-radius:100px;padding:4px 12px;font-size:.72rem;font-weight:700;color:rgba(255,165,0,.7);">⏳ Verificación de edad en revisión</span>';
-  } else {
-    ageVerifBtnEl.innerHTML = '<button onclick="openAgeVerifModal()" style="background:rgba(255,165,0,.1);border:1px solid rgba(255,165,0,.3);color:orange;padding:5px 14px;border-radius:100px;font-size:.72rem;font-weight:800;cursor:pointer;font-family:\'Exo 2\',sans-serif;transition:background .2s;" onmouseover="this.style.background=\'rgba(255,165,0,.2)\'" onmouseout="this.style.background=\'rgba(255,165,0,.1)\'">🪪 Verificar edad +18</button>';
-  }
   document.getElementById('profBioEl').textContent = window.CU.bio||'';
   // ── Meta info debajo de bio (ciudad, país, desde) ──
   const _profMetaEl = document.getElementById('profMetaRow');
@@ -15024,7 +14969,7 @@ async function saveProfile(){
     const daysSince = last ? (Date.now() - last.getTime()) / (1000*60*60*24) : 999;
     if(daysSince < 90){
       const daysLeft = Math.ceil(90 - daysSince);
-      toast(`No podés cambiar el nick por ${daysLeft} días más. Contactá a ruizgustavo12 para cambios urgentes.`,'err');
+      toast(`No podés cambiar el nick por ${daysLeft} días más. Contactá a Administrador para cambios urgentes.`,'err');
       document.getElementById('epNick').value = oldNick;
       return;
     }
@@ -15078,7 +15023,7 @@ function openEditProfile(){
         <div>
           <div style="font-size:.78rem;font-weight:700;color:#ff7043;">Nick bloqueado por cooldown</div>
           <div style="font-size:.72rem;color:var(--muted);margin-top:2px;">Disponible en <span style="font-weight:900;color:#ff7043;font-size:.85rem;">${daysLeft} días</span> (${hoursLeft}h)</div>
-          <div style="font-size:.65rem;color:var(--muted);margin-top:2px;">Cambio urgente: contactá a <strong>ruizgustavo12</strong></div>
+          <div style="font-size:.65rem;color:var(--muted);margin-top:2px;">Cambio urgente: contactá a <strong>Administrador</strong></div>
         </div>
       </div>`;
     nickMsgEl.style.display = 'block';
@@ -15815,7 +15760,7 @@ function renderShopGrid(){
   const CAT_LABEL = {marco:'🖼 Marco',badge:'🏅 Badge',efecto:'✨ Efecto',titulo:'📛 Título',postcolor:'🎨 Color de Post',banner:'🖼 Banner Animado',tema:'🎭 Tema de Perfil'};
   const _shopHTML = items.map(item => {
     const isEquipped = _equippedItems[item.cat] === item.id;
-    const postPreview = item.cat==='postcolor' ? `<div class="${item.theme}" style="border-radius:8px;padding:8px 10px;margin-bottom:8px;font-size:.63rem;color:#ddd;line-height:1.5;text-align:left;"><div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;"><div style="width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.2);flex-shrink:0;"></div><span style="font-weight:700;">ruizgustavo12</span></div><div>🎣 ¡Gran pesca hoy!</div></div>` : '';
+    const postPreview = item.cat==='postcolor' ? `<div class="${item.theme}" style="border-radius:8px;padding:8px 10px;margin-bottom:8px;font-size:.63rem;color:#ddd;line-height:1.5;text-align:left;"><div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;"><div style="width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.2);flex-shrink:0;"></div><span style="font-weight:700;">Administrador</span></div><div>🎣 ¡Gran pesca hoy!</div></div>` : '';
     const bannerPreview = item.cat==='banner' ? `<div style="width:100%;height:60px;border-radius:8px;margin-bottom:8px;overflow:hidden;position:relative;background:${item.id==='banner_fuego'?'linear-gradient(180deg,#0a0000,#2d0800)':item.id==='banner_flores'?'linear-gradient(180deg,#0d0018,#2d0060)':item.id==='banner_ocean'?'linear-gradient(180deg,#00050f,#002050)':item.id==='banner_aurora'?'linear-gradient(180deg,#000508,#001a15)':item.id==='banner_galaxy'?'linear-gradient(180deg,#000005,#0a0020)':'linear-gradient(180deg,#050507,#101018)'};display:flex;align-items:center;justify-content:center;font-size:1.8rem;">${item.preview}</div>` : '';
     const temaPreview = item.cat==='tema' ? (()=>{
       const bgMap = {
@@ -15883,7 +15828,7 @@ function renderShopGrid(){
       const txt = textMap[item.id]||'color:#fff;';
       return `<div style="width:100%;height:70px;border-radius:10px;margin-bottom:8px;overflow:hidden;position:relative;background:${bg};display:flex;align-items:center;justify-content:center;gap:8px;padding:0 8px;">
         <div style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.15);flex-shrink:0;${ring}"></div>
-        <div style="font-size:.78rem;font-weight:800;font-family:'Exo 2',sans-serif;${txt}">${item.id==='tema_admin'?'ruizgustavo12':'ruizgustav…'}</div>
+        <div style="font-size:.78rem;font-weight:800;font-family:'Exo 2',sans-serif;${txt}">${item.id==='tema_admin'?'Administrador':'Administ…'}</div>
         ${item.id==='tema_admin'?'<span style="font-size:.8rem;filter:drop-shadow(0 0 4px gold);">👑</span>':''}
       </div>`;
     })() : '';
@@ -15904,7 +15849,7 @@ function renderShopGrid(){
         <span style="background:linear-gradient(135deg,#00c853,#00e676);color:#000;font-size:.65rem;font-weight:900;padding:2px 8px;border-radius:100px;">✦ GRATIS</span>
         <span style="font-size:.58rem;color:var(--muted);">30 días</span>
       </div>
-      ${item.soloAdmin && !(window.CU?.nick==='ruizgustavo12'||window.CU?.role==='admin')
+      ${item.soloAdmin && !(window.CU?.nick==='Administrador'||window.CU?.role==='admin')
         ? `<button class="shop-item-btn" style="background:rgba(255,180,0,.1);border:1px solid rgba(255,180,0,.3);color:#ffd700;" onclick="toast('👑 Este tema es exclusivo para administradores','err')">👑 Solo Admins</button>`
         : `<button class="shop-item-btn ${isEquipped?'unequip':'equip'}" onclick="toggleEquipItem('${item.id}')">${isEquipped ? '✕ Desequipar' : '▶ Equipar'}</button>`
       }
@@ -18079,7 +18024,7 @@ async function submitReport(){
 function swAdminTab(el, tabId){
   document.querySelectorAll('.adm-tab').forEach(t=>t.classList.remove('adm-on'));
   if(el) el.classList.add('adm-on');
-  ['admt-reports','admt-posts','admt-users','admt-verif','admt-grupos','admt-ads','admt-live','admt-faq','admt-soporte','admt-album','admt-ageverif']
+  ['admt-reports','admt-posts','admt-users','admt-verif','admt-grupos','admt-ads','admt-live','admt-faq','admt-soporte','admt-album']
     .forEach(id=>{ const e=document.getElementById(id); if(e) e.style.display='none'; });
   const tab = document.getElementById(tabId);
   if(tab) tab.style.display='block';
@@ -18092,11 +18037,10 @@ function swAdminTab(el, tabId){
   if(tabId==='admt-faq') loadAdminFaq();
   if(tabId==='admt-soporte') loadAdminSoporteTickets();
   if(tabId==='admt-album') loadAdminAlbum('todas');
-  if(tabId==='admt-ageverif') loadAdminAgeVerif('all');
 }
 
 async function loadAdminData(){
-  if(!window.CU || (window.CU.nick !== 'ruizgustavo12' && window.CU.nick !== 'gustavo ruiz' && window.CU.nick !== 'gustavoruiz' && window.CU.email !== 'synxyes@gmail.com' && window.CU.role !== 'admin')) return;
+  if(!window.CU || (window.CU.nick !== 'Administrador' && window.CU.nick !== 'Administrador' && window.CU.nick !== 'Administrador' && window.CU.email !== 'synxyes@gmail.com' && window.CU.role !== 'admin')) return;
 
   // Cargar todo en paralelo: posts, reportes, historias y usuarios
   const [postsSnap, reportsSnap, storiesSnap, usersSnap] = await Promise.all([
@@ -18178,7 +18122,7 @@ async function loadAdminUsers(){
       <div style="flex:1;min-width:0;">
         <div style="font-size:.85rem;font-weight:700;display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
           ${esc(u.nick||'?')}
-          ${u.nick==='ruizgustavo12'?'<span style="font-size:.6rem;background:rgba(255,68,68,.1);color:var(--red);padding:1px 6px;border-radius:100px;">ADMIN</span>':''}
+          ${u.nick==='Administrador'?'<span style="font-size:.6rem;background:rgba(255,68,68,.1);color:var(--red);padding:1px 6px;border-radius:100px;">ADMIN</span>':''}
           ${u.banned?'<span style="font-size:.6rem;background:rgba(248,81,73,.15);color:#f85149;padding:1px 6px;border-radius:100px;border:1px solid rgba(248,81,73,.3);">🔨 BANEADO</span>':''}
           
           ${getCountryFlag(u.country)?`<span style="font-size:.8rem;">${getCountryFlag(u.country)}</span>`:''}
@@ -18396,7 +18340,7 @@ window._confirmBan = async function(uid, nick){
 };
 
 async function deleteAdminPost(postId, reportId){
-  if(!window.CU || (window.CU.nick !== 'ruizgustavo12' && window.CU.email !== 'synxyes@gmail.com' && window.CU.role !== 'admin' && !window.CU.admin)){
+  if(!window.CU || (window.CU.nick !== 'Administrador' && window.CU.email !== 'synxyes@gmail.com' && window.CU.role !== 'admin' && !window.CU.admin)){
     toast('Sin permisos de admin','err'); return;
   }
   if(!confirm('¿Eliminar esta publicación?')) return;
@@ -18563,7 +18507,7 @@ async function submitAdminGroup(){
   const imgs = _adminMediaFiles['agImgPrev']||[];
   let imgUrl = '';
   if(imgs[0]) imgUrl = await uploadImage(imgs[0],'groups');
-  await addDoc(collection(db,'groups'),{name,desc,cat,img:imgUrl,ownerId:'admin',ownerNick:'ruizgustavo12',members:[],memberCount:0,time:serverTimestamp()});
+  await addDoc(collection(db,'groups'),{name,desc,cat,img:imgUrl,ownerId:'admin',ownerNick:'Administrador',members:[],memberCount:0,time:serverTimestamp()});
   document.getElementById('agName').value='';
   document.getElementById('agDesc').value='';
   document.getElementById('agImgPrev').innerHTML='';
@@ -18968,7 +18912,7 @@ async function loadGroups(){
   // Show "Crear grupo" button only for admin
   const headerEl = document.getElementById('gruposHeader');
   if(headerEl){
-    if(window.CU?.nick === 'ruizgustavo12' || window.CU?.email === 'synxyes@gmail.com'){
+    if(window.CU?.nick === 'Administrador' || window.CU?.email === 'synxyes@gmail.com'){
       headerEl.innerHTML = `<div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:var(--accent);">🎣 Grupos de Pesca</div>
         <button class="btn btn-p" style="font-size:.85rem;" onclick="om('mCreateGroup')">+ Crear grupo</button>`;
     } else {
@@ -19317,7 +19261,7 @@ async function submitSpot(){
 function spotCardHTML(s){
   const imgs = s.images||[];
   const gridClass = imgs.length>=2 ? 'g2' : '';
-  const isAdmin = window.CU?.nick === 'ruizgustavo12' || window.CU?.email === 'synxyes@gmail.com';
+  const isAdmin = window.CU?.nick === 'Administrador' || window.CU?.email === 'synxyes@gmail.com';
   const isOwner = window.CU?.id === s.userId;
   const canEdit = isAdmin || isOwner;
   const adminBtns = canEdit ? `
@@ -19704,9 +19648,9 @@ async function requestVerification(){
       requestTime: Date.now(),
       status: 'pending'
     });
-    // Notifica al admin (ruizgustavo12)
+    // Notifica al admin (Administrador)
     try {
-      const adminSnap = await getDocs(query(collection(db,'users'), where('nick','==','ruizgustavo12')));
+      const adminSnap = await getDocs(query(collection(db,'users'), where('nick','==','Administrador')));
       if(!adminSnap.empty){
         const adminId = adminSnap.docs[0].id;
         const adminData = adminSnap.docs[0].data();
@@ -19801,282 +19745,6 @@ async function adminRevokeVerif(reqId, nick, userId){
     toast(`Verificación de ${nick} revocada`,'inf');
     loadVerifRequests();
   } catch(e){ toast('Error al revocar','err'); }
-}
-
-/* ================================================================
-   VERIFICACIÓN DE EDAD +18 — SISTEMA COMPLETO
-   Colección Firestore: ageVerifications/{userId}
-   Campos: userId, nick, av, docImg, status, submittedAt,
-           reviewedAt, reviewedBy, rejectionReason, birthYear
-================================================================ */
-
-// ── USUARIO: solicitar verificación de edad ──────────────────────
-window.openAgeVerifModal = function(){
-  if(!window.CU){ toast('Tenés que estar logueado','err'); return; }
-  if(window.CU.ageVerified){ toast('Tu edad ya está verificada ✅','ok'); return; }
-  if(window.CU.ageVerifPending){ toast('Tu solicitud ya está en revisión ⏳','inf'); return; }
-
-  // Crear modal si no existe
-  let m = document.getElementById('_ageVerifModal');
-  if(!m){
-    m = document.createElement('div');
-    m.id = '_ageVerifModal';
-    m.style.cssText = 'display:none;position:fixed;inset:0;z-index:99990;background:rgba(0,0,0,.75);align-items:center;justify-content:center;padding:16px;';
-    m.innerHTML = `
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;max-width:440px;width:100%;padding:22px;position:relative;">
-        <button onclick="document.getElementById('_ageVerifModal').style.display='none'" style="position:absolute;top:12px;right:12px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);border-radius:50%;width:28px;height:28px;cursor:pointer;">✕</button>
-        <div style="font-family:'Orbitron',monospace;font-size:.9rem;font-weight:900;color:orange;margin-bottom:4px;">🪪 Verificación de Edad +18</div>
-        <div style="font-size:.75rem;color:var(--muted);margin-bottom:16px;line-height:1.5;">Subí una foto de tu documento de identidad (DNI, cédula, pasaporte). Solo el admin lo verá para verificar que sos mayor de 18 años. La imagen se elimina después de la revisión.</div>
-
-        <div style="background:rgba(255,165,0,.07);border:1px solid rgba(255,165,0,.25);border-radius:10px;padding:12px;margin-bottom:14px;font-size:.72rem;color:rgba(255,165,0,.9);line-height:1.5;">
-          ⚠️ <strong>Privacidad:</strong> Solo se usa para verificar tu edad. No se comparte con otros usuarios. Podés tapar tu número de documento si querés — solo necesitamos ver tu fecha de nacimiento.
-        </div>
-
-        <label style="display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border:2px dashed var(--border);border-radius:12px;cursor:pointer;color:var(--muted);font-size:.85rem;background:var(--bg3);margin-bottom:10px;transition:border-color .2s;" onmouseover="this.style.borderColor='orange'" onmouseout="this.style.borderColor='var(--border)'">
-          📄 Seleccionar foto del documento
-          <input type="file" accept="image/*" id="_ageVerifDocInput" style="display:none" onchange="_ageVerifPreview(this)">
-        </label>
-        <div id="_ageVerifDocPrev" style="margin-bottom:10px;"></div>
-
-        <div style="margin-bottom:14px;">
-          <label style="font-size:.75rem;color:var(--muted);display:block;margin-bottom:5px;">Año de nacimiento (opcional, para agilizar la revisión)</label>
-          <input type="number" id="_ageVerifBirthYear" placeholder="Ej: 1995" min="1900" max="2010"
-            style="width:100%;padding:9px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:.85rem;box-sizing:border-box;outline:none;">
-        </div>
-
-        <button onclick="_ageVerifSubmit()" style="width:100%;background:linear-gradient(135deg,orange,#e67e00);border:none;color:#000;padding:12px;border-radius:var(--rs);font-weight:900;font-size:.88rem;cursor:pointer;font-family:'Exo 2',sans-serif;">
-          📤 Enviar solicitud
-        </button>
-        <div id="_ageVerifStatus" style="margin-top:10px;font-size:.75rem;text-align:center;min-height:18px;"></div>
-      </div>`;
-    document.body.appendChild(m);
-  }
-  // Reset estado
-  const inp = document.getElementById('_ageVerifDocInput');
-  const prev = document.getElementById('_ageVerifDocPrev');
-  const st = document.getElementById('_ageVerifStatus');
-  const by = document.getElementById('_ageVerifBirthYear');
-  if(inp) inp.value = '';
-  if(prev) prev.innerHTML = '';
-  if(st) st.textContent = '';
-  if(by) by.value = '';
-  window._ageVerifFile = null;
-  m.style.display = 'flex';
-};
-
-window._ageVerifPreview = function(inp){
-  if(!inp.files||!inp.files[0]) return;
-  window._ageVerifFile = inp.files[0];
-  const url = URL.createObjectURL(inp.files[0]);
-  const prev = document.getElementById('_ageVerifDocPrev');
-  if(prev) prev.innerHTML = `<img src="${url}" style="width:100%;max-height:200px;object-fit:contain;border-radius:10px;background:#000;display:block;">`;
-};
-
-window._ageVerifSubmit = async function(){
-  const st = document.getElementById('_ageVerifStatus');
-  if(!window._ageVerifFile){ if(st) st.innerHTML='<span style="color:var(--red);">Seleccioná una foto del documento primero</span>'; return; }
-  if(!window.CU){ return; }
-  const by = document.getElementById('_ageVerifBirthYear');
-  const birthYear = by ? parseInt(by.value)||null : null;
-  if(birthYear && (birthYear < 1900 || birthYear > 2010)){ if(st) st.innerHTML='<span style="color:var(--red);">Año de nacimiento inválido</span>'; return; }
-
-  if(st) st.innerHTML='<span style="color:orange;">⏳ Subiendo documento...</span>';
-  try {
-    // Subir imagen a Cloudinary en carpeta age_verif
-    const docUrl = await uploadImage(window._ageVerifFile, 'age_verif');
-    if(!docUrl) throw new Error('No se pudo subir la imagen');
-
-    if(st) st.innerHTML='<span style="color:orange;">⏳ Enviando solicitud...</span>';
-
-    // Guardar en Firestore
-    await setDoc(doc(db,'ageVerifications', window.CU.id),{
-      userId: window.CU.id,
-      nick: window.CU.nick,
-      av: window.CU.av||'',
-      docImg: docUrl,
-      status: 'pending',
-      submittedAt: Date.now(),
-      birthYear: birthYear||null,
-      reviewedAt: null,
-      reviewedBy: null,
-      rejectionReason: null
-    });
-
-    // Marcar al usuario como pendiente
-    await updateDoc(doc(db,'users', window.CU.id),{ ageVerifPending: true });
-    window.CU.ageVerifPending = true;
-    window._ageVerifFile = null;
-
-    // Notificar al admin
-    try {
-      const admSnap = await getDocs(query(collection(db,'users'), where('email','==','synxyes@gmail.com')));
-      if(!admSnap.empty){
-        const admId = admSnap.docs[0].id;
-        const admData = admSnap.docs[0].data();
-        const notifs = admData.notifs||[];
-        notifs.unshift({ type:'ageVerifRequest', fromId:window.CU.id, fromNick:window.CU.nick, fromAv:window.CU.av||'', time:Date.now(), text:`${window.CU.nick} solicita verificación de edad +18` });
-        await updateDoc(doc(db,'users',admId),{ notifs: notifs.slice(0,50) });
-      }
-    } catch(e){}
-
-    // Actualizar badge del panel admin si está abierto
-    _updateAgeVerifAdminBadge();
-
-    if(st) st.innerHTML='<span style="color:#00c853;">✅ Solicitud enviada. El admin revisará tu documento en breve.</span>';
-    setTimeout(()=>{ const m=document.getElementById('_ageVerifModal'); if(m) m.style.display='none'; }, 2500);
-
-  } catch(e){
-    if(st) st.innerHTML=`<span style="color:var(--red);">❌ Error: ${e.message}</span>`;
-  }
-};
-
-// ── ADMIN: cargar panel de verificaciones de edad ────────────────
-window.loadAdminAgeVerif = async function(filter){
-  filter = filter || 'all';
-  // Actualizar botones de filtro
-  ['agef-pend','agef-apro','agef-rej','agef-all'].forEach(id=>{
-    const b = document.getElementById(id);
-    if(b){ b.classList.remove('active'); b.style.fontWeight=''; }
-  });
-  const activeMap = { pending:'agef-pend', approved:'agef-apro', rejected:'agef-rej', all:'agef-all' };
-  const activeBtn = document.getElementById(activeMap[filter]);
-  if(activeBtn){ activeBtn.classList.add('active'); }
-
-  const el = document.getElementById('adminAgeVerifList');
-  if(!el) return;
-  el.innerHTML = '<div style="text-align:center;padding:32px;color:var(--muted);">⏳ Cargando...</div>';
-
-  try {
-    let q;
-    if(filter === 'all'){
-      q = query(collection(db,'ageVerifications'), limit(100));
-    } else {
-      q = query(collection(db,'ageVerifications'), where('status','==',filter), limit(100));
-    }
-    const snap = await getDocs(q);
-    const reqs = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.submittedAt||0)-(a.submittedAt||0));
-
-    // Actualizar badge de pendientes
-    const pendCount = reqs.filter(r=>r.status==='pending').length;
-    const badge = document.getElementById('admAgeVerifBadge');
-    if(badge){ badge.style.display = pendCount>0?'inline':'none'; badge.textContent=pendCount; }
-
-    if(!reqs.length){
-      el.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted);">Sin solicitudes 🎉</div>';
-      return;
-    }
-
-    el.innerHTML = reqs.map(r=>{
-      const statusColor = r.status==='approved'?'rgba(0,200,0,.12)':r.status==='rejected'?'rgba(255,0,0,.06)':'rgba(255,165,0,.07)';
-      const statusBorder = r.status==='approved'?'rgba(0,200,0,.25)':r.status==='rejected'?'rgba(255,0,0,.18)':'rgba(255,165,0,.3)';
-      const statusLabel = r.status==='approved'?'<span style="background:rgba(0,200,0,.15);color:#00c853;padding:2px 9px;border-radius:100px;font-size:.68rem;font-weight:800;">✅ Aprobado</span>'
-        :r.status==='rejected'?'<span style="background:rgba(255,0,0,.1);color:var(--red);padding:2px 9px;border-radius:100px;font-size:.68rem;font-weight:800;">❌ Rechazado</span>'
-        :'<span style="background:rgba(255,165,0,.15);color:orange;padding:2px 9px;border-radius:100px;font-size:.68rem;font-weight:800;">⏳ Pendiente</span>';
-      const fechaEnvio = r.submittedAt ? new Date(r.submittedAt).toLocaleString('es-AR') : '—';
-      const fechaReview = r.reviewedAt ? new Date(r.reviewedAt).toLocaleString('es-AR') : '—';
-      const nickSafe = (r.nick||'').replace(/'/g,"\\'");
-
-      return `<div style="background:${statusColor};border:1px solid ${statusBorder};border-radius:12px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-        <div style="width:46px;height:46px;border-radius:50%;overflow:hidden;border:2px solid ${statusBorder};flex-shrink:0;background:var(--bg3);">
-          <img src="${r.av||''}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">
-        </div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-weight:800;font-size:.88rem;">${esc(r.nick||'?')}</div>
-          <div style="font-size:.7rem;color:var(--muted);margin-top:1px;">Enviado: ${fechaEnvio}${r.birthYear?` · Año nac.: <strong>${r.birthYear}</strong>`:''}</div>
-          ${r.status!=='pending'?`<div style="font-size:.7rem;color:var(--muted);">Revisado: ${fechaReview}${r.rejectionReason?` · Motivo: ${esc(r.rejectionReason)}`:''}</div>`:''}
-          <div style="margin-top:5px;">${statusLabel}</div>
-        </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0;">
-          <button onclick="adminViewAgeDoc('${r.id}','${nickSafe}','${r.userId}','${r.docImg||''}')" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:var(--rs);font-size:.73rem;cursor:pointer;font-family:'Exo 2',sans-serif;">🪪 Ver doc</button>
-          ${r.status==='pending'?`
-          <button onclick="adminApproveAgeVerif('${r.id}','${nickSafe}','${r.userId}')" style="background:rgba(0,200,0,.1);border:1px solid rgba(0,200,0,.3);color:#00c853;padding:6px 12px;border-radius:var(--rs);font-size:.73rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">✅ Aprobar</button>
-          <button onclick="adminRejectAgeVerif('${r.id}','${nickSafe}','${r.userId}')" style="background:rgba(255,0,0,.06);border:1px solid rgba(255,0,0,.2);color:var(--red);padding:6px 12px;border-radius:var(--rs);font-size:.73rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">❌ Rechazar</button>`
-          :r.status==='approved'?`<button onclick="adminRevokeAgeVerif('${r.id}','${nickSafe}','${r.userId}')" style="background:rgba(255,165,0,.08);border:1px solid rgba(255,165,0,.25);color:orange;padding:6px 12px;border-radius:var(--rs);font-size:.73rem;cursor:pointer;font-family:'Exo 2',sans-serif;">↩ Revocar</button>`
-          :`<button onclick="adminApproveAgeVerif('${r.id}','${nickSafe}','${r.userId}')" style="background:rgba(0,200,0,.1);border:1px solid rgba(0,200,0,.3);color:#00c853;padding:6px 12px;border-radius:var(--rs);font-size:.73rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">✅ Aprobar</button>`}
-        </div>
-      </div>`;
-    }).join('');
-
-  } catch(e){ el.innerHTML='<div style="text-align:center;padding:32px;color:var(--muted);">Error al cargar</div>'; console.error(e); }
-};
-
-// ── ADMIN: ver documento ─────────────────────────────────────────
-window.adminViewAgeDoc = function(reqId, nick, userId, docImg){
-  const m = document.getElementById('modalAdminVerDoc');
-  const img = document.getElementById('modalAdminVerDocImg');
-  const info = document.getElementById('modalAdminVerDocInfo');
-  const btnApprove = document.getElementById('modalAdminVerDocApprove');
-  const btnReject = document.getElementById('modalAdminVerDocReject');
-  if(!m||!img) return;
-  img.src = docImg || '';
-  if(info) info.textContent = `Usuario: ${nick}`;
-  btnApprove.onclick = ()=>{ m.style.display='none'; adminApproveAgeVerif(reqId,nick,userId); };
-  btnReject.onclick  = ()=>{ m.style.display='none'; adminRejectAgeVerif(reqId,nick,userId); };
-  m.style.display = 'flex';
-};
-
-// ── ADMIN: aprobar ───────────────────────────────────────────────
-window.adminApproveAgeVerif = async function(reqId, nick, userId){
-  try {
-    const now = Date.now();
-    await updateDoc(doc(db,'users',userId),{ ageVerified:true, ageVerifPending:false });
-    await setDoc(doc(db,'ageVerifications',reqId),{ status:'approved', reviewedAt:now, reviewedBy: window.CU?window.CU.id:'admin' },{merge:true});
-    // Notificar al usuario
-    try {
-      const uSnap = await getDoc(doc(db,'users',userId));
-      if(uSnap.exists()){
-        const notifs = uSnap.data().notifs||[];
-        notifs.unshift({ type:'ageVerifApproved', time:now, text:'¡Tu edad fue verificada! Ya tenés acceso completo +18 🎉' });
-        await updateDoc(doc(db,'users',userId),{ notifs: notifs.slice(0,50) });
-      }
-    } catch(e){}
-    toast(`✅ Edad de ${nick} verificada`,'ok');
-    loadAdminAgeVerif('all');
-  } catch(e){ toast('Error al aprobar','err'); console.error(e); }
-};
-
-// ── ADMIN: rechazar ──────────────────────────────────────────────
-window.adminRejectAgeVerif = async function(reqId, nick, userId){
-  const motivo = prompt(`Motivo del rechazo para ${nick} (opcional):`);
-  if(motivo === null) return; // canceló
-  try {
-    const now = Date.now();
-    await updateDoc(doc(db,'users',userId),{ ageVerifPending:false });
-    await setDoc(doc(db,'ageVerifications',reqId),{ status:'rejected', reviewedAt:now, reviewedBy:window.CU?window.CU.id:'admin', rejectionReason:motivo||'' },{merge:true});
-    // Notificar al usuario
-    try {
-      const uSnap = await getDoc(doc(db,'users',userId));
-      if(uSnap.exists()){
-        const notifs = uSnap.data().notifs||[];
-        const txt = motivo ? `Tu verificación de edad fue rechazada. Motivo: ${motivo}` : 'Tu verificación de edad fue rechazada. Podés intentarlo de nuevo.';
-        notifs.unshift({ type:'ageVerifRejected', time:now, text:txt });
-        await updateDoc(doc(db,'users',userId),{ notifs: notifs.slice(0,50) });
-      }
-    } catch(e){}
-    toast(`Solicitud de ${nick} rechazada`,'inf');
-    loadAdminAgeVerif('all');
-  } catch(e){ toast('Error al rechazar','err'); console.error(e); }
-};
-
-// ── ADMIN: revocar ───────────────────────────────────────────────
-window.adminRevokeAgeVerif = async function(reqId, nick, userId){
-  if(!confirm(`¿Revocar la verificación de edad de ${nick}?`)) return;
-  try {
-    await updateDoc(doc(db,'users',userId),{ ageVerified:false });
-    await setDoc(doc(db,'ageVerifications',reqId),{ status:'rejected', reviewedAt:Date.now(), reviewedBy:window.CU?window.CU.id:'admin', rejectionReason:'Revocado por admin' },{merge:true});
-    toast(`Verificación de ${nick} revocada`,'inf');
-    loadAdminAgeVerif('all');
-  } catch(e){ toast('Error al revocar','err'); }
-};
-
-// ── Helper: actualizar badge del panel admin ─────────────────────
-async function _updateAgeVerifAdminBadge(){
-  try {
-    const snap = await getDocs(query(collection(db,'ageVerifications'), where('status','==','pending')));
-    const count = snap.size;
-    const badge = document.getElementById('admAgeVerifBadge');
-    if(badge){ badge.style.display = count>0?'inline':'none'; badge.textContent=count; }
-  } catch(e){}
 }
 
 /* ===== VERIFICACIÓN MASIVA POR FOTOS ===== */
@@ -21515,7 +21183,7 @@ function togglePostMenu(pid, e, ownerId){
 
   const menuOwner = (ownerId || menu.dataset.owner || '').trim();
   const myId = (window.CU?.id || '').trim();
-  const isAdmin = !!(window.CU?.admin || window.CU?.nick === 'ruizgustavo12' || window.CU?.role === 'admin' || window.CU?.email === 'synxyes@gmail.com');
+  const isAdmin = !!(window.CU?.admin || window.CU?.nick === 'Administrador' || window.CU?.role === 'admin' || window.CU?.email === 'synxyes@gmail.com');
   const isOwner = !!(myId && (menuOwner === myId));
 
   // Botones de dueño (editar, eliminar propios)
@@ -21765,7 +21433,7 @@ function renderFeedOnline(online){
     const nick = esc(u.nick||'?');
     const av   = u.av || getDefaultAv(u.gender||'');
     const dev  = u.device||'desktop';
-    const isAdmin = u.nick==='ruizgustavo12'||u.role==='admin';
+    const isAdmin = u.nick==='Administrador'||u.role==='admin';
     const dotColor = isAdmin ? '#ffd700' : (dev==='mobile' ? '#00e676' : '#1877f2');
     const avClass  = isAdmin ? 'fow-admin' : (dev==='mobile' ? 'fow-mob' : 'fow-pc');
 
@@ -21874,7 +21542,7 @@ function renderSidebarOnline(online, offline){
     const nick = esc(u.nick||'?');
     const dev = u.device || 'desktop';
     const fc = frameClass(isOnline, dev);
-    const isAdmin = u.nick==='ruizgustavo12' || u.role==='admin';
+    const isAdmin = u.nick==='Administrador' || u.role==='admin';
     const isVerified = !!u.verified;
     const isHighLvl = false;
     const isLegend  = false;
@@ -24620,7 +24288,7 @@ function closeMusicPlayer(){
 // ===== SHOP ANNOUNCEMENT TO ALL =====
 async function sendShopAnnouncementToAll(){
   const btn = document.getElementById('btnShopAnnounce');
-  if(!window.CU || (window.CU.role !== 'admin' && window.CU.nick !== 'ruizgustavo12' && window.CU.nick !== 'gustavo ruiz' && window.CU.nick !== 'gustavoruiz')){
+  if(!window.CU || (window.CU.role !== 'admin' && window.CU.nick !== 'Administrador' && window.CU.nick !== 'Administrador' && window.CU.nick !== 'Administrador')){
     toast('Solo el admin puede hacer esto','err'); return;
   }
   if(!confirm('¿Enviar mensaje de Tienda Gratis a TODOS los usuarios?')) return;
@@ -24674,7 +24342,6 @@ const _expose = {
   reportPost,submitReport,
   loadAdminData,deleteAdminPost,resolveReport,
   requestVerification, loadVerifRequests, adminApproveVerif, adminRejectVerif, adminRevokeVerif,
-  openAgeVerifModal, _ageVerifPreview, _ageVerifSubmit, loadAdminAgeVerif, adminViewAgeDoc, adminApproveAgeVerif, adminRejectAgeVerif, adminRevokeAgeVerif,
   sendShopAnnouncementToAll,
   switchNotifTab, markAllNotifsRead, filterChatSearch,
   openChatMenu, archiveChat, unarchiveChat, markChatRead, markChatUnread, deleteChatConfirm,
@@ -24850,7 +24517,7 @@ async function spLoadData(){
 
 function spCardHTML(s){
   const imgs = s.images||[];
-  const isAdmin = window.CU?.nick === 'ruizgustavo12' || window.CU?.email === 'synxyes@gmail.com';
+  const isAdmin = window.CU?.nick === 'Administrador' || window.CU?.email === 'synxyes@gmail.com';
   const isOwner = window.CU?.id === s.userId;
   const canDel = isAdmin || isOwner;
   const timeStr = s.time?.toMillis ? fmtT(s.time.toMillis()) : fmtT(s.time||Date.now());
@@ -24940,7 +24607,7 @@ window.spOnHomeMapChange = function(){
 async function spLoadAdmin(){
   const el = document.getElementById('spAdminList');
   if(!el) return;
-  const isAdmin = window.CU?.nick === 'ruizgustavo12' || window.CU?.email === 'synxyes@gmail.com' || window.CU?.role === 'admin';
+  const isAdmin = window.CU?.nick === 'Administrador' || window.CU?.email === 'synxyes@gmail.com' || window.CU?.role === 'admin';
   if(!isAdmin){ el.innerHTML='<div style="color:var(--muted)">Solo admins</div>'; return; }
   el.innerHTML = '<div style="color:var(--muted)">Cargando...</div>';
   try {
@@ -24965,7 +24632,7 @@ window.spRemFile = window.spRemFile;
 
 
 // ===== RANKING SEMANAL =====
-const EXCLUDED_FROM_RANKING = ['ruizgustavo12'];
+const EXCLUDED_FROM_RANKING = ['Administrador'];
 const EXCLUDED_EMAILS_RANKING = ['synxyes@gmail.com'];
 
 function getRankWeekRange(){
@@ -26853,12 +26520,12 @@ window._loadMemories = loadMemories;
 
 <script>
 // ═══════════════════════════════════════════════════════
-// CHANGELOG — Solo visible para ruizgustavo12
+// CHANGELOG — Solo visible para Administrador
 // Actualizar VERSION y CHANGES cada vez que se sube un index nuevo
 // ═══════════════════════════════════════════════════════
 const _CL_VERSION = '2026-03-08-v47';
 const _CL_CHANGES = [
-  { emoji:'💬', text:'En qué estás pensando — el post box ahora dice tu nombre: ¿En qué estás pensando, ruizgustavo12?' },
+  { emoji:'💬', text:'En qué estás pensando — el post box ahora dice tu nombre: ¿En qué estás pensando, Administrador?' },
   { emoji:'📤', text:'Compartir post por mensaje — ahora muestra vista previa con imagen, nick y texto. Click para ir directo al post' },
   { emoji:'🎵', text:'Fix: Historias con música — al pasar a la siguiente historia el audio anterior se corta al instante' },
   { emoji:'⚡', text:'Feed instantáneo — se eliminó el smart patch de Firebase, el feed ahora re-renderiza directo y sin lag' },
@@ -26935,7 +26602,7 @@ function _showChangelogModal(){
   document.body.appendChild(m);
 }
 
-// Hook en onAuthStateChanged — mostrar solo si es ruizgustavo12
+// Hook en onAuthStateChanged — mostrar solo si es Administrador
 // Actualiza el placeholder del post box con el nick del usuario
 function _updatePostBoxPlaceholder(){
   const nick = window.CU?.nick;
@@ -26948,7 +26615,7 @@ window._updatePostBoxPlaceholder = _updatePostBoxPlaceholder;
 window._checkChangelog = function(){
   const nick = window.CU?.nick;
   const email = window.CU?.email;
-  if(nick === 'ruizgustavo12' || email === 'synxyes@gmail.com'){
+  if(nick === 'Administrador' || email === 'synxyes@gmail.com'){
     setTimeout(_showChangelog, 2000); // esperar que cargue todo
   }
 };
@@ -28002,7 +27669,7 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
       if(m.role==='admin') badge = '<span style="font-size:.58rem;background:#ff4444;color:#fff;padding:1px 5px;border-radius:3px;margin-right:3px;">ADMIN</span>';
       else if(m.role==='premium') badge = '<span style="font-size:.58rem;background:linear-gradient(90deg,#b8860b,#ffd700);color:#000;padding:1px 5px;border-radius:3px;margin-right:3px;">⭐</span>';
 
-      var isAdmin = window.CU && (window.CU.role === 'admin' || window.CU.nick === 'ruizgustavo12' || window.CU.email === 'synxyes@gmail.com');
+      var isAdmin = window.CU && (window.CU.role === 'admin' || window.CU.nick === 'Administrador' || window.CU.email === 'synxyes@gmail.com');
       var deleteBtn = isAdmin
         ? '<button onclick="deleteGlobalMsg(\''+m.id+'\')" style="margin-left:6px;background:none;border:none;color:#f85149;font-size:.7rem;cursor:pointer;opacity:.5;padding:0 3px;line-height:1;" title="Borrar">✕</button>'
         : '';
@@ -28024,7 +27691,7 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
   window.deleteGlobalMsg = async function(msgId){
     if(!msgId) return;
     if(!window.CU) return;
-    var isAdmin = window.CU.role === 'admin' || window.CU.nick === 'ruizgustavo12' || window.CU.email === 'synxyes@gmail.com';
+    var isAdmin = window.CU.role === 'admin' || window.CU.nick === 'Administrador' || window.CU.email === 'synxyes@gmail.com';
     if(!isAdmin) return;
     try{
       var { deleteDoc, doc } = window.firebaseFirestore || {};
@@ -29789,9 +29456,9 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
   function _isAdmin(){
     return window.CU && (
       window.CU.role === 'admin' ||
-      window.CU.nick === 'ruizgustavo12' ||
-      window.CU.nick === 'gustavo ruiz' ||
-      window.CU.nick === 'gustavoruiz' ||
+      window.CU.nick === 'Administrador' ||
+      window.CU.nick === 'Administrador' ||
+      window.CU.nick === 'Administrador' ||
       window.CU.email === 'synxyes@gmail.com'
     );
   }
@@ -30669,7 +30336,7 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
 
   // ── Aprobar video ────────────────────────────────────────
   window.adminAprobarVideo = async function(postId, ytId){
-    const _isAdmin = window.CU && (window.CU.nick === 'ruizgustavo12' || window.CU.nick === 'gustavo ruiz' || window.CU.nick === 'gustavoruiz' || window.CU.email === 'synxyes@gmail.com' || window.CU.role === 'admin');
+    const _isAdmin = window.CU && (window.CU.nick === 'Administrador' || window.CU.nick === 'Administrador' || window.CU.nick === 'Administrador' || window.CU.email === 'synxyes@gmail.com' || window.CU.role === 'admin');
     if(!_isAdmin){ toast('Sin permisos','err'); return; }
     if(!confirm('¿Aprobar este video? Quedará visible para todos los usuarios.')) return;
 
@@ -30714,7 +30381,7 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(updatePremiumBt
 
   // ── Rechazar video ───────────────────────────────────────
   window.adminRechazarVideo = async function(postId, ytId){
-    const _isAdmin = window.CU && (window.CU.nick === 'ruizgustavo12' || window.CU.nick === 'gustavo ruiz' || window.CU.nick === 'gustavoruiz' || window.CU.email === 'synxyes@gmail.com' || window.CU.role === 'admin');
+    const _isAdmin = window.CU && (window.CU.nick === 'Administrador' || window.CU.nick === 'Administrador' || window.CU.nick === 'Administrador' || window.CU.email === 'synxyes@gmail.com' || window.CU.role === 'admin');
     if(!_isAdmin){ toast('Sin permisos','err'); return; }
     if(!confirm('¿Rechazar y eliminar este video del post? El video en YouTube quedará sin listar.')) return;
 
