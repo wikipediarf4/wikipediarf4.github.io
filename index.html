@@ -11,12 +11,15 @@
 
   // ── 1. BLOQUEAR CLIC DERECHO ──────────────────────────────────────────────
   document.addEventListener('contextmenu', function(e){
+    if(e.target && e.target.closest && (e.target.closest('#page-admin') || e.target.closest('#page-superadmin'))) return;
     e.preventDefault();
     return false;
   });
 
   // ── 2. BLOQUEAR ATAJOS DE TECLADO PELIGROSOS ─────────────────────────────
   document.addEventListener('keydown', function(e){
+    // No bloquear nada dentro de los paneles admin/superadmin
+    if(e.target && e.target.closest && (e.target.closest('#page-admin') || e.target.closest('#page-superadmin'))) return;
     var k = e.key || e.keyCode;
     // F12
     if(k === 'F12' || k === 123){ e.preventDefault(); return false; }
@@ -34,7 +37,7 @@
   document.addEventListener('selectstart', function(e){ if(e.target && e.target.closest && (e.target.closest('#page-admin') || e.target.closest('#page-superadmin'))) return; e.preventDefault(); return false; });
   document.addEventListener('copy',        function(e){ if(e.target && e.target.closest && (e.target.closest('#page-admin') || e.target.closest('#page-superadmin'))) return; e.preventDefault(); return false; });
   document.addEventListener('cut',         function(e){ if(e.target && e.target.closest && (e.target.closest('#page-admin') || e.target.closest('#page-superadmin'))) return; e.preventDefault(); return false; });
-  document.addEventListener('dragstart',   function(e){ e.preventDefault(); return false; });
+  document.addEventListener('dragstart',   function(e){ if(e.target && e.target.closest && (e.target.closest('#page-admin') || e.target.closest('#page-superadmin'))) return; e.preventDefault(); return false; });
 
   // CSS para deshabilitar selección visual
   var selStyle = document.createElement('style');
