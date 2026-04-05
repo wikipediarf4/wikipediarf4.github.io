@@ -1783,6 +1783,8 @@ select.fi option{background:var(--bg3);color:var(--text);}
 .active-map{background:rgba(0,198,255,.12)!important;border-color:var(--accent)!important;color:var(--accent)!important;}
 .adm-tab{background:var(--bg2);border:1px solid var(--border);color:var(--muted);padding:10px 6px;border-radius:10px;font-size:.78rem;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:600;transition:all .18s;text-align:center;}
 .adm-tab:hover{color:var(--text);border-color:var(--accent);background:var(--bg3);}
+.sa-tab:hover{background:rgba(180,0,0,.2)!important;border-color:#ff2222!important;color:#ff2222!important;}
+.sa-on{background:rgba(200,0,0,.25)!important;border-color:#ff0000!important;color:#ff2222!important;box-shadow:0 0 10px rgba(200,0,0,.3)!important;}
 .adm-on{background:rgba(0,198,255,.12)!important;border-color:var(--accent)!important;color:var(--accent)!important;box-shadow:0 0 0 1px var(--accent) inset;}
 .btn-s:hover{border-color:var(--accent);color:var(--accent);}
 .btn-full{width:100%;}
@@ -2652,6 +2654,7 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
     <button class="tb-nav-btn" onclick="gp('salas');setNav(this);initSalasPage();" title="Chat Salas" style="font-size:.75rem;font-weight:700;">💬 Chat</button>
     <button class="tb-nav-btn" onclick="gp('reels');setNav(this);" title="Reels" style="font-size:.75rem;font-weight:700;">🎬 Reels</button>
     <button class="tb-nav-btn" id="adminNavBtn" style="display:none;font-size:.75rem;font-weight:700;" onclick="gp('admin');setNav(this)" title="Panel Admin">🛡️ Admin</button>
+    <button class="tb-nav-btn" id="superAdminNavBtn" style="display:none;font-size:.75rem;font-weight:700;background:linear-gradient(135deg,rgba(200,0,0,.18),rgba(180,0,0,.08));border:1px solid rgba(220,0,0,.45);color:#ff3333;" onclick="gp('superadmin');setNav(this)" title="Super Admin">🔴 Super Admin</button>
   </div>
   <div class="tb-right">
     <div id="installPwaBtn" onclick="installPwa()" title="Instalar App" style="display:none;align-items:center;gap:5px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;border:none;padding:6px 12px;border-radius:100px;font-size:.75rem;font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;">📲 Instalar App</div>
@@ -2682,6 +2685,7 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
         <div onclick="openEditProfile();toggleUserMenu()" style="padding:10px 14px;cursor:pointer;font-size:.83rem;display:flex;align-items:center;gap:8px;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">✏️ Editar perfil</div>
         <div onclick="openLangModal();toggleUserMenu()" style="padding:10px 14px;cursor:pointer;font-size:.83rem;display:flex;align-items:center;gap:8px;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">🌐 <span data-i18n="menu_language">Idioma</span> <span id="langCurrentFlag" style="margin-left:auto;font-size:.8rem;color:var(--muted);">ES</span></div>
         <div id="userMenuAdmin" style="display:none;padding:10px 14px;cursor:pointer;font-size:.83rem;align-items:center;gap:8px;transition:background .15s;color:var(--red);" onclick="gp('admin');toggleUserMenu()" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">🛡️ Panel Admin</div>
+        <div id="userMenuSuperAdmin" style="display:none;padding:10px 14px;cursor:pointer;font-size:.83rem;align-items:center;gap:8px;transition:background .15s;color:#ff2222;font-weight:800;border-left:3px solid #cc0000;" onclick="gp('superadmin');toggleUserMenu()" onmouseover="this.style.background='rgba(180,0,0,.12)'" onmouseout="this.style.background=''">🔴 Super Admin</div>
         <div style="height:1px;background:var(--border);"></div>
         <div id="pushNotifMenuItem" onclick="requestPushPermission();toggleUserMenu()" style="padding:10px 14px;cursor:pointer;font-size:.83rem;display:flex;align-items:center;gap:8px;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">🔔 Activar notificaciones</div>
         <div style="height:1px;background:var(--border);"></div>
@@ -7192,6 +7196,221 @@ window.initSalasPage = window.initSalasPage;
 
 </div><!-- fin page-admin -->
 
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- ████  SUPER ADMIN PANEL — ACCESO MÁXIMO  ████ -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="page" id="page-superadmin" style="max-width:1100px;margin:0 auto;padding:20px 14px 80px;">
+
+<!-- ══ HEADER ══ -->
+<div style="display:flex;align-items:center;gap:14px;margin-bottom:22px;flex-wrap:wrap;">
+  <div style="width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,rgba(220,0,0,.35),rgba(140,0,0,.15));border:1px solid rgba(220,0,0,.6);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;box-shadow:0 0 18px rgba(200,0,0,.25);">🔴</div>
+  <div>
+    <div style="font-family:'Orbitron',monospace;font-size:1.05rem;font-weight:900;color:#ff2222;letter-spacing:.06em;text-shadow:0 0 12px rgba(255,0,0,.4);">Super Panel de Administración</div>
+    <div style="font-size:.72rem;color:#ff6666;margin-top:1px;">MiLatido.UY — acceso máximo ⚠️ zona restringida</div>
+  </div>
+  <button onclick="loadSuperAdminData()" style="margin-left:auto;background:rgba(180,0,0,.12);border:1px solid rgba(220,0,0,.4);color:#ff4444;padding:7px 16px;border-radius:var(--rs);font-size:.78rem;cursor:pointer;font-family:'Exo 2',sans-serif;display:flex;align-items:center;gap:5px;transition:all .15s;" onmouseover="this.style.borderColor='#ff0000';this.style.background='rgba(180,0,0,.22)'" onmouseout="this.style.borderColor='rgba(220,0,0,.4)';this.style.background='rgba(180,0,0,.12)'">🔄 Actualizar</button>
+</div>
+
+<!-- ══ ALERTA ROJA ══ -->
+<div style="background:linear-gradient(135deg,rgba(200,0,0,.15),rgba(160,0,0,.08));border:1px solid rgba(220,0,0,.45);border-left:4px solid #cc0000;border-radius:10px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px;">
+  <span style="font-size:1.2rem;">⚠️</span>
+  <div style="font-size:.78rem;color:#ff6666;font-family:'Exo 2',sans-serif;font-weight:600;">Este panel tiene acceso de nivel máximo. Todas las acciones aquí son irreversibles y quedan registradas.</div>
+</div>
+
+<!-- ══ STATS CARDS (rojo) ══ -->
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:24px;">
+  <div style="background:rgba(180,0,0,.1);border:1px solid rgba(220,0,0,.35);border-radius:12px;padding:14px 10px;text-align:center;transition:all .2s;" onmouseover="this.style.borderColor='#ff0000';this.style.boxShadow='0 0 12px rgba(200,0,0,.2)'" onmouseout="this.style.borderColor='rgba(220,0,0,.35)';this.style.boxShadow='none'">
+    <div style="font-size:1.6rem;font-weight:900;color:#ff3333;font-family:'Orbitron',monospace;line-height:1;" id="saStatPosts">—</div>
+    <div style="font-size:.65rem;color:#ff6666;margin-top:5px;font-weight:700;">POSTS</div>
+  </div>
+  <div style="background:rgba(180,0,0,.1);border:1px solid rgba(220,0,0,.35);border-radius:12px;padding:14px 10px;text-align:center;transition:all .2s;" onmouseover="this.style.borderColor='#ff0000';this.style.boxShadow='0 0 12px rgba(200,0,0,.2)'" onmouseout="this.style.borderColor='rgba(220,0,0,.35)';this.style.boxShadow='none'">
+    <div style="font-size:1.6rem;font-weight:900;color:#ff3333;font-family:'Orbitron',monospace;line-height:1;" id="saStatUsers">—</div>
+    <div style="font-size:.65rem;color:#ff6666;margin-top:5px;font-weight:700;">USUARIOS</div>
+  </div>
+  <div style="background:rgba(180,0,0,.1);border:1px solid rgba(220,0,0,.35);border-radius:12px;padding:14px 10px;text-align:center;transition:all .2s;" onmouseover="this.style.borderColor='#ff0000';this.style.boxShadow='0 0 12px rgba(200,0,0,.2)'" onmouseout="this.style.borderColor='rgba(220,0,0,.35)';this.style.boxShadow='none'">
+    <div style="font-size:1.6rem;font-weight:900;color:#ff3333;font-family:'Orbitron',monospace;line-height:1;" id="saStatReports">—</div>
+    <div style="font-size:.65rem;color:#ff6666;margin-top:5px;font-weight:700;">REPORTES</div>
+  </div>
+  <div style="background:rgba(180,0,0,.1);border:1px solid rgba(220,0,0,.35);border-radius:12px;padding:14px 10px;text-align:center;transition:all .2s;" onmouseover="this.style.borderColor='#ff0000';this.style.boxShadow='0 0 12px rgba(200,0,0,.2)'" onmouseout="this.style.borderColor='rgba(220,0,0,.35)';this.style.boxShadow='none'">
+    <div style="font-size:1.6rem;font-weight:900;color:#ff3333;font-family:'Orbitron',monospace;line-height:1;" id="saStatBanned">—</div>
+    <div style="font-size:.65rem;color:#ff6666;margin-top:5px;font-weight:700;">BANEADOS</div>
+  </div>
+  <div style="background:rgba(180,0,0,.1);border:1px solid rgba(220,0,0,.35);border-radius:12px;padding:14px 10px;text-align:center;transition:all .2s;" onmouseover="this.style.borderColor='#ff0000';this.style.boxShadow='0 0 12px rgba(200,0,0,.2)'" onmouseout="this.style.borderColor='rgba(220,0,0,.35)';this.style.boxShadow='none'">
+    <div style="font-size:1.6rem;font-weight:900;color:#ff3333;font-family:'Orbitron',monospace;line-height:1;" id="saStatGroups">—</div>
+    <div style="font-size:.65rem;color:#ff6666;margin-top:5px;font-weight:700;">GRUPOS</div>
+  </div>
+</div>
+
+<!-- ══ TABS NAV (rojo) ══ -->
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px;margin-bottom:20px;">
+
+  <button class="sa-tab sa-on" onclick="swSuperAdminTab(this,'sat-usuarios')"
+    style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;background:rgba(180,0,0,.12);border:1px solid rgba(220,0,0,.45);color:#ff4444;cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.67rem;font-weight:700;transition:all .18s;">
+    <span style="font-size:1.2rem;">👥</span><span>Usuarios</span>
+  </button>
+
+  <button class="sa-tab" onclick="swSuperAdminTab(this,'sat-roles')"
+    style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;background:rgba(180,0,0,.06);border:1px solid rgba(220,0,0,.25);color:#cc4444;cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.67rem;font-weight:700;transition:all .18s;">
+    <span style="font-size:1.2rem;">🎖️</span><span>Roles</span>
+  </button>
+
+  <button class="sa-tab" onclick="swSuperAdminTab(this,'sat-bans')"
+    style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;background:rgba(180,0,0,.06);border:1px solid rgba(220,0,0,.25);color:#cc4444;cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.67rem;font-weight:700;transition:all .18s;">
+    <span style="font-size:1.2rem;">🚫</span><span>Bans</span>
+  </button>
+
+  <button class="sa-tab" onclick="swSuperAdminTab(this,'sat-reportes')"
+    style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;background:rgba(180,0,0,.06);border:1px solid rgba(220,0,0,.25);color:#cc4444;cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.67rem;font-weight:700;transition:all .18s;">
+    <span style="font-size:1.2rem;">⚠️</span><span>Reportes</span>
+  </button>
+
+  <button class="sa-tab" onclick="swSuperAdminTab(this,'sat-contenido')"
+    style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;background:rgba(180,0,0,.06);border:1px solid rgba(220,0,0,.25);color:#cc4444;cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.67rem;font-weight:700;transition:all .18s;">
+    <span style="font-size:1.2rem;">🗂️</span><span>Contenido</span>
+  </button>
+
+  <button class="sa-tab" onclick="swSuperAdminTab(this,'sat-logs')"
+    style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;background:rgba(180,0,0,.06);border:1px solid rgba(220,0,0,.25);color:#cc4444;cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.67rem;font-weight:700;transition:all .18s;">
+    <span style="font-size:1.2rem;">📋</span><span>Logs</span>
+  </button>
+
+  <button class="sa-tab" onclick="swSuperAdminTab(this,'sat-config')"
+    style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;background:rgba(180,0,0,.06);border:1px solid rgba(220,0,0,.25);color:#cc4444;cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.67rem;font-weight:700;transition:all .18s;">
+    <span style="font-size:1.2rem;">⚙️</span><span>Config</span>
+  </button>
+
+  <button class="sa-tab" onclick="swSuperAdminTab(this,'sat-broadcast')"
+    style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;background:rgba(180,0,0,.06);border:1px solid rgba(220,0,0,.25);color:#cc4444;cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.67rem;font-weight:700;transition:all .18s;">
+    <span style="font-size:1.2rem;">📣</span><span>Broadcast</span>
+  </button>
+
+</div>
+
+<!-- ══ TAB: USUARIOS ══ -->
+<div id="sat-usuarios" style="display:block;">
+  <div style="background:rgba(160,0,0,.09);border:1px solid rgba(220,0,0,.3);border-radius:var(--r);padding:20px;margin-bottom:14px;">
+    <div style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:700;color:#ff3333;margin-bottom:14px;">👥 Gestión Total de Usuarios</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+      <input id="saUserSearch" class="fi" placeholder="🔍 Buscar por nick, email o UID..." style="flex:1;min-width:200px;border-color:rgba(220,0,0,.4);background:rgba(160,0,0,.08);color:var(--text);" oninput="saFilterUsers(this.value)">
+      <button onclick="saLoadAllUsers()" style="background:rgba(180,0,0,.2);border:1px solid rgba(220,0,0,.5);color:#ff4444;padding:8px 16px;border-radius:var(--rs);font-size:.8rem;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700;">🔄 Cargar</button>
+    </div>
+    <div id="saUsersList" style="max-height:520px;overflow-y:auto;">
+      <div style="text-align:center;padding:40px;color:#ff6666;font-size:.82rem;">Presioná <strong>Cargar</strong> para listar todos los usuarios.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TAB: ROLES ══ -->
+<div id="sat-roles" style="display:none;">
+  <div style="background:rgba(160,0,0,.09);border:1px solid rgba(220,0,0,.3);border-radius:var(--r);padding:20px;">
+    <div style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:700;color:#ff3333;margin-bottom:14px;">🎖️ Asignar / Revocar Roles</div>
+    <div class="frow" style="margin-bottom:14px;">
+      <div class="fg"><label class="fl" style="color:#ff6666;">UID o Email del usuario</label><input class="fi" id="saRoleUid" placeholder="uid o email..." style="border-color:rgba(220,0,0,.4);background:rgba(160,0,0,.08);color:var(--text);"></div>
+      <div class="fg"><label class="fl" style="color:#ff6666;">Rol a asignar</label>
+        <select class="fi" id="saRoleSelect" style="border-color:rgba(220,0,0,.4);background:rgba(160,0,0,.08);color:var(--text);">
+          <option value="user">👤 user (estándar)</option>
+          <option value="moderator">🔰 moderator</option>
+          <option value="admin">🛡️ admin</option>
+          <option value="superadmin">🔴 superadmin</option>
+          <option value="banned">🚫 banned</option>
+        </select>
+      </div>
+    </div>
+    <button onclick="saSetRole()" style="background:linear-gradient(135deg,#cc0000,#880000);color:#fff;border:none;border-radius:var(--rs);padding:10px 22px;font-size:.85rem;font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;">💾 Aplicar Rol</button>
+    <div id="saRoleResult" style="margin-top:12px;font-size:.8rem;color:#ff6666;display:none;border-radius:var(--rs);padding:10px;background:rgba(180,0,0,.12);border:1px solid rgba(220,0,0,.3);"></div>
+  </div>
+</div>
+
+<!-- ══ TAB: BANS ══ -->
+<div id="sat-bans" style="display:none;">
+  <div style="background:rgba(160,0,0,.09);border:1px solid rgba(220,0,0,.3);border-radius:var(--r);padding:20px;margin-bottom:14px;">
+    <div style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:700;color:#ff3333;margin-bottom:14px;">🚫 Banear / Desbanear Usuario</div>
+    <div class="fg" style="margin-bottom:10px;"><label class="fl" style="color:#ff6666;">UID o Email</label><input class="fi" id="saBanUid" placeholder="uid o email..." style="border-color:rgba(220,0,0,.4);background:rgba(160,0,0,.08);color:var(--text);"></div>
+    <div class="fg" style="margin-bottom:14px;"><label class="fl" style="color:#ff6666;">Razón del ban</label><input class="fi" id="saBanReason" placeholder="Motivo..." style="border-color:rgba(220,0,0,.4);background:rgba(160,0,0,.08);color:var(--text);"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button onclick="saBanUser()" style="flex:1;background:linear-gradient(135deg,#cc0000,#880000);color:#fff;border:none;border-radius:var(--rs);padding:10px;font-size:.85rem;font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;">🚫 Banear</button>
+      <button onclick="saUnbanUser()" style="flex:1;background:rgba(0,180,0,.12);border:1px solid rgba(0,200,0,.35);color:#44ff66;border-radius:var(--rs);padding:10px;font-size:.85rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">✅ Desbanear</button>
+    </div>
+    <div id="saBanResult" style="margin-top:12px;font-size:.8rem;display:none;border-radius:var(--rs);padding:10px;"></div>
+  </div>
+  <div style="background:rgba(160,0,0,.09);border:1px solid rgba(220,0,0,.3);border-radius:var(--r);padding:20px;">
+    <div style="font-size:.85rem;font-weight:700;color:#ff3333;margin-bottom:12px;">📋 Usuarios Baneados</div>
+    <div id="saBanList"><div style="text-align:center;padding:30px;color:#ff6666;font-size:.82rem;">Cargando baneados...</div></div>
+  </div>
+</div>
+
+<!-- ══ TAB: REPORTES ══ -->
+<div id="sat-reportes" style="display:none;">
+  <div style="background:rgba(160,0,0,.09);border:1px solid rgba(220,0,0,.3);border-radius:var(--r);padding:20px;">
+    <div style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:700;color:#ff3333;margin-bottom:14px;">⚠️ Todos los Reportes</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+      <button onclick="saLoadReports('pendiente')" class="cfbtn" style="color:#ff6666;border-color:rgba(220,0,0,.35);">⏳ Pendientes</button>
+      <button onclick="saLoadReports('resuelto')" class="cfbtn" style="color:#44ff66;">✅ Resueltos</button>
+      <button onclick="saLoadReports('todos')" class="cfbtn active" style="border-color:rgba(220,0,0,.5);color:#ff3333;">Todos</button>
+    </div>
+    <div id="saReportesList"><div style="text-align:center;padding:40px;color:#ff6666;font-size:.82rem;">Cargando reportes...</div></div>
+  </div>
+</div>
+
+<!-- ══ TAB: CONTENIDO ══ -->
+<div id="sat-contenido" style="display:none;">
+  <div style="background:rgba(160,0,0,.09);border:1px solid rgba(220,0,0,.3);border-radius:var(--r);padding:20px;">
+    <div style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:700;color:#ff3333;margin-bottom:14px;">🗂️ Eliminar Contenido por ID</div>
+    <div class="fg" style="margin-bottom:10px;"><label class="fl" style="color:#ff6666;">Tipo de contenido</label>
+      <select class="fi" id="saDelType" style="border-color:rgba(220,0,0,.4);background:rgba(160,0,0,.08);color:var(--text);">
+        <option value="posts">📝 Post</option>
+        <option value="comments">💬 Comentario</option>
+        <option value="stories">📸 Historia</option>
+        <option value="groups">👥 Grupo</option>
+      </select>
+    </div>
+    <div class="fg" style="margin-bottom:14px;"><label class="fl" style="color:#ff6666;">ID del documento</label><input class="fi" id="saDelId" placeholder="ID exacto de Firestore..." style="border-color:rgba(220,0,0,.4);background:rgba(160,0,0,.08);color:var(--text);"></div>
+    <button onclick="saDeleteContent()" style="background:linear-gradient(135deg,#cc0000,#880000);color:#fff;border:none;border-radius:var(--rs);padding:10px 22px;font-size:.85rem;font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;">🗑️ Eliminar Definitivamente</button>
+    <div id="saDelResult" style="margin-top:12px;font-size:.8rem;display:none;border-radius:var(--rs);padding:10px;"></div>
+  </div>
+</div>
+
+<!-- ══ TAB: LOGS ══ -->
+<div id="sat-logs" style="display:none;">
+  <div style="background:rgba(160,0,0,.09);border:1px solid rgba(220,0,0,.3);border-radius:var(--r);padding:20px;">
+    <div style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:700;color:#ff3333;margin-bottom:14px;">📋 Log de Actividad Admin</div>
+    <div id="saLogsList"><div style="text-align:center;padding:40px;color:#ff6666;font-size:.82rem;">Cargando logs...</div></div>
+  </div>
+</div>
+
+<!-- ══ TAB: CONFIG ══ -->
+<div id="sat-config" style="display:none;">
+  <div style="background:rgba(160,0,0,.09);border:1px solid rgba(220,0,0,.3);border-radius:var(--r);padding:20px;margin-bottom:14px;">
+    <div style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:700;color:#ff3333;margin-bottom:14px;">⚙️ Configuración Global del Sitio</div>
+    <div class="fg" style="margin-bottom:10px;">
+      <label class="fl" style="color:#ff6666;">Modo mantenimiento</label>
+      <select class="fi" id="saMaintenanceMode" style="border-color:rgba(220,0,0,.4);background:rgba(160,0,0,.08);color:var(--text);">
+        <option value="false">✅ Sitio activo</option>
+        <option value="true">🔧 En mantenimiento</option>
+      </select>
+    </div>
+    <div class="fg" style="margin-bottom:14px;">
+      <label class="fl" style="color:#ff6666;">Mensaje de mantenimiento</label>
+      <input class="fi" id="saMaintenanceMsg" placeholder="Ej: Volvemos en breve 🛠️" style="border-color:rgba(220,0,0,.4);background:rgba(160,0,0,.08);color:var(--text);">
+    </div>
+    <button onclick="saSaveConfig()" style="background:linear-gradient(135deg,#cc0000,#880000);color:#fff;border:none;border-radius:var(--rs);padding:10px 22px;font-size:.85rem;font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;">💾 Guardar Configuración</button>
+    <div id="saConfigResult" style="margin-top:12px;font-size:.8rem;display:none;border-radius:var(--rs);padding:10px;"></div>
+  </div>
+</div>
+
+<!-- ══ TAB: BROADCAST ══ -->
+<div id="sat-broadcast" style="display:none;">
+  <div style="background:rgba(160,0,0,.09);border:1px solid rgba(220,0,0,.3);border-radius:var(--r);padding:20px;">
+    <div style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:700;color:#ff3333;margin-bottom:14px;">📣 Mensaje Global a Todos los Usuarios</div>
+    <div class="fg" style="margin-bottom:10px;"><label class="fl" style="color:#ff6666;">Título del mensaje</label><input class="fi" id="saBroadcastTitle" placeholder="Ej: 📢 Actualización importante" style="border-color:rgba(220,0,0,.4);background:rgba(160,0,0,.08);color:var(--text);"></div>
+    <div class="fg" style="margin-bottom:14px;"><label class="fl" style="color:#ff6666;">Contenido</label><textarea class="fi" id="saBroadcastBody" rows="4" placeholder="Escribí el mensaje que recibirán todos los usuarios..." style="border-color:rgba(220,0,0,.4);background:rgba(160,0,0,.08);color:var(--text);resize:vertical;"></textarea></div>
+    <button onclick="saSendBroadcast()" style="background:linear-gradient(135deg,#cc0000,#880000);color:#fff;border:none;border-radius:var(--rs);padding:11px 26px;font-size:.85rem;font-weight:800;cursor:pointer;font-family:'Exo 2',sans-serif;width:100%;">📣 Enviar a Todos</button>
+    <div id="saBroadcastResult" style="margin-top:12px;font-size:.8rem;display:none;border-radius:var(--rs);padding:10px;"></div>
+  </div>
+</div>
+
+</div><!-- fin page-superadmin -->
+
 <!-- MODAL VER DOCUMENTO DNI (ADMIN) -->
 <div id="modalAdminVerDoc" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.85);align-items:center;justify-content:center;padding:16px;">
   <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;max-width:480px;width:100%;padding:20px;">
@@ -10300,9 +10519,13 @@ function updateNavUI(){
   const isAdmin = window.CU.nick === 'Administrador' || window.CU.nick === 'Administrador' || window.CU.nick === 'Administrador' || window.CU.email === 'synxyes@gmail.com' || window.CU.role === 'admin';
   const adminNavBtn = document.getElementById('adminNavBtn');
   const userMenuAdmin = document.getElementById('userMenuAdmin');
+  const superAdminNavBtn = document.getElementById('superAdminNavBtn');
+  const userMenuSuperAdmin = document.getElementById('userMenuSuperAdmin');
   const shopNavBtn = document.getElementById('shopNavBtn');
   if(adminNavBtn) adminNavBtn.style.display = isAdmin ? 'inline-flex' : 'none';
   if(userMenuAdmin) userMenuAdmin.style.display = isAdmin ? 'flex' : 'none';
+  if(superAdminNavBtn) superAdminNavBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+  if(userMenuSuperAdmin) userMenuSuperAdmin.style.display = isAdmin ? 'flex' : 'none';
   if(shopNavBtn) shopNavBtn.style.display = 'inline-flex'; // visible para todos
 }
 
@@ -10377,6 +10600,7 @@ const PAGE_TO_URL = {
   'notificaciones':'/notificaciones',
   'pez-semanal':   '/pez-semanal',
   'admin':         '/admin',
+  'superadmin':    '/superadmin',
   'grupos':        '/grupos',
 };
 
@@ -10549,6 +10773,20 @@ window.gp = (id, pushState = true) => {
       }
     };
     _waitCU(0);
+  }
+  if(id==='superadmin') {
+    var _waitCUSA = function(tries) {
+      if(window.CU) {
+        loadSuperAdminData();
+        saLoadAllUsers();
+        saLoadBanned();
+      } else if(tries < 20) {
+        setTimeout(function(){ _waitCUSA(tries+1); }, 500);
+      } else {
+        toast('Error: no se pudo cargar el Super Panel. Recargá la página.','err');
+      }
+    };
+    _waitCUSA(0);
   }
   // Show video button in posts only for verified users
   const pvBtn = document.getElementById('postVideoBtn');
@@ -26333,6 +26571,223 @@ if(typeof onLogin === 'function') {
 }
 // ===== FIN ADMIN ALBUM PRIVADO =====
 
+// ===== SUPER ADMIN =====
+function swSuperAdminTab(el, tabId){
+  document.querySelectorAll('.sa-tab').forEach(t => t.classList.remove('sa-on'));
+  if(el) el.classList.add('sa-on');
+  ['sat-usuarios','sat-roles','sat-bans','sat-reportes','sat-contenido','sat-logs','sat-config','sat-broadcast']
+    .forEach(id => { const e = document.getElementById(id); if(e) e.style.display = 'none'; });
+  const tab = document.getElementById(tabId);
+  if(tab) tab.style.display = 'block';
+  if(tabId === 'sat-bans') saLoadBanned();
+  if(tabId === 'sat-reportes') saLoadReports('todos');
+  if(tabId === 'sat-logs') saLoadLogs();
+}
+
+async function loadSuperAdminData(){
+  try {
+    const [postsSnap, usersSnap, reportsSnap] = await Promise.all([
+      getDocs(query(collection(window.db,'posts'), limit(1))),
+      getDocs(query(collection(window.db,'users'), limit(500))),
+      getDocs(query(collection(window.db,'reports'), limit(1)))
+    ]);
+    const banned = usersSnap.docs.filter(d => d.data().role === 'banned').length;
+    const el = id => document.getElementById(id);
+    if(el('saStatPosts'))   el('saStatPosts').textContent   = postsSnap.size;
+    if(el('saStatUsers'))   el('saStatUsers').textContent   = usersSnap.size;
+    if(el('saStatReports')) el('saStatReports').textContent = reportsSnap.size;
+    if(el('saStatBanned'))  el('saStatBanned').textContent  = banned;
+    if(el('saStatGroups'))  el('saStatGroups').textContent  = '—';
+  } catch(e){ console.warn('loadSuperAdminData:', e); }
+}
+
+async function saLoadAllUsers(){
+  const list = document.getElementById('saUsersList');
+  if(!list) return;
+  list.innerHTML = '<div style="text-align:center;padding:20px;color:#ff6666;">Cargando...</div>';
+  try {
+    const snap = await getDocs(query(collection(window.db,'users'), orderBy('nick'), limit(300)));
+    if(snap.empty){ list.innerHTML = '<div style="text-align:center;padding:30px;color:#ff6666;">Sin usuarios.</div>'; return; }
+    list.innerHTML = snap.docs.map(d => {
+      const u = d.data();
+      const roleColor = u.role === 'admin' ? '#ff3333' : u.role === 'banned' ? '#888' : '#ff6666';
+      return `<div data-sauser style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid rgba(220,0,0,.15);transition:background .15s;" onmouseover="this.style.background='rgba(180,0,0,.1)'" onmouseout="this.style.background=''">
+        <div style="width:34px;height:34px;border-radius:50%;background:rgba(180,0,0,.2);border:1px solid rgba(220,0,0,.3);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">${u.avatar ? `<img src="${u.avatar}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;" onerror="this.parentElement.textContent='👤'">` : '👤'}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:700;font-size:.82rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${u.nick || '—'}</div>
+          <div style="font-size:.68rem;color:#ff6666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${u.email || d.id}</div>
+        </div>
+        <div style="font-size:.65rem;font-weight:800;color:${roleColor};background:rgba(180,0,0,.12);border:1px solid rgba(220,0,0,.3);padding:2px 7px;border-radius:100px;white-space:nowrap;">${u.role || 'user'}</div>
+        <button onclick="document.getElementById('saRoleUid').value='${d.id}';swSuperAdminTab(null,'sat-roles');document.querySelector('.sa-tab[onclick*=sat-roles]').click()" style="background:rgba(180,0,0,.15);border:1px solid rgba(220,0,0,.35);color:#ff4444;padding:4px 9px;border-radius:6px;font-size:.68rem;cursor:pointer;font-weight:700;">✏️ Rol</button>
+        <button onclick="if(confirm('¿Banear a ${(u.nick||'').replace(/'/g,"\\'")}?')){document.getElementById('saBanUid').value='${d.id}';saBanUser()}" style="background:rgba(180,0,0,.15);border:1px solid rgba(220,0,0,.35);color:#ff4444;padding:4px 9px;border-radius:6px;font-size:.68rem;cursor:pointer;font-weight:700;">🚫</button>
+      </div>`;
+    }).join('');
+  } catch(e){ list.innerHTML = `<div style="padding:20px;color:#ff6666;">Error: ${e.message}</div>`; }
+}
+
+function saFilterUsers(q){
+  const rows = document.querySelectorAll('[data-sauser]');
+  const lq = q.toLowerCase();
+  rows.forEach(r => { r.style.display = r.textContent.toLowerCase().includes(lq) ? 'flex' : 'none'; });
+}
+
+async function saSetRole(){
+  const uid = (document.getElementById('saRoleUid')?.value || '').trim();
+  const role = document.getElementById('saRoleSelect')?.value;
+  const res = document.getElementById('saRoleResult');
+  if(!uid || !role){ if(res){ res.style.display='block'; res.textContent='⚠️ Completá el UID y el rol.'; } return; }
+  try {
+    let targetUid = uid;
+    if(uid.includes('@')){
+      const snap = await getDocs(query(collection(window.db,'users'), where('email','==',uid), limit(1)));
+      if(snap.empty){ throw new Error('Email no encontrado.'); }
+      targetUid = snap.docs[0].id;
+    }
+    await updateDoc(doc(window.db,'users', targetUid), { role });
+    if(res){ res.style.display='block'; res.style.color='#44ff66'; res.textContent=`✅ Rol actualizado a "${role}" para ${uid}`; }
+  } catch(e){ if(res){ res.style.display='block'; res.style.color='#ff4444'; res.textContent=`❌ ${e.message}`; } }
+}
+
+async function saBanUser(){
+  const uid = (document.getElementById('saBanUid')?.value || '').trim();
+  const reason = (document.getElementById('saBanReason')?.value || '').trim();
+  const res = document.getElementById('saBanResult');
+  if(!uid){ if(res){ res.style.display='block'; res.textContent='⚠️ Ingresá el UID o email.'; } return; }
+  try {
+    let targetUid = uid;
+    if(uid.includes('@')){
+      const snap = await getDocs(query(collection(window.db,'users'), where('email','==',uid), limit(1)));
+      if(snap.empty) throw new Error('Email no encontrado.');
+      targetUid = snap.docs[0].id;
+    }
+    await updateDoc(doc(window.db,'users', targetUid), { role:'banned', banReason: reason||'Sin motivo', bannedAt: serverTimestamp() });
+    if(res){ res.style.display='block'; res.style.background='rgba(200,0,0,.15)'; res.style.color='#ff4444'; res.textContent=`🚫 Usuario baneado correctamente.`; }
+  } catch(e){ if(res){ res.style.display='block'; res.style.color='#ff4444'; res.textContent=`❌ ${e.message}`; } }
+}
+
+async function saUnbanUser(){
+  const uid = (document.getElementById('saBanUid')?.value || '').trim();
+  const res = document.getElementById('saBanResult');
+  if(!uid){ if(res){ res.style.display='block'; res.textContent='⚠️ Ingresá el UID o email.'; } return; }
+  try {
+    let targetUid = uid;
+    if(uid.includes('@')){
+      const snap = await getDocs(query(collection(window.db,'users'), where('email','==',uid), limit(1)));
+      if(snap.empty) throw new Error('Email no encontrado.');
+      targetUid = snap.docs[0].id;
+    }
+    await updateDoc(doc(window.db,'users', targetUid), { role:'user', banReason: deleteField(), bannedAt: deleteField() });
+    if(res){ res.style.display='block'; res.style.background='rgba(0,180,0,.1)'; res.style.color='#44ff66'; res.textContent=`✅ Usuario desbaneado correctamente.`; }
+  } catch(e){ if(res){ res.style.display='block'; res.style.color='#ff4444'; res.textContent=`❌ ${e.message}`; } }
+}
+
+async function saLoadBanned(){
+  const list = document.getElementById('saBanList');
+  if(!list) return;
+  list.innerHTML = '<div style="text-align:center;padding:20px;color:#ff6666;">Cargando...</div>';
+  try {
+    const snap = await getDocs(query(collection(window.db,'users'), where('role','==','banned'), limit(100)));
+    if(snap.empty){ list.innerHTML = '<div style="text-align:center;padding:20px;color:#ff6666;">No hay usuarios baneados.</div>'; return; }
+    list.innerHTML = snap.docs.map(d => {
+      const u = d.data();
+      return `<div style="padding:10px 12px;border-bottom:1px solid rgba(220,0,0,.15);display:flex;align-items:center;gap:10px;">
+        <div style="flex:1;font-size:.82rem;color:var(--text);">${u.nick || d.id} <span style="color:#ff6666;font-size:.7rem;">${u.email||''}</span></div>
+        <div style="font-size:.72rem;color:#aaa;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${u.banReason||'—'}</div>
+        <button onclick="document.getElementById('saBanUid').value='${d.id}';saUnbanUser()" style="background:rgba(0,180,0,.12);border:1px solid rgba(0,200,0,.35);color:#44ff66;padding:4px 10px;border-radius:6px;font-size:.7rem;cursor:pointer;font-weight:700;">✅ Desbanear</button>
+      </div>`;
+    }).join('');
+  } catch(e){ list.innerHTML = `<div style="padding:20px;color:#ff6666;">Error: ${e.message}</div>`; }
+}
+
+async function saLoadReports(status = 'todos'){
+  const list = document.getElementById('saReportesList');
+  if(!list) return;
+  list.innerHTML = '<div style="text-align:center;padding:20px;color:#ff6666;">Cargando...</div>';
+  try {
+    let q = query(collection(window.db,'reports'), orderBy('time','desc'), limit(80));
+    if(status !== 'todos') q = query(collection(window.db,'reports'), where('status','==',status), orderBy('time','desc'), limit(80));
+    const snap = await getDocs(q);
+    if(snap.empty){ list.innerHTML = '<div style="text-align:center;padding:30px;color:#ff6666;">Sin reportes.</div>'; return; }
+    list.innerHTML = snap.docs.map(d => {
+      const r = d.data();
+      const statusColor = r.status === 'resuelto' ? '#44ff66' : '#ff6666';
+      return `<div style="padding:12px;border-bottom:1px solid rgba(220,0,0,.15);display:flex;align-items:flex-start;gap:10px;">
+        <div style="flex:1;">
+          <div style="font-size:.78rem;font-weight:700;color:var(--text);">${r.reason || r.desc || 'Sin motivo'}</div>
+          <div style="font-size:.68rem;color:#ff6666;margin-top:2px;">Post: ${r.postId || '—'} | Por: ${r.reporterNick || r.reporter || '—'}</div>
+        </div>
+        <div style="font-size:.65rem;font-weight:800;color:${statusColor};padding:2px 7px;border-radius:100px;background:rgba(0,0,0,.15);border:1px solid ${statusColor};white-space:nowrap;">${r.status || 'pendiente'}</div>
+        <button onclick="saResolveReport('${d.id}')" style="background:rgba(0,180,0,.12);border:1px solid rgba(0,200,0,.35);color:#44ff66;padding:4px 9px;border-radius:6px;font-size:.68rem;cursor:pointer;font-weight:700;">✅</button>
+        <button onclick="saDeleteReport('${d.id}')" style="background:rgba(180,0,0,.15);border:1px solid rgba(220,0,0,.35);color:#ff4444;padding:4px 9px;border-radius:6px;font-size:.68rem;cursor:pointer;font-weight:700;">🗑️</button>
+      </div>`;
+    }).join('');
+  } catch(e){ list.innerHTML = `<div style="padding:20px;color:#ff6666;">Error: ${e.message}</div>`; }
+}
+
+async function saResolveReport(id){ try { await updateDoc(doc(window.db,'reports',id),{status:'resuelto'}); saLoadReports('todos'); } catch(e){} }
+async function saDeleteReport(id){ if(!confirm('¿Eliminar reporte?')) return; try { await deleteDoc(doc(window.db,'reports',id)); saLoadReports('todos'); } catch(e){} }
+
+async function saDeleteContent(){
+  const type = document.getElementById('saDelType')?.value;
+  const id   = (document.getElementById('saDelId')?.value || '').trim();
+  const res  = document.getElementById('saDelResult');
+  if(!id){ if(res){ res.style.display='block'; res.textContent='⚠️ Ingresá el ID.'; } return; }
+  if(!confirm(`¿Eliminar definitivamente este ${type}?`)) return;
+  try {
+    await deleteDoc(doc(window.db, type, id));
+    if(res){ res.style.display='block'; res.style.color='#44ff66'; res.textContent=`✅ Eliminado correctamente.`; }
+  } catch(e){ if(res){ res.style.display='block'; res.style.color='#ff4444'; res.textContent=`❌ ${e.message}`; } }
+}
+
+async function saLoadLogs(){
+  const list = document.getElementById('saLogsList');
+  if(!list) return;
+  list.innerHTML = '<div style="text-align:center;padding:20px;color:#ff6666;">Cargando logs...</div>';
+  try {
+    const snap = await getDocs(query(collection(window.db,'adminLogs'), orderBy('time','desc'), limit(100)));
+    if(snap.empty){ list.innerHTML = '<div style="text-align:center;padding:30px;color:#ff6666;">Sin registros.</div>'; return; }
+    list.innerHTML = `<div style="font-family:monospace;font-size:.75rem;">` + snap.docs.map(d => {
+      const l = d.data();
+      const t = l.time?.toDate ? l.time.toDate().toLocaleString('es-UY') : '—';
+      return `<div style="padding:8px 10px;border-bottom:1px solid rgba(220,0,0,.12);color:var(--text);">
+        <span style="color:#ff6666;">[${t}]</span>
+        <span style="color:#ff4444;margin:0 6px;">${l.adminNick||l.admin||'?'}</span>
+        <span>${l.action||JSON.stringify(l)}</span>
+      </div>`;
+    }).join('') + '</div>';
+  } catch(e){ list.innerHTML = `<div style="padding:20px;color:#ff6666;">Error: ${e.message}</div>`; }
+}
+
+async function saSaveConfig(){
+  const maintenance = document.getElementById('saMaintenanceMode')?.value === 'true';
+  const msg = (document.getElementById('saMaintenanceMsg')?.value || '').trim();
+  const res = document.getElementById('saConfigResult');
+  try {
+    await setDoc(doc(window.db,'config','global'), { maintenance, maintenanceMsg: msg }, { merge: true });
+    if(res){ res.style.display='block'; res.style.color='#44ff66'; res.textContent='✅ Configuración guardada.'; }
+  } catch(e){ if(res){ res.style.display='block'; res.style.color='#ff4444'; res.textContent=`❌ ${e.message}`; } }
+}
+
+async function saSendBroadcast(){
+  const title = (document.getElementById('saBroadcastTitle')?.value || '').trim();
+  const body  = (document.getElementById('saBroadcastBody')?.value  || '').trim();
+  const res   = document.getElementById('saBroadcastResult');
+  if(!title || !body){ if(res){ res.style.display='block'; res.textContent='⚠️ Completá título y contenido.'; } return; }
+  if(!confirm(`¿Enviar broadcast a TODOS los usuarios?\n\n"${title}"`)) return;
+  try {
+    await addDoc(collection(window.db,'broadcasts'), {
+      title, body,
+      sentBy: window.CU?.uid || '—',
+      sentByNick: window.CU?.nick || '—',
+      sentAt: serverTimestamp()
+    });
+    if(res){ res.style.display='block'; res.style.color='#44ff66'; res.textContent='✅ Broadcast enviado correctamente.'; }
+    document.getElementById('saBroadcastTitle').value = '';
+    document.getElementById('saBroadcastBody').value = '';
+  } catch(e){ if(res){ res.style.display='block'; res.style.color='#ff4444'; res.textContent=`❌ ${e.message}`; } }
+}
+// ===== FIN SUPER ADMIN =====
+
 // ===== EXPONER FUNCIONES AL SCOPE GLOBAL (necesario por type="module") =====
 const _globalFns = {
   _avatarPopupGoProfile, _avatarPopupViewPhoto, _avatarPopupViewStory,
@@ -26390,7 +26845,12 @@ const _globalFns = {
   togglePostMenu, toggleReplies, toggleStickerPicker, toggleUserMenu,
   toggleVoicePlay, toggleVoiceRecord,
   upAbrirLightbox, upCerrarLightbox, upEliminarFoto, upSolicitarAcceso,
-  ytSubirVideo, ytToggleLink
+  ytSubirVideo, ytToggleLink,
+  // Super Admin
+  swSuperAdminTab, loadSuperAdminData, saLoadAllUsers, saFilterUsers,
+  saSetRole, saBanUser, saUnbanUser, saLoadBanned, saLoadReports,
+  saResolveReport, saDeleteReport, saDeleteContent, saLoadLogs,
+  saSaveConfig, saSendBroadcast
 };
 for (const [name, fn] of Object.entries(_globalFns)) {
   if (typeof fn === 'function') window[name] = fn;
