@@ -954,7 +954,7 @@ input::placeholder,textarea::placeholder{color:#5e4a7a !important}
     <div id="clGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px;"></div>
     <div id="clLoading" style="display:none;text-align:center;padding:40px;color:#666;">
       <div style="font-size:2.5rem;margin-bottom:10px;animation:spin 1s linear infinite;display:inline-block;">🎬</div>
-      <div>Cargando películas...</div>
+      <div id="clLoadingText">Buscando en YouTube...</div>
     </div>
   </div>
 
@@ -31703,7 +31703,7 @@ const CL_LIBRARY = {
   ],
 };
 
-// Búsqueda local dentro de la biblioteca curada
+// Búsqueda local dentro de la biblioteca curada (fallback)
 function _clSearchLocal(query, max){
   const q = (query||'').toLowerCase().trim();
   if(CL_LIBRARY[q]) return CL_LIBRARY[q].slice(0, max);
@@ -31721,20 +31721,25 @@ function _clSearchLocal(query, max){
       }
     }
   }
-  if(!results.length){
-    // Sin coincidencias: devolver mezcla de todas las categorías
-    const all = Object.values(CL_LIBRARY).flat();
-    const dedup = [];
-    const s2 = new Set();
-    for(const v of all.sort(()=>Math.random()-.5)){
-      if(!s2.has(v.videoId)){ s2.add(v.videoId); dedup.push(v); }
-    }
-    return dedup.slice(0, max);
+  // Sin coincidencias: devolver mezcla de todas las categorías
+  const all = Object.values(CL_LIBRARY).flat();
+  const dedup = [];
+  const s2 = new Set();
+  for(const v of all.sort(()=>Math.random()-.5)){
+    if(!s2.has(v.videoId)){ s2.add(v.videoId); dedup.push(v); }
   }
-  return results;
+  return dedup.slice(0, max);
 }
 
-async function clFetchJSON(url, timeout=7000){
+// Instancias públicas de Invidious (no requieren API key, permiten CORS)
+const _CL_INVIDIOUS = [
+  'https://invidious.privacyredirect.com',
+  'https://iv.datura.network',
+  'https://invidious.fdn.fr',
+];
+let _clInvidiousIdx = 0;
+
+async function _clFetchWithTimeout(url, timeout=8000){
   const ctrl = new AbortController();
   const tid  = setTimeout(()=>ctrl.abort(), timeout);
   try {
@@ -31745,14 +31750,54 @@ async function clFetchJSON(url, timeout=7000){
   } catch(e){ clearTimeout(tid); throw e; }
 }
 
-// Búsqueda principal — usa la biblioteca local (sin CORS, siempre disponible)
+// Búsqueda real en YouTube vía Invidious (con rotación de instancias y fallback local)
+async function _clSearchInvidious(query, max){
+  // Intentar hasta 3 instancias
+  for(let attempt = 0; attempt < _CL_INVIDIOUS.length; attempt++){
+    const base = _CL_INVIDIOUS[(_clInvidiousIdx + attempt) % _CL_INVIDIOUS.length];
+    // Búsqueda de videos en español, tipo película
+    const url = `${base}/api/v1/search?q=${encodeURIComponent(query + ' pelicula completa en español')}&type=video&page=1`;
+    try {
+      const items = await _clFetchWithTimeout(url, 7000);
+      if(!Array.isArray(items) || !items.length) continue;
+      _clInvidiousIdx = (_clInvidiousIdx + attempt) % _CL_INVIDIOUS.length; // marcar instancia que funcionó
+      return items
+        .filter(v => v.videoId && v.title)
+        .slice(0, max)
+        .map(v => ({
+          videoId:    v.videoId,
+          title:      v.title,
+          description: v.author || '',
+          lengthSeconds: v.lengthSeconds || 0,
+        }));
+    } catch(e){
+      console.warn('[CineLatido] Invidious', base, 'falló:', e.message);
+    }
+  }
+  return null; // todas las instancias fallaron
+}
+
+// Búsqueda principal — primero intenta YouTube real, luego fallback local
 async function clSearch(query, max=20){
   const cacheKey = query + '_' + max;
   const cached = _clCache[cacheKey];
   if(cached && (Date.now() - cached.ts < 600000)) return cached.data;
-  const data = _clSearchLocal(query, max);
-  _clCache[cacheKey] = { ts: Date.now(), data };
-  return data;
+
+  // 1. Intentar búsqueda real en YouTube vía Invidious
+  try {
+    const online = await _clSearchInvidious(query, max);
+    if(online && online.length){
+      _clCache[cacheKey] = { ts: Date.now(), data: online };
+      return online;
+    }
+  } catch(e){
+    console.warn('[CineLatido] Búsqueda online falló, usando biblioteca local:', e);
+  }
+
+  // 2. Fallback: biblioteca local curada
+  const local = _clSearchLocal(query, max);
+  _clCache[cacheKey] = { ts: Date.now(), data: local };
+  return local;
 }
 
 
