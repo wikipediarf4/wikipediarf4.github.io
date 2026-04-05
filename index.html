@@ -34447,6 +34447,17 @@ function _esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
             { merge:true }
           );
         }
+        // Notificar al dueño (si no es uno mismo)
+        if(ownerUid && ownerUid !== window.CU.id && window.updateDoc && window.doc && window.arrayUnion){
+          var hNotif = {
+            text: '❤️ ' + (window.CU.nick||'Alguien') + ' reaccionó a tu foto',
+            time: Date.now(), read: false,
+            type: 'fpHeart',
+            fromUid: window.CU.id, fromNick: window.CU.nick||'',
+            fromAv: window.CU.av||''
+          };
+          await window.updateDoc(window.doc(window.db,'users',ownerUid), { notifs: window.arrayUnion(hNotif) });
+        }
       } catch(e){ console.warn('fpHeart Firestore:', e); }
     }
   };
@@ -34487,39 +34498,66 @@ function _esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
     cl.scrollTop = cl.scrollHeight;
   };
 
-  // ── Cargar comentarios de una foto popular desde Firestore ───────────
-  window.fpLoadComments = async function(itemId, ownerUid, photoUrl){
+  // ── Suscriptores activos de onSnapshot por itemId ─────────────────────
+  window._fpUnsubs = window._fpUnsubs || {};
+
+  // ── Cargar comentarios en tiempo real con onSnapshot ──────────────────
+  window.fpLoadComments = function(itemId, ownerUid, photoUrl){
     var cl = document.getElementById(itemId+'_cl');
-    if(!cl || !window.db || !window.getDocs || !window.collection || !window.query || !window.where) return;
-    // Generar clave estable de la foto (misma lógica que al guardar)
+    if(!cl || !window.db || !window.onSnapshot || !window.collection || !window.query || !window.where) return;
     var photoKey = encodeURIComponent(photoUrl).slice(0, 200);
-    try {
-      var snap = await window.getDocs(
-        window.query(
-          window.collection(window.db,'fpComments'),
-          window.where('toUid','==',ownerUid),
-          window.where('photoKey','==',photoKey)
-        )
-      );
+
+    // Cancelar suscripción previa para este item
+    if(window._fpUnsubs[itemId]){ try{ window._fpUnsubs[itemId](); }catch(_){} }
+
+    var q = window.query(
+      window.collection(window.db,'fpComments'),
+      window.where('toUid','==',ownerUid),
+      window.where('photoKey','==',photoKey)
+    );
+
+    var unsub = window.onSnapshot(q, function(snap){
+      var cl2 = document.getElementById(itemId+'_cl');
+      if(!cl2) { try{ unsub(); }catch(_){} return; }
       var comments = [];
       snap.forEach(function(d){ comments.push(Object.assign({id:d.id}, d.data())); });
-      window.fpRenderComments(cl, comments);
-    } catch(e){
-      // Fallback: query solo por toUid y filtrar por photoUrl en cliente
-      try {
-        var snap2 = await window.getDocs(
+      window.fpRenderComments(cl2, comments);
+    }, function(e){
+      // Fallback a getDocs si onSnapshot falla (ej: falta índice compuesto)
+      console.warn('fpLoadComments onSnapshot error, usando getDocs:', e.message);
+      if(window.getDocs){
+        window.getDocs(
           window.query(window.collection(window.db,'fpComments'), window.where('toUid','==',ownerUid))
-        );
-        var comments2 = [];
-        snap2.forEach(function(d){
-          var dat = d.data();
-          if(dat.photoUrl === photoUrl || dat.photoKey === photoKey)
-            comments2.push(Object.assign({id:d.id}, dat));
-        });
-        window.fpRenderComments(cl, comments2);
-      } catch(e2){ console.warn('fpLoadComments fallback:', e2); }
-    }
+        ).then(function(snap2){
+          var cl3 = document.getElementById(itemId+'_cl');
+          if(!cl3) return;
+          var comments2 = [];
+          snap2.forEach(function(d){
+            var dat = d.data();
+            if(dat.photoUrl === photoUrl || dat.photoKey === photoKey)
+              comments2.push(Object.assign({id:d.id}, dat));
+          });
+          window.fpRenderComments(cl3, comments2);
+        }).catch(function(e2){ console.warn('fpLoadComments fallback getDocs:', e2); });
+      }
+    });
+
+    window._fpUnsubs[itemId] = unsub;
   };
+
+  // ── Limpiar suscripciones al salir de la página ───────────────────────
+  (function(){
+    var _prevGp = window.gp;
+    window.gp = function(id, ps){
+      if(id !== 'fotospopulares' && window._fpUnsubs){
+        Object.keys(window._fpUnsubs).forEach(function(k){
+          try{ window._fpUnsubs[k](); }catch(_){}
+        });
+        window._fpUnsubs = {};
+      }
+      if(typeof _prevGp === 'function') _prevGp(id, ps);
+    };
+  })();
 
   // ── Borrar comentario de foto popular ───────────────────────────────
   window.fpDeleteComment = async function(cmtId, btn){
@@ -34576,9 +34614,21 @@ function _esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
         });
         if(docRef) newCmt.id = docRef.id;
       }
+      // Notificar al dueño de la foto (si no es uno mismo)
+      if(ownerUid && ownerUid !== window.CU.id && window.db && window.updateDoc && window.doc && window.arrayUnion){
+        try {
+          var notif = {
+            text: '💬 ' + (window.CU.nick||'Alguien') + ' comentó en tu foto: "' + txt.slice(0,60) + (txt.length>60?'…':'"'),
+            time: Date.now(), read: false,
+            type: 'fpComment',
+            fromUid: window.CU.id, fromNick: window.CU.nick||'',
+            fromAv: window.CU.av||''
+          };
+          await window.updateDoc(window.doc(window.db,'users',ownerUid), { notifs: window.arrayUnion(notif) });
+        } catch(ne){ console.warn('fpComment notif:', ne); }
+      }
     } catch(e){ console.warn('fpComment Firestore:', e); }
-    // Recargar lista completa ordenada
-    await window.fpLoadComments(itemId, ownerUid, photoUrl);
+    // onSnapshot actualiza la lista automáticamente — no hace falta recargar
     inp.disabled = false;
     inp.focus();
   };
