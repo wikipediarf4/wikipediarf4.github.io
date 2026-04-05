@@ -27423,12 +27423,19 @@ setTimeout(function(){
   function upgradePrimaryBtn(pid, emoji){
     const btn = document.getElementById('rxnt_' + pid);
     if(!btn) return;
+    const rxnDef = (window.REACTIONS || []).find(r => r.emoji === emoji);
+    const label = rxnDef ? rxnDef.label : 'Me gusta';
+    const color = rxnDef ? rxnDef.color : '#1877f2';
     const old = btn.querySelector('.rxn-main-emoji');
     if(old) old.remove();
     const span = document.createElement('span');
     span.className = 'rxn-main-emoji';
     span.textContent = emoji;
     btn.insertBefore(span, btn.firstChild);
+    const lbl = btn.querySelector('.fb-act-label');
+    if(lbl){ lbl.textContent = label; lbl.style.color = color; lbl.style.fontWeight = '700'; }
+    btn.style.color = color;
+    btn.classList.add('fb-reacted');
   }
 
   function patchDoReact(){
@@ -27443,6 +27450,10 @@ setTimeout(function(){
       } else if(btn){
         const w = btn.querySelector('.rxn-main-emoji');
         if(w) w.remove();
+        const lbl = btn.querySelector('.fb-act-label');
+        if(lbl){ lbl.textContent = 'Me gusta'; lbl.style.color = ''; lbl.style.fontWeight = ''; }
+        btn.style.color = '';
+        btn.classList.remove('fb-reacted');
       }
     };
   }
