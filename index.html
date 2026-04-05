@@ -10138,11 +10138,11 @@ async function fetchLinkPreview(url){
 
 async function submitPost(){
   if(!window.CU){ toast('Inicia sesión primero','err'); return; }
-  const text = document.getElementById('postText').value.trim();
-  const fish = document.getElementById('tagFish').value.trim();
-  const weight = parseFloat(document.getElementById('tagWeight').value)||0;
-  const map = document.getElementById('tagMap').value;
-  const tech = document.getElementById('tagTech').value;
+  const text = document.getElementById('postText')?.value.trim() || '';
+  const fish = document.getElementById('tagFish')?.value.trim() || '';
+  const weight = parseFloat(document.getElementById('tagWeight')?.value)||0;
+  const map = document.getElementById('tagMap')?.value || '';
+  const tech = document.getElementById('tagTech')?.value || '';
   const linkUrl = document.getElementById('postLinkInput')?.value.trim()||'';
   const videoUrl0 = document.getElementById('ytUrlInput')?.value.trim() || '';
   const destino = document.getElementById('postDestino')?.value || 'feed';
