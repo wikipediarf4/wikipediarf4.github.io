@@ -954,7 +954,7 @@ input::placeholder,textarea::placeholder{color:#5e4a7a !important}
     <div id="clGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px;"></div>
     <div id="clLoading" style="display:none;text-align:center;padding:40px;color:#666;">
       <div style="font-size:2.5rem;margin-bottom:10px;animation:spin 1s linear infinite;display:inline-block;">🎬</div>
-      <div id="clLoadingText">Buscando en YouTube...</div>
+      <div id="clLoadingText">Buscando en Dailymotion...</div>
     </div>
   </div>
 
@@ -31550,191 +31550,64 @@ window._cl = {
   lastQuery:      '',
 };
 
-/* ── CINELATIDO: biblioteca curada de películas completas en español en YouTube ── */
+/* ── CINELATIDO: búsqueda real en Dailymotion (API pública, sin CORS) ── */
 const _clCache = {};
 
-// Películas completas verificadas en YouTube, en español o con audio español
-// Cada entry: { videoId, title, description, tags[] }
-const CL_MOVIES = [
-  // ── ACCIÓN ──
-  { videoId: 'YmRQbrKqPds', title: 'El Agente de C.I.P.O.L. — Pelicula Completa en Español', description: 'Acción / Espionaje', tags: ['accion','espionaje','completa'] },
-  { videoId: 'lNuEFEBskUE', title: 'Commando — Pelicula Completa en Español Latino', description: 'Acción', tags: ['accion','accion','completa'] },
-  { videoId: '3mbBbFH9fAg', title: 'El último hombre en pie — Pelicula Completa Español', description: 'Acción / Western', tags: ['accion','western','completa'] },
-  { videoId: 'CxCkMjFjHOE', title: 'El guerrero americano — Pelicula Completa Español Latino', description: 'Acción / Artes marciales', tags: ['accion','artes marciales','completa'] },
-  { videoId: 'P2rXIKMW3nU', title: 'La Jungla de Cristal — Pelicula Completa Español', description: 'Acción / Suspenso', tags: ['accion','suspenso','completa','jungla de cristal','die hard'] },
-  { videoId: 'OOVBiDr-7mI', title: 'Cobra — Pelicula Completa en Español Latino', description: 'Acción / Stallone', tags: ['accion','stallone','completa'] },
-  { videoId: 'K_8EAGkYQNs', title: 'El Exterminador — Pelicula Completa Español', description: 'Acción / Policial', tags: ['accion','policial','completa'] },
-  { videoId: 'fEkzLMYGiBQ', title: 'Máximo Riesgo — Pelicula Completa Español Latino', description: 'Acción / Stallone', tags: ['accion','stallone','maximo riesgo','cliffhanger','completa'] },
-  { videoId: 'rRopVFpd0WE', title: 'Invasión USA — Pelicula Completa Español', description: 'Acción / Chuck Norris', tags: ['accion','chuck norris','completa'] },
-  { videoId: 'KNkfDghq5jI', title: 'Fuerza Delta — Pelicula Completa Español Latino', description: 'Acción / Chuck Norris', tags: ['accion','chuck norris','fuerza delta','completa'] },
-  { videoId: 'O0Mkxf9GFME', title: 'Missing in Action — Pelicula Completa Español', description: 'Acción / Chuck Norris', tags: ['accion','chuck norris','completa'] },
-  { videoId: '1KtHoGBW1Ok', title: 'Código de Silencio — Pelicula Completa Español', description: 'Acción / Chuck Norris', tags: ['accion','chuck norris','completa'] },
-
-  // ── PANTERA ROSA ──
-  { videoId: 'uKfItnEZH-Q', title: 'La Pantera Rosa — Pelicula Completa en Español', description: 'Comedia / Peter Sellers', tags: ['pantera rosa','comedia','peter sellers','inspector clouseau','completa'] },
-  { videoId: 'JlBxNrGJtMQ', title: 'La Pantera Rosa Ataca de Nuevo — Pelicula Completa Español', description: 'Comedia / Peter Sellers', tags: ['pantera rosa','comedia','peter sellers','inspector clouseau','completa'] },
-  { videoId: 'Gp5JNF4GPJA', title: 'El Regreso de la Pantera Rosa — Pelicula Completa Español', description: 'Comedia / Peter Sellers', tags: ['pantera rosa','comedia','peter sellers','inspector clouseau','completa'] },
-  { videoId: 'DExBdFHFUEo', title: 'La Maldición de la Pantera Rosa — Pelicula Completa Español', description: 'Comedia / Inspector Clouseau', tags: ['pantera rosa','comedia','inspector clouseau','completa'] },
-  { videoId: 'dLtMcCPJxlI', title: 'El Misterio de la Pantera Rosa — Pelicula Completa Español', description: 'Comedia / Misterio', tags: ['pantera rosa','comedia','misterio','completa'] },
-
-  // ── JAMES BOND ──
-  { videoId: 'wqfCzFbNLow', title: 'Dr. No — James Bond Pelicula Completa Español', description: 'Acción / Espionaje / Bond', tags: ['james bond','007','dr no','espionaje','accion','completa'] },
-  { videoId: 'fBR5bCCqrfU', title: 'Desde Rusia con Amor — James Bond Pelicula Completa', description: 'Acción / Espionaje / Bond', tags: ['james bond','007','desde rusia con amor','espionaje','accion','completa'] },
-  { videoId: 'b4Xf2CQPGes', title: 'Goldfinger — James Bond Pelicula Completa Español', description: 'Acción / Espionaje / Bond', tags: ['james bond','007','goldfinger','espionaje','accion','completa'] },
-  { videoId: 'BhRIaVOJhyM', title: 'Thunderball — James Bond Pelicula Completa Español', description: 'Acción / Espionaje / Bond', tags: ['james bond','007','thunderball','espionaje','accion','completa'] },
-  { videoId: '5qanmNq_GpI', title: 'Vive y Deja Morir — James Bond Pelicula Completa', description: 'Acción / Espionaje / Bond', tags: ['james bond','007','vive y deja morir','live and let die','espionaje','accion','completa'] },
-
-  // ── WESTERNS ──
-  { videoId: 'nDiMGDWalJk', title: 'Por un puñado de dólares — Pelicula Completa Español', description: 'Western / Clint Eastwood', tags: ['western','clint eastwood','sergio leone','completa'] },
-  { videoId: 'SUiEK2h-Evk', title: 'La muerte tenía un precio — Pelicula Completa Español', description: 'Western / Clint Eastwood', tags: ['western','clint eastwood','sergio leone','completa'] },
-  { videoId: '5QzGGzZNqBE', title: 'El bueno, el feo y el malo — Pelicula Completa Español', description: 'Western / Clint Eastwood', tags: ['western','clint eastwood','el bueno el feo y el malo','sergio leone','completa'] },
-  { videoId: 'JroQzT3FZpM', title: 'Django — Pelicula Completa en Español Latino', description: 'Western / Spaghetti Western', tags: ['western','django','completa'] },
-  { videoId: 'HRZ2lEJ_rTE', title: 'Trinity está aquí — Pelicula Completa Español Latino', description: 'Western / Comedia', tags: ['western','comedia','trinity','completa'] },
-  { videoId: 'EJfJ46RGHkc', title: 'Sigo siendo Trinity — Pelicula Completa Español Latino', description: 'Western / Comedia', tags: ['western','comedia','trinity','completa'] },
-  { videoId: 'P_1QVNIVF14', title: 'Los Siete Magníficos — Pelicula Completa Español', description: 'Western / Acción', tags: ['western','siete magnificos','accion','completa'] },
-
-  // ── COMEDIA ──
-  { videoId: '2LbpCbNMFXw', title: 'Tiempos Modernos — Charlie Chaplin Pelicula Completa', description: 'Comedia clásica / Chaplin', tags: ['comedia','chaplin','clasica','completa'] },
-  { videoId: 'BNHHs_kMPd4', title: 'El Gran Dictador — Charlie Chaplin Pelicula Completa', description: 'Comedia / Sátira política', tags: ['comedia','chaplin','gran dictador','clasica','completa'] },
-  { videoId: 'GOHhMgOdZhI', title: 'La General — Buster Keaton Pelicula Completa', description: 'Comedia clásica / Keaton', tags: ['comedia','buster keaton','clasica','completa'] },
-  { videoId: 'eQBcyxhU7fc', title: 'La Quimera del Oro — Charlie Chaplin Pelicula Completa', description: 'Comedia / Chaplin', tags: ['comedia','chaplin','clasica','completa'] },
-  { videoId: 'QLeDMXiLjFc', title: 'El Chico — Charlie Chaplin Pelicula Completa', description: 'Comedia / Drama', tags: ['comedia','chaplin','clasica','completa'] },
-  { videoId: 'B7RnibwTmD4', title: 'El Gordo y el Flaco — Héroes del Oeste Completa Español', description: 'Comedia / Laurel & Hardy', tags: ['comedia','gordo y flaco','laurel hardy','clasica','completa'] },
-  { videoId: 'nqjFJAbpCEY', title: 'Laurel y Hardy — Los Boinas Pelicula Completa Español', description: 'Comedia / Laurel & Hardy', tags: ['comedia','gordo y flaco','laurel hardy','clasica','completa'] },
-  { videoId: 'XmUmkUTrFek', title: 'Abbot y Costello — En el Oeste Pelicula Completa Español', description: 'Comedia / Abbott & Costello', tags: ['comedia','abbott costello','clasica','completa'] },
-
-  // ── TERROR ──
-  { videoId: 'eYJSlHiXegI', title: 'Nosferatu (1922) — Pelicula Completa', description: 'Terror clásico / Vampiros', tags: ['terror','nosferatu','vampiro','clasica','completa'] },
-  { videoId: 'Fgf0HQjqkZI', title: 'El Gabinete del Dr. Caligari — Pelicula Completa', description: 'Terror / Expresionismo alemán', tags: ['terror','clasica','expresionismo','completa'] },
-  { videoId: 'P1rhDf-mGBw', title: 'El Fantasma de la Ópera (1925) — Pelicula Completa', description: 'Terror / Drama clásico', tags: ['terror','drama','fantasma opera','clasica','completa'] },
-  { videoId: 'Cv_HSc8JFrk', title: 'Häxan: La Brujería — Pelicula Completa', description: 'Terror / Documental 1922', tags: ['terror','brujeria','documental','clasica','completa'] },
-  { videoId: 'tHdkqXcFmZ8', title: 'El Golem (1920) — Pelicula Completa', description: 'Terror / Fantasía clásica', tags: ['terror','fantasia','clasica','completa'] },
-  { videoId: 'LNq-I5J0Swc', title: 'Dr. Jekyll y Mr. Hyde (1920) — Pelicula Completa', description: 'Terror / Drama clásico', tags: ['terror','drama','jekyll hyde','clasica','completa'] },
-  { videoId: 'MRmXpBUKHtY', title: 'Drácula (1931) — Pelicula Completa en Español', description: 'Terror / Drácula clásico', tags: ['terror','dracula','vampiro','clasica','completa'] },
-  { videoId: 'VVFpMn5lq-k', title: 'La Momia (1932) — Pelicula Completa Español', description: 'Terror / Aventura clásica', tags: ['terror','momia','aventura','clasica','completa'] },
-  { videoId: 'rMB-G9mwDdE', title: 'El Hombre Invisible (1933) — Pelicula Completa Español', description: 'Terror / Sci-Fi clásico', tags: ['terror','sci-fi','hombre invisible','clasica','completa'] },
-  { videoId: 'u3OFJ3GJMHQ', title: 'Frankenstein (1931) — Pelicula Completa Español', description: 'Terror / Monstruos clásico', tags: ['terror','frankenstein','monstruo','clasica','completa'] },
-
-  // ── CIENCIA FICCIÓN ──
-  { videoId: 'l3Ry1y5ZbFU', title: 'Metrópolis (1927) — Fritz Lang Pelicula Completa', description: 'Sci-Fi / Distopía clásica', tags: ['sci-fi','ciencia ficcion','metropolis','clasica','completa'] },
-  { videoId: 'U8GtNj7VHBU', title: 'El Ladrón de Bagdad (1924) — Pelicula Completa', description: 'Fantasía / Aventura clásica', tags: ['fantasia','aventura','clasica','completa'] },
-  { videoId: 'dxAz0DMHG8Q', title: 'Viaje a la Luna — Georges Méliès Pelicula Completa', description: 'Sci-Fi / Cine pionero', tags: ['sci-fi','ciencia ficcion','clasica','melies','completa'] },
-
-  // ── ROMANCE / DRAMA ──
-  { videoId: 'gBfkMU5Ane8', title: 'Casablanca (1942) — Pelicula Completa en Español', description: 'Romance / Drama / Clásico', tags: ['romance','drama','casablanca','clasica','completa'] },
-  { videoId: 'YTMeMQRqGSg', title: 'Lo que el viento se llevó — Pelicula Completa Español', description: 'Romance / Drama épico', tags: ['romance','drama','lo que el viento se llevo','gone with the wind','completa'] },
-  { videoId: 'LJKPbdmJRIk', title: 'Rebeca (1940) — Alfred Hitchcock Pelicula Completa Español', description: 'Drama / Suspenso / Hitchcock', tags: ['drama','suspenso','hitchcock','romance','clasica','completa'] },
-  { videoId: 'HiHFtLVGTnM', title: 'Orgullo y Prejuicio (1940) — Pelicula Completa Español', description: 'Romance / Drama clásico', tags: ['romance','drama','orgullo y prejuicio','clasica','completa'] },
-
-  // ── AVENTURA ──
-  { videoId: 'VqQf3GIlBR4', title: 'El Nacimiento de una Nación — Pelicula Completa', description: 'Drama épico histórico', tags: ['drama','historica','epico','completa'] },
-  { videoId: 'QoDqkFi_sNQ', title: 'Intolerancia — D.W. Griffith Pelicula Completa', description: 'Drama épico clásico', tags: ['drama','historica','epico','completa'] },
-  { videoId: 'ezxiFWJBgUE', title: 'Las Minas del Rey Salomón — Pelicula Completa Español', description: 'Aventura / Acción', tags: ['aventura','accion','completa'] },
-  { videoId: 'lYg6ZHaWPg0', title: 'Tarzán — Pelicula Completa en Español Latino', description: 'Aventura / Acción', tags: ['tarzan','aventura','accion','completa'] },
-  { videoId: '2V9kJ3woaME', title: 'Sandokan — Pelicula Completa en Español', description: 'Aventura / Acción', tags: ['sandokan','aventura','accion','completa'] },
-  { videoId: 'Y3Bn0mvmHEY', title: 'El Zorro — Pelicula Completa en Español Latino', description: 'Aventura / Acción clásica', tags: ['zorro','aventura','accion','completa'] },
-  { videoId: 'xNLFrpjOE7Y', title: 'Robin Hood — Pelicula Completa en Español', description: 'Aventura / Acción clásica', tags: ['robin hood','aventura','accion','completa'] },
-  { videoId: 'HqL3PQBXZ8k', title: 'Ben-Hur (1925) — Pelicula Completa', description: 'Épico / Aventura clásica', tags: ['ben hur','epico','aventura','clasica','completa'] },
-  { videoId: 'r0G9YEb2A2A', title: 'Espartaco — Pelicula Completa en Español', description: 'Épico / Histórico', tags: ['espartaco','spartacus','epico','historico','completa'] },
-  { videoId: 'Mc5UMvVrv0Y', title: 'Los Vikingos — Pelicula Completa en Español', description: 'Aventura / Histórico', tags: ['vikingos','aventura','historico','completa'] },
-
-  // ── ANIMACIÓN / FAMILIA ──
-  { videoId: 'WO_8r3M9uXQ', title: 'Pinocho (1936) — Pelicula Completa en Español', description: 'Animación / Familia', tags: ['animacion','familia','pinocho','infantil','completa'] },
-  { videoId: 'sNOlP5PDNTU', title: 'Blancanieves (1916) — Pelicula Completa', description: 'Clásico / Familia', tags: ['clasica','familia','blancanieves','infantil','completa'] },
-  { videoId: '5wQhFBXflhA', title: 'El mago de Oz — Versión clásica Pelicula Completa', description: 'Fantasía / Familia clásica', tags: ['fantasia','familia','mago de oz','infantil','clasica','completa'] },
-
-  // ── DOCUMENTAL ──
-  { videoId: 'Cv_HSc8JFrk', title: 'Häxan — Documental Completo', description: 'Documental histórico / Terror', tags: ['documental','historia','terror','completa'] },
-  { videoId: 'QoDqkFi_sNQ', title: 'Intolerancia — Documental / Drama', description: 'Documental / Historia del cine', tags: ['documental','historia','completa'] },
-
-  // ── POLICIAL / NOIR ──
-  { videoId: 'AfNr2IQORHU', title: 'El sueño eterno — Bogart Pelicula Completa Español', description: 'Noir / Policial / Bogart', tags: ['policial','noir','bogart','clasica','completa'] },
-  { videoId: 'z3VFBhHGMhY', title: 'El Halcón Maltés — Pelicula Completa Español', description: 'Noir / Policial / Bogart', tags: ['policial','noir','bogart','halcon maltes','clasica','completa'] },
-  { videoId: 'F39_xfhVKA0', title: 'Scarface (1932) — Pelicula Completa Español', description: 'Policial / Gángster clásico', tags: ['policial','gangster','scarface','clasica','completa'] },
-  { videoId: 'mPfcpYoiEFw', title: 'El enemigo público — Cagney Pelicula Completa', description: 'Policial / Gángster clásico', tags: ['policial','gangster','clasica','completa'] },
-  { videoId: 'FyPeScTgLFo', title: 'Tiempos Violentos (Pulp Fiction) — Pelicula Completa', description: 'Policial / Crimen', tags: ['policial','crimen','completa'] },
-
-  // ── GUERRA ──
-  { videoId: 'k_kTdRiXXrg', title: 'Sin novedad en el frente (1930) — Pelicula Completa Español', description: 'Guerra / Drama clásico', tags: ['guerra','drama','clasica','completa'] },
-  { videoId: 'EuB7_hF8qus', title: 'Paths of Glory — Pelicula Completa Español', description: 'Guerra / Drama / Kubrick', tags: ['guerra','drama','kubrick','completa'] },
-  { videoId: 'f7e-QV3VpCs', title: 'El Álamo — Pelicula Completa en Español', description: 'Guerra / Western histórico', tags: ['guerra','western','historico','alamo','completa'] },
-
-  // ── MÚSICAL ──
-  { videoId: 'BVXIOC4ek7c', title: 'El Rey del Jazz — Musical Pelicula Completa Español', description: 'Musical clásico / 1930', tags: ['musical','clasica','jazz','completa'] },
-  { videoId: 'LqhYwkRWbnA', title: 'Luces de la Ciudad — Chaplin Pelicula Completa', description: 'Musical / Romance / Chaplin', tags: ['musical','chaplin','romance','clasica','completa'] },
-
-  // ── HITCHCOCK ──
-  { videoId: 'LJKPbdmJRIk', title: 'Rebeca — Hitchcock Pelicula Completa Español', description: 'Suspenso / Hitchcock / 1940', tags: ['suspenso','hitchcock','completa'] },
-  { videoId: 'OBRfFtq8t5Y', title: 'El hombre que sabía demasiado — Hitchcock Completa', description: 'Suspenso / Hitchcock', tags: ['suspenso','hitchcock','completa'] },
-  { videoId: 'NJLpzRKA0Fk', title: 'Los 39 escalones — Hitchcock Pelicula Completa', description: 'Suspenso / Thriller / Hitchcock', tags: ['suspenso','thriller','hitchcock','39 escalones','completa'] },
-  { videoId: 'iFpbR4jIWtY', title: 'Sabotaje — Hitchcock Pelicula Completa Español', description: 'Suspenso / Hitchcock', tags: ['suspenso','hitchcock','completa'] },
-];
-
-// Categorías de inicio rápido
-const CL_LIBRARY = {
-  'pelicula accion':          CL_MOVIES.filter(v=>v.tags.includes('accion')),
-  'comedia pelicula':         CL_MOVIES.filter(v=>v.tags.includes('comedia')),
-  'drama pelicula':           CL_MOVIES.filter(v=>v.tags.includes('drama')),
-  'terror pelicula':          CL_MOVIES.filter(v=>v.tags.includes('terror')),
-  'ciencia ficcion pelicula': CL_MOVIES.filter(v=>v.tags.includes('sci-fi')||v.tags.includes('ciencia ficcion')),
-  'romance pelicula':         CL_MOVIES.filter(v=>v.tags.includes('romance')),
-  'animacion pelicula':       CL_MOVIES.filter(v=>v.tags.includes('animacion')||v.tags.includes('infantil')),
-  'thriller pelicula':        CL_MOVIES.filter(v=>v.tags.includes('suspenso')||v.tags.includes('thriller')),
-  'fantasia pelicula':        CL_MOVIES.filter(v=>v.tags.includes('fantasia')),
-  'western pelicula':         CL_MOVIES.filter(v=>v.tags.includes('western')),
-  'pelicula latinoamerica':   CL_MOVIES.filter(v=>v.tags.includes('accion')||v.tags.includes('comedia')),
-  'serie netflix':            CL_MOVIES.filter(v=>v.tags.includes('completa')).slice(0,12),
-  'documental':               CL_MOVIES.filter(v=>v.tags.includes('documental')),
-  'pantera rosa':             CL_MOVIES.filter(v=>v.tags.includes('pantera rosa')),
-  'james bond':               CL_MOVIES.filter(v=>v.tags.includes('james bond')||v.tags.includes('007')),
-  'hitchcock':                CL_MOVIES.filter(v=>v.tags.includes('hitchcock')),
-  'guerra':                   CL_MOVIES.filter(v=>v.tags.includes('guerra')),
-  'western':                  CL_MOVIES.filter(v=>v.tags.includes('western')),
+// Categorías rápidas que se muestran en los botones
+const CL_CATS = {
+  'pelicula accion':          'pelicula accion completa español',
+  'comedia pelicula':         'comedia pelicula completa español',
+  'drama pelicula':           'drama pelicula completa español',
+  'terror pelicula':          'terror pelicula completa español',
+  'ciencia ficcion pelicula': 'ciencia ficcion pelicula completa español',
+  'romance pelicula':         'romance pelicula completa español',
+  'animacion pelicula':       'animacion pelicula completa español',
+  'thriller pelicula':        'thriller pelicula completa español',
+  'fantasia pelicula':        'fantasia pelicula completa español',
+  'western pelicula':         'western pelicula completa español',
+  'pelicula latinoamerica':   'pelicula latinoamericana completa español',
+  'serie netflix':            'serie completa español',
+  'documental':               'documental completo español',
 };
 
-
-// Búsqueda dentro de CL_MOVIES por tags, título y descripción
-function _clSearchLocal(query, max){
-  const q = (query||'').toLowerCase().trim();
-  // Buscar por categoría exacta primero
-  if(CL_LIBRARY[q]) return CL_LIBRARY[q].slice(0, max);
-  // Buscar por palabras clave en tags, título y descripción
-  const words = q.split(/\s+/).filter(w => w.length > 1);
-  const scored = [];
-  const seen = new Set();
-  for(const v of CL_MOVIES){
-    if(seen.has(v.videoId)) continue;
-    const haystack = (v.title + ' ' + (v.description||'') + ' ' + (v.tags||[]).join(' ')).toLowerCase();
-    let score = 0;
-    // Coincidencia exacta de frase
-    if(haystack.includes(q)) score += 10;
-    // Coincidencia por palabras individuales
-    for(const w of words){ if(haystack.includes(w)) score += 1; }
-    // Coincidencia en tags exacto
-    if((v.tags||[]).some(t => t === q || q.includes(t) || t.includes(q))) score += 5;
-    if(score > 0){ seen.add(v.videoId); scored.push({...v, _score: score}); }
-  }
-  if(scored.length){
-    return scored.sort((a,b)=>b._score-a._score).slice(0, max);
-  }
-  // Sin coincidencias: devolver todas mezcladas
-  return [...CL_MOVIES].sort(()=>Math.random()-.5).slice(0, max);
-}
-
-// Búsqueda principal
+// Búsqueda real en Dailymotion — API pública, no necesita key, permite CORS
 async function clSearch(query, max=20){
-  const cacheKey = query + '_' + max;
+  // Normalizar: si es una clave de categoría, expandir a query completa
+  const expandedQuery = CL_CATS[query] || (query + ' pelicula completa español');
+  const cacheKey = expandedQuery + '_' + max;
   const cached = _clCache[cacheKey];
   if(cached && (Date.now() - cached.ts < 600000)) return cached.data;
-  const data = _clSearchLocal(query, max);
-  _clCache[cacheKey] = { ts: Date.now(), data };
-  return data;
+
+  const url = 'https://api.dailymotion.com/videos'
+    + '?fields=id,title,thumbnail_240_url,thumbnail_360_url,duration,description'
+    + '&limit=' + max
+    + '&search=' + encodeURIComponent(expandedQuery)
+    + '&language=es'
+    + '&longer_than=30';  // más de 30 min para filtrar cortos
+
+  const r = await fetch(url);
+  if(!r.ok) throw new Error('Dailymotion HTTP ' + r.status);
+  const data = await r.json();
+  const items = (data.list || []).map(v => ({
+    videoId:      v.id,
+    title:        v.title || 'Sin título',
+    description:  v.description || '',
+    lengthSeconds: v.duration || 0,
+    thumb:        v.thumbnail_360_url || v.thumbnail_240_url || '',
+    source:       'dm',
+  }));
+  _clCache[cacheKey] = { ts: Date.now(), data: items };
+  return items;
 }
 
+/* ── Thumbnail y Embed — Dailymotion ── */
+function clThumb(videoId, v){ 
+  // Si el objeto video tiene thumb propio (Dailymotion), usarlo
+  return (v && v.thumb) ? v.thumb : `https://www.dailymotion.com/thumbnail/video/${videoId}`;
+}
+function clEmbed(videoId){ return `https://www.dailymotion.com/embed/video/${videoId}?autoplay=1&mute=0`; }
 
-/* ── Thumbnail YouTube ── */
-function clThumb(videoId){ return `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`; }
-function clEmbed(videoId){ return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`; }
+
 
 /* ── Formatear duración (segundos → mm:ss) ── */
 function clDuration(s){
@@ -31817,12 +31690,13 @@ async function clLoadCat(query, label){
 
     // Render tarjetas
     results.forEach((v, i) => {
+      const thumbSrc = v.thumb || `https://www.dailymotion.com/thumbnail/video/${v.videoId}`;
       const card = document.createElement('div');
       card.className = 'cl-card';
       card.style.animationDelay = (i*0.04)+'s';
       card.innerHTML = `
-        <img class="cl-card-thumb" src="${clThumb(v.videoId)}" loading="lazy"
-          onerror="this.src='https://i.ytimg.com/vi/${v.videoId}/hqdefault.jpg'">
+        <img class="cl-card-thumb" src="${thumbSrc}" loading="lazy"
+          onerror="this.src='https://www.dailymotion.com/thumbnail/video/${v.videoId}';this.onerror=null;">
         <div class="cl-card-overlay">
           <button class="cl-card-play" onclick="event.stopPropagation();clOpenPlayer('${v.videoId}','${esc4attr(v.title)}','${esc4attr(v.description||'')}')">▶</button>
           <div class="cl-card-title">${escHtml(v.title)}</div>
@@ -31859,7 +31733,7 @@ function clUpdateHero(){
   const bg    = document.getElementById('clHeroBg');
   const title = document.getElementById('clHeroTitle');
   const desc  = document.getElementById('clHeroDesc');
-  if(bg)    bg.style.backgroundImage = `url(https://i.ytimg.com/vi/${v.videoId}/maxresdefault.jpg)`;
+  if(bg)    bg.style.backgroundImage = `url(${v.thumb || 'https://www.dailymotion.com/thumbnail/video/'+v.videoId})`;
   if(title) title.textContent = v.title;
   if(desc)  desc.textContent  = v.description || '';
   window._cl._heroVideoId = v.videoId;
