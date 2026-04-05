@@ -6107,12 +6107,14 @@ let _unsubPosts = null;
 let _unsubStories = null;
 
 const REACTIONS = [
-  {emoji:'👍', label:'Me gusta',     color:'#1877f2', lottieSegment:'Like'  },
-  {emoji:'❤️', label:'Me encanta',   color:'#f33e58', lottieSegment:'Love'  },
-  {emoji:'😂', label:'Me divierte',  color:'#f7b125', lottieSegment:'Haha'  },
-  {emoji:'😮', label:'Me asombra',   color:'#f7b125', lottieSegment:'Wow'   },
-  {emoji:'😢', label:'Me entristece',color:'#6b9de8', lottieSegment:'Sad'   },
-  {emoji:'😡', label:'Me enoja',     color:'#e9710f', lottieSegment:'Angry' },
+  {emoji:'❤️',  label:'Me encanta',   color:'#E24B4A', lottieSegment:'Love'   },
+  {emoji:'⭐',  label:'Me fascina',   color:'#EF9F27', lottieSegment:'Star'   },
+  {emoji:'🔥',  label:'Qué fuego',   color:'#D85A30', lottieSegment:'Fire'   },
+  {emoji:'😉',  label:'Me divierte',  color:'#EF9F27', lottieSegment:'Wink'   },
+  {emoji:'✨',  label:'Me enamora',   color:'#7F77DD', lottieSegment:'Magic'  },
+  {emoji:'🚩',  label:'Red flag',     color:'#E24B4A', lottieSegment:'Flag'   },
+  {emoji:'👀',  label:'Mujeriego/a',  color:'#E24B4A', lottieSegment:'Eyes'   },
+  {emoji:'🐍',  label:'Falso/a',      color:'#888780', lottieSegment:'Snake'  },
 ];
 window.REACTIONS = REACTIONS;
 window.REACTIONS = REACTIONS;
@@ -27393,12 +27395,14 @@ setTimeout(function(){
   'use strict';
 
   const RXN_ANIM = {
-    '👍': 'anim-like',
     '❤️': 'anim-love',
-    '😂': 'anim-haha',
-    '😮': 'anim-wow-fb',
-    '😢': 'anim-sad',
-    '😡': 'anim-angry',
+    '⭐': 'anim-wow-fb',
+    '🔥': 'anim-angry',
+    '😉': 'anim-haha',
+    '✨': 'anim-like',
+    '🚩': 'anim-sad',
+    '👀': 'anim-haha',
+    '🐍': 'anim-angry',
   };
 
   window._buildRxnBtns = function(pid, myRxn){
