@@ -31003,6 +31003,15 @@ async function _publishRelationshipPost(partnerUid, partnerNick) {
 
     await window.addDoc(window.collection(window.db, 'posts'), postData);
     toast('💑 ¡Tu relación apareció en el feed!', 'ok');
+
+    // ── Notificar a la pareja ──
+    try {
+      if (typeof sendNotifToUser === 'function') {
+        await sendNotifToUser(partnerUid, `💑 ${myNick} te marcó como pareja en su perfil ❤️`);
+      }
+    } catch(ne) {
+      console.warn('No se pudo notificar a la pareja:', ne);
+    }
   } catch(e) {
     console.warn('No se pudo publicar el post de relación:', e);
   }
