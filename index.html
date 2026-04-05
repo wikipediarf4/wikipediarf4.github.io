@@ -16355,8 +16355,120 @@ async function requestVerification(){
   if(!window.CU) return;
   if(window.CU.verified){ toast('Ya estás verificado ✅','ok'); return; }
   if(window.CU.verifPending){ toast('Tu solicitud ya está pendiente ⏳','inf'); return; }
-  if(!confirm('¿Querés solicitar la verificación de tu cuenta? El admin revisará tu solicitud.')) return;
-  try {
+  // Abrir modal de verificación facial
+  openVerifFaceModal();
+}
+
+function openVerifFaceModal(){
+  var existing = document.getElementById('_verifFaceModal');
+  if(existing) existing.remove();
+  // Gesto aleatorio para evitar fotos estáticas
+  var gestos = ['parpadeá dos veces','girá la cabeza a la derecha','girá la cabeza a la izquierda','sonreí','levantá las cejas'];
+  var gesto = gestos[Math.floor(Math.random()*gestos.length)];
+  var m = document.createElement('div');
+  m.id = '_verifFaceModal';
+  m.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;padding:16px;';
+  m.innerHTML = `
+    <div style="background:var(--bg2);border-radius:16px;padding:24px;max-width:420px;width:100%;position:relative;">
+      <button onclick="document.getElementById('_verifFaceModal').remove();_vfStopCam();" style="position:absolute;top:12px;right:12px;background:var(--bg3);border:none;color:var(--muted);border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:1rem;">✕</button>
+      <div style="font-family:'Orbitron',monospace;font-size:1rem;font-weight:700;color:var(--accent);text-align:center;margin-bottom:6px;">🎥 Verificación facial</div>
+      <div style="font-size:.78rem;color:var(--muted);text-align:center;margin-bottom:14px;">Grabá un video corto para verificar que sos una persona real.</div>
+      <div style="background:rgba(255,200,0,.08);border:1px solid rgba(255,200,0,.25);border-radius:10px;padding:10px 14px;margin-bottom:14px;text-align:center;">
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:4px;">Mientras grabás, realizá este gesto:</div>
+        <div style="font-size:1rem;font-weight:800;color:gold;" id="_vfGestoLabel">${gesto}</div>
+      </div>
+      <video id="_vfPreview" autoplay playsinline muted style="width:100%;border-radius:10px;background:#000;display:none;max-height:220px;object-fit:cover;"></video>
+      <div id="_vfStatus" style="font-size:.75rem;color:var(--muted);text-align:center;margin:8px 0;min-height:18px;"></div>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button id="_vfBtnCam" onclick="_vfIniciarCamara()" style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:var(--rs);font-size:.82rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">📷 Activar cámara</button>
+        <button id="_vfBtnRec" onclick="_vfToggleRec()" style="flex:1;background:#e74c3c;border:none;color:#fff;padding:10px;border-radius:var(--rs);font-size:.82rem;font-weight:700;cursor:pointer;display:none;font-family:'Exo 2',sans-serif;">⏺ Grabar</button>
+      </div>
+      <button id="_vfBtnEnviar" onclick="_vfEnviarVerif()" style="width:100%;margin-top:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#000;padding:11px;border-radius:var(--rs);font-size:.85rem;font-weight:900;cursor:pointer;display:none;font-family:'Exo 2',sans-serif;">📤 Enviar solicitud</button>
+    </div>`;
+  document.body.appendChild(m);
+  window._vfGesto = gesto;
+  window._vfStream = null;
+  window._vfRecorder = null;
+  window._vfChunks = [];
+  window._vfBlob = null;
+  window._vfRecording = false;
+  window._vfTimer = null;
+  window._vfSecs = 0;
+}
+
+window._vfIniciarCamara = async function(){
+  try{
+    window._vfStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
+    var vid = document.getElementById('_vfPreview');
+    if(vid){ vid.srcObject = window._vfStream; vid.style.display='block'; }
+    var btnCam = document.getElementById('_vfBtnCam');
+    var btnRec = document.getElementById('_vfBtnRec');
+    if(btnCam) btnCam.style.display='none';
+    if(btnRec) btnRec.style.display='block';
+    document.getElementById('_vfStatus').textContent = 'Cámara lista. Presá Grabar cuando estés listo.';
+  }catch(e){
+    document.getElementById('_vfStatus').textContent = '❌ No se pudo acceder a la cámara.';
+  }
+};
+
+window._vfToggleRec = function(){
+  if(!window._vfRecording) _vfEmpezar(); else _vfDetener();
+};
+
+function _vfEmpezar(){
+  if(!window._vfStream) return;
+  window._vfChunks = [];
+  var mime = MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : 'video/mp4';
+  try{ window._vfRecorder = new MediaRecorder(window._vfStream, {mimeType:mime}); }
+  catch(e){ window._vfRecorder = new MediaRecorder(window._vfStream); }
+  window._vfRecorder.ondataavailable = function(e){ if(e.data && e.data.size>0) window._vfChunks.push(e.data); };
+  window._vfRecorder.onstop = function(){
+    var blob = new Blob(window._vfChunks, {type: window._vfChunks[0]?.type||'video/webm'});
+    window._vfBlob = blob;
+    var url = URL.createObjectURL(blob);
+    var vid = document.getElementById('_vfPreview');
+    if(vid){ vid.srcObject=null; vid.src=url; vid.controls=true; vid.muted=false; }
+    var btnEnviar = document.getElementById('_vfBtnEnviar');
+    if(btnEnviar) btnEnviar.style.display='block';
+    var btnRec = document.getElementById('_vfBtnRec');
+    if(btnRec){ btnRec.textContent='🔄 Volver a grabar'; btnRec.onclick=function(){ window._vfBlob=null; if(btnEnviar) btnEnviar.style.display='none'; btnRec.textContent='⏺ Grabar'; btnRec.onclick=_vfToggleRec; _vfEmpezar(); }; }
+    document.getElementById('_vfStatus').textContent = '✅ Video listo. Revisalo y enviá tu solicitud.';
+  };
+  window._vfRecorder.start(200);
+  window._vfRecording = true;
+  var btnRec = document.getElementById('_vfBtnRec');
+  if(btnRec){ btnRec.innerHTML='⏹ 0s / 8s'; btnRec.style.background='#c0392b'; }
+  window._vfSecs = 0;
+  window._vfTimer = setInterval(function(){
+    window._vfSecs++;
+    var btnRec = document.getElementById('_vfBtnRec');
+    if(btnRec) btnRec.innerHTML='⏹ '+window._vfSecs+'s / 8s';
+    if(window._vfSecs >= 8) _vfDetener();
+  },1000);
+}
+
+function _vfDetener(){
+  if(window._vfTimer){ clearInterval(window._vfTimer); window._vfTimer=null; }
+  if(window._vfRecorder && window._vfRecording){ window._vfRecorder.stop(); }
+  window._vfRecording = false;
+}
+
+window._vfStopCam = function(){
+  if(window._vfTimer){ clearInterval(window._vfTimer); window._vfTimer=null; }
+  if(window._vfRecorder && window._vfRecording){ try{window._vfRecorder.stop();}catch(e){} }
+  if(window._vfStream){ window._vfStream.getTracks().forEach(t=>t.stop()); window._vfStream=null; }
+};
+
+window._vfEnviarVerif = async function(){
+  if(!window._vfBlob){ toast('Primero grabá el video','err'); return; }
+  var btnEnviar = document.getElementById('_vfBtnEnviar');
+  if(btnEnviar){ btnEnviar.disabled=true; btnEnviar.textContent='⏳ Subiendo...'; }
+  document.getElementById('_vfStatus').textContent = '⏳ Subiendo video...';
+  try{
+    var ext = window._vfBlob.type.includes('mp4') ? 'mp4' : 'webm';
+    var file = new File([window._vfBlob], 'verif-'+window.CU.id+'-'+Date.now()+'.'+ext, {type:window._vfBlob.type});
+    var videoUrl = await uploadVideo(file, 'verifications');
+    _vfStopCam();
     await updateDoc(doc(db,'users',window.CU.id),{ verifPending: true, verifRequestTime: Date.now() });
     window.CU.verifPending = true;
     await setDoc(doc(db,'verifRequests',window.CU.id),{
@@ -16364,21 +16476,27 @@ async function requestVerification(){
       nick: window.CU.nick,
       av: window.CU.av||'',
       requestTime: Date.now(),
-      status: 'pending'
+      status: 'pending',
+      videoUrl: videoUrl,
+      gesto: window._vfGesto
     });
-    try {
+    try{
       const adminSnap = await getDocs(query(collection(db,'users'), where('nick','==','Administrador')));
       if(!adminSnap.empty){
         const adminId = adminSnap.docs[0].id;
         const adminData = adminSnap.docs[0].data();
         const adminNotifs = adminData.notifs||[];
-        adminNotifs.unshift({ type:'verifRequest', fromId:window.CU.id, fromNick:window.CU.nick, fromAv:window.CU.av||'', time:Date.now(), text:`${window.CU.nick} solicita verificación` });
+        adminNotifs.unshift({ type:'verifRequest', fromId:window.CU.id, fromNick:window.CU.nick, fromAv:window.CU.av||'', time:Date.now(), text:`${window.CU.nick} solicita verificación con video` });
         await updateDoc(doc(db,'users',adminId),{ notifs: adminNotifs.slice(0,50) });
       }
-    } catch(e){}
+    }catch(e){}
+    document.getElementById('_verifFaceModal').remove();
     renderProfile();
-    toast('¡Solicitud enviada! El admin revisará tu cuenta 🕐','ok');
-  } catch(e){ toast('Error al enviar solicitud','err'); }
+    toast('¡Solicitud enviada con video! El admin revisará tu verificación 🕐','ok');
+  }catch(e){
+    document.getElementById('_vfStatus').textContent = '❌ Error: '+e.message;
+    if(btnEnviar){ btnEnviar.disabled=false; btnEnviar.textContent='📤 Enviar solicitud'; }
+  }
 }
 
 async function loadVerifRequests(){
@@ -16397,11 +16515,13 @@ async function loadVerifRequests(){
         <div style="flex:1;min-width:0;">
           <div style="font-size:.88rem;font-weight:800;">${esc(r.nick||'')} ${r.status==='approved'?'✅':''}</div>
           <div style="font-size:.72rem;color:var(--muted);">${r.requestTime?new Date(r.requestTime).toLocaleString('es-AR'):'—'}</div>
+          ${r.gesto?`<div style="font-size:.7rem;color:gold;margin-top:2px;">Gesto: ${r.gesto}</div>`:''}
           <div style="font-size:.72rem;margin-top:2px;">
             <span style="padding:2px 8px;border-radius:100px;font-weight:700;font-size:.68rem;${r.status==='approved'?'background:rgba(0,200,0,.15);color:#00c853;':r.status==='rejected'?'background:rgba(255,0,0,.1);color:var(--red);':'background:rgba(255,200,0,.15);color:gold;'}">
               ${r.status==='approved'?'✅ Aprobado':r.status==='rejected'?'❌ Rechazado':'⏳ Pendiente'}
             </span>
           </div>
+          ${r.videoUrl?`<div style="margin-top:6px;"><video src="${r.videoUrl}" controls style="width:100%;max-height:160px;border-radius:8px;background:#000;" preload="none"></video></div>`:'<div style="font-size:.68rem;color:var(--muted);margin-top:4px;">Sin video</div>'}
         </div>
         ${r.status==='pending'?`
         <div style="display:flex;gap:6px;flex-shrink:0;">
