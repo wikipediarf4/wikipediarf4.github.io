@@ -10773,7 +10773,7 @@ async function doReact(pid, emoji){
   else { p.reactions[uid] = emoji; p.reactionCounts[emoji] = (p.reactionCounts[emoji]||0)+1; }
 
   const myNewRxn = removing ? null : emoji;
-  const rxnDef = REACTIONS?.find(r=>r.emoji===myNewRxn);
+  const rxnDef = myNewRxn ? (REACTIONS?.find(r=>r.emoji===myNewRxn) || REACTIONS?.find(r=>r.emoji.replace(/\uFE0F/g,'')===myNewRxn.replace(/\uFE0F/g,''))) : null;
 
   const rxnBtn = document.getElementById('rxnt_'+pid);
   if(rxnBtn){
