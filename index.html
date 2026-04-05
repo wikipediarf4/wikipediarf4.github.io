@@ -13507,6 +13507,54 @@ function renderNotifs(){
       </div>`;
     }
 
+    // ── Solicitud de relación ──
+    if(n.type==='relRequest' && !n._done){
+      const rUid  = (n.requesterUid  || n.fromUid  || '').replace(/['"<>&]/g,'');
+      const rNick = (n.requesterNick || n.fromNick || '').replace(/['"<>&]/g,'');
+      const rAv   = (n.requesterAv   || n.fromAv   || '').replace(/['"<>&]/g,'');
+      return `<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.04);${rowBg}">
+        <div style="position:relative;flex-shrink:0;">
+          <div style="width:48px;height:48px;border-radius:50%;background:var(--bg3);overflow:hidden;border:2px solid rgba(233,30,140,.4);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">${avInner}</div>
+          <div style="position:absolute;bottom:-2px;right:-2px;width:18px;height:18px;border-radius:50%;background:#e91e8c;display:flex;align-items:center;justify-content:center;font-size:.7rem;border:2px solid var(--bg2);">💑</div>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:.84rem;line-height:1.4;margin-bottom:4px;color:var(--text);">
+            <strong style="color:#e91e8c;">${esc(rNick||'Alguien')}</strong>
+            <span style="color:var(--muted);"> quiere estar en relación con vos 💕</span>
+          </div>
+          <div style="font-size:.7rem;color:#e91e8c;margin-bottom:10px;">${fmtT(n.time)}</div>
+          <div style="display:flex;gap:8px;">
+            <button onclick="event.stopPropagation();relAccept('${rUid}','${rNick}','${rAv}',${i},this)"
+              style="flex:1;padding:8px;background:#e91e8c;border:none;color:#fff;border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;transition:background .2s;"
+              onmouseover="this.style.background='#c2185b'" onmouseout="this.style.background='#e91e8c'">💑 Aceptar</button>
+            <button onclick="event.stopPropagation();relReject('${rUid}','${rNick}',${i},this)"
+              style="flex:1;padding:8px;background:var(--bg4);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">Rechazar</button>
+          </div>
+        </div>
+        ${!isRead?`<div style="width:8px;height:8px;background:#e91e8c;border-radius:50%;flex-shrink:0;margin-top:6px;"></div>`:''}
+      </div>`;
+    }
+
+    // ── Relación aceptada ──
+    if(n.type==='relAccepted'){
+      return `<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.04);${rowBg}cursor:pointer;"
+        onclick="gp('profile')"
+        onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='${unreadBg}'">
+        <div style="position:relative;flex-shrink:0;">
+          <div style="width:48px;height:48px;border-radius:50%;background:var(--bg3);overflow:hidden;border:2px solid rgba(233,30,140,.4);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">${avInner}</div>
+          <div style="position:absolute;bottom:-2px;right:-2px;width:18px;height:18px;border-radius:50%;background:#e91e8c;display:flex;align-items:center;justify-content:center;font-size:.7rem;border:2px solid var(--bg2);">❤️</div>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:.84rem;line-height:1.4;color:var(--text);">
+            <strong style="color:#e91e8c;">${esc(n.fromNick||'')}</strong>
+            <span style="color:var(--muted);"> aceptó tu solicitud de relación</span> 💑
+          </div>
+          <div style="font-size:.7rem;color:#e91e8c;margin-top:4px;">${fmtT(n.time)}</div>
+        </div>
+        ${!isRead?`<div style="width:8px;height:8px;background:#e91e8c;border-radius:50%;flex-shrink:0;margin-top:6px;"></div>`:''}
+      </div>`;
+    }
+
     if(n.type==='albumAcceso'){
       const safeNick = (n.visitorNick||n.fromNick||'').replace(/['"<>&]/g,'');
       const visitorUid = n.visitorUid||n.fromUid||'';
@@ -30982,16 +31030,22 @@ window.playDailymotionVideo = function(id, title) {
 
 <script>
 /* ═══════════════════════════════════════════════════════
-   SISTEMA DE RELACIÓN — MiLatido
-   Permite vincular pareja en el perfil y mostrar badge
+   SISTEMA DE RELACIÓN — MiLatido  v2
+   Flujo: Solicitud → Notificación → Aceptar/Rechazar → Badge
    ══════════════════════════════════════════════════════ */
 
-// ── Estado temporal de búsqueda de pareja ──
+// ── Estado temporal ──
 window._partnerSearchTimer = null;
-window._pendingPartnerId   = null;  // id del usuario seleccionado
-window._pendingPartnerNick = null;  // nick del usuario seleccionado
+window._pendingPartnerId   = null;
+window._pendingPartnerNick = null;
 
-// ── Mostrar/ocultar el box de pareja según relStatus ──
+// ── Helpers de escape ──
+function _relEsc(s){ return (s||'').replace(/'/g,"\\'"); }
+
+/* ════════════════════════════════════════════
+   UI DEL FORMULARIO DE EDICIÓN DE PERFIL
+   ════════════════════════════════════════════ */
+
 window._onRelStatusChange = function(val) {
   const box = document.getElementById('epPartnerBox');
   if (!box) return;
@@ -31005,32 +31059,43 @@ window._onRelStatusChange = function(val) {
   }
 };
 
-// ── Mostrar pareja actualmente guardada ──
 function _renderPartnerCurrent() {
   const el = document.getElementById('epPartnerCurrent');
   if (!el) return;
-  const pid  = window._pendingPartnerId  || (window.CU && window.CU.partnerUid);
-  const pnick= window._pendingPartnerNick|| (window.CU && window.CU.partnerNick);
+  const pid   = window._pendingPartnerId  || (window.CU && window.CU.partnerUid);
+  const pnick = window._pendingPartnerNick|| (window.CU && window.CU.partnerNick);
+  const isPending = window.CU && window.CU.relPending; // solicitud enviada pero no aceptada aún
+
   if (pid && pnick) {
     el.style.display = 'block';
-    el.innerHTML = `<div style="display:flex;align-items:center;gap:8px;background:rgba(233,30,140,.08);border:1px solid rgba(233,30,140,.2);border-radius:8px;padding:6px 10px;">
-      <span style="font-size:1.1rem;">💑</span>
-      <span style="font-size:.82rem;font-weight:700;color:#e91e8c;">En relación con <strong>${pnick}</strong></span>
-    </div>`;
+    if (isPending && !window._pendingPartnerId) {
+      // Ya hay una solicitud enviada esperando respuesta
+      el.innerHTML = `<div style="display:flex;align-items:center;gap:8px;background:rgba(255,165,0,.1);border:1px solid rgba(255,165,0,.3);border-radius:8px;padding:8px 12px;">
+        <span style="font-size:1.1rem;">⏳</span>
+        <div>
+          <div style="font-size:.82rem;font-weight:700;color:#f5a623;">Solicitud enviada a <strong>${pnick}</strong></div>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:2px;">Esperando que acepte...</div>
+        </div>
+      </div>`;
+    } else {
+      el.innerHTML = `<div style="display:flex;align-items:center;gap:8px;background:rgba(233,30,140,.08);border:1px solid rgba(233,30,140,.2);border-radius:8px;padding:6px 10px;">
+        <span style="font-size:1.1rem;">💑</span>
+        <span style="font-size:.82rem;font-weight:700;color:#e91e8c;">En relación con <strong>${pnick}</strong></span>
+      </div>`;
+    }
   } else {
     el.style.display = 'none';
     el.innerHTML = '';
   }
 }
 
-// ── Buscar usuarios por nick ──
 window._searchPartner = function(query) {
   clearTimeout(window._partnerSearchTimer);
   const resultsEl = document.getElementById('epPartnerResults');
   if (!query || query.length < 2) { if(resultsEl) resultsEl.innerHTML=''; return; }
   window._partnerSearchTimer = setTimeout(async () => {
     if (!window.db || !window.collection || !window.getDocs || !window.query || !window.where) {
-      if(resultsEl) resultsEl.innerHTML='<div style="font-size:.75rem;color:var(--muted);padding:4px;">Busqueda no disponible offline</div>';
+      if(resultsEl) resultsEl.innerHTML='<div style="font-size:.75rem;color:var(--muted);padding:4px;">Búsqueda no disponible offline</div>';
       return;
     }
     try {
@@ -31044,14 +31109,15 @@ window._searchPartner = function(query) {
       const users = [];
       snap.forEach(d => {
         const data = d.data();
-        if (window.CU && d.id === window.CU.id) return; // skip self
+        if (window.CU && d.id === window.CU.id) return;
         users.push({ id: d.id, nick: data.nick, av: data.av });
       });
       if (!users.length) { resultsEl.innerHTML='<div style="font-size:.75rem;color:var(--muted);padding:4px 0;">Sin resultados</div>'; return; }
       resultsEl.innerHTML = users.slice(0,5).map(u => {
-        const avSrc = u.av || '';
-        const avHtml = avSrc ? `<img src="${avSrc}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;">` : `<div style="width:28px;height:28px;border-radius:50%;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:.75rem;">👤</div>`;
-        return `<div onclick="window._selectPartner('${u.id}','${u.nick.replace(/'/g,"\\'")}')" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+        const avHtml = u.av
+          ? `<img src="${u.av}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;">`
+          : `<div style="width:28px;height:28px;border-radius:50%;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:.75rem;">👤</div>`;
+        return `<div onclick="window._selectPartner('${u.id}','${_relEsc(u.nick)}')" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
           ${avHtml}
           <span style="font-size:.85rem;font-weight:700;">${u.nick}</span>
         </div>`;
@@ -31060,7 +31126,6 @@ window._searchPartner = function(query) {
   }, 350);
 };
 
-// ── Seleccionar pareja ──
 window._selectPartner = function(uid, nick) {
   window._pendingPartnerId   = uid;
   window._pendingPartnerNick = nick;
@@ -31071,180 +31136,371 @@ window._selectPartner = function(uid, nick) {
   _renderPartnerCurrent();
 };
 
-// ── Quitar pareja ──
 window._clearPartner = function() {
   window._pendingPartnerId   = null;
   window._pendingPartnerNick = null;
-  if (window.CU) { window.CU.partnerUid = ''; window.CU.partnerNick = ''; }
+  if (window.CU) { window.CU.partnerUid = ''; window.CU.partnerNick = ''; window.CU.relPending = false; }
   _renderPartnerCurrent();
 };
 
-// ── Hook: al abrir editar perfil, cargar estado de relación ──
 const _origOpenEditProfile = window.openEditProfile;
 window.openEditProfile = function() {
   _origOpenEditProfile && _origOpenEditProfile();
-  // cargar partner
   window._pendingPartnerId   = (window.CU && window.CU.partnerUid)  || null;
   window._pendingPartnerNick = (window.CU && window.CU.partnerNick) || null;
   _renderPartnerCurrent();
-  // mostrar box si ya está en relación
   if (window.CU && window.CU.relStatus === '💑 En relación') {
     const box = document.getElementById('epPartnerBox');
     if (box) box.style.display = 'block';
   }
 };
 
-// ── Hook: al guardar perfil, guardar partner ──
+/* ════════════════════════════════════════════
+   GUARDAR PERFIL — envía solicitud, no guarda directo
+   ════════════════════════════════════════════ */
+
 const _origSaveProfile = window.saveProfile;
 window.saveProfile = async function() {
   if (!window.CU) { await _origSaveProfile(); return; }
 
-  const relStatus   = document.getElementById('epRelStatus')?.value || '';
-  const wasInRel    = window.CU.relStatus === '💑 En relación';
-  const willBeInRel = relStatus === '💑 En relación';
-  const newPartner  = window._pendingPartnerId;
+  const relStatus      = document.getElementById('epRelStatus')?.value || '';
+  const wasInRel       = window.CU.relStatus === '💑 En relación';
+  const willBeInRel    = relStatus === '💑 En relación';
+  const newPartner     = window._pendingPartnerId;
   const newPartnerNick = window._pendingPartnerNick;
 
-  // detectar si es una relación NUEVA (antes no estaba en relación, o cambió de pareja)
-  const isNewRelationship = willBeInRel && newPartner && (
+  // ¿Cambió la pareja seleccionada?
+  const isNewPartner = willBeInRel && newPartner && (
     !wasInRel || window.CU.partnerUid !== newPartner
   );
 
-  // guardar partner
+  if (isNewPartner) {
+    // ── Enviar SOLICITUD, no guardar aún ──
+    // Guardamos el perfil sin el partner todavía (solo relStatus queda pendiente)
+    const prevPartnerUid  = window.CU.partnerUid;
+    const prevPartnerNick = window.CU.partnerNick;
+
+    // Marcar como pendiente en CU local temporalmente
+    window.CU.partnerUid   = newPartner;
+    window.CU.partnerNick  = newPartnerNick;
+    window.CU.relPending   = true;  // flag local: esperando aceptación
+
+    await _origSaveProfile();   // guarda relStatus + partnerUid + partnerNick en Firestore
+    _renderRelBadgeOwn();
+
+    // Enviar notificación con tipo especial a la pareja
+    await _sendRelationshipRequest(newPartner, newPartnerNick);
+
+    toast('💌 Solicitud de relación enviada a ' + newPartnerNick + '. Esperando que acepte.', 'ok');
+    return;
+  }
+
+  // Sin cambio de pareja: guardar normal
   if (willBeInRel && newPartner) {
     window.CU.partnerUid  = newPartner;
     window.CU.partnerNick = newPartnerNick;
   } else if (!willBeInRel) {
+    // Rompió la relación → limpiar también en la pareja anterior
+    const oldPartnerUid = window.CU.partnerUid;
     window.CU.partnerUid  = '';
     window.CU.partnerNick = '';
+    window.CU.relPending  = false;
+    if (oldPartnerUid) await _clearPartnerSide(oldPartnerUid);
   }
 
   await _origSaveProfile();
   _renderRelBadgeOwn();
+};
 
-  // ── Publicar post en el feed si es relación nueva ──
-  if (isNewRelationship) {
-    await _publishRelationshipPost(newPartner, newPartnerNick);
+/* ════════════════════════════════════════════
+   ENVIAR SOLICITUD DE RELACIÓN
+   ════════════════════════════════════════════ */
+
+async function _sendRelationshipRequest(partnerUid, partnerNick) {
+  if (!window.db || !window.doc || !window.updateDoc || !window.arrayUnion) return;
+  if (!window.CU) return;
+
+  const notif = {
+    type:        'relRequest',           // tipo especial para renderizar botones
+    text:        `💑 ${window.CU.nick} quiere estar en relación con vos`,
+    time:        Date.now(),
+    read:        false,
+    fromUid:     window.CU.id,
+    fromNick:    window.CU.nick  || '',
+    fromAv:      window.CU.av   || '',
+    requesterUid:  window.CU.id,
+    requesterNick: window.CU.nick || '',
+    requesterAv:   window.CU.av  || '',
+  };
+
+  try {
+    await window.updateDoc(
+      window.doc(window.db, 'users', partnerUid),
+      { notifs: window.arrayUnion(notif) }
+    );
+  } catch(e) {
+    console.warn('[Relación] Error enviando solicitud:', e);
+  }
+}
+
+/* ════════════════════════════════════════════
+   ACEPTAR SOLICITUD DE RELACIÓN
+   ════════════════════════════════════════════ */
+
+window.relAccept = async function(requesterUid, requesterNick, requesterAv, notifIdx, btnEl) {
+  if (!window.CU) return;
+  if (btnEl) { btnEl.disabled = true; btnEl.textContent = '...'; }
+
+  try {
+    const db  = window.db;
+    const myUid  = window.CU.id;
+    const myNick = window.CU.nick || 'Usuario';
+    const myAv   = window.CU.av   || '';
+
+    // 1. Actualizar perfil de quien acepta (yo)
+    await window.updateDoc(window.doc(db, 'users', myUid), {
+      relStatus:   '💑 En relación',
+      partnerUid:  requesterUid,
+      partnerNick: requesterNick,
+      relPending:  false,
+    });
+
+    // 2. Actualizar perfil de quien solicitó (el otro)
+    await window.updateDoc(window.doc(db, 'users', requesterUid), {
+      relStatus:   '💑 En relación',
+      partnerUid:  myUid,
+      partnerNick: myNick,
+      relPending:  false,
+    });
+
+    // 3. Actualizar CU local
+    window.CU.relStatus   = '💑 En relación';
+    window.CU.partnerUid  = requesterUid;
+    window.CU.partnerNick = requesterNick;
+    window.CU.relPending  = false;
+
+    // 4. Notificar al solicitante que fue aceptado
+    const confirmNotif = {
+      type:     'relAccepted',
+      text:     `💑 ${myNick} aceptó tu solicitud de relación ❤️`,
+      time:     Date.now(),
+      read:     false,
+      fromUid:  myUid,
+      fromNick: myNick,
+      fromAv:   myAv,
+    };
+    await window.updateDoc(window.doc(db, 'users', requesterUid), {
+      notifs: window.arrayUnion(confirmNotif)
+    });
+
+    // 5. Publicar post en el feed
+    await _publishRelationshipPost(requesterUid, requesterNick, requesterAv);
+
+    // 6. Marcar la notificación como leída y procesada
+    _markRelNotifDone(notifIdx);
+
+    // 7. Refrescar badges
+    _renderRelBadgeOwn();
+
+    toast('💑 ¡Ahora están en relación con ' + requesterNick + '! ❤️', 'ok');
+
+  } catch(e) {
+    console.warn('[Relación] Error al aceptar:', e);
+    toast('Error al aceptar la solicitud', 'err');
+    if (btnEl) { btnEl.disabled = false; btnEl.textContent = '💑 Aceptar'; }
   }
 };
 
-// ── Crear el post especial de relación en Firestore ──
-async function _publishRelationshipPost(partnerUid, partnerNick) {
+/* ════════════════════════════════════════════
+   RECHAZAR SOLICITUD DE RELACIÓN
+   ════════════════════════════════════════════ */
+
+window.relReject = async function(requesterUid, requesterNick, notifIdx, btnEl) {
+  if (!window.CU) return;
+  if (btnEl) { btnEl.disabled = true; btnEl.textContent = '...'; }
+
+  try {
+    // Limpiar partnerUid/Nick del solicitante si quedó guardado
+    await window.updateDoc(window.doc(window.db, 'users', requesterUid), {
+      partnerUid:  '',
+      partnerNick: '',
+      relPending:  false,
+    });
+
+    // Notificar al solicitante del rechazo
+    const rejectNotif = {
+      text:     `💔 ${window.CU.nick} no aceptó tu solicitud de relación`,
+      time:     Date.now(),
+      read:     false,
+      fromUid:  window.CU.id,
+      fromNick: window.CU.nick || '',
+      fromAv:   window.CU.av  || '',
+    };
+    await window.updateDoc(window.doc(window.db, 'users', requesterUid), {
+      notifs: window.arrayUnion(rejectNotif)
+    });
+
+    _markRelNotifDone(notifIdx);
+    toast('Solicitud rechazada', 'inf');
+
+  } catch(e) {
+    console.warn('[Relación] Error al rechazar:', e);
+    if (btnEl) { btnEl.disabled = false; btnEl.textContent = 'Rechazar'; }
+  }
+};
+
+// Marcar notificación de relación como leída/procesada
+function _markRelNotifDone(idx) {
+  if (!window._notifs || idx === undefined) return;
+  const n = window._notifs[idx];
+  if (n) {
+    n.read = true;
+    n._done = true;
+  }
+  if (typeof renderNotifs === 'function') renderNotifs();
+  // Persistir en Firestore
+  try {
+    if (window.db && window.doc && window.updateDoc && window.CU) {
+      const clean = window._notifs.filter(x=>x).slice(0,60).map(x=>({...x}));
+      window.updateDoc(window.doc(window.db,'users',window.CU.id),{notifs: clean}).catch(()=>{});
+    }
+  } catch(e){}
+}
+
+// Limpiar datos de relación en el perfil de la ex-pareja
+async function _clearPartnerSide(partnerUid) {
+  if (!partnerUid || !window.db || !window.doc || !window.updateDoc) return;
+  try {
+    await window.updateDoc(window.doc(window.db, 'users', partnerUid), {
+      partnerUid:  '',
+      partnerNick: '',
+      relPending:  false,
+    });
+  } catch(e) {}
+}
+
+/* ════════════════════════════════════════════
+   PUBLICAR POST EN EL FEED
+   ════════════════════════════════════════════ */
+
+async function _publishRelationshipPost(partnerUid, partnerNick, partnerAvArg) {
   if (!window.db || !window.addDoc || !window.collection || !window.serverTimestamp) return;
   if (!window.CU) return;
 
   try {
-    // obtener avatar de la pareja
-    let partnerAv = '';
-    try {
-      if (window.getDoc && window.doc) {
+    let partnerAv = partnerAvArg || '';
+    if (!partnerAv) {
+      try {
         const pSnap = await window.getDoc(window.doc(window.db, 'users', partnerUid));
         if (pSnap.exists()) partnerAv = pSnap.data().av || '';
-      }
-    } catch(e) {}
+      } catch(e) {}
+    }
 
-    const myAv    = window.CU.av || '';
+    const myAv    = window.CU.av   || '';
     const myNick  = window.CU.nick || 'Usuario';
-    const today   = new Date();
-    const dateStr = today.toLocaleDateString('es-UY', { day:'numeric', month:'long', year:'numeric' });
+    const dateStr = new Date().toLocaleDateString('es-UY', { day:'numeric', month:'long', year:'numeric' });
 
-    const postData = {
-      type:         'relationship',          // tipo especial
+    await window.addDoc(window.collection(window.db, 'posts'), {
+      type:         'relationship',
       authorId:     window.CU.id,
       authorNick:   myNick,
       authorAv:     myAv,
-      partnerUid:   partnerUid,
-      partnerNick:  partnerNick,
-      partnerAv:    partnerAv,
+      partnerUid,
+      partnerNick,
+      partnerAv,
       relationDate: dateStr,
       text:         `💑 ${myNick} y ${partnerNick} están en una relación ❤️`,
       time:         window.serverTimestamp(),
       reactions:    {},
       cmtCount:     0,
       visibility:   'public',
-    };
-
-    await window.addDoc(window.collection(window.db, 'posts'), postData);
-    toast('💑 ¡Tu relación apareció en el feed!', 'ok');
+    });
   } catch(e) {
-    console.warn('No se pudo publicar el post de relación:', e);
+    console.warn('[Relación] No se pudo publicar el post:', e);
   }
 }
 
+/* ════════════════════════════════════════════
+   BADGES EN PERFILES
+   ════════════════════════════════════════════ */
 
-// ── Renderizar badge en perfil propio ──
+function _relBadgeHtml(puid, pnick, clickable) {
+  if (!puid || !pnick) {
+    return `<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(233,30,140,.08);border:1px solid rgba(233,30,140,.2);border-radius:100px;padding:5px 14px;">
+      <span style="font-size:.95rem;">💑</span>
+      <span style="font-size:.8rem;font-weight:700;color:#e91e8c;">En relación</span>
+    </span>`;
+  }
+  const onclick = clickable
+    ? `onclick="openUserProfile('${puid}','${_relEsc(pnick)}','${_relEsc(pnick)}',null)"`
+    : '';
+  return `<span ${onclick} style="display:inline-flex;align-items:center;gap:6px;background:rgba(233,30,140,.1);border:1px solid rgba(233,30,140,.3);border-radius:100px;padding:5px 14px;${clickable?'cursor:pointer;':''}transition:all .2s;" ${clickable?`onmouseover="this.style.background='rgba(233,30,140,.18)'" onmouseout="this.style.background='rgba(233,30,140,.1)'"`:''}>
+    <span style="font-size:.95rem;">💑</span>
+    <span style="font-size:.8rem;font-weight:700;color:#e91e8c;">En relación con <strong>${pnick}</strong> ❤️</span>
+  </span>`;
+}
+
+function _pendingBadgeHtml(pnick) {
+  return `<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,165,0,.1);border:1px solid rgba(255,165,0,.3);border-radius:100px;padding:5px 14px;">
+    <span style="font-size:.95rem;">⏳</span>
+    <span style="font-size:.8rem;font-weight:700;color:#f5a623;">Solicitud enviada a <strong>${pnick||''}</strong></span>
+  </span>`;
+}
+
 function _renderRelBadgeOwn() {
   const el = document.getElementById('profRelBadge');
   if (!el || !window.CU) return;
-  const isRel = window.CU.relStatus === '💑 En relación';
-  const pnick = window.CU.partnerNick;
-  const puid  = window.CU.partnerUid;
-  if (isRel) {
-    if (pnick && puid) {
-      el.style.display = 'block';
-      el.innerHTML = `<span onclick="openUserProfile('${puid}','${pnick.replace(/'/g,"\\'")}','${pnick.replace(/'/g,"\\'")}',null)" style="display:inline-flex;align-items:center;gap:6px;background:rgba(233,30,140,.1);border:1px solid rgba(233,30,140,.3);border-radius:100px;padding:5px 14px;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgba(233,30,140,.18)'" onmouseout="this.style.background='rgba(233,30,140,.1)'">
-        <span style="font-size:.95rem;">💑</span>
-        <span style="font-size:.8rem;font-weight:700;color:#e91e8c;">En relación con <strong>${pnick}</strong> ❤️</span>
-      </span>`;
-    } else {
-      el.style.display = 'block';
-      el.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(233,30,140,.08);border:1px solid rgba(233,30,140,.2);border-radius:100px;padding:5px 14px;">
-        <span style="font-size:.95rem;">💑</span>
-        <span style="font-size:.8rem;font-weight:700;color:#e91e8c;">En relación</span>
-      </span>`;
-    }
+  const isRel    = window.CU.relStatus === '💑 En relación';
+  const isPending = !!window.CU.relPending;
+  const pnick    = window.CU.partnerNick;
+  const puid     = window.CU.partnerUid;
+
+  if (isRel && puid && pnick && !isPending) {
+    el.style.display = 'block';
+    el.innerHTML = _relBadgeHtml(puid, pnick, true);
+  } else if (isPending && pnick) {
+    el.style.display = 'block';
+    el.innerHTML = _pendingBadgeHtml(pnick);
   } else {
     el.style.display = 'none';
     el.innerHTML = '';
   }
 }
 
-// ── Renderizar badge en perfil visitado ──
 function _renderRelBadgeUser(u) {
   const el = document.getElementById('upRelBadge');
   if (!el) return;
-  const isRel = u && u.relStatus === '💑 En relación';
-  const pnick = u && u.partnerNick;
-  const puid  = u && u.partnerUid;
-  if (isRel) {
-    if (pnick && puid) {
-      el.style.display = 'block';
-      el.innerHTML = `<span onclick="openUserProfile('${puid}','${pnick.replace(/'/g,"\\'")}','${pnick.replace(/'/g,"\\'")}',null)" style="display:inline-flex;align-items:center;gap:6px;background:rgba(233,30,140,.1);border:1px solid rgba(233,30,140,.3);border-radius:100px;padding:5px 14px;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgba(233,30,140,.18)'" onmouseout="this.style.background='rgba(233,30,140,.1)'">
-        <span style="font-size:.95rem;">💑</span>
-        <span style="font-size:.8rem;font-weight:700;color:#e91e8c;">En relación con <strong>${pnick}</strong> ❤️</span>
-      </span>`;
-    } else {
-      el.style.display = 'block';
-      el.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(233,30,140,.08);border:1px solid rgba(233,30,140,.2);border-radius:100px;padding:5px 14px;">
-        <span style="font-size:.95rem;">💑</span>
-        <span style="font-size:.8rem;font-weight:700;color:#e91e8c;">En relación</span>
-      </span>`;
-    }
+  const isRel  = u && u.relStatus === '💑 En relación';
+  const pnick  = u && u.partnerNick;
+  const puid   = u && u.partnerUid;
+  const isPending = u && !!u.relPending;
+
+  if (isRel && puid && pnick && !isPending) {
+    el.style.display = 'block';
+    el.innerHTML = _relBadgeHtml(puid, pnick, true);
   } else {
     el.style.display = 'none';
     el.innerHTML = '';
   }
 }
 
-// ── Hook: al renderizar perfil propio, mostrar badge ──
+/* ════════════════════════════════════════════
+   HOOKS DE RENDERIZADO
+   ════════════════════════════════════════════ */
+
 const _origRenderProfile = window.renderProfile;
 window.renderProfile = function() {
   _origRenderProfile && _origRenderProfile();
   _renderRelBadgeOwn();
 };
 
-// ── Hook en openUserProfile: inyectar badge después de cargar el perfil ──
-// Escuchamos cambios en upBio con MutationObserver para detectar cuando se renderiza
 (function() {
   let _relObserver = null;
   const _origOUP = window.openUserProfile;
   window.openUserProfile = function(uid, nick, displayNick, extra) {
-    // limpiar badge mientras carga
     const el = document.getElementById('upRelBadge');
     if (el) { el.style.display='none'; el.innerHTML=''; }
-    // llamar al original
     const result = _origOUP && _origOUP(uid, nick, displayNick, extra);
-    // observar cuando se actualice upBio (señal de que el perfil terminó de cargar)
     if (_relObserver) { _relObserver.disconnect(); _relObserver = null; }
     const bioEl = document.getElementById('upBio');
     if (!bioEl) return result;
@@ -31254,14 +31510,11 @@ window.renderProfile = function() {
       _fired = true;
       _relObserver.disconnect();
       _relObserver = null;
-      // buscar datos del usuario en window._viewingUserData o via db
       setTimeout(async () => {
         try {
           if (window.db && window.doc && window.getDoc) {
             const snap = await window.getDoc(window.doc(window.db, 'users', uid));
-            if (snap.exists()) {
-              _renderRelBadgeUser(snap.data());
-            }
+            if (snap.exists()) _renderRelBadgeUser(snap.data());
           }
         } catch(e) {}
       }, 200);
@@ -31270,6 +31523,8 @@ window.renderProfile = function() {
     return result;
   };
 })();
+
+</script>})();
 
 </script>
 
