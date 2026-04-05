@@ -24375,6 +24375,103 @@ document.addEventListener('DOMContentLoaded', ()=>{
   </div>
 </div>
 
+<style>
+/* ===== MENÚ MÓVIL DESPLEGABLE ===== */
+.bottom-nav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;
+  background:#120d1e;border-top:1px solid #2e1f4a;
+  z-index:1000;height:56px;align-items:center;
+  justify-content:space-around;padding:0 4px;
+  box-shadow:0 -2px 12px rgba(0,0,0,.4);
+}
+@media(max-width:1100px){.bottom-nav{display:flex !important}}
+
+/* Botones fijos del bottom nav */
+.bottom-nav-btn{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:2px;padding:6px 8px;
+  border-radius:8px;cursor:pointer;background:none;
+  border:none;color:#7c6a9a;font-size:.55rem;
+  font-weight:700;font-family:'Exo 2',sans-serif;
+  min-width:44px;transition:color .2s;
+}
+.bottom-nav-btn .bn-icon{font-size:1.25rem;line-height:1}
+.bottom-nav-btn.on,.bottom-nav-btn:hover{color:#c084fc}
+
+/* Botón "más" */
+#bnMas .bn-icon{font-size:1.4rem}
+
+/* Overlay */
+#mobileMenuOverlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.6);z-index:1500;
+  backdrop-filter:blur(3px);
+  animation:fadeIn .2s ease;
+}
+#mobileMenuOverlay.open{display:block}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* Panel desplegable */
+#mobileMenuPanel{
+  position:fixed;bottom:56px;left:0;right:0;
+  background:#120d1e;border-top:1px solid #3d2560;
+  border-radius:20px 20px 0 0;z-index:1600;
+  padding:8px 0 12px;
+  box-shadow:0 -8px 32px rgba(0,0,0,.6);
+  transform:translateY(100%);
+  transition:transform .28s cubic-bezier(.34,1.2,.64,1);
+  max-height:70vh;overflow-y:auto;
+}
+#mobileMenuPanel.open{transform:translateY(0)}
+#mobileMenuPanel::-webkit-scrollbar{width:3px}
+#mobileMenuPanel::-webkit-scrollbar-thumb{background:#3d2560;border-radius:3px}
+
+/* Handle */
+.mm-handle{
+  width:40px;height:4px;background:#3d2560;
+  border-radius:100px;margin:0 auto 12px;
+}
+
+/* Título panel */
+.mm-title{
+  font-size:.65rem;font-weight:800;color:#5e4a7a;
+  text-transform:uppercase;letter-spacing:.1em;
+  padding:0 16px 8px;
+}
+
+/* Grid de secciones */
+.mm-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:4px;padding:0 8px;
+}
+.mm-item{
+  display:flex;flex-direction:column;align-items:center;
+  gap:5px;padding:12px 6px;border-radius:12px;
+  cursor:pointer;border:none;background:none;
+  font-family:'Exo 2',sans-serif;
+  transition:background .15s;color:#c084fc;
+}
+.mm-item:hover,.mm-item:active{background:rgba(168,85,247,.15)}
+.mm-item.mm-active{background:rgba(168,85,247,.2);color:#e2d9f3}
+.mm-item-icon{font-size:1.6rem;line-height:1}
+.mm-item-label{font-size:.62rem;font-weight:700;color:#9d7ec7;text-align:center;line-height:1.2}
+.mm-item.mm-active .mm-item-label{color:#e2d9f3}
+</style>
+
+<!-- Overlay -->
+<div id="mobileMenuOverlay" onclick="closeMobileMenu()"></div>
+
+<!-- Panel desplegable -->
+<div id="mobileMenuPanel">
+  <div class="mm-handle"></div>
+  <div class="mm-title">Secciones</div>
+  <div class="mm-grid" id="mmGrid">
+    <!-- se llena automáticamente por JS -->
+  </div>
+</div>
+
+<!-- Bottom Nav -->
 <div class="bottom-nav" id="bottomNav">
   <button class="bottom-nav-btn on" id="bnHome" onclick="gp('home');setBottomNav('bnHome')">
     <span class="bn-icon">🏠</span>Home
@@ -24382,26 +24479,102 @@ document.addEventListener('DOMContentLoaded', ()=>{
   <button class="bottom-nav-btn" id="bnAmigos" onclick="gp('amigos');setBottomNav('bnAmigos');renderAmigosPage()">
     <span class="bn-icon">👥</span>Amigos
   </button>
-  <button class="bottom-nav-btn" id="bnMatch" onclick="gp('match');setBottomNav('bnMatch')">
-    <span class="bn-icon">💘</span>Match
-  </button>
-  <button class="bottom-nav-btn" id="bnFotos" onclick="gp('fotos');initFotosPage();setBottomNav('bnFotos')">
-    <span class="bn-icon">📸</span>Fotos
+  <button class="bottom-nav-btn" id="bnChat" onclick="gp('salas');setBottomNav('bnChat');initSalasPage()">
+    <span class="bn-icon">💬</span>Chat
   </button>
   <button class="bottom-nav-btn" id="bnReels" onclick="gp('reels');setBottomNav('bnReels')">
     <span class="bn-icon">🎬</span>Reels
   </button>
-  <button class="bottom-nav-btn" id="bnPerfil" onclick="gp('profile');setBottomNav('bnPerfil')">
-    <span class="bn-icon">👤</span>Perfil
+  <button class="bottom-nav-btn" id="bnMas" onclick="toggleMobileMenu()">
+    <span class="bn-icon">☰</span>Más
   </button>
 </div>
 
 <script>
+// ===== CONFIGURACIÓN DE SECCIONES =====
+// Cada sección que agregues al sidebar se registra aquí.
+// Las futuras se detectan automáticamente desde el sidebar-left.
+window._MM_SECTIONS = [
+  { icon:'🏠', label:'Inicio',          action:()=>{ gp('home');       setBottomNav('bnHome');   closeMobileMenu(); } },
+  { icon:'👤', label:'Mi Perfil',       action:()=>{ gp('profile');                               closeMobileMenu(); } },
+  { icon:'👥', label:'Amigos',          action:()=>{ gp('amigos');     renderAmigosPage();        closeMobileMenu(); } },
+  { icon:'💘', label:'Match',           action:()=>{ gp('match');                                 closeMobileMenu(); } },
+  { icon:'📸', label:'Fotos',           action:()=>{ gp('fotos');      initFotosPage();           closeMobileMenu(); } },
+  { icon:'🎬', label:'Reels',           action:()=>{ gp('reels');                                 closeMobileMenu(); } },
+  { icon:'💬', label:'Chat',            action:()=>{ gp('salas');      initSalasPage?.();         closeMobileMenu(); } },
+  { icon:'🕯️', label:'Confesionario',  action:()=>{ gp('confesionario'); cfListen?.();           closeMobileMenu(); } },
+  { icon:'📍', label:'Cerca de Mí',    action:()=>{ gp('cerca');      initCercaDeMi?.();         closeMobileMenu(); } },
+  { icon:'🔥', label:'Fotos Pop.',      action:()=>{ gp('fotospopulares'); initFotosPopularesPage?.(); closeMobileMenu(); } },
+  { icon:'👁️', label:'Visitantes',     action:()=>{ gp('visitantes'); initVisitantesPage?.();   closeMobileMenu(); } },
+  { icon:'🎵', label:'Videos Mus.',    action:()=>{ gp('musica');                                closeMobileMenu(); } },
+  { icon:'🔒', label:'Privacidad',     action:()=>{ gp('privacidad');                            closeMobileMenu(); } },
+];
+
+// Auto-detecta secciones del sidebar que no estén ya en la lista
+function _mmAutoDetect(){
+  const known = new Set(['home','profile','amigos','match','fotos','reels','salas','confesionario','cerca','fotospopulares','visitantes','musica','privacidad','superadmin']);
+  document.querySelectorAll('.sl-item[onclick]').forEach(el=>{
+    const m = el.getAttribute('onclick').match(/gp\('([^']+)'\)/);
+    if(!m) return;
+    const id = m[1];
+    if(known.has(id)) return;
+    known.add(id);
+    const icon = el.querySelector('.sl-item-icon')?.textContent?.trim() || '📄';
+    const label = el.textContent.replace(icon,'').trim().slice(0,14);
+    window._MM_SECTIONS.push({
+      icon, label,
+      action:()=>{ gp(id); closeMobileMenu(); }
+    });
+  });
+}
+
+function buildMobileMenu(){
+  _mmAutoDetect();
+  const grid = document.getElementById('mmGrid');
+  if(!grid) return;
+  grid.innerHTML = window._MM_SECTIONS.map((s,i)=>`
+    <button class="mm-item" id="mmItem_${i}" onclick="window._MM_SECTIONS[${i}].action()">
+      <span class="mm-item-icon">${s.icon}</span>
+      <span class="mm-item-label">${s.label}</span>
+    </button>
+  `).join('');
+}
+
+function toggleMobileMenu(){
+  const panel = document.getElementById('mobileMenuPanel');
+  const overlay = document.getElementById('mobileMenuOverlay');
+  const isOpen = panel.classList.contains('open');
+  if(isOpen){ closeMobileMenu(); }
+  else {
+    buildMobileMenu();
+    panel.classList.add('open');
+    overlay.classList.add('open');
+    document.getElementById('bnMas').classList.add('on');
+  }
+}
+
+function closeMobileMenu(){
+  document.getElementById('mobileMenuPanel')?.classList.remove('open');
+  document.getElementById('mobileMenuOverlay')?.classList.remove('open');
+  document.getElementById('bnMas')?.classList.remove('on');
+}
+
+// Cerrar con swipe hacia abajo
+(function(){
+  let startY=0;
+  const panel = ()=>document.getElementById('mobileMenuPanel');
+  document.addEventListener('touchstart',e=>{ if(panel()?.classList.contains('open')) startY=e.touches[0].clientY; },{passive:true});
+  document.addEventListener('touchend',e=>{ if(panel()?.classList.contains('open') && e.changedTouches[0].clientY - startY > 60) closeMobileMenu(); },{passive:true});
+})();
+
 window.setBottomNav = function(id){
   document.querySelectorAll('.bottom-nav-btn').forEach(b=>b.classList.remove('on'));
   const el = document.getElementById(id);
   if(el) el.classList.add('on');
 };
+
+window.toggleMobileMenu = toggleMobileMenu;
+window.closeMobileMenu  = closeMobileMenu;
 </script>
 
 <div id="premiumModal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;">
