@@ -29323,13 +29323,27 @@ window.startLiveStream = async function(){
   if(!titulo){ _toast('Poné un título para tu live'); return; }
 
   try {
+    // 1. Pedir permisos de cámara y micrófono PRIMERO
+    _toast('Solicitando acceso a cámara y micrófono...');
+    try {
+      _localTracks.audio = await AgoraRTC.createMicrophoneAudioTrack();
+    } catch(micErr) {
+      _toast('No se pudo acceder al micrófono. Verificá los permisos del navegador. (' + (micErr.message || micErr.code || micErr) + ')');
+      return;
+    }
+    try {
+      _localTracks.video = await AgoraRTC.createCameraVideoTrack();
+    } catch(camErr) {
+      if(_localTracks.audio){ _localTracks.audio.stop(); _localTracks.audio.close(); _localTracks.audio = null; }
+      _toast('No se pudo acceder a la cámara. Verificá los permisos del navegador. (' + (camErr.message || camErr.code || camErr) + ')');
+      return;
+    }
+
+    // 2. Conectar a Agora
     _client = AgoraRTC.createClient({ mode:'live', codec:'vp8' });
     await _client.setClientRole('host');
     _liveChannel = _randomChannel();
     await _client.join(AGORA_APP_ID, _liveChannel, null, cu.id);
-
-    _localTracks.audio = await AgoraRTC.createMicrophoneAudioTrack();
-    _localTracks.video = await AgoraRTC.createCameraVideoTrack();
     await _client.publish([_localTracks.audio, _localTracks.video]);
 
     var container = document.getElementById('liveLocalContainer');
@@ -29363,8 +29377,13 @@ window.startLiveStream = async function(){
 
   } catch(e){
     console.error('Error iniciando live:', e);
-    _toast('No se pudo iniciar el live. Revisá permisos de cámara y micrófono.');
+    if(_localTracks.audio){ try{ _localTracks.audio.stop(); _localTracks.audio.close(); }catch(_){} _localTracks.audio = null; }
+    if(_localTracks.video){ try{ _localTracks.video.stop(); _localTracks.video.close(); }catch(_){} _localTracks.video = null; }
+    if(_client){ try{ await _client.leave(); }catch(_){} _client = null; }
+    var errMsg = e && (e.message || e.code || e.msg) ? (e.message || e.code || e.msg) : String(e);
+    _toast('Error al iniciar el live: ' + errMsg);
   }
+
 };
 
 // ── DETENER TRANSMISIÓN ──────────────────────────────────────────
