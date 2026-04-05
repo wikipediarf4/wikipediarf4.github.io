@@ -34380,7 +34380,7 @@ function _esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
                 + '<input id="'+itemId+'_ci" type="text" maxlength="200" placeholder="Comentar..." style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:5px 11px;font-size:.73rem;color:var(--text);outline:none;font-family:\'Exo 2\',sans-serif;" onkeydown="if(event.key===\'Enter\'){event.preventDefault();fpSendComment(\''+itemId+'\',\''+uid+'\',\''+escStr(f.url)+'\')}">'
                 + '<button onclick="event.stopPropagation();fpSendComment(\''+itemId+'\',\''+uid+'\',\''+escStr(f.url)+'\')" style="flex-shrink:0;background:var(--accent);border:none;border-radius:50%;width:27px;height:27px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.8rem;" title="Enviar">\u27a4</button>'
                 + '</div>'
-                + '<div id="'+itemId+'_cl" style="margin-top:4px;font-size:.72rem;color:var(--muted);max-height:58px;overflow-y:auto;"></div>'
+                + '<div id="'+itemId+'_cl" data-owner="'+uid+'" data-photoid="'+encodeURIComponent(f.url).slice(0,60)+'" style="margin-top:5px;font-size:.72rem;color:var(--muted);max-height:90px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;"></div>'
               : '<div style="font-size:.7rem;color:var(--muted);text-align:center;padding:2px 0;">\ud83d\udcac Solo amigos pueden comentar</div>'
             )
           + '</div>'
@@ -34390,6 +34390,14 @@ function _esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
       });
 
       grid.innerHTML = htmlParts.join('');
+
+      // Cargar comentarios desde Firestore para cada foto
+      allItems.forEach(function(f, idx){
+        var itemId = 'fp_' + idx + '_' + (f.ownerUid||'').slice(0,6);
+        setTimeout(function(){
+          window.fpLoadComments(itemId, f.ownerUid||'', f.url||'');
+        }, idx * 30); // escalonar para no saturar Firestore
+      });
 
       // Restaurar corazones desde localStorage
       allItems.forEach(function(f, idx){
@@ -34440,7 +34448,77 @@ function _esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
     }
   };
 
-  // ── Comentario fotos populares ───────────────────────────────────────
+  // ── Renderizar lista de comentarios de una foto popular ────────────
+  window.fpRenderComments = function(cl, comments){
+    if(!cl) return;
+    var myId    = (window.CU && window.CU.id) ? window.CU.id : '';
+    var isAdmin = !!(window.CU && (window.CU.role === 'admin' || window.CU.email === 'synxyes@gmail.com'));
+    var ownerUid = cl.dataset.owner || '';
+
+    // Ordenar por tiempo ascendente (más viejo primero)
+    comments = comments.slice().sort(function(a,b){ return (a.time||0)-(b.time||0); });
+
+    if(!comments.length){
+      cl.innerHTML = '';
+      return;
+    }
+
+    cl.innerHTML = comments.map(function(c){
+      var canDel = isAdmin || c.fromUid === myId || ownerUid === myId;
+      var timeStr = '';
+      if(c.time){
+        var d = new Date(c.time);
+        timeStr = d.getDate()+'/'+(d.getMonth()+1)+' '+d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes();
+      }
+      return '<div data-cmtid="'+c.id+'" style="display:flex;align-items:flex-start;gap:4px;padding:3px 2px;border-bottom:1px solid var(--border);">'
+        + '<div style="flex:1;min-width:0;">'
+        +   '<strong style="color:var(--accent);font-size:.7rem;">'+(c.fromNick||'?')+'</strong>'
+        +   '<span style="color:var(--muted);font-size:.63rem;margin-left:4px;">'+timeStr+'</span>'
+        +   '<div style="color:var(--text);font-size:.71rem;word-break:break-word;">'+c.text+'</div>'
+        + '</div>'
+        + (canDel
+            ? '<button onclick="event.stopPropagation();fpDeleteComment(\''+c.id+'\',this)" title="Borrar" style="flex-shrink:0;background:none;border:none;cursor:pointer;color:var(--muted);font-size:.75rem;padding:0 2px;line-height:1;margin-top:1px;">✕</button>'
+            : '')
+        + '</div>';
+    }).join('');
+    cl.scrollTop = cl.scrollHeight;
+  };
+
+  // ── Cargar comentarios de una foto popular desde Firestore ───────────
+  window.fpLoadComments = async function(itemId, ownerUid, photoUrl){
+    var cl = document.getElementById(itemId+'_cl');
+    if(!cl || !window.db || !window.getDocs || !window.collection || !window.query || !window.where) return;
+    try {
+      var snap = await window.getDocs(
+        window.query(window.collection(window.db,'fpComments'), window.where('toUid','==',ownerUid))
+      );
+      var comments = [];
+      snap.forEach(function(d){
+        var dat = d.data();
+        if(dat.photoUrl === photoUrl) comments.push(Object.assign({id:d.id}, dat));
+      });
+      window.fpRenderComments(cl, comments);
+    } catch(e){ console.warn('fpLoadComments:', e); }
+  };
+
+  // ── Borrar comentario de foto popular ───────────────────────────────
+  window.fpDeleteComment = async function(cmtId, btn){
+    if(!window.CU || !window.CU.id) return;
+    var row = btn ? btn.closest('[data-cmtid]') : null;
+    if(row) row.style.opacity = '.4';
+    try {
+      if(window.db && window.deleteDoc && window.doc){
+        await window.deleteDoc(window.doc(window.db,'fpComments', cmtId));
+      }
+      if(row) row.remove();
+    } catch(e){
+      if(row) row.style.opacity = '1';
+      toast('Error al borrar comentario','err');
+      console.warn('fpDeleteComment:', e);
+    }
+  };
+
+  // ── Enviar comentario en foto popular ───────────────────────────────
   window.fpSendComment = async function(itemId, ownerUid, photoUrl){
     var inp = document.getElementById(itemId+'_ci');
     var cl  = document.getElementById(itemId+'_cl');
@@ -34455,22 +34533,30 @@ function _esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
     }
     inp.value = '';
     inp.disabled = true;
-    var nick = window.CU.nick || 'Vos';
+    var newCmt = {
+      id: 'tmp_'+Date.now(),
+      fromUid: window.CU.id, fromNick: window.CU.nick||'Vos',
+      toUid: ownerUid, photoUrl: photoUrl, text: txt, time: Date.now()
+    };
+    // Agregar visualmente y reordenar
+    var existing = [];
     if(cl){
-      var row = document.createElement('div');
-      row.style.cssText = 'padding:2px 0;border-bottom:1px solid var(--border);';
-      row.innerHTML = '<strong style="color:var(--accent);font-size:.71rem;">'+nick+':</strong> <span style="color:var(--text);font-size:.71rem;">'+txt+'</span>';
-      cl.appendChild(row);
-      cl.scrollTop = cl.scrollHeight;
+      cl.querySelectorAll('[data-cmtid]').forEach(function(row){
+        // ya renderizados — los dejamos, solo agregamos el nuevo al final
+      });
     }
     try {
+      var docRef = null;
       if(window.db && window.addDoc && window.collection){
-        await window.addDoc(window.collection(window.db,'fpComments'),{
+        docRef = await window.addDoc(window.collection(window.db,'fpComments'),{
           fromUid:window.CU.id, fromNick:window.CU.nick||'', fromAv:window.CU.av||'',
           toUid:ownerUid, photoUrl:photoUrl, text:txt, time:Date.now()
         });
+        if(docRef) newCmt.id = docRef.id;
       }
     } catch(e){ console.warn('fpComment Firestore:', e); }
+    // Recargar lista completa ordenada
+    await window.fpLoadComments(itemId, ownerUid, photoUrl);
     inp.disabled = false;
     inp.focus();
   };
