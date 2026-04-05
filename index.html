@@ -12255,8 +12255,6 @@ async function saveProfile(){
   const cuToSave = { ...window.CU };
   delete cuToSave.notifs;
   await updateDoc(doc(db, 'users', window.CU.id), cuToSave);
-  // Restaurar notifs localmente
-  if (_savedNotifs !== undefined) window.CU.notifs = _savedNotifs;
   cm('mEditProfile'); updateNavUI(); renderProfile();
   toast('Perfil actualizado ✅','ok');
 }
