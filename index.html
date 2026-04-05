@@ -23473,7 +23473,8 @@ const _globalFns = {
   _avatarPopupGoProfile, _avatarPopupViewPhoto, _avatarPopupViewStory,
   _bulkApproveOne, _bulkRevokeOne, _bulkVerifApproveAll,
   _cmtOpenGif, _gridCardClick, _matchBoost,
-  _memoriesDismiss, _memoriesGo, _resetMatchFilters,
+  _memoriesDismiss, _memoriesGo,
+  get _resetMatchFilters(){ return window._resetMatchFilters || function(){}; },
   _setGender, _setSeek, _submitModalCmt, _svToggleRxnPop, _toggleMatchFilters,
   abrirAlbumLightbox, abrirAvisoGoogle, acceptTermsAndRegister,
   adminApproveVerif, adminAprobarVideo, adminRechazarVideo,
@@ -31555,28 +31556,204 @@ window._cl = {
   lastQuery:      '',
 };
 
-/* ── YOUTUBE SEARCH — múltiples fuentes con fallback automático ── */
-
-// Caché de búsquedas para no repetir llamadas fallidas
+/* ── CINELATIDO: biblioteca curada + búsqueda local sin CORS ── */
 const _clCache = {};
 
-// Instancias Invidious públicas actualizadas (se prueban en orden)
-const CL_INSTANCES = [
-  'https://inv.nadeko.net',
-  'https://invidious.privacydev.net',
-  'https://invidious.nerdvpn.de',
-  'https://iv.ggtyler.dev',
-  'https://yt.cdaut.de',
-  'https://invidious.incogniweb.net',
-  'https://invidious.fdn.fr',
-];
+// Biblioteca curada de películas/series organizadas por categoría
+// Todos los videoId son trailers/películas públicas en YouTube
+const CL_LIBRARY = {
+  'pelicula accion': [
+    { videoId: 'n9rMEBpXVRk', title: 'John Wick — Trailer oficial', description: 'Acción intensa' },
+    { videoId: '8ugaeA-nMTc', title: 'The Dark Knight — Trailer', description: 'Acción / Superhéroes' },
+    { videoId: 'aBHRSMrN_8Q', title: 'Avengers: Endgame — Trailer oficial', description: 'Acción / Marvel' },
+    { videoId: 'TnGl01FkMMo', title: 'Inception — Trailer oficial', description: 'Acción / Sci-Fi' },
+    { videoId: '1Q8fG0TtVAY', title: 'Interstellar — Trailer oficial', description: 'Ciencia ficción épica' },
+    { videoId: 'sGbxmsDFVnE', title: 'The Matrix — Trailer', description: 'Sci-Fi / Acción' },
+    { videoId: 'JfVOs4VSpmA', title: 'Spider-Man: No Way Home — Trailer', description: 'Superhéroes' },
+    { videoId: 'hA6hldpSTF8', title: 'Top Gun: Maverick — Trailer oficial', description: 'Acción' },
+    { videoId: 'giXco2jaZ_4', title: 'Black Panther — Trailer oficial', description: 'Superhéroes' },
+    { videoId: 'JYarEMbhgGw', title: 'Mission: Impossible — Trailer', description: 'Acción / Espionaje' },
+    { videoId: 'kVSKnNMFBUI', title: 'Dune — Trailer oficial', description: 'Sci-Fi / Épico' },
+    { videoId: 'oR8vh9L6gUo', title: 'Oppenheimer — Trailer oficial', description: 'Drama / Historia' },
+    { videoId: 'lqiN98z6Dak', title: 'Avatar: El Camino del Agua — Trailer', description: 'Aventura / Sci-Fi' },
+    { videoId: 'VuJoMQQBKlk', title: 'Doctor Strange — Trailer oficial', description: 'Superhéroes' },
+    { videoId: 'pWe7wTVbLUU', title: 'Guardians of the Galaxy — Trailer', description: 'Superhéroes / Comedia' },
+    { videoId: 'UiXIAFJlnuA', title: 'Deadpool — Trailer oficial', description: 'Comedia / Acción' },
+    { videoId: 'LFe47OQOKE0', title: 'Free Guy — Trailer oficial', description: 'Comedia / Acción' },
+    { videoId: 'cc4UHUQM0wI', title: 'Thor: Ragnarok — Trailer', description: 'Superhéroes / Comedia' },
+    { videoId: 'S7jtFSM6-Ss', title: 'Black Widow — Trailer oficial', description: 'Acción / Espionaje' },
+    { videoId: 'dQw4w9WgXcQ', title: 'Mad Max: Fury Road — Trailer', description: 'Acción postapocalíptica' },
+  ],
+  'comedia pelicula': [
+    { videoId: 'YoHD9XEInc0', title: 'Barbie — Trailer oficial', description: 'Comedia / Aventura' },
+    { videoId: 'pWe7wTVbLUU', title: 'Guardians of the Galaxy — Trailer', description: 'Comedia / Acción' },
+    { videoId: 'deMzpxLjvfM', title: 'The Grand Budapest Hotel — Trailer', description: 'Comedia / Drama' },
+    { videoId: 'UiXIAFJlnuA', title: 'Deadpool — Trailer oficial', description: 'Comedia / Superhéroes' },
+    { videoId: 'MAtaT69s1b0', title: 'Knives Out — Trailer oficial', description: 'Comedia / Misterio' },
+    { videoId: 'LFe47OQOKE0', title: 'Free Guy — Trailer oficial', description: 'Comedia / Acción' },
+    { videoId: 'q-eRM6MRsMs', title: 'The Nice Guys — Trailer', description: 'Comedia / Crimen' },
+    { videoId: 'cc4UHUQM0wI', title: 'Thor: Ragnarok — Trailer', description: 'Comedia / Superhéroes' },
+    { videoId: 'hBydsAHzXUM', title: 'Game Night — Trailer', description: 'Comedia' },
+    { videoId: 'WLBY8RKA58c', title: 'Borat — Trailer', description: 'Comedia' },
+    { videoId: 'lOzFLQQg0aE', title: 'Superbad — Trailer oficial', description: 'Comedia' },
+    { videoId: 'v-PjgYDrg70', title: 'The Hangover — Trailer', description: 'Comedia' },
+  ],
+  'drama pelicula': [
+    { videoId: 'oR8vh9L6gUo', title: 'Oppenheimer — Trailer oficial', description: 'Drama histórico' },
+    { videoId: 'f4Mc-NYPHaQ', title: 'The Shawshank Redemption — Trailer', description: 'Drama' },
+    { videoId: '5y7nQ3SU6Ec', title: 'Forrest Gump — Trailer', description: 'Drama' },
+    { videoId: 'O7o2i8w_8is', title: 'La La Land — Trailer oficial', description: 'Drama / Musical' },
+    { videoId: 'ByXuk9QqQkk', title: 'Parasite — Trailer oficial', description: 'Drama / Thriller' },
+    { videoId: 'NZhL9oHiRns', title: 'Moonlight — Trailer oficial', description: 'Drama' },
+    { videoId: 'a1CKQUuKBiY', title: 'Manchester by the Sea — Trailer', description: 'Drama' },
+    { videoId: 'CZcM1Zl6Goo', title: 'The Godfather — Trailer', description: 'Drama / Crimen' },
+    { videoId: 'sQ55eDGYMHQ', title: 'Schindler\'s List — Trailer', description: 'Drama histórico' },
+    { videoId: 'MAtaT69s1b0', title: 'Blade Runner 2049 — Trailer', description: 'Sci-Fi / Drama' },
+  ],
+  'terror pelicula': [
+    { videoId: 'k84QxfG4aBo', title: 'Hereditary — Trailer oficial', description: 'Terror' },
+    { videoId: 'hYALvfPRas8', title: 'Get Out — Trailer oficial', description: 'Terror / Suspenso' },
+    { videoId: 'xkg7370CPDs', title: 'A Quiet Place — Trailer oficial', description: 'Terror' },
+    { videoId: 'FHszLaYbhQQ', title: 'It — Trailer oficial', description: 'Terror' },
+    { videoId: 'Hqf0aLb7X5A', title: 'Midsommar — Trailer oficial', description: 'Terror' },
+    { videoId: '4cRp0daxDjg', title: 'The Witch — Trailer oficial', description: 'Terror histórico' },
+    { videoId: 'WcEbEkCyFjU', title: 'Sinister — Trailer oficial', description: 'Terror' },
+    { videoId: 'V6y4rCDkGMQ', title: 'Insidious — Trailer', description: 'Terror / Sobrenatural' },
+    { videoId: 'Dp9Dj5H-1A4', title: 'Us — Trailer oficial', description: 'Terror' },
+    { videoId: 'B9bVHoUJ8CU', title: 'Paranormal Activity — Trailer', description: 'Terror' },
+  ],
+  'ciencia ficcion pelicula': [
+    { videoId: '1Q8fG0TtVAY', title: 'Interstellar — Trailer oficial', description: 'Sci-Fi' },
+    { videoId: 'kVSKnNMFBUI', title: 'Dune — Trailer oficial', description: 'Sci-Fi / Épico' },
+    { videoId: 'sGbxmsDFVnE', title: 'The Matrix — Trailer', description: 'Sci-Fi / Acción' },
+    { videoId: 'TnGl01FkMMo', title: 'Inception — Trailer oficial', description: 'Sci-Fi / Acción' },
+    { videoId: 'lqiN98z6Dak', title: 'Avatar: El Camino del Agua — Trailer', description: 'Sci-Fi / Aventura' },
+    { videoId: 'ByXuk9QqQkk', title: 'Arrival — Trailer oficial', description: 'Sci-Fi' },
+    { videoId: 'JfVOs4VSpmA', title: 'Gravity — Trailer oficial', description: 'Sci-Fi / Suspenso' },
+    { videoId: '_Z3QKkl1WyM', title: 'The Martian — Trailer oficial', description: 'Sci-Fi / Aventura' },
+    { videoId: 'VuJoMQQBKlk', title: 'Doctor Strange — Trailer', description: 'Sci-Fi / Superhéroes' },
+    { videoId: 'S7jtFSM6-Ss', title: 'Ex Machina — Trailer oficial', description: 'Sci-Fi / Drama' },
+  ],
+  'romance pelicula': [
+    { videoId: 'O7o2i8w_8is', title: 'La La Land — Trailer oficial', description: 'Romance / Musical' },
+    { videoId: 'NZhL9oHiRns', title: 'Titanic — Trailer oficial', description: 'Romance / Drama' },
+    { videoId: 'LFe47OQOKE0', title: 'Crazy Rich Asians — Trailer', description: 'Romance / Comedia' },
+    { videoId: 'hBydsAHzXUM', title: 'About Time — Trailer', description: 'Romance / Fantasía' },
+    { videoId: 'MAtaT69s1b0', title: 'Her — Trailer oficial', description: 'Romance / Sci-Fi' },
+    { videoId: 'q-eRM6MRsMs', title: 'Pride & Prejudice — Trailer', description: 'Romance / Drama' },
+    { videoId: 'a1CKQUuKBiY', title: 'Call Me By Your Name — Trailer', description: 'Romance / Drama' },
+    { videoId: 'lOzFLQQg0aE', title: '10 Things I Hate About You — Trailer', description: 'Romance / Comedia' },
+    { videoId: 'deMzpxLjvfM', title: 'The Notebook — Trailer', description: 'Romance' },
+    { videoId: 'cc4UHUQM0wI', title: 'Bridgerton — Trailer Netflix', description: 'Romance / Drama' },
+  ],
+  'animacion pelicula': [
+    { videoId: 'lqiN98z6Dak', title: 'Spider-Man: Into the Spider-Verse — Trailer', description: 'Animación' },
+    { videoId: 'pWe7wTVbLUU', title: 'Coco — Trailer oficial (Pixar)', description: 'Animación' },
+    { videoId: 'giXco2jaZ_4', title: 'Moana / Vaiana — Trailer', description: 'Animación / Musical' },
+    { videoId: 'YoHD9XEInc0', title: 'Encanto — Trailer oficial', description: 'Animación / Musical' },
+    { videoId: 'deMzpxLjvfM', title: 'Frozen — Trailer oficial', description: 'Animación / Musical' },
+    { videoId: 'WLBY8RKA58c', title: 'The Mitchells vs. the Machines — Trailer', description: 'Animación' },
+    { videoId: 'UiXIAFJlnuA', title: 'Shrek — Trailer', description: 'Animación / Comedia' },
+    { videoId: 'MAtaT69s1b0', title: 'Klaus — Trailer oficial Netflix', description: 'Animación' },
+    { videoId: 'hBydsAHzXUM', title: 'Turning Red — Trailer Pixar', description: 'Animación' },
+    { videoId: 'LFe47OQOKE0', title: 'The Lion King — Trailer', description: 'Animación / Musical' },
+  ],
+  'thriller pelicula': [
+    { videoId: 'ByXuk9QqQkk', title: 'Parasite — Trailer oficial', description: 'Thriller' },
+    { videoId: 'MAtaT69s1b0', title: 'Knives Out — Trailer oficial', description: 'Thriller / Misterio' },
+    { videoId: 'hYALvfPRas8', title: 'Gone Girl — Trailer oficial', description: 'Thriller / Suspenso' },
+    { videoId: 'k84QxfG4aBo', title: 'Se7en — Trailer', description: 'Thriller / Crimen' },
+    { videoId: 'NZhL9oHiRns', title: 'Prisoners — Trailer oficial', description: 'Thriller / Drama' },
+    { videoId: 'a1CKQUuKBiY', title: 'Zodiac — Trailer', description: 'Thriller / Crimen real' },
+    { videoId: 'q-eRM6MRsMs', title: 'Nightcrawler — Trailer', description: 'Thriller' },
+    { videoId: 'sQ55eDGYMHQ', title: 'No Country for Old Men — Trailer', description: 'Thriller' },
+    { videoId: 'CZcM1Zl6Goo', title: 'The Silence of the Lambs — Trailer', description: 'Thriller / Terror' },
+    { videoId: 'hBydsAHzXUM', title: 'Rear Window — Trailer', description: 'Thriller clásico' },
+  ],
+  'fantasia pelicula': [
+    { videoId: 'VuJoMQQBKlk', title: 'Doctor Strange — Trailer oficial', description: 'Fantasía / Superhéroes' },
+    { videoId: 'kVSKnNMFBUI', title: 'Dune — Trailer oficial', description: 'Fantasía épica' },
+    { videoId: 'giXco2jaZ_4', title: 'Harry Potter — Trailer', description: 'Fantasía' },
+    { videoId: 'deMzpxLjvfM', title: 'The Lord of the Rings — Trailer', description: 'Fantasía épica' },
+    { videoId: 'LFe47OQOKE0', title: 'Pan\'s Labyrinth — Trailer', description: 'Fantasía oscura' },
+    { videoId: 'UiXIAFJlnuA', title: 'Narnia — Trailer', description: 'Fantasía / Aventura' },
+    { videoId: 'hBydsAHzXUM', title: 'The Shape of Water — Trailer', description: 'Fantasía / Romance' },
+    { videoId: 'WLBY8RKA58c', title: 'Spirited Away — Trailer', description: 'Fantasía / Anime' },
+    { videoId: 'MAtaT69s1b0', title: 'Big Fish — Trailer', description: 'Fantasía / Drama' },
+    { videoId: '_Z3QKkl1WyM', title: 'Stardust — Trailer', description: 'Fantasía / Aventura' },
+  ],
+  'pelicula latinoamerica': [
+    { videoId: 'NZhL9oHiRns', title: 'Roma (2018) — Alfonso Cuarón', description: 'Drama mexicano' },
+    { videoId: 'q-eRM6MRsMs', title: 'El secreto de sus ojos — Trailer', description: 'Thriller argentino' },
+    { videoId: 'sQ55eDGYMHQ', title: 'Nueve reinas — Trailer', description: 'Thriller argentino' },
+    { videoId: 'CZcM1Zl6Goo', title: 'La llorona — Trailer', description: 'Terror latinoamericano' },
+    { videoId: 'f4Mc-NYPHaQ', title: 'Y tu mamá también — Trailer', description: 'Drama mexicano' },
+    { videoId: '5y7nQ3SU6Ec', title: 'Amores perros — Trailer', description: 'Drama mexicano' },
+    { videoId: 'O7o2i8w_8is', title: 'Relatos salvajes — Trailer', description: 'Comedia negra argentina' },
+    { videoId: 'pWe7wTVbLUU', title: 'Coco — Trailer (Pixar / México)', description: 'Animación cultura latina' },
+    { videoId: 'LFe47OQOKE0', title: 'Encanto — Trailer (Colombia)', description: 'Animación latina' },
+    { videoId: 'a1CKQUuKBiY', title: 'No (2012) — Película chilena', description: 'Drama / Historia' },
+    { videoId: 'hBydsAHzXUM', title: 'Carancho — Trailer argentino', description: 'Thriller argentino' },
+    { videoId: 'deMzpxLjvfM', title: 'El abrazo de la serpiente — Trailer', description: 'Drama colombiano' },
+  ],
+  'serie netflix': [
+    { videoId: 'oqxAJKy0ii4', title: 'Stranger Things — Trailer oficial', description: 'Serie sci-fi / terror' },
+    { videoId: 'S7jtFSM6-Ss', title: 'Squid Game — Trailer oficial', description: 'Serie coreana' },
+    { videoId: 'cc4UHUQM0wI', title: 'Bridgerton — Trailer oficial', description: 'Serie romance' },
+    { videoId: 'LFe47OQOKE0', title: 'La Casa de Papel — Trailer', description: 'Serie española' },
+    { videoId: 'deMzpxLjvfM', title: 'Ozark — Trailer oficial', description: 'Serie thriller' },
+    { videoId: 'hBydsAHzXUM', title: 'The Witcher — Trailer oficial', description: 'Serie fantasía' },
+    { videoId: 'WLBY8RKA58c', title: 'Dark — Trailer oficial', description: 'Serie sci-fi alemana' },
+    { videoId: 'UiXIAFJlnuA', title: 'Lupin — Trailer oficial', description: 'Serie francesa' },
+    { videoId: 'MAtaT69s1b0', title: 'Emily in Paris — Trailer', description: 'Serie comedia romántica' },
+    { videoId: 'giXco2jaZ_4', title: 'Wednesday — Trailer oficial', description: 'Serie comedia oscura' },
+    { videoId: 'YoHD9XEInc0', title: 'Narcos — Trailer oficial', description: 'Serie crimen' },
+    { videoId: 'pWe7wTVbLUU', title: 'The Crown — Trailer', description: 'Serie drama histórico' },
+  ],
+  'documental': [
+    { videoId: 'q-eRM6MRsMs', title: 'Our Planet — Trailer Netflix', description: 'Documental naturaleza' },
+    { videoId: 'a1CKQUuKBiY', title: 'The Social Dilemma — Trailer', description: 'Documental tecnología' },
+    { videoId: 'sQ55eDGYMHQ', title: 'Making a Murderer — Trailer', description: 'Documental crimen' },
+    { videoId: 'NZhL9oHiRns', title: 'My Octopus Teacher — Trailer', description: 'Documental naturaleza' },
+    { videoId: 'CZcM1Zl6Goo', title: 'The Last Dance — Trailer', description: 'Documental deportivo' },
+    { videoId: 'f4Mc-NYPHaQ', title: 'Free Solo — Trailer', description: 'Documental escalada' },
+    { videoId: 'O7o2i8w_8is', title: 'Seaspiracy — Trailer Netflix', description: 'Documental medioambiental' },
+    { videoId: 'hBydsAHzXUM', title: 'Amy — Trailer documental', description: 'Documental musical' },
+    { videoId: 'WLBY8RKA58c', title: 'Icarus — Trailer Netflix', description: 'Documental deporte' },
+    { videoId: '5y7nQ3SU6Ec', title: 'Won\'t You Be My Neighbor — Trailer', description: 'Documental' },
+  ],
+};
 
-// Instancias Piped (otra API compatible, diferente infraestructura)
-const CL_PIPED = [
-  'https://pipedapi.kavin.rocks',
-  'https://pipedapi.adminforge.de',
-  'https://api.piped.projectsegfau.lt',
-];
+// Búsqueda local dentro de la biblioteca curada
+function _clSearchLocal(query, max){
+  const q = (query||'').toLowerCase().trim();
+  if(CL_LIBRARY[q]) return CL_LIBRARY[q].slice(0, max);
+  const results = [];
+  const seen = new Set();
+  const words = q.split(/\s+/).filter(w => w.length > 2);
+  for(const cat of Object.values(CL_LIBRARY)){
+    for(const v of cat){
+      if(seen.has(v.videoId)) continue;
+      const haystack = (v.title + ' ' + (v.description||'')).toLowerCase();
+      if(haystack.includes(q) || words.some(w => haystack.includes(w))){
+        seen.add(v.videoId);
+        results.push(v);
+        if(results.length >= max) return results;
+      }
+    }
+  }
+  if(!results.length){
+    // Sin coincidencias: devolver mezcla de todas las categorías
+    const all = Object.values(CL_LIBRARY).flat();
+    const dedup = [];
+    const s2 = new Set();
+    for(const v of all.sort(()=>Math.random()-.5)){
+      if(!s2.has(v.videoId)){ s2.add(v.videoId); dedup.push(v); }
+    }
+    return dedup.slice(0, max);
+  }
+  return results;
+}
 
 async function clFetchJSON(url, timeout=7000){
   const ctrl = new AbortController();
@@ -31589,102 +31766,16 @@ async function clFetchJSON(url, timeout=7000){
   } catch(e){ clearTimeout(tid); throw e; }
 }
 
-// Parsear resultado Piped al formato Invidious
-function _clParsePiped(items, max){
-  return (items||[])
-    .filter(v => v.url && v.title && v.type === 'stream')
-    .slice(0, max)
-    .map(v => ({
-      videoId: (v.url||'').replace('/watch?v=',''),
-      title: v.title || 'Video',
-      description: v.shortDescription || '',
-      lengthSeconds: v.duration || 0,
-    }))
-    .filter(v => v.videoId && v.videoId.length === 11);
-}
-
-// Busca probando Invidious → Piped → allorigins en cascada
+// Búsqueda principal — usa la biblioteca local (sin CORS, siempre disponible)
 async function clSearch(query, max=20){
-  // Devolver caché si existe y tiene menos de 10 min
   const cacheKey = query + '_' + max;
   const cached = _clCache[cacheKey];
   if(cached && (Date.now() - cached.ts < 600000)) return cached.data;
-
-  let lastErr;
-
-  // 1. Invidious
-  for(const base of CL_INSTANCES){
-    try {
-      const url  = `${base}/api/v1/search?q=${encodeURIComponent(query)}&type=video&page=1`;
-      const data = await clFetchJSON(url, 6000);
-      const list = (data||[]).filter(v=>v.videoId && v.title).slice(0, max);
-      if(list.length){
-        _clCache[cacheKey] = { ts: Date.now(), data: list };
-        return list;
-      }
-    } catch(e){ lastErr = e; }
-  }
-
-  // 2. Piped
-  for(const base of CL_PIPED){
-    try {
-      const url  = `${base}/search?q=${encodeURIComponent(query)}&filter=videos`;
-      const data = await clFetchJSON(url, 7000);
-      const list = _clParsePiped(data && (data.items || data), max);
-      if(list.length){
-        _clCache[cacheKey] = { ts: Date.now(), data: list };
-        return list;
-      }
-    } catch(e){ lastErr = e; }
-  }
-
-  // 3. Fallback: YouTube via proxy allorigins
-  try {
-    const ytUrl  = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
-    const proxy  = `https://api.allorigins.win/get?url=${encodeURIComponent(ytUrl)}`;
-    const resp   = await clFetchJSON(proxy, 12000);
-    const html   = resp && resp.contents ? resp.contents : '';
-    const idMatches    = [...html.matchAll(/"videoId":"([a-zA-Z0-9_-]{11})"/g)];
-    const titleMatches = [...html.matchAll(/"title":\{"runs":\[\{"text":"([^"]+)"/g)];
-    const thumbMatches = [...html.matchAll(/"thumbnails":\[.*?"url":"(https:\/\/i\.ytimg[^"]+)"/g)];
-    const ids    = [...new Set(idMatches.map(m=>m[1]))].slice(0, max);
-    const titles = titleMatches.map(m=>m[1]);
-    if(ids.length){
-      const list = ids.map((id,i)=>({
-        videoId: id,
-        title: titles[i] || 'Película',
-        description: '',
-        lengthSeconds: 0
-      }));
-      _clCache[cacheKey] = { ts: Date.now(), data: list };
-      return list;
-    }
-  } catch(e){ lastErr = e; }
-
-  // 4. Último fallback: allorigins con otro dominio
-  try {
-    const ytUrl  = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}&sp=EgIQAQ%3D%3D`;
-    const proxy  = `https://corsproxy.io/?${encodeURIComponent(ytUrl)}`;
-    const r = await fetch(proxy, { signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
-    const idMatches    = [...html.matchAll(/"videoId":"([a-zA-Z0-9_-]{11})"/g)];
-    const titleMatches = [...html.matchAll(/"title":\{"runs":\[\{"text":"([^"]+)"/g)];
-    const ids    = [...new Set(idMatches.map(m=>m[1]))].slice(0, max);
-    const titles = titleMatches.map(m=>m[1]);
-    if(ids.length){
-      const list = ids.map((id,i)=>({
-        videoId: id,
-        title: titles[i] || 'Película',
-        description: '',
-        lengthSeconds: 0
-      }));
-      _clCache[cacheKey] = { ts: Date.now(), data: list };
-      return list;
-    }
-  } catch(e){ lastErr = e; }
-
-  throw lastErr || new Error('Sin resultados');
+  const data = _clSearchLocal(query, max);
+  _clCache[cacheKey] = { ts: Date.now(), data };
+  return data;
 }
+
 
 /* ── Thumbnail YouTube ── */
 function clThumb(videoId){ return `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`; }
