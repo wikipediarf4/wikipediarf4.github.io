@@ -34238,7 +34238,7 @@ function _esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
     }
     if(!window.db || !window.getDocs){
       grid.innerHTML = '';
-      if(errEl){ errEl.textContent='Sin conexión a la base de datos.'; errEl.style.display='block'; }
+      if(errEl){ errEl.textContent='Sin conexión a la base de datos. Recargá la página e intentá de nuevo.'; errEl.style.display='block'; }
       return;
     }
 
@@ -34367,8 +34367,9 @@ function _esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
       }).join('');
 
     } catch(e){
-      grid.innerHTML = '';
-      if(errEl){ errEl.textContent='Error al cargar: '+(e.message||e); errEl.style.display='block'; }
+      var msg = e.message||String(e);
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px 16px;color:var(--muted);font-size:.85rem;">⚠️ Error al cargar fotos.<br><small>'+msg+'</small><br><br><button onclick="initFotosPopularesPage()" style="margin-top:8px;padding:8px 18px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;">↻ Reintentar</button></div>';
+      if(errEl){ errEl.textContent='Error al cargar: '+msg; errEl.style.display='block'; }
       console.error('initFotosPopularesPage error:', e);
     }
   };
@@ -34399,7 +34400,7 @@ function _esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
       retries++;
     }
     if(!window.db || !window.getDocs){
-      if(errEl){ errEl.textContent='Sin conexión a la base de datos.'; errEl.style.display='block'; }
+      if(errEl){ errEl.textContent='Sin conexión a la base de datos. Recargá la página e intentá de nuevo.'; errEl.style.display='block'; }
       list.innerHTML = '';
       return;
     }
@@ -34475,9 +34476,11 @@ function _esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
       }).join('');
 
     } catch(e){
-      list.innerHTML = '';
-      if(errEl){ errEl.textContent='Error al cargar visitantes: '+(e.message||e); errEl.style.display='block'; }
-      console.error('initVisitantesPage error:', e);
+      var msg = e.message||String(e);
+      var hint = msg.indexOf('index')!==-1 ? ' (Falta índice en Firestore: creá un índice para profileVisits > visitedId)' : '';
+      list.innerHTML = '<div style="text-align:center;padding:40px 16px;color:var(--muted);font-size:.85rem;">⚠️ Error al cargar visitantes.<br><small>'+msg+hint+'</small></div>';
+      if(errEl){ errEl.textContent='Error: '+msg+hint; errEl.style.display='block'; }
+      console.error('initVisitantesPage error:', e, hint);
     }
   };
 
