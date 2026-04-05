@@ -3798,6 +3798,22 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
   <button id="albumLightboxDel" style="display:none;" onclick="eliminarFotoAlbum()">🗑 Eliminar</button>
   <img id="albumLightboxImg" src="" alt="Foto privada">
   <div id="albumLightboxCaption" style="color:rgba(255,255,255,.6);font-size:.75rem;margin-top:10px;"></div>
+
+  <!-- Reacciones -->
+  <div id="albumLbReactions" style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;justify-content:center;">
+    <button onclick="reaccionarFotoAlbum('❤️')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 12px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">❤️</button>
+    <button onclick="reaccionarFotoAlbum('🔥')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 12px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">🔥</button>
+    <button onclick="reaccionarFotoAlbum('😍')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 12px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">😍</button>
+    <button onclick="reaccionarFotoAlbum('💯')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 12px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">💯</button>
+    <button onclick="reaccionarFotoAlbum('🤩')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 12px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">🤩</button>
+  </div>
+  <div id="albumLbReactionCounts" style="color:rgba(255,255,255,.7);font-size:.78rem;margin-top:4px;min-height:18px;text-align:center;"></div>
+
+  <!-- Comentario -->
+  <div style="display:flex;gap:8px;align-items:center;margin-top:10px;width:min(420px,90vw);">
+    <input id="albumLbCommentInput" type="text" maxlength="300" placeholder="Escribí un comentario... (se envía como mensaje privado)" style="flex:1;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:8px 14px;color:#fff;font-size:.85rem;outline:none;" onkeydown="if(event.key==='Enter')enviarComentarioFotoAlbum()">
+    <button onclick="enviarComentarioFotoAlbum()" style="background:#1877f2;border:none;border-radius:20px;padding:8px 14px;color:#fff;font-size:.85rem;font-weight:700;cursor:pointer;white-space:nowrap;">Enviar</button>
+  </div>
 </div>
 
 <script>
@@ -4057,7 +4073,6 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
     var isOwner = _albumProfileUid === (window.CU && window.CU.id);
     var isAdminLb = window.CU && (window.CU.role === 'admin' || window.CU.email === 'synxyes@gmail.com');
     if(delBtn) delBtn.style.display = (isOwner || isAdminLb) ? 'block' : 'none';
-    // Estilo diferente para admin
     if(delBtn && isAdminLb && !isOwner) {
       delBtn.textContent = '🛡️ Eliminar (Admin)';
       delBtn.style.background = 'rgba(200,0,40,.7)';
@@ -4065,7 +4080,117 @@ a[style*="color:var(--accent)"] { color: #1877f2 !important; }
       delBtn.textContent = '🗑 Eliminar';
       delBtn.style.background = 'rgba(200,0,40,.5)';
     }
+    // Mostrar/ocultar sección de reacciones y comentarios
+    var rxnArea = document.getElementById('albumLbReactions');
+    var commentArea = document.querySelector('#albumLightbox [style*="flex:1;background"]')?.parentElement;
+    var isOwnAlbum = isOwner;
+    // Mostrar reacciones y comentario solo si no es el dueño (o si es dueño también puede ver reacciones)
+    _renderAlbumLbReactions(foto);
+    var cinp = document.getElementById('albumLbCommentInput');
+    if(cinp) cinp.value = '';
     if(lb) lb.classList.add('open');
+  };
+
+  function _renderAlbumLbReactions(foto) {
+    var counts = foto.reactions || {};
+    var myUid = window.CU && window.CU.id;
+    var myRxn = myUid ? (foto.myReaction || null) : null;
+    var countEl = document.getElementById('albumLbReactionCounts');
+    if(!countEl) return;
+    var parts = Object.entries(counts).filter(([,v])=>v>0).map(([e,v])=>e+' '+v);
+    countEl.textContent = parts.length ? parts.join('  ') : '';
+    // Highlight botón activo
+    var btns = document.querySelectorAll('#albumLbReactions button');
+    btns.forEach(function(btn) {
+      var em = btn.textContent.trim();
+      btn.style.background = (counts[em] && myUid && foto.reactedBy && foto.reactedBy[myUid] === em)
+        ? 'rgba(255,255,255,.45)' : 'rgba(255,255,255,.15)';
+    });
+  }
+
+  window.reaccionarFotoAlbum = async function(emoji) {
+    if(!window.CU) { if(typeof toast==='function') toast('Iniciá sesión para reaccionar','err'); return; }
+    if(!_albumLightboxFotoId || !_albumProfileUid) return;
+    var myUid = window.CU.id;
+    var isOwner = _albumProfileUid === myUid;
+    try {
+      var fotoRef = window.doc(window.db,'albumPrivado',_albumProfileUid,'fotos',_albumLightboxFotoId);
+      var snap = await window.getDoc(fotoRef);
+      if(!snap.exists()) return;
+      var data = snap.data();
+      var reactions = data.reactions || {};
+      var reactedBy = data.reactedBy || {};
+      var prevEmoji = reactedBy[myUid];
+      // Toggle: si ya reaccionó con este emoji, lo quita
+      if(prevEmoji === emoji) {
+        reactions[emoji] = Math.max(0, (reactions[emoji]||0) - 1);
+        delete reactedBy[myUid];
+      } else {
+        // Quitar reacción previa
+        if(prevEmoji && reactions[prevEmoji]) reactions[prevEmoji] = Math.max(0, reactions[prevEmoji]-1);
+        reactions[emoji] = (reactions[emoji]||0) + 1;
+        reactedBy[myUid] = emoji;
+      }
+      await window.updateDoc(fotoRef, { reactions: reactions, reactedBy: reactedBy });
+      // Actualizar localmente
+      var fIdx = _albumFotos.findIndex(function(f){ return f.id===_albumLightboxFotoId; });
+      if(fIdx>=0) {
+        _albumFotos[fIdx].reactions = reactions;
+        _albumFotos[fIdx].reactedBy = reactedBy;
+        _renderAlbumLbReactions(_albumFotos[fIdx]);
+      }
+      // Notificar al dueño si no es él mismo
+      if(!isOwner) {
+        try {
+          var notif = {
+            text: emoji + ' ' + (window.CU.nick||'Alguien') + ' reaccionó a una foto de tu álbum privado',
+            time: Date.now(), read: false,
+            fromUid: myUid, fromAv: window.CU.av||'', fromNick: window.CU.nick||'',
+            type: 'albumReaccion'
+          };
+          await window.updateDoc(window.doc(window.db,'users',_albumProfileUid),{notifs: window.arrayUnion(notif)});
+        } catch(ne){}
+      }
+    } catch(e) { if(typeof toast==='function') toast('Error al reaccionar','err'); }
+  };
+
+  window.enviarComentarioFotoAlbum = async function() {
+    if(!window.CU) { if(typeof toast==='function') toast('Iniciá sesión para comentar','err'); return; }
+    if(!_albumLightboxFotoId || !_albumProfileUid) return;
+    var cinp = document.getElementById('albumLbCommentInput');
+    var texto = cinp ? cinp.value.trim() : '';
+    if(!texto) return;
+    var myUid = window.CU.id;
+    var isOwner = _albumProfileUid === myUid;
+    // El comentario se envía como mensaje privado al dueño del álbum
+    try {
+      if(!isOwner) {
+        var chatId = [myUid, _albumProfileUid].sort().join('_');
+        var msgText = '📷 [Comentario en foto de álbum privado]: ' + texto;
+        await window.addDoc(window.collection(window.db,'chats',chatId,'messages'), {
+          text: msgText,
+          uid: myUid,
+          nick: window.CU.nick || '?',
+          av: window.CU.av || '',
+          ts: Date.now(),
+          albumFotoId: _albumLightboxFotoId,
+          type: 'albumComment'
+        });
+        // Notificación al dueño
+        var notif = {
+          text: '💬 ' + (window.CU.nick||'Alguien') + ': ' + texto,
+          time: Date.now(), read: false,
+          fromUid: myUid, fromAv: window.CU.av||'', fromNick: window.CU.nick||'',
+          type: 'albumComment', chatUid: myUid
+        };
+        await window.updateDoc(window.doc(window.db,'users',_albumProfileUid),{notifs: window.arrayUnion(notif)});
+        if(typeof toast==='function') toast('💬 Comentario enviado como mensaje privado','ok');
+      } else {
+        // El dueño comenta en su propio álbum — lo guardamos como nota
+        if(typeof toast==='function') toast('Sos el dueño del álbum, el comentario no se envía','');
+      }
+      if(cinp) cinp.value = '';
+    } catch(e) { if(typeof toast==='function') toast('Error al enviar comentario','err'); console.error(e); }
   };
 
   window.cerrarAlbumLightbox = function() {
@@ -9088,19 +9213,49 @@ const VAPID_KEY = 'BAqXiAE3JEYzG07fbtjywuXMM4887gnisTQnS6C14PXIVhUHXnc6JmPGb_C_V
 async function initPushNotifications() {
   if (!('Notification' in window) || !_messaging) return;
   try {
+    // Verificar que el SW exista antes de registrar
+    let swReg = null;
+    try {
+      const swCheck = await fetch('/firebase-messaging-sw.js', {method:'HEAD'});
+      if(!swCheck.ok) {
+        console.warn('[FCM] firebase-messaging-sw.js no encontrado en el servidor (status:', swCheck.status, '). Las notificaciones push en background no funcionarán.');
+        return;
+      }
+    } catch(swErr) {
+      console.warn('[FCM] No se pudo verificar firebase-messaging-sw.js:', swErr);
+    }
     // Registrar SW
-    const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
     console.log('[FCM] Service worker registrado');
 
-    // Escuchar mensajes cuando la app está abierta
+    // Escuchar mensajes cuando la app está abierta (foreground)
     onMessage(_messaging, (payload) => {
       const { title, body } = payload.notification || {};
-      toast('🏆 ' + (body || title || 'Nuevo trofeo publicado'), 'ok');
+      const data = payload.data || {};
+      const type = data.type || '';
+      // Elegir ícono/texto según tipo
+      let icon = '🔔';
+      if(type === 'message' || type === 'chat') icon = '💬';
+      else if(type === 'like' || type === 'reaccion') icon = '💘';
+      else if(type === 'match') icon = '🎉';
+      else if(type === 'albumAcceso' || type === 'albumComment' || type === 'albumReaccion') icon = '🔐';
+      else if(type === 'comment') icon = '💬';
+      else if(type === 'follow') icon = '👤';
+      const displayText = body || title || 'Nueva notificación';
+      if(typeof toast === 'function') toast(icon + ' ' + displayText, 'ok');
+      // Reproducir sonido apropiado
+      if(type === 'message' || type === 'chat') {
+        if(typeof playMsgSound === 'function') playMsgSound();
+      } else {
+        if(typeof playNotifSound === 'function') playNotifSound();
+      }
+      // Actualizar badge de campanita recargando notifs
+      if(typeof listenNotifs === 'function' && !window._notifListening) listenNotifs();
     });
 
     // Si ya tiene permiso, obtener token
     if (Notification.permission === 'granted') {
-      await _saveFCMToken(reg);
+      await _saveFCMToken(swReg);
     }
   } catch(e) {
     console.warn('[FCM] Error iniciando push:', e);
@@ -9127,13 +9282,34 @@ async function _saveFCMToken(swReg) {
 // Pedir permiso al usuario (llamar cuando haga click en algo, no automático)
 window.requestPushPermission = async function() {
   if (!('Notification' in window)) { toast('Tu navegador no soporta notificaciones', 'err'); return; }
+  if (!_messaging) { toast('Firebase Messaging no disponible', 'err'); return; }
   const perm = await Notification.requestPermission();
   if (perm === 'granted') {
-    const reg = await navigator.serviceWorker.getRegistration('/firebase-messaging-sw.js');
-    if (reg) await _saveFCMToken(reg);
-    toast('🔔 Notificaciones activadas', 'ok');
+    try {
+      // Asegurarse de que el SW esté registrado
+      let reg = await navigator.serviceWorker.getRegistration('/firebase-messaging-sw.js');
+      if (!reg) {
+        try {
+          reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        } catch(swErr) {
+          console.warn('[FCM] No se pudo registrar SW:', swErr);
+          toast('🔔 Permiso concedido, pero el service worker no se pudo registrar. Verificá que /firebase-messaging-sw.js exista en tu servidor.', 'err');
+          return;
+        }
+      }
+      await _saveFCMToken(reg);
+      toast('🔔 Notificaciones activadas', 'ok');
+      // Actualizar texto del botón en el menú
+      const btn = document.getElementById('pushNotifMenuItem');
+      if(btn) btn.innerHTML = '🔔 Notificaciones activadas ✓';
+    } catch(e) {
+      console.warn('[FCM] Error al activar notificaciones:', e);
+      toast('Error al guardar token de notificaciones', 'err');
+    }
+  } else if (perm === 'denied') {
+    toast('🔕 Notificaciones bloqueadas. Habilitálas desde la configuración del navegador.', 'err');
   } else {
-    toast('Notificaciones bloqueadas', 'err');
+    toast('Notificaciones no activadas', 'err');
   }
 };
 
@@ -17024,6 +17200,7 @@ function listenNotifs(){
   if(!window.CU) return;
   if(_notifUnsub){ _notifUnsub(); _notifUnsub=null; }
   _notifFirstLoad = true;
+  window._notifListening = true;
   _notifUnsub = onSnapshot(doc(db,'users',window.CU.id), snap=>{
     if(!snap.exists()) return;
     const d = snap.data();
