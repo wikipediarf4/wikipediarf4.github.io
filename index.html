@@ -1855,14 +1855,22 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
     </div>
   </div>
 
-  <!-- GRID DE RESULTADOS -->
-  <div style="padding:20px 28px 80px;">
+  <!-- GRID DE RESULTADOS DAILYMOTION -->
+  <div style="padding:20px 28px 0;">
     <div id="clSectionTitle" style="font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:14px;">🔥 Acción</div>
     <div id="clGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px;"></div>
     <div id="clLoading" style="display:none;text-align:center;padding:40px;color:#666;">
       <div style="font-size:2.5rem;margin-bottom:10px;animation:spin 1s linear infinite;display:inline-block;">🎬</div>
       <div id="clLoadingText">Buscando en Dailymotion...</div>
     </div>
+  </div>
+
+  <!-- SECCIÓN PLUTO TV -->
+  <div style="padding:28px 28px 80px;border-top:1px solid #1a1a1a;margin-top:20px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
+      <span style="font-size:1.1rem;font-weight:800;color:#fff;">🟡 Películas Gratis — Pluto TV</span>
+    </div>
+    <div id="clPlutoWrap"></div>
   </div>
 
 </div>
@@ -31624,7 +31632,7 @@ window.mlLoadMyVisitors = async function(targetEl) {
     snap.forEach(function(d){
       var v = d.data();
       if(!isPremium && shown >= 3){
-        if(shown === 3) html += '<div style="font-size:.75rem;color:#a855f7;text-align:center;padding:10px;cursor:pointer;" onclick="om(\'mPremium\')">🔒 '++(snap.size-3)+' visitantes más — Hazte Premium</div>';
+        if(shown === 3) html += '<div style="font-size:.75rem;color:#a855f7;text-align:center;padding:10px;cursor:pointer;" onclick="om(\'mPremium\')">🔒 '+(snap.size-3)+' visitantes más — Hazte Premium</div>';
         shown++; return;
       }
       var ago = mlTimeAgo(v.ts);
@@ -33675,6 +33683,11 @@ window.initCineLatido = async function(){
   // Resetear flag por si quedó trabado en un error anterior
   window._cl.loading = false;
   clLoadCat('pelicula accion', '🔥 Acción');
+  // Inicializar Pluto TV si no fue inicializado
+  if(typeof clPlutoInit === 'function' && !window._plutoInitialized){
+    window._plutoInitialized = true;
+    clPlutoInit();
+  }
 };
 
 /* ══ SELECCIONAR CATEGORÍA ══ */
@@ -33947,6 +33960,207 @@ window.clSendComment = async function(){
     console.warn('[CineLatido] Error comentando:', e);
     toast('Error al enviar comentario','err');
   }
+};
+
+})();
+</script>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   PLUTO TV VOD — CineLatido
+   Proxy: https://cinelatido2.synxyes.workers.dev
+══════════════════════════════════════════════════════ */
+(function(){
+
+const PLUTO_WORKER  = 'https://cinelatido2.synxyes.workers.dev';
+const PLUTO_PAGE_SIZE = 48;
+
+/* ── Inicializar sección ── */
+window.clPlutoInit = function(){
+  const wrap = document.getElementById('clPlutoWrap');
+  if(!wrap) return;
+
+  // Render tabs de categorías
+  const cats = [
+    { id: 'all',        name: '🎬 Todo' },
+    { id: 'Cine Terror',  name: '👻 Terror' },
+    { id: 'Cine Comedia', name: '😂 Comedia' },
+    { id: 'Cine Sci-Fi',  name: '🚀 Sci-Fi' },
+    { id: 'Cine Drama',   name: '🎭 Drama' },
+    { id: 'Cine Acción',  name: '💥 Acción' },
+    { id: 'Cine Nostalgia', name: '📽️ Nostalgia' },
+    { id: 'Cine Familia', name: '👨‍👩‍👧 Familia' },
+  ];
+
+  const tabsHtml = cats.map((c,i) =>
+    `<button class="pluto-cat-btn${i===0?' active-pluto-cat':''}"
+      onclick="clPlutoLoadCat(this,'${c.id}')">${c.name}</button>`
+  ).join('');
+
+  wrap.innerHTML = `
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">${tabsHtml}</div>
+    <div id="clPlutoGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;"></div>
+    <div id="clPlutoLoading" style="text-align:center;padding:20px;color:#aaa;">Cargando películas…</div>
+    <div id="clPlutoLoadMore" style="display:none;text-align:center;margin-top:12px;">
+      <button onclick="clPlutoNextPage()" style="background:#2ec4b6;color:#000;border:none;border-radius:8px;padding:10px 28px;font-weight:700;cursor:pointer;">Ver más</button>
+    </div>
+    <div id="clPlayerModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);flex-direction:column;align-items:center;justify-content:center;">
+      <div style="width:100%;max-width:860px;padding:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div id="clModalTitle" style="color:#fff;font-weight:700;font-size:1rem;"></div>
+          <button onclick="clClosePlayer()" style="background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer;">✕</button>
+        </div>
+        <video id="clPlayerHLS" controls style="width:100%;border-radius:10px;background:#000;max-height:70vh;"></video>
+        <div id="clModalDesc" style="color:#aaa;font-size:.8rem;margin-top:8px;"></div>
+      </div>
+    </div>`;
+
+  window._plutoPage = 0;
+  window._plutoMovies = [];
+  window._plutoCurrentCat = 'all';
+  clPlutoFetchMovies('all', 0, true);
+};
+
+/* ── Fetch películas ── */
+async function clPlutoFetchMovies(cat, offset, reset){
+  const loading = document.getElementById('clPlutoLoading');
+  const loadMore = document.getElementById('clPlutoLoadMore');
+  if(loading) loading.style.display = 'block';
+  if(loadMore) loadMore.style.display = 'none';
+
+  const params = new URLSearchParams({
+    appName: 'web', appVersion: '9', clientID: 'web',
+    deviceType: 'web', offset, limit: PLUTO_PAGE_SIZE
+  });
+  if(cat && cat !== 'all') params.set('genre', cat);
+
+  const url = `${PLUTO_WORKER}/v3/vod/categories?${params}`;
+
+  try {
+    const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+
+    let movies = [];
+    if(Array.isArray(data.categories)){
+      data.categories.forEach(c => { if(Array.isArray(c.items)) movies = movies.concat(c.items); });
+    } else if(Array.isArray(data.vods)){
+      movies = data.vods;
+    }
+
+    if(reset) window._plutoMovies = movies;
+    else window._plutoMovies = (window._plutoMovies||[]).concat(movies);
+
+    if(loading) loading.style.display = 'none';
+    clPlutoRenderMovies(reset);
+    if(movies.length >= PLUTO_PAGE_SIZE && loadMore) loadMore.style.display = 'block';
+  } catch(e){
+    console.warn('[Pluto]', e);
+    if(loading) loading.innerHTML = '⚠️ No se pudieron cargar las películas.';
+  }
+}
+
+/* ── Render grid ── */
+function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function clPlutoRenderMovies(reset){
+  const grid = document.getElementById('clPlutoGrid');
+  if(!grid) return;
+  if(reset) grid.innerHTML = '';
+
+  const movies = window._plutoMovies || [];
+  const start  = reset ? 0 : grid.children.length;
+
+  movies.slice(start).forEach(m => {
+    const name      = m.name || m.title || 'Sin título';
+    const thumb     = m.covers?.[0]?.url || m.posterImage?.path || m.thumbnail || '';
+    const desc      = m.description || m.summary || '';
+    const year      = m.year || '';
+    const rating    = m.rating || '';
+    const streamUrl = m.stitchedFile?.path || m.stitchedFileAvailability?.path || '';
+    const slug      = m.slug || m._id || m.id || '';
+    const extUrl    = slug ? `https://pluto.tv/latam/on-demand/movies/${slug}` : 'https://pluto.tv/latam/on-demand';
+
+    const card = document.createElement('div');
+    card.style.cssText = 'background:#1a1a2e;border-radius:10px;overflow:hidden;cursor:pointer;transition:transform .2s;';
+    card.onmouseenter = () => card.style.transform = 'scale(1.03)';
+    card.onmouseleave = () => card.style.transform = '';
+    card.innerHTML = `
+      <div style="position:relative;width:100%;aspect-ratio:2/3;background:#111;overflow:hidden;">
+        ${thumb ? `<img src="${escHtml(thumb)}" alt="${escHtml(name)}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.style.display='none'">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:3rem;">🎬</div>'}
+        <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.85) 0%,transparent 60%);"></div>
+        ${rating ? `<div style="position:absolute;top:6px;left:6px;background:rgba(0,0,0,.75);color:#fff;font-size:.55rem;font-weight:800;padding:2px 6px;border-radius:4px;">${escHtml(rating)}</div>` : ''}
+        ${year ? `<div style="position:absolute;top:6px;right:6px;background:rgba(229,9,20,.85);color:#fff;font-size:.55rem;font-weight:800;padding:2px 6px;border-radius:4px;">${year}</div>` : ''}
+      </div>
+      <div style="padding:8px 10px 10px;">
+        <div style="font-size:.78rem;font-weight:700;color:#fff;line-height:1.3;">${escHtml(name)}</div>
+        ${desc ? `<div style="font-size:.65rem;color:#999;margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${escHtml(desc)}</div>` : ''}
+      </div>`;
+
+    card.onclick = () => {
+      if(streamUrl) clPlutoOpenMovie(streamUrl, name, desc, thumb);
+      else window.open(extUrl, '_blank');
+    };
+    grid.appendChild(card);
+  });
+}
+
+/* ── Paginación ── */
+window.clPlutoNextPage = function(){
+  window._plutoPage = (window._plutoPage || 0) + 1;
+  clPlutoFetchMovies(window._plutoCurrentCat, window._plutoPage * PLUTO_PAGE_SIZE, false);
+};
+
+/* ── Cambiar categoría ── */
+window.clPlutoLoadCat = function(btn, cat){
+  document.querySelectorAll('.active-pluto-cat').forEach(b => b.classList.remove('active-pluto-cat'));
+  btn.classList.add('active-pluto-cat');
+  window._plutoCurrentCat = cat;
+  window._plutoPage = 0;
+  window._plutoMovies = [];
+  clPlutoFetchMovies(cat, 0, true);
+};
+
+/* ── Reproductor HLS ── */
+window.clPlutoOpenMovie = function(streamUrl, name, desc, thumb){
+  const modal = document.getElementById('clPlayerModal');
+  const video = document.getElementById('clPlayerHLS');
+  const mtitle = document.getElementById('clModalTitle');
+  const mdesc  = document.getElementById('clModalDesc');
+  if(!modal) return;
+  if(mtitle) mtitle.textContent = '🎬 ' + name;
+  if(mdesc)  mdesc.textContent  = desc || '';
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  if(!video) return;
+
+  if(window._plutoHls){ window._plutoHls.destroy(); window._plutoHls = null; }
+
+  const hlsScript = document.createElement('script');
+  hlsScript.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
+  hlsScript.onload = function(){
+    if(Hls.isSupported()){
+      const hls = new Hls({ enableWorker: false });
+      hls.loadSource(streamUrl);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(()=>{}));
+      window._plutoHls = hls;
+    } else if(video.canPlayType('application/vnd.apple.mpegurl')){
+      video.src = streamUrl;
+      video.play().catch(()=>{});
+    }
+  };
+  if(!window.Hls) document.head.appendChild(hlsScript);
+  else hlsScript.onload();
+};
+
+window.clClosePlayer = window.clClosePlayer || function(){
+  const modal = document.getElementById('clPlayerModal');
+  const video = document.getElementById('clPlayerHLS');
+  if(window._plutoHls){ window._plutoHls.destroy(); window._plutoHls = null; }
+  if(video){ video.pause(); video.src = ''; }
+  if(modal) modal.style.display = 'none';
+  document.body.style.overflow = '';
 };
 
 })();
