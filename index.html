@@ -11206,7 +11206,7 @@ function postHTML(p){
   const totalRxn = Object.values(p.reactionCounts||{}).reduce((a,b)=>a+b,0);
   const topRxn = Object.entries(p.reactionCounts||{}).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([e])=>e).join('');
   const myRxnObj = myRxn ? (REACTIONS.find(r=>r.emoji===myRxn) || REACTIONS.find(r=>r.emoji.replace(/\uFE0F/g,'')===myRxn.replace(/\uFE0F/g,''))) : null;
-  const rxnBtns = window._buildRxnBtns ? window._buildRxnBtns(p.id, myRxn) : REACTIONS.map(r=>`<button class="rxn-btn${myRxn===r.emoji?' rxn-active':''}" onclick="doReact('${p.id}','${r.emoji}');schedHideRxnPop('${p.id}')"><span class="rxn-emoji-icon">${r.emoji}</span><span class="rxn-tooltip">${r.label}</span></button>`).join('');
+  // reacciones viejas eliminadas
   const fishTag = p.fish ? `<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(0,198,255,.08);border:1px solid rgba(0,198,255,.2);border-radius:100px;padding:4px 12px;font-size:.78rem;margin-bottom:10px;margin-left:14px"><span>🎣</span><strong>${p.fish}</strong>${p.weight?` · ${fmtKg(p.weight)}`:''} ${p.map?`· ${p.map}`:''} ${p.tech?`· ${p.tech}`:''}</div>` : '';
   window._postImgsMap = window._postImgsMap || {};
   if(p.images&&p.images.length) window._postImgsMap[p.id] = p.images;
@@ -11543,16 +11543,16 @@ function postHTML(p){
     </div>
     <!-- BARRA DE ACCIONES FB-style -->
     <div class="post-actions fb-actions">
-      <!-- Me gusta (con popup reacciones al hover) -->
-      <div class="fb-act-wrap" onmouseenter="showRxnPop('${p.id}')" onmouseleave="schedHideRxnPop('${p.id}')">
-        <div id="rxnt_${p.id}" style="display:flex;align-items:center;gap:2px;padding:4px 8px;">
-          ${window.REACTIONS.map((r,i)=>{
-            const myStars = myRxn ? (window.REACTIONS.find(x=>x.emoji===myRxn)||{stars:0}).stars : 0;
+      <!-- Valorar con estrellas -->
+      <div class="fb-act-wrap" id="rxnt_${p.id}" style="display:flex;align-items:center;gap:1px;padding:4px 6px;">
+        ${(()=>{
+          const myStars = myRxn ? (window.REACTIONS.find(x=>x.emoji===myRxn)||{stars:0}).stars : 0;
+          return window.REACTIONS.map(r=>{
             const active = myStars >= r.stars;
-            return `<button class="star-rxn-btn${active?' star-active':''}" title="${r.label}" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:${active?'#f7b125':'#555'};transition:color .15s,transform .12s;padding:0 1px;line-height:1;" onclick="doReact('${p.id}','${r.emoji}')" onmouseover="this.style.color='#f7b125';this.style.transform='scale(1.25)'" onmouseout="this.style.color='${active?'#f7b125':'#555'}';this.style.transform='scale(1)'">★</button>`;
-          }).join('')}
-          <span style="font-size:.72rem;color:var(--muted);margin-left:4px;min-width:50px;">${myRxnObj?myRxnObj.label:''}</span>
-        </div>
+            return `<button title="${r.label}" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:${active?'#f7b125':'#aaa'};transition:color .12s,transform .1s;padding:0 1px;line-height:1;" onclick="doReact('${p.id}','${r.emoji}')" onmouseover="this.parentElement.querySelectorAll('button').forEach((b,bi)=>{b.style.color=bi<${r.stars}?'#f7b125':'#aaa'})" onmouseout="this.parentElement.querySelectorAll('button').forEach((b,bi)=>{b.style.color=bi<${myStars}?'#f7b125':'#aaa'})">★</button>`;
+          }).join('');
+        })()}
+        <span style="font-size:.7rem;color:var(--muted);margin-left:4px;min-width:55px;">${myRxnObj?myRxnObj.label:''}</span>
       </div>
       <!-- Comentar -->
       <button class="fb-act-btn fb-comment-btn" onclick="toggleComments('${p.id}');setTimeout(()=>{document.querySelector('#cmts_${p.id} .cmt-input')?.focus()},200)">
@@ -12147,43 +12147,7 @@ function insertPostMention(nick){
 }
 
 const _rxnPops = {};
-function showRxnPop(id){
-  cancelHideRxnPop(id);
-  const popup = document.getElementById('rxnp_'+id);
-  if(!popup) return;
-  // Obtener la reaccion actual del usuario para este post
-  const postId = id.replace(/^_modal_/, '');
-  const myRxn = window.CU ? (window._posts?.find(p=>p.id===postId)?.reactions?.[window.CU.id]||null) : null;
-  // Regenerar botones con _buildRxnBtns (garantiza tooltips correctos y animaciones)
-  if(window._buildRxnBtns){
-    popup.innerHTML = window._buildRxnBtns(id, myRxn);
-  }
-  // Actualizar el label del boton principal con el nombre correcto de la reaccion
-  const mainBtn = document.getElementById('rxnt_'+postId);
-  if(mainBtn && window.REACTIONS){
-    const rxnDef = myRxn ? window.REACTIONS.find(r=>r.emoji===myRxn) : null;
-    const emoji = mainBtn.querySelector('.fb-act-emoji');
-    const label = mainBtn.querySelector('.fb-act-label');
-    if(emoji) emoji.textContent = myRxn || '👍';
-    if(label){
-      label.textContent = rxnDef ? rxnDef.label : 'Me gusta';
-      label.style.color = rxnDef ? rxnDef.color : '';
-      label.style.fontWeight = rxnDef ? '700' : '';
-    }
-    if(rxnDef){ mainBtn.style.color = rxnDef.color; mainBtn.classList.add('fb-reacted'); }
-    else { mainBtn.style.color = ''; mainBtn.classList.remove('fb-reacted'); }
-  }
-  const wrap = popup.closest('.fb-act-wrap');
-  if(wrap){
-    const rect = wrap.getBoundingClientRect();
-    popup.style.position = 'fixed';
-    popup.style.bottom = 'auto';
-    popup.style.left = Math.max(4, rect.left) + 'px';
-    popup.style.top = (rect.top - 8) + 'px';
-    popup.style.transform = 'translateY(-100%)';
-  }
-  popup.classList.add('show');
-}
+function showRxnPop(id){ /* deshabilitado */ }
 function schedHideRxnPop(id){ _rxnPops[id]=setTimeout(()=>{ document.getElementById('rxnp_'+id)?.classList.remove('show'); },800); }
 function cancelHideRxnPop(id){ if(_rxnPops[id]){clearTimeout(_rxnPops[id]);delete _rxnPops[id];} }
 
@@ -12327,10 +12291,11 @@ async function doReact(pid, emoji){
   const rxnBtn = document.getElementById('rxnt_'+pid);
   if(rxnBtn){
     if(myNewRxn){
-      rxnBtn.innerHTML = `<span class="fb-act-emoji">${myNewRxn}</span><span class="fb-act-label" style="color:${rxnDef?.color||'#1877f2'};font-weight:700;">${rxnDef?.label||'Me gusta'}</span>`;
+      const myStarsNew = rxnDef ? rxnDef.stars : 0;
+    rxnBtn.innerHTML = window.REACTIONS.map((r,i)=>`<button title="${r.label}" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:${i<myStarsNew?'#f7b125':'#aaa'};padding:0 1px;line-height:1;" onclick="doReact('${pid}','${r.emoji}')">★</button>`).join('') + `<span style="font-size:.7rem;color:var(--muted);margin-left:4px;">${rxnDef?.label||''}</span>`;
       rxnBtn.style.color = rxnDef?.color||'#1877f2';
     } else {
-      rxnBtn.innerHTML = `<span class="fb-act-emoji" style="font-size:1.15rem;line-height:1;">👍</span><span class="fb-act-label">Me gusta</span>`;
+      rxnBtn.innerHTML = window.REACTIONS.map(r=>`<button title="${r.label}" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#aaa;padding:0 1px;line-height:1;" onclick="doReact('${pid}','${r.emoji}')">★</button>`).join('') + '<span style="font-size:.7rem;color:var(--muted);margin-left:4px;"></span>';
       rxnBtn.style.color = '';
     }
     rxnBtn.classList.toggle('fb-reacted', !!myNewRxn);
@@ -12382,7 +12347,8 @@ async function doReact(pid, emoji){
     toast('Error al reaccionar — ' + errMsg, 'err');
   }
 }
-function quickReact(pid){
+function quickReact(pid){ return; // deshabilitado — se usan estrellas directas
+function _quickReactOld_disabled(pid){
   if(!window.CU){toast('Inicia sesión','err');return;}
   const p = (_posts||[]).find(p=>p.id===pid);
   const prev = p?.reactions?.[window.CU.id] || null;
@@ -12555,16 +12521,14 @@ async function toggleComments(pid){
     </div>`:''}
 
     <div style="display:flex;border-top:1px solid #dddfe2;border-bottom:1px solid #dddfe2;flex-shrink:0;">
-      <div style="flex:1;position:relative;">
-        <button id="_modalRxnBtn_${pid}" onclick="doReact('${pid}','👍')" 
-          onmouseenter="showRxnPop('_modal_${pid}')" onmouseleave="schedHideRxnPop('_modal_${pid}')"
-          style="width:100%;background:none;border:none;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 4px;border-radius:0;cursor:pointer;font-size:.88rem;font-weight:700;color:#65676b;" 
-          onmouseover="this.style.background='#1c2128'" onmouseout="this.style.background='none'">🔥 Reaccionar</button>
-        <div class="rxn-popup" id="rxnp__modal_${pid}" 
-          onmouseenter="cancelHideRxnPop('_modal_${pid}')" onmouseleave="schedHideRxnPop('_modal_${pid}')"
-          style="bottom:100%;top:auto;left:50%;transform:translateX(-50%);">
-          ${window._buildRxnBtns ? window._buildRxnBtns('_modal_'+pid, window.CU?(post.reactions||{})[window.CU.id]||null:null) : (window.REACTIONS||[]).map(r=>`<button class="rxn-btn" onclick="doReact('${pid}','${r.emoji}');schedHideRxnPop('_modal_${pid}')"><span class="rxn-emoji-icon">${r.emoji}</span><span class="rxn-tooltip">${r.label}</span></button>`).join('')}
-        </div>
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:2px;padding:6px 4px;" id="_modalRxnBtn_${pid}">
+        ${(()=>{
+          const modalMyRxn = window.CU?(post.reactions||{})[window.CU.id]||null:null;
+          const modalMyStars = modalMyRxn ? (window.REACTIONS.find(x=>x.emoji===modalMyRxn)||{stars:0}).stars : 0;
+          const starsHtml = window.REACTIONS.map(r=>`<button title="${r.label}" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:${modalMyStars>=r.stars?'#f7b125':'#aaa'};padding:0 2px;line-height:1;transition:color .1s;" onclick="doReact('${pid}','${r.emoji}')">★</button>`).join('');
+          const lbl = modalMyRxn ? (window.REACTIONS.find(r=>r.emoji===modalMyRxn)||{label:''}).label : 'Valorar';
+          return starsHtml + `<span style="font-size:.72rem;color:#aaa;margin-left:5px;">${lbl}</span>`;
+        })()}
       </div>
       <button onclick="document.getElementById('_cmtModalInp_${pid}').focus()" style="flex:1;background:none;border:none;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 4px;cursor:pointer;font-size:.88rem;font-weight:700;color:#65676b;" onmouseover="this.style.background='#1c2128'" onmouseout="this.style.background='none'">💬 Comentar</button>
 
@@ -29213,75 +29177,7 @@ setTimeout(function(){
 })();
 </script>
 
-<style>@keyframes rxn-like{0%{transform:scale(1) rotate(0) translateY(0)}20%{transform:scale(1.5) rotate(-20deg) translateY(-6px)}45%{transform:scale(1.3) rotate(12deg) translateY(-3px)}70%{transform:scale(1.4) rotate(-8deg) translateY(-4px)}100%{transform:scale(1) rotate(0) translateY(0)}}@keyframes rxn-love{0%,100%{transform:scale(1)}15%{transform:scale(1.55)}30%{transform:scale(1.15)}50%{transform:scale(1.5)}70%{transform:scale(1.1)}85%{transform:scale(1.4)}}@keyframes rxn-haha{0%,100%{transform:scale(1) rotate(0)}20%{transform:scale(1.4) rotate(-12deg)}40%{transform:scale(1.1) rotate(10deg)}60%{transform:scale(1.35) rotate(-8deg)}80%{transform:scale(1.15) rotate(6deg)}}@keyframes rxn-wow-fb{0%,100%{transform:scale(1) translateY(0)}25%{transform:scale(1.45) translateY(-8px)}50%{transform:scale(0.9) translateY(2px)}75%{transform:scale(1.3) translateY(-5px)}}@keyframes rxn-sad{0%,100%{transform:scale(1) translateY(0) rotate(0)}30%{transform:scale(1.1) translateY(5px) rotate(-5deg)}60%{transform:scale(1.05) translateY(3px) rotate(4deg)}80%{transform:scale(1.1) translateY(4px) rotate(-3deg)}}@keyframes rxn-angry{0%,100%{transform:scale(1) rotate(0)}15%{transform:scale(1.3) rotate(-15deg)}35%{transform:scale(1.1) rotate(12deg)}55%{transform:scale(1.25) rotate(-10deg)}75%{transform:scale(1.1) rotate(8deg)}}.rxn-btn{background:none;border:none;cursor:pointer;padding:4px;border-radius:50%;transition:transform .13s;position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;width:60px}.rxn-btn:hover .rxn-emoji-icon{animation-play-state:running !important}.rxn-btn .rxn-emoji-icon{animation-play-state:paused}.rxn-btn.rxn-active{background:rgba(46,196,182,.18)}.rxn-btn:hover{transform:scale(1.12) translateY(-4px)}.rxn-emoji-icon{font-size:1.9rem;line-height:1;display:block;animation-duration:.7s;animation-iteration-count:infinite;animation-timing-function:ease-in-out;will-change:transform}.rxn-emoji-icon.anim-like{animation-name:rxn-like;animation-duration:.65s}.rxn-emoji-icon.anim-love{animation-name:rxn-love;animation-duration:.6s}.rxn-emoji-icon.anim-haha{animation-name:rxn-haha;animation-duration:.55s}.rxn-emoji-icon.anim-wow-fb{animation-name:rxn-wow-fb;animation-duration:.6s}.rxn-emoji-icon.anim-sad{animation-name:rxn-sad;animation-duration:.7s}.rxn-emoji-icon.anim-angry{animation-name:rxn-angry;animation-duration:.5s}.rxn-btn .rxn-tooltip{position:absolute;bottom:calc(100%+4px);left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;font-size:.58rem;white-space:nowrap;padding:2px 6px;border-radius:4px;pointer-events:none;opacity:0;transition:opacity .15s;font-family:'Exo 2',sans-serif;font-weight:700}.rxn-btn:hover .rxn-tooltip{opacity:1}.rxn-main-emoji{font-size:1.1rem;line-height:1;vertical-align:middle;margin-right:2px;display:inline-block;animation:rxn-bounce .6s ease-in-out 3}</style>
-<script>
-(function(){
-  'use strict';
-
-  const RXN_ANIM = {
-    '👍': 'anim-like',
-    '❤️': 'anim-love',
-    '😂': 'anim-haha',
-    '😮': 'anim-wow-fb',
-    '😢': 'anim-sad',
-    '😡': 'anim-angry',
-  };
-
-  window._buildRxnBtns = function(pid, myRxn){
-    const _reactions = window.REACTIONS || [];
-    return _reactions.map(r => {
-      const isActive = myRxn === r.emoji;
-      const animClass = RXN_ANIM[r.emoji] || 'anim-bounce';
-      return `<button
-        class="rxn-btn${isActive ? ' rxn-active' : ''}"
-        data-emoji="${r.emoji}"
-        onclick="doReact('${pid}','${r.emoji}');schedHideRxnPop('${pid}')"
-      ><span class="rxn-emoji-icon ${animClass}">${r.emoji}</span
-      ><span class="rxn-tooltip">${r.label}</span></button>`;
-    }).join('');
-  };
-
-  function upgradePrimaryBtn(pid, emoji){
-    const btn = document.getElementById('rxnt_' + pid);
-    if(!btn) return;
-    const rxnDef = (window.REACTIONS || []).find(r => r.emoji === emoji);
-    const label = rxnDef ? rxnDef.label : 'Me gusta';
-    const color = rxnDef ? rxnDef.color : '#1877f2';
-    const old = btn.querySelector('.rxn-main-emoji');
-    if(old) old.remove();
-    const span = document.createElement('span');
-    span.className = 'rxn-main-emoji';
-    span.textContent = emoji;
-    btn.insertBefore(span, btn.firstChild);
-    const lbl = btn.querySelector('.fb-act-label');
-    if(lbl){ lbl.textContent = label; lbl.style.color = color; lbl.style.fontWeight = '700'; }
-    btn.style.color = color;
-    btn.classList.add('fb-reacted');
-  }
-
-  function patchDoReact(){
-    const orig = window.doReact;
-    if(typeof orig !== 'function'){ setTimeout(patchDoReact, 600); return; }
-    window.doReact = async function(pid, emoji){
-      await orig(pid, emoji);
-      const myRxn = window.CU ? (window._posts?.find(p=>p.id===pid)?.reactions?.[window.CU.id]||null) : null;
-      const btn = document.getElementById('rxnt_' + pid);
-      if(myRxn){
-        upgradePrimaryBtn(pid, myRxn);
-      } else if(btn){
-        const w = btn.querySelector('.rxn-main-emoji');
-        if(w) w.remove();
-        const lbl = btn.querySelector('.fb-act-label');
-        if(lbl){ lbl.textContent = 'Me gusta'; lbl.style.color = ''; lbl.style.fontWeight = ''; }
-        btn.style.color = '';
-        btn.classList.remove('fb-reacted');
-      }
-    };
-  }
-  patchDoReact();
-
-})();
-</script>
+<!-- reacciones viejas eliminadas -->
 
 <!-- ── PANTALLA DE BANEO ─────────────────────────────────────── -->
 <style>#banScreen{display:none;position:fixed;inset:0;z-index:999999;background:#ffffff;align-items:center;justify-content:center;flex-direction:column;font-family:'Exo 2',sans-serif}#banScreen.show{display:flex}@keyframes banPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.7;transform:scale(.96)}}@keyframes banShake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}</style>
@@ -31471,34 +31367,7 @@ function mlHookPosts() {
 
 function mlUpgradePosts() {
   // Add ML reaction button to each post's action area
-  document.querySelectorAll('.fb-like-btn:not([data-ml-upgraded])').forEach(function(btn){
-    var postEl = btn.closest('[id^="post_"]') || btn.closest('.post');
-    if(!postEl) return;
-    var postId = postEl.id ? postEl.id.replace('post_','') : '';
-    if(!postId) return;
-    btn.setAttribute('data-ml-upgraded','1');
-    btn.setAttribute('data-ml-like', postId);
-
-    // Replace onclick to show ML reaction popup
-    btn.removeAttribute('onclick');
-    btn.onclick = function(e) {
-      e.stopPropagation();
-      mlCreateReactionPopup(postId, btn);
-    };
-    btn.innerHTML = '💘 <span class="fb-act-label">Me atrae</span>';
-
-    // Insert reaction counters div after post-stats
-    var statsEl = postEl.querySelector('.post-stats, .rxn-bubbles-wrap');
-    if(statsEl && !postEl.querySelector('[data-ml-rxn-counters]')){
-      var countersDiv = document.createElement('div');
-      countersDiv.className = 'ml-rxn-counter-wrap';
-      countersDiv.setAttribute('data-ml-rxn-counters', postId);
-      statsEl.parentNode.insertBefore(countersDiv, statsEl.nextSibling);
-      // Load existing reactions
-      if(window.db && window.doc && window.getDoc){
-        window.getDoc(window.doc(window.db,'posts',postId)).then(function(snap){
-          if(snap.exists()){
-            mlRenderRxnCounters(postId, snap.data().mlReactions||{});
+// fb-like upgrade eliminado
           }
         }).catch(function(){});
       }
@@ -34190,7 +34059,7 @@ async function clPlutoFetchMovies(cat, offset, reset){
   // Si hay categoría específica, agregarla
   if(cat && cat !== 'all') params.set('genre', cat);
 
-  const url = `https://api.pluto.tv/v3/vod/categories?${params}`;
+  const url = `https://cinelatido2.synxyes.workers.dev/v3/vod/categories?${params}`;
 
   try {
     const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
@@ -34226,7 +34095,7 @@ async function clPlutoFetchMovies(cat, offset, reset){
   // Fallback: endpoint /v3/vod/slugs con categorías conocidas
   try {
     const catSlug = (cat === 'all') ? '' : cat;
-    const fallbackUrl = `https://api.pluto.tv/v3/vod/categories?appName=web&appVersion=9&clientID=web&deviceType=web&offset=${offset}&limit=${PLUTO_PAGE_SIZE}${catSlug ? '&genre='+encodeURIComponent(catSlug) : ''}`;
+    const fallbackUrl = `https://cinelatido2.synxyes.workers.dev/v3/vod/categories?appName=web&appVersion=9&clientID=web&deviceType=web&offset=${offset}&limit=${PLUTO_PAGE_SIZE}${catSlug ? '&genre='+encodeURIComponent(catSlug) : ''}`;
     const r2 = await fetch(fallbackUrl, { headers: { 'Accept': 'application/json' } });
     if(r2.ok){
       const d2 = await r2.json();
