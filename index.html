@@ -166,13 +166,6 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <!-- Firebase modulepreload: descarga los módulos ESM en paralelo antes de ejecutar el script -->
-
-<style>
-/* ===== STAR RATING SYSTEM ===== */
-.star-rxn-btn { background:none; border:none; font-size:1.35rem; cursor:pointer; color:#555; transition:color .15s, transform .12s; padding:0 1px; line-height:1; }
-.star-rxn-btn:hover, .star-rxn-btn.star-active { color:#f7b125 !important; transform:scale(1.25); }
-.sv-star-btn { background:none; border:none; font-size:1.5rem; cursor:pointer; transition:color .15s, transform .12s; }
-</style>
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js">
@@ -1786,12 +1779,7 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
   <div id="clHero" style="position:relative;width:100%;height:420px;background:linear-gradient(180deg,rgba(0,0,0,.1) 0%,rgba(0,0,0,.8) 100%),#111;overflow:hidden;display:flex;align-items:flex-end;">
     <div id="clHeroBg" style="position:absolute;inset:0;background-size:cover;background-position:center;transition:opacity .8s;"></div>
     <div style="position:relative;z-index:2;padding:32px 40px 36px;max-width:600px;">
-      <div style="display:flex;align-items:center;gap:12px;font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:#e50914;letter-spacing:2px;margin-bottom:8px;">
-        🎬 CINELATIDO
-        <span id="clMovieCounter" style="display:inline-flex;align-items:center;gap:4px;font-family:'Exo 2',sans-serif;font-size:.72rem;font-weight:700;color:#fff;background:rgba(229,9,20,.85);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:3px 10px;letter-spacing:.5px;white-space:nowrap;backdrop-filter:blur(4px);">
-          📽️ <span id="clMovieCount">0</span> películas disponibles
-        </span>
-      </div>
+      <div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:#e50914;letter-spacing:2px;margin-bottom:8px;">🎬 CINELATIDO</div>
       <div id="clHeroTitle" style="font-size:2rem;font-weight:900;color:#fff;line-height:1.2;margin-bottom:10px;text-shadow:0 2px 8px rgba(0,0,0,.8);"></div>
       <div id="clHeroDesc" style="font-size:.88rem;color:rgba(255,255,255,.8);line-height:1.5;margin-bottom:18px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;"></div>
       <div style="display:flex;gap:10px;">
@@ -1803,15 +1791,6 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
 
   <!-- TOPBAR DE BÚSQUEDA + CATEGORÍAS -->
   <div style="background:#0a0a0a;padding:20px 28px 0;sticky;top:48px;z-index:10;">
-
-    <!-- PESTAÑAS FUENTE -->
-    <div id="clSourceTabs" style="display:flex;gap:0;margin-bottom:16px;border-bottom:2px solid #1e1e1e;">
-      <button id="clTabDM" onclick="clSwitchSource('dm')" style="background:none;border:none;border-bottom:3px solid #e50914;color:#fff;font-family:'Exo 2',sans-serif;font-size:.88rem;font-weight:800;padding:8px 20px;cursor:pointer;transition:all .2s;letter-spacing:.3px;">🎬 Dailymotion</button>
-      <button id="clTabPT" onclick="clSwitchSource('pluto')" style="background:none;border:none;border-bottom:3px solid transparent;color:#666;font-family:'Exo 2',sans-serif;font-size:.88rem;font-weight:800;padding:8px 20px;cursor:pointer;transition:all .2s;letter-spacing:.3px;">📺 Pluto TV</button>
-    </div>
-
-    <!-- PANEL DAILYMOTION: búsqueda -->
-    <div id="clPanelDM">
     <!-- Búsqueda -->
     <div style="display:flex;gap:10px;margin-bottom:16px;">
       <div style="flex:1;display:flex;align-items:center;background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:0 14px;gap:10px;">
@@ -1838,33 +1817,6 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
       <button onclick="clSelectCat(this,'serie netflix')" class="cl-cat" data-q="serie netflix">📺 Series</button>
       <button onclick="clSelectCat(this,'documental')" class="cl-cat" data-q="documental">🎥 Documental</button>
     </div>
-    </div><!-- /clPanelDM -->
-
-    <!-- PANEL PLUTO TV (películas VOD) -->
-    <div id="clPanelPluto" style="display:none;">
-      <div id="clPlutoCats" style="display:flex;gap:8px;flex-wrap:wrap;padding-bottom:16px;border-bottom:1px solid #1a1a1a;">
-        <button onclick="clPlutoLoadCat(this,'all')" class="cl-cat active-pluto-cat" data-pcat="all">🎬 Todas</button>
-        <button onclick="clPlutoLoadCat(this,'action')" class="cl-cat" data-pcat="action">🔥 Acción</button>
-        <button onclick="clPlutoLoadCat(this,'comedy')" class="cl-cat" data-pcat="comedy">😂 Comedia</button>
-        <button onclick="clPlutoLoadCat(this,'drama')" class="cl-cat" data-pcat="drama">🎭 Drama</button>
-        <button onclick="clPlutoLoadCat(this,'horror')" class="cl-cat" data-pcat="horror">👻 Terror</button>
-        <button onclick="clPlutoLoadCat(this,'thriller')" class="cl-cat" data-pcat="thriller">🕵️ Thriller</button>
-        <button onclick="clPlutoLoadCat(this,'science-fiction')" class="cl-cat" data-pcat="science-fiction">🚀 Sci-Fi</button>
-        <button onclick="clPlutoLoadCat(this,'romance')" class="cl-cat" data-pcat="romance">💕 Romance</button>
-        <button onclick="clPlutoLoadCat(this,'animation')" class="cl-cat" data-pcat="animation">🎨 Animación</button>
-        <button onclick="clPlutoLoadCat(this,'documentary')" class="cl-cat" data-pcat="documentary">🎥 Documental</button>
-        <button onclick="clPlutoLoadCat(this,'kids')" class="cl-cat" data-pcat="kids">🧸 Niños</button>
-      </div>
-      <div id="clPlutoGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;padding:20px 0 0;"></div>
-      <div id="clPlutoLoadMore" style="display:none;text-align:center;padding:16px 0 8px;">
-        <button onclick="clPlutoNextPage()" style="background:#e50914;border:none;border-radius:8px;padding:10px 28px;color:#fff;font-weight:700;font-family:'Exo 2',sans-serif;cursor:pointer;font-size:.85rem;">Cargar más películas</button>
-      </div>
-      <div id="clPlutoLoading" style="display:none;text-align:center;padding:40px;color:#666;">
-        <div style="font-size:2.5rem;margin-bottom:10px;animation:spin 1s linear infinite;display:inline-block;">🎬</div>
-        <div>Cargando películas de Pluto TV...</div>
-      </div>
-    </div><!-- /clPanelPluto -->
-
   </div>
 
   <!-- PLAYER MODAL -->
@@ -1872,7 +1824,6 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
     <div style="width:min(860px,95vw);background:#141414;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.8);">
       <div style="position:relative;padding-bottom:56.25%;background:#000;">
         <iframe id="clPlayerIframe" style="position:absolute;inset:0;width:100%;height:100%;border:none;" allowfullscreen allow="autoplay;encrypted-media"></iframe>
-        <video id="clPlayerHLS" controls autoplay style="display:none;position:absolute;inset:0;width:100%;height:100%;background:#000;"></video>
       </div>
       <!-- Info del modal -->
       <div style="padding:20px 24px;">
@@ -1880,23 +1831,10 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
           <div style="flex:1;">
             <div id="clModalTitle" style="font-size:1.3rem;font-weight:900;color:#fff;margin-bottom:6px;"></div>
             <div id="clModalDesc" style="font-size:.82rem;color:#aaa;line-height:1.5;margin-bottom:14px;"></div>
-            <!-- Valoración con estrellas (solo Dailymotion) -->
-            <div id="clStarsSection" style="margin-bottom:12px;">
-              <div style="font-size:.72rem;color:#666;font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">⭐ Valorá esta película</div>
-              <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
-                <div id="clStars" style="display:flex;gap:4px;">
-                  <span class="cl-star" data-v="1" onclick="clRateMovie(1)" onmouseover="clHoverStars(1)" onmouseout="clHoverStars(0)" style="font-size:1.8rem;cursor:pointer;transition:transform .1s;">☆</span>
-                  <span class="cl-star" data-v="2" onclick="clRateMovie(2)" onmouseover="clHoverStars(2)" onmouseout="clHoverStars(0)" style="font-size:1.8rem;cursor:pointer;transition:transform .1s;">☆</span>
-                  <span class="cl-star" data-v="3" onclick="clRateMovie(3)" onmouseover="clHoverStars(3)" onmouseout="clHoverStars(0)" style="font-size:1.8rem;cursor:pointer;transition:transform .1s;">☆</span>
-                  <span class="cl-star" data-v="4" onclick="clRateMovie(4)" onmouseover="clHoverStars(4)" onmouseout="clHoverStars(0)" style="font-size:1.8rem;cursor:pointer;transition:transform .1s;">☆</span>
-                  <span class="cl-star" data-v="5" onclick="clRateMovie(5)" onmouseover="clHoverStars(5)" onmouseout="clHoverStars(0)" style="font-size:1.8rem;cursor:pointer;transition:transform .1s;">☆</span>
-                </div>
-                <div id="clStarsInfo" style="font-size:.8rem;color:#888;">
-                  <span id="clStarsAvg" style="font-weight:700;color:#f5c518;"></span>
-                  <span id="clStarsCount" style="color:#666;margin-left:4px;"></span>
-                </div>
-              </div>
-              <div id="clStarsFeedback" style="font-size:.75rem;color:#aaa;margin-top:5px;min-height:16px;"></div>
+            <!-- Reacciones en tiempo real -->
+            <div style="margin-bottom:12px;">
+              <div style="font-size:.72rem;color:#666;font-weight:700;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Reacciones en tiempo real</div>
+              <div id="clReactions" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
             </div>
           </div>
           <button onclick="clClosePlayer()" style="background:#333;border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:1.1rem;flex-shrink:0;transition:background .2s;" onmouseover="this.style.background='#555'" onmouseout="this.style.background='#333'">✕</button>
@@ -1918,7 +1856,7 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
   </div>
 
   <!-- GRID DE RESULTADOS -->
-  <div id="clGridWrap" style="padding:20px 28px 80px;">
+  <div style="padding:20px 28px 80px;">
     <div id="clSectionTitle" style="font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:14px;">🔥 Acción</div>
     <div id="clGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px;"></div>
     <div id="clLoading" style="display:none;text-align:center;padding:40px;color:#666;">
@@ -1947,10 +1885,6 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
 }
 .cl-cat:hover { border-color: #e50914; color: #fff; }
 .cl-cat.active-cat { background: #e50914; border-color: #e50914; color: #fff; }
-.cl-cat.active-pluto-cat { background: #ff6b00; border-color: #ff6b00; color: #fff; }
-#clTabDM, #clTabPT { outline: none; }
-#clPlayerHLS:focus { outline: none; }
-#clPlutoGrid .cl-card-thumb { aspect-ratio: 16/9 !important; }
 .cl-card {
   position: relative;
   border-radius: 8px;
@@ -2280,15 +2214,9 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
 
   <!-- Reacciones -->
   <div id="upAlbumLbReactions" style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;justify-content:center;width:100%;">
-    <div style="display:flex;align-items:center;gap:2px;background:rgba(0,0,0,.4);border-radius:100px;padding:5px 12px;">
-      <span style="font-size:.7rem;color:rgba(255,255,255,.6);margin-right:4px;">Valorar:</span>
-      <button onclick="upReaccionarFoto('⭐')" title="Fea/o" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.35);transition:color .15s;" onmouseover="this.style.color='#f7b125'" onmouseout="this.style.color='rgba(255,255,255,.35)'">★</button>
+    <button onclick="upReaccionarFoto('❤️')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 14px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background=this.classList.contains('up-rxn-active')?'rgba(255,255,255,.45)':'rgba(255,255,255,.15)'">❤️</button>
     <button onclick="upReaccionarFoto('🔥')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 14px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background=this.classList.contains('up-rxn-active')?'rgba(255,255,255,.45)':'rgba(255,255,255,.15)'">🔥</button>
-      <button onclick="upReaccionarFoto('⭐⭐')" title="Linda/o" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.35);transition:color .15s;" onmouseover="this.style.color='#f7b125'" onmouseout="this.style.color='rgba(255,255,255,.35)'">★</button>
-      <button onclick="upReaccionarFoto('⭐⭐⭐')" title="Muy linda/o" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.35);transition:color .15s;" onmouseover="this.style.color='#f7b125'" onmouseout="this.style.color='rgba(255,255,255,.35)'">★</button>
-      <button onclick="upReaccionarFoto('⭐⭐⭐⭐')" title="Hermosa/o" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.35);transition:color .15s;" onmouseover="this.style.color='#f7b125'" onmouseout="this.style.color='rgba(255,255,255,.35)'">★</button>
-      <button onclick="upReaccionarFoto('⭐⭐⭐⭐⭐')" title="Diosa/Dios" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.35);transition:color .15s;" onmouseover="this.style.color='#f7b125'" onmouseout="this.style.color='rgba(255,255,255,.35)'">★</button>
-    </div>
+    <button onclick="upReaccionarFoto('😍')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 14px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background=this.classList.contains('up-rxn-active')?'rgba(255,255,255,.45)':'rgba(255,255,255,.15)'">😍</button>
     <button onclick="upReaccionarFoto('💯')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 14px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background=this.classList.contains('up-rxn-active')?'rgba(255,255,255,.45)':'rgba(255,255,255,.15)'">💯</button>
     <button onclick="upReaccionarFoto('🤩')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 14px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background=this.classList.contains('up-rxn-active')?'rgba(255,255,255,.45)':'rgba(255,255,255,.15)'">🤩</button>
   </div>
@@ -2761,14 +2689,11 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
 
   <!-- Reacciones -->
   <div id="albumLbReactions" style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;justify-content:center;">
-    <div style="display:flex;align-items:center;gap:2px;background:rgba(0,0,0,.4);border-radius:100px;padding:5px 12px;">
-      <span style="font-size:.7rem;color:rgba(255,255,255,.6);margin-right:4px;">Valorar:</span>
-      <button onclick="reaccionarFotoAlbum('⭐')" title="Fea/o" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.35);transition:color .15s;" onmouseover="this.style.color='#f7b125'" onmouseout="this.style.color='rgba(255,255,255,.35)'">★</button>
-      <button onclick="reaccionarFotoAlbum('⭐⭐')" title="Linda/o" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.35);transition:color .15s;" onmouseover="this.style.color='#f7b125'" onmouseout="this.style.color='rgba(255,255,255,.35)'">★</button>
-      <button onclick="reaccionarFotoAlbum('⭐⭐⭐')" title="Muy linda/o" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.35);transition:color .15s;" onmouseover="this.style.color='#f7b125'" onmouseout="this.style.color='rgba(255,255,255,.35)'">★</button>
-      <button onclick="reaccionarFotoAlbum('⭐⭐⭐⭐')" title="Hermosa/o" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.35);transition:color .15s;" onmouseover="this.style.color='#f7b125'" onmouseout="this.style.color='rgba(255,255,255,.35)'">★</button>
-      <button onclick="reaccionarFotoAlbum('⭐⭐⭐⭐⭐')" title="Diosa/Dios" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.35);transition:color .15s;" onmouseover="this.style.color='#f7b125'" onmouseout="this.style.color='rgba(255,255,255,.35)'">★</button>
-    </div>
+    <button onclick="reaccionarFotoAlbum('❤️')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 12px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background=this.classList.contains('up-rxn-active')?'rgba(255,255,255,.45)':'rgba(255,255,255,.15)'">❤️</button>
+    <button onclick="reaccionarFotoAlbum('🔥')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 12px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background=this.classList.contains('up-rxn-active')?'rgba(255,255,255,.45)':'rgba(255,255,255,.15)'">🔥</button>
+    <button onclick="reaccionarFotoAlbum('😍')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 12px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background=this.classList.contains('up-rxn-active')?'rgba(255,255,255,.45)':'rgba(255,255,255,.15)'">😍</button>
+    <button onclick="reaccionarFotoAlbum('💯')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 12px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background=this.classList.contains('up-rxn-active')?'rgba(255,255,255,.45)':'rgba(255,255,255,.15)'">💯</button>
+    <button onclick="reaccionarFotoAlbum('🤩')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 12px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">🤩</button>
   </div>
   <div id="albumLbReactionCounts" style="color:rgba(255,255,255,.7);font-size:.78rem;margin-top:4px;min-height:18px;text-align:center;"></div>
 
@@ -3335,15 +3260,12 @@ window._rechazarAlbumDesdeNotif = async function(visitorUid, ownerUid, btn) {
 
       <div id="svReactWrap" style="margin-bottom:10px;display:flex;align-items:center;gap:8px;">
 
-        <div id="svStarWrap" style="display:flex;align-items:center;gap:4px;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:6px 14px;">
-          <span style="font-size:.75rem;color:rgba(255,255,255,.7);margin-right:4px;">Valorar:</span>
-          <button class="sv-star-btn" data-stars="1" onclick="_svRate(1)" title="Fea/o" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.4);transition:color .15s,transform .12s;padding:0 1px;" onmouseover="_svHover(1)" onmouseout="_svUnhover()">★</button>
-          <button class="sv-star-btn" data-stars="2" onclick="_svRate(2)" title="Linda/o" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.4);transition:color .15s,transform .12s;padding:0 1px;" onmouseover="_svHover(2)" onmouseout="_svUnhover()">★</button>
-          <button class="sv-star-btn" data-stars="3" onclick="_svRate(3)" title="Muy linda/o" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.4);transition:color .15s,transform .12s;padding:0 1px;" onmouseover="_svHover(3)" onmouseout="_svUnhover()">★</button>
-          <button class="sv-star-btn" data-stars="4" onclick="_svRate(4)" title="Hermosa/o" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.4);transition:color .15s,transform .12s;padding:0 1px;" onmouseover="_svHover(4)" onmouseout="_svUnhover()">★</button>
-          <button class="sv-star-btn" data-stars="5" onclick="_svRate(5)" title="Diosa/Dios" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.4);transition:color .15s,transform .12s;padding:0 1px;" onmouseover="_svHover(5)" onmouseout="_svUnhover()">★</button>
-          <span id="svStarLabel" style="font-size:.72rem;color:rgba(255,255,255,.6);margin-left:6px;min-width:60px;"></span>
-        </div>
+        <button id="svReactBtn"
+          onclick="_svToggleRxnPop()"
+          style="background:rgba(255,255,255,.18);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.3);border-radius:100px;padding:8px 18px;color:#fff;font-size:.88rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;transition:all .15s;box-shadow:0 2px 10px rgba(0,0,0,.3);"
+          onmouseover="this.style.background='rgba(255,255,255,.28)'" onmouseout="this.style.background='rgba(255,255,255,.18)'">
+          <span id="svReactIcon">❤️</span> <span id="svReactLabel">Reaccionar</span>
+        </button>
 
         <div id="svRxnCountBar" style="display:none;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);border-radius:100px;padding:4px 10px;font-size:.8rem;color:#fff;"></div>
       </div>
@@ -3356,7 +3278,9 @@ window._rechazarAlbumDesdeNotif = async function(visitorUid, ownerUid, btn) {
   </div>
 </div>
 
-<div id="svReactPopFixed" style="display:none;"></div>
+<div id="svReactPopFixed"
+  style="display:none;position:fixed;bottom:160px;left:16px;background:rgba(18,18,18,.96);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.18);border-radius:100px;padding:8px 14px;flex-direction:row;gap:4px;align-items:center;box-shadow:0 8px 32px rgba(0,0,0,.7);z-index:10005;">
+</div>
 
 <div id="mTerms" style="display:none;position:fixed;inset:0;z-index:10000;background:var(--bg);overflow-y:auto;">
   <div style="max-width:680px;margin:0 auto;padding:32px 20px 60px;">
@@ -7614,27 +7538,18 @@ let _rxnTimers = {};
 let _unsubPosts = null;
 let _unsubStories = null;
 
-const STAR_LABELS = ['','Fea/o','Linda/o','Muy linda/o','Hermosa/o','Diosa/Dios'];
 const REACTIONS = [
-  {emoji:'⭐',  label:'Fea/o',       color:'#aaa',    stars:1 },
-  {emoji:'⭐⭐', label:'Linda/o',     color:'#f7b125', stars:2 },
-  {emoji:'⭐⭐⭐',label:'Muy linda/o', color:'#f7b125', stars:3 },
-  {emoji:'⭐⭐⭐⭐',label:'Hermosa/o',  color:'#ff8c00', stars:4 },
-  {emoji:'⭐⭐⭐⭐⭐',label:'Diosa/Dios',color:'#f33e58', stars:5 },
+  {emoji:'👍',  label:'Me gusta',    color:'#1877f2', lottieSegment:'Like'   },
+  {emoji:'❤️',  label:'Me encanta',  color:'#f33e58', lottieSegment:'Love'   },
+  {emoji:'😂',  label:'Me divierte', color:'#f7b125', lottieSegment:'Haha'   },
+  {emoji:'😮',  label:'Me asombra',  color:'#f7b125', lottieSegment:'Wow'    },
+  {emoji:'😢',  label:'Me entristece',color:'#6b9de8',lottieSegment:'Sad'    },
+  {emoji:'😡',  label:'Me enoja',    color:'#e9710f', lottieSegment:'Angry'  },
 ];
 window.REACTIONS = REACTIONS;
-window.STAR_LABELS = STAR_LABELS;
+window.REACTIONS = REACTIONS;
 const REACTION_CATEGORIES = [{ cat:'', emojis: REACTIONS }];
 const REACTION_EMOJIS = REACTIONS.map(r=>r.emoji);
-
-// Helper: render star rating widget
-window._buildStarWidget = function(pid, myRxn, onClickFn) {
-  const myStars = myRxn ? (REACTIONS.find(r=>r.emoji===myRxn)||{stars:0}).stars : 0;
-  return REACTIONS.map(r => {
-    const active = myStars >= r.stars;
-    return `<button class="star-rxn-btn${active?' star-active':''}" title="${r.label}" onclick="${onClickFn}('${pid}','${r.emoji}')">★</button>`;
-  }).join('');
-};
 const FISH_EMOJIS = {'Pike':'🐟','Catfish':'🦈','Bream':'🐡','Perch':'🐠','Carp':'🐟','Trout':'🐟','Salmon':'🐟','Burbot':'🐟','Ruffe':'🐟','Tench':'🐟'};
 
 function save(k,v){try{localStorage.setItem('crf4_'+k,JSON.stringify(v));}catch(e){}}
@@ -11206,7 +11121,7 @@ function postHTML(p){
   const totalRxn = Object.values(p.reactionCounts||{}).reduce((a,b)=>a+b,0);
   const topRxn = Object.entries(p.reactionCounts||{}).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([e])=>e).join('');
   const myRxnObj = myRxn ? (REACTIONS.find(r=>r.emoji===myRxn) || REACTIONS.find(r=>r.emoji.replace(/\uFE0F/g,'')===myRxn.replace(/\uFE0F/g,''))) : null;
-  // reacciones viejas eliminadas
+  const rxnBtns = window._buildRxnBtns ? window._buildRxnBtns(p.id, myRxn) : REACTIONS.map(r=>`<button class="rxn-btn${myRxn===r.emoji?' rxn-active':''}" onclick="doReact('${p.id}','${r.emoji}');schedHideRxnPop('${p.id}')"><span class="rxn-emoji-icon">${r.emoji}</span><span class="rxn-tooltip">${r.label}</span></button>`).join('');
   const fishTag = p.fish ? `<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(0,198,255,.08);border:1px solid rgba(0,198,255,.2);border-radius:100px;padding:4px 12px;font-size:.78rem;margin-bottom:10px;margin-left:14px"><span>🎣</span><strong>${p.fish}</strong>${p.weight?` · ${fmtKg(p.weight)}`:''} ${p.map?`· ${p.map}`:''} ${p.tech?`· ${p.tech}`:''}</div>` : '';
   window._postImgsMap = window._postImgsMap || {};
   if(p.images&&p.images.length) window._postImgsMap[p.id] = p.images;
@@ -11543,16 +11458,19 @@ function postHTML(p){
     </div>
     <!-- BARRA DE ACCIONES FB-style -->
     <div class="post-actions fb-actions">
-      <!-- Valorar con estrellas -->
-      <div class="fb-act-wrap" id="rxnt_${p.id}" style="display:flex;align-items:center;gap:1px;padding:4px 6px;">
-        ${(()=>{
-          const myStars = myRxn ? (window.REACTIONS.find(x=>x.emoji===myRxn)||{stars:0}).stars : 0;
-          return window.REACTIONS.map(r=>{
-            const active = myStars >= r.stars;
-            return `<button title="${r.label}" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:${active?'#f7b125':'#aaa'};transition:color .12s,transform .1s;padding:0 1px;line-height:1;" onclick="doReact('${p.id}','${r.emoji}')" onmouseover="this.parentElement.querySelectorAll('button').forEach((b,bi)=>{b.style.color=bi<${r.stars}?'#f7b125':'#aaa'})" onmouseout="this.parentElement.querySelectorAll('button').forEach((b,bi)=>{b.style.color=bi<${myStars}?'#f7b125':'#aaa'})">★</button>`;
-          }).join('');
-        })()}
-        <span style="font-size:.7rem;color:var(--muted);margin-left:4px;min-width:55px;">${myRxnObj?myRxnObj.label:''}</span>
+      <!-- Me gusta (con popup reacciones al hover) -->
+      <div class="fb-act-wrap" onmouseenter="showRxnPop('${p.id}')" onmouseleave="schedHideRxnPop('${p.id}')">
+        <button class="fb-act-btn fb-like-btn ${myRxn?'fb-reacted':''}" id="rxnt_${p.id}"
+          onclick="quickReact('${p.id}')"
+          title=""
+          style="${myRxnObj?`color:${myRxnObj.color};`:''}"
+        >
+          <span class="fb-act-emoji" style="font-size:1.15rem;line-height:1;">${myRxn || '👍'}</span>
+          <span class="fb-act-label" style="${myRxnObj?`color:${myRxnObj.color};font-weight:700;`:''}">
+            ${myRxnObj?myRxnObj.label:'Me gusta'}
+          </span>
+        </button>
+        <div class="rxn-popup" id="rxnp_${p.id}" onmouseenter="cancelHideRxnPop('${p.id}')" onmouseleave="schedHideRxnPop('${p.id}')">${rxnBtns}</div>
       </div>
       <!-- Comentar -->
       <button class="fb-act-btn fb-comment-btn" onclick="toggleComments('${p.id}');setTimeout(()=>{document.querySelector('#cmts_${p.id} .cmt-input')?.focus()},200)">
@@ -12147,7 +12065,43 @@ function insertPostMention(nick){
 }
 
 const _rxnPops = {};
-function showRxnPop(id){ /* deshabilitado */ }
+function showRxnPop(id){
+  cancelHideRxnPop(id);
+  const popup = document.getElementById('rxnp_'+id);
+  if(!popup) return;
+  // Obtener la reaccion actual del usuario para este post
+  const postId = id.replace(/^_modal_/, '');
+  const myRxn = window.CU ? (window._posts?.find(p=>p.id===postId)?.reactions?.[window.CU.id]||null) : null;
+  // Regenerar botones con _buildRxnBtns (garantiza tooltips correctos y animaciones)
+  if(window._buildRxnBtns){
+    popup.innerHTML = window._buildRxnBtns(id, myRxn);
+  }
+  // Actualizar el label del boton principal con el nombre correcto de la reaccion
+  const mainBtn = document.getElementById('rxnt_'+postId);
+  if(mainBtn && window.REACTIONS){
+    const rxnDef = myRxn ? window.REACTIONS.find(r=>r.emoji===myRxn) : null;
+    const emoji = mainBtn.querySelector('.fb-act-emoji');
+    const label = mainBtn.querySelector('.fb-act-label');
+    if(emoji) emoji.textContent = myRxn || '👍';
+    if(label){
+      label.textContent = rxnDef ? rxnDef.label : 'Me gusta';
+      label.style.color = rxnDef ? rxnDef.color : '';
+      label.style.fontWeight = rxnDef ? '700' : '';
+    }
+    if(rxnDef){ mainBtn.style.color = rxnDef.color; mainBtn.classList.add('fb-reacted'); }
+    else { mainBtn.style.color = ''; mainBtn.classList.remove('fb-reacted'); }
+  }
+  const wrap = popup.closest('.fb-act-wrap');
+  if(wrap){
+    const rect = wrap.getBoundingClientRect();
+    popup.style.position = 'fixed';
+    popup.style.bottom = 'auto';
+    popup.style.left = Math.max(4, rect.left) + 'px';
+    popup.style.top = (rect.top - 8) + 'px';
+    popup.style.transform = 'translateY(-100%)';
+  }
+  popup.classList.add('show');
+}
 function schedHideRxnPop(id){ _rxnPops[id]=setTimeout(()=>{ document.getElementById('rxnp_'+id)?.classList.remove('show'); },800); }
 function cancelHideRxnPop(id){ if(_rxnPops[id]){clearTimeout(_rxnPops[id]);delete _rxnPops[id];} }
 
@@ -12291,11 +12245,10 @@ async function doReact(pid, emoji){
   const rxnBtn = document.getElementById('rxnt_'+pid);
   if(rxnBtn){
     if(myNewRxn){
-      const myStarsNew = rxnDef ? rxnDef.stars : 0;
-    rxnBtn.innerHTML = window.REACTIONS.map((r,i)=>`<button title="${r.label}" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:${i<myStarsNew?'#f7b125':'#aaa'};padding:0 1px;line-height:1;" onclick="doReact('${pid}','${r.emoji}')">★</button>`).join('') + `<span style="font-size:.7rem;color:var(--muted);margin-left:4px;">${rxnDef?.label||''}</span>`;
+      rxnBtn.innerHTML = `<span class="fb-act-emoji">${myNewRxn}</span><span class="fb-act-label" style="color:${rxnDef?.color||'#1877f2'};font-weight:700;">${rxnDef?.label||'Me gusta'}</span>`;
       rxnBtn.style.color = rxnDef?.color||'#1877f2';
     } else {
-      rxnBtn.innerHTML = window.REACTIONS.map(r=>`<button title="${r.label}" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#aaa;padding:0 1px;line-height:1;" onclick="doReact('${pid}','${r.emoji}')">★</button>`).join('') + '<span style="font-size:.7rem;color:var(--muted);margin-left:4px;"></span>';
+      rxnBtn.innerHTML = `<span class="fb-act-emoji" style="font-size:1.15rem;line-height:1;">👍</span><span class="fb-act-label">Me gusta</span>`;
       rxnBtn.style.color = '';
     }
     rxnBtn.classList.toggle('fb-reacted', !!myNewRxn);
@@ -12347,8 +12300,7 @@ async function doReact(pid, emoji){
     toast('Error al reaccionar — ' + errMsg, 'err');
   }
 }
-function quickReact(pid){ return; // deshabilitado — se usan estrellas directas
-function _quickReactOld_disabled(pid){
+function quickReact(pid){
   if(!window.CU){toast('Inicia sesión','err');return;}
   const p = (_posts||[]).find(p=>p.id===pid);
   const prev = p?.reactions?.[window.CU.id] || null;
@@ -12521,14 +12473,16 @@ async function toggleComments(pid){
     </div>`:''}
 
     <div style="display:flex;border-top:1px solid #dddfe2;border-bottom:1px solid #dddfe2;flex-shrink:0;">
-      <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:2px;padding:6px 4px;" id="_modalRxnBtn_${pid}">
-        ${(()=>{
-          const modalMyRxn = window.CU?(post.reactions||{})[window.CU.id]||null:null;
-          const modalMyStars = modalMyRxn ? (window.REACTIONS.find(x=>x.emoji===modalMyRxn)||{stars:0}).stars : 0;
-          const starsHtml = window.REACTIONS.map(r=>`<button title="${r.label}" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:${modalMyStars>=r.stars?'#f7b125':'#aaa'};padding:0 2px;line-height:1;transition:color .1s;" onclick="doReact('${pid}','${r.emoji}')">★</button>`).join('');
-          const lbl = modalMyRxn ? (window.REACTIONS.find(r=>r.emoji===modalMyRxn)||{label:''}).label : 'Valorar';
-          return starsHtml + `<span style="font-size:.72rem;color:#aaa;margin-left:5px;">${lbl}</span>`;
-        })()}
+      <div style="flex:1;position:relative;">
+        <button id="_modalRxnBtn_${pid}" onclick="doReact('${pid}','👍')" 
+          onmouseenter="showRxnPop('_modal_${pid}')" onmouseleave="schedHideRxnPop('_modal_${pid}')"
+          style="width:100%;background:none;border:none;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 4px;border-radius:0;cursor:pointer;font-size:.88rem;font-weight:700;color:#65676b;" 
+          onmouseover="this.style.background='#1c2128'" onmouseout="this.style.background='none'">🔥 Reaccionar</button>
+        <div class="rxn-popup" id="rxnp__modal_${pid}" 
+          onmouseenter="cancelHideRxnPop('_modal_${pid}')" onmouseleave="schedHideRxnPop('_modal_${pid}')"
+          style="bottom:100%;top:auto;left:50%;transform:translateX(-50%);">
+          ${window._buildRxnBtns ? window._buildRxnBtns('_modal_'+pid, window.CU?(post.reactions||{})[window.CU.id]||null:null) : (window.REACTIONS||[]).map(r=>`<button class="rxn-btn" onclick="doReact('${pid}','${r.emoji}');schedHideRxnPop('_modal_${pid}')"><span class="rxn-emoji-icon">${r.emoji}</span><span class="rxn-tooltip">${r.label}</span></button>`).join('')}
+        </div>
       </div>
       <button onclick="document.getElementById('_cmtModalInp_${pid}').focus()" style="flex:1;background:none;border:none;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 4px;cursor:pointer;font-size:.88rem;font-weight:700;color:#65676b;" onmouseover="this.style.background='#1c2128'" onmouseout="this.style.background='none'">💬 Comentar</button>
 
@@ -20883,7 +20837,7 @@ function openChatWith(uid, nick){
 let _photoModalType = null;
 let _photoModalUserId = null;
 let _photoModalUnsub = null;
-const PHOTO_REACTIONS = ['⭐','⭐⭐','⭐⭐⭐','⭐⭐⭐⭐','⭐⭐⭐⭐⭐'];
+const PHOTO_REACTIONS = ['👍','❤️','😍','😮','😢','🔥','🎣'];
 
 function openPhotoModalUser(type){
   let imgSrc = '';
@@ -29177,7 +29131,75 @@ setTimeout(function(){
 })();
 </script>
 
-<!-- reacciones viejas eliminadas -->
+<style>@keyframes rxn-like{0%{transform:scale(1) rotate(0) translateY(0)}20%{transform:scale(1.5) rotate(-20deg) translateY(-6px)}45%{transform:scale(1.3) rotate(12deg) translateY(-3px)}70%{transform:scale(1.4) rotate(-8deg) translateY(-4px)}100%{transform:scale(1) rotate(0) translateY(0)}}@keyframes rxn-love{0%,100%{transform:scale(1)}15%{transform:scale(1.55)}30%{transform:scale(1.15)}50%{transform:scale(1.5)}70%{transform:scale(1.1)}85%{transform:scale(1.4)}}@keyframes rxn-haha{0%,100%{transform:scale(1) rotate(0)}20%{transform:scale(1.4) rotate(-12deg)}40%{transform:scale(1.1) rotate(10deg)}60%{transform:scale(1.35) rotate(-8deg)}80%{transform:scale(1.15) rotate(6deg)}}@keyframes rxn-wow-fb{0%,100%{transform:scale(1) translateY(0)}25%{transform:scale(1.45) translateY(-8px)}50%{transform:scale(0.9) translateY(2px)}75%{transform:scale(1.3) translateY(-5px)}}@keyframes rxn-sad{0%,100%{transform:scale(1) translateY(0) rotate(0)}30%{transform:scale(1.1) translateY(5px) rotate(-5deg)}60%{transform:scale(1.05) translateY(3px) rotate(4deg)}80%{transform:scale(1.1) translateY(4px) rotate(-3deg)}}@keyframes rxn-angry{0%,100%{transform:scale(1) rotate(0)}15%{transform:scale(1.3) rotate(-15deg)}35%{transform:scale(1.1) rotate(12deg)}55%{transform:scale(1.25) rotate(-10deg)}75%{transform:scale(1.1) rotate(8deg)}}.rxn-btn{background:none;border:none;cursor:pointer;padding:4px;border-radius:50%;transition:transform .13s;position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;width:60px}.rxn-btn:hover .rxn-emoji-icon{animation-play-state:running !important}.rxn-btn .rxn-emoji-icon{animation-play-state:paused}.rxn-btn.rxn-active{background:rgba(46,196,182,.18)}.rxn-btn:hover{transform:scale(1.12) translateY(-4px)}.rxn-emoji-icon{font-size:1.9rem;line-height:1;display:block;animation-duration:.7s;animation-iteration-count:infinite;animation-timing-function:ease-in-out;will-change:transform}.rxn-emoji-icon.anim-like{animation-name:rxn-like;animation-duration:.65s}.rxn-emoji-icon.anim-love{animation-name:rxn-love;animation-duration:.6s}.rxn-emoji-icon.anim-haha{animation-name:rxn-haha;animation-duration:.55s}.rxn-emoji-icon.anim-wow-fb{animation-name:rxn-wow-fb;animation-duration:.6s}.rxn-emoji-icon.anim-sad{animation-name:rxn-sad;animation-duration:.7s}.rxn-emoji-icon.anim-angry{animation-name:rxn-angry;animation-duration:.5s}.rxn-btn .rxn-tooltip{position:absolute;bottom:calc(100%+4px);left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;font-size:.58rem;white-space:nowrap;padding:2px 6px;border-radius:4px;pointer-events:none;opacity:0;transition:opacity .15s;font-family:'Exo 2',sans-serif;font-weight:700}.rxn-btn:hover .rxn-tooltip{opacity:1}.rxn-main-emoji{font-size:1.1rem;line-height:1;vertical-align:middle;margin-right:2px;display:inline-block;animation:rxn-bounce .6s ease-in-out 3}</style>
+<script>
+(function(){
+  'use strict';
+
+  const RXN_ANIM = {
+    '👍': 'anim-like',
+    '❤️': 'anim-love',
+    '😂': 'anim-haha',
+    '😮': 'anim-wow-fb',
+    '😢': 'anim-sad',
+    '😡': 'anim-angry',
+  };
+
+  window._buildRxnBtns = function(pid, myRxn){
+    const _reactions = window.REACTIONS || [];
+    return _reactions.map(r => {
+      const isActive = myRxn === r.emoji;
+      const animClass = RXN_ANIM[r.emoji] || 'anim-bounce';
+      return `<button
+        class="rxn-btn${isActive ? ' rxn-active' : ''}"
+        data-emoji="${r.emoji}"
+        onclick="doReact('${pid}','${r.emoji}');schedHideRxnPop('${pid}')"
+      ><span class="rxn-emoji-icon ${animClass}">${r.emoji}</span
+      ><span class="rxn-tooltip">${r.label}</span></button>`;
+    }).join('');
+  };
+
+  function upgradePrimaryBtn(pid, emoji){
+    const btn = document.getElementById('rxnt_' + pid);
+    if(!btn) return;
+    const rxnDef = (window.REACTIONS || []).find(r => r.emoji === emoji);
+    const label = rxnDef ? rxnDef.label : 'Me gusta';
+    const color = rxnDef ? rxnDef.color : '#1877f2';
+    const old = btn.querySelector('.rxn-main-emoji');
+    if(old) old.remove();
+    const span = document.createElement('span');
+    span.className = 'rxn-main-emoji';
+    span.textContent = emoji;
+    btn.insertBefore(span, btn.firstChild);
+    const lbl = btn.querySelector('.fb-act-label');
+    if(lbl){ lbl.textContent = label; lbl.style.color = color; lbl.style.fontWeight = '700'; }
+    btn.style.color = color;
+    btn.classList.add('fb-reacted');
+  }
+
+  function patchDoReact(){
+    const orig = window.doReact;
+    if(typeof orig !== 'function'){ setTimeout(patchDoReact, 600); return; }
+    window.doReact = async function(pid, emoji){
+      await orig(pid, emoji);
+      const myRxn = window.CU ? (window._posts?.find(p=>p.id===pid)?.reactions?.[window.CU.id]||null) : null;
+      const btn = document.getElementById('rxnt_' + pid);
+      if(myRxn){
+        upgradePrimaryBtn(pid, myRxn);
+      } else if(btn){
+        const w = btn.querySelector('.rxn-main-emoji');
+        if(w) w.remove();
+        const lbl = btn.querySelector('.fb-act-label');
+        if(lbl){ lbl.textContent = 'Me gusta'; lbl.style.color = ''; lbl.style.fontWeight = ''; }
+        btn.style.color = '';
+        btn.classList.remove('fb-reacted');
+      }
+    };
+  }
+  patchDoReact();
+
+})();
+</script>
 
 <!-- ── PANTALLA DE BANEO ─────────────────────────────────────── -->
 <style>#banScreen{display:none;position:fixed;inset:0;z-index:999999;background:#ffffff;align-items:center;justify-content:center;flex-direction:column;font-family:'Exo 2',sans-serif}#banScreen.show{display:flex}@keyframes banPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.7;transform:scale(.96)}}@keyframes banShake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}</style>
@@ -31366,7 +31388,40 @@ function mlHookPosts() {
 }
 
 function mlUpgradePosts() {
-  // fb-like upgrade eliminado
+  // Add ML reaction button to each post's action area
+  document.querySelectorAll('.fb-like-btn:not([data-ml-upgraded])').forEach(function(btn){
+    var postEl = btn.closest('[id^="post_"]') || btn.closest('.post');
+    if(!postEl) return;
+    var postId = postEl.id ? postEl.id.replace('post_','') : '';
+    if(!postId) return;
+    btn.setAttribute('data-ml-upgraded','1');
+    btn.setAttribute('data-ml-like', postId);
+
+    // Replace onclick to show ML reaction popup
+    btn.removeAttribute('onclick');
+    btn.onclick = function(e) {
+      e.stopPropagation();
+      mlCreateReactionPopup(postId, btn);
+    };
+    btn.innerHTML = '💘 <span class="fb-act-label">Me atrae</span>';
+
+    // Insert reaction counters div after post-stats
+    var statsEl = postEl.querySelector('.post-stats, .rxn-bubbles-wrap');
+    if(statsEl && !postEl.querySelector('[data-ml-rxn-counters]')){
+      var countersDiv = document.createElement('div');
+      countersDiv.className = 'ml-rxn-counter-wrap';
+      countersDiv.setAttribute('data-ml-rxn-counters', postId);
+      statsEl.parentNode.insertBefore(countersDiv, statsEl.nextSibling);
+      // Load existing reactions
+      if(window.db && window.doc && window.getDoc){
+        window.getDoc(window.doc(window.db,'posts',postId)).then(function(snap){
+          if(snap.exists()){
+            mlRenderRxnCounters(postId, snap.data().mlReactions||{});
+          }
+        }).catch(function(){});
+      }
+    }
+  });
 }
 
 setTimeout(mlHookPosts, 1500);
@@ -31569,7 +31624,7 @@ window.mlLoadMyVisitors = async function(targetEl) {
     snap.forEach(function(d){
       var v = d.data();
       if(!isPremium && shown >= 3){
-        if(shown === 3) html += '<div style="font-size:.75rem;color:#a855f7;text-align:center;padding:10px;cursor:pointer;" onclick="om(\'mPremium\')">🔒 '+(snap.size-3)+' visitantes más — Hazte Premium</div>';
+        if(shown === 3) html += '<div style="font-size:.75rem;color:#a855f7;text-align:center;padding:10px;cursor:pointer;" onclick="om(\'mPremium\')">🔒 '++(snap.size-3)+' visitantes más — Hazte Premium</div>';
         shown++; return;
       }
       var ago = mlTimeAgo(v.ts);
@@ -33658,10 +33713,6 @@ async function clLoadCat(query, label){
     if(loader) loader.style.display = 'none';
     window._cl.loading = false;
 
-    // Actualizar contador siempre
-    const clCnt = document.getElementById('clMovieCount');
-    if(clCnt) clCnt.textContent = results.length;
-
     if(!results.length){
       if(grid) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#555;font-size:.9rem;">Sin resultados 🎬</div>';
       return;
@@ -33783,126 +33834,55 @@ document.addEventListener('click', function(e){
   if(e.target && e.target.id === 'clPlayerModal') window.clClosePlayer();
 });
 
-/* ══ VALORACIÓN CON ESTRELLAS (Firebase) ══ */
-
-const CL_STAR_LABELS = ['','Mala','Regular','Buena','Muy buena','¡Excelente!'];
-
-// Renderiza las estrellas según el promedio y la valoración propia del usuario
-window.clRenderStars = function clRenderStars(myRating, avgRating, totalVotes){
-  const stars = document.getElementById('clStars');
-  const avgEl = document.getElementById('clStarsAvg');
-  const cntEl = document.getElementById('clStarsCount');
-  if(!stars) return;
-  stars.querySelectorAll('.cl-star').forEach(s => {
-    const v = parseInt(s.dataset.v);
-    s.textContent = v <= (myRating || 0) ? '★' : '☆';
-    s.style.color  = v <= (myRating || 0) ? '#f5c518' : '#555';
-  });
-  if(avgEl) avgEl.textContent = totalVotes > 0 ? '★ ' + avgRating.toFixed(1) : '';
-  if(cntEl) cntEl.textContent = totalVotes > 0 ? '(' + totalVotes + ' voto' + (totalVotes !== 1 ? 's' : '') + ')' : 'Sé el primero en votar';
-}
+/* ══ REACCIONES EN TIEMPO REAL (Firebase) ══ */
+const CL_EMOJIS = ['❤️','😂','😱','🔥','👏','😢','🤩','💯'];
 
 function clListenRxns(docId){
-  // Cargar valoraciones actuales desde Firebase
-  clRenderStars(0, 0, 0); // skeleton
+  const el = document.getElementById('clReactions');
+  if(!el) return;
+
+  // Render botones de reacción
+  function renderRxns(data){
+    const myUid = window.CU?.id || null;
+    el.innerHTML = CL_EMOJIS.map(emoji => {
+      const count = (data?.rxns?.[emoji] || []).length;
+      const myRxn = myUid && (data?.rxns?.[emoji] || []).includes(myUid);
+      return `<button class="cl-rxn-btn${myRxn?' my-rxn':''}" onclick="clToggleRxn('${emoji}')" title="${emoji}">
+        ${emoji} <span style="font-size:.78rem;color:${myRxn?'#fff':'#aaa'};">${count||''}</span>
+      </button>`;
+    }).join('');
+  }
+
+  renderRxns({}); // skeleton
 
   if(!window.db || !window.doc || !window.onSnapshot) return;
 
   const ref = window.doc(window.db, 'cinelatido', docId);
   window._cl.rxnUnsub = window.onSnapshot(ref, snap => {
-    const data = snap.exists() ? snap.data() : {};
-    const ratings = data.ratings || {};
-    const myUid = window.CU?.id;
-    const myRating = myUid ? (ratings[myUid] || 0) : 0;
-    const votes = Object.values(ratings);
-    const total = votes.length;
-    const avg   = total > 0 ? votes.reduce((a,b) => a+b, 0) / total : 0;
-    clRenderStars(myRating, avg, total);
-    const fb = document.getElementById('clStarsFeedback');
-    if(fb && myRating > 0) fb.textContent = 'Tu valoración: ' + CL_STAR_LABELS[myRating];
+    renderRxns(snap.exists() ? snap.data() : {});
   });
 }
 
-// Hover preview de estrellas
-window.clHoverStars = function(val){
-  const stars = document.getElementById('clStars');
-  if(!stars) return;
-  stars.querySelectorAll('.cl-star').forEach(s => {
-    const v = parseInt(s.dataset.v);
-    if(val === 0){
-      // Restaurar al estado real guardado
-      const myUid = window.CU?.id;
-      // Si no hay Firebase, no podemos saber: dejar como está
-    } else {
-      s.textContent = v <= val ? '★' : '☆';
-      s.style.color  = v <= val ? '#f5c518' : '#555';
-      s.style.transform = v <= val ? 'scale(1.15)' : 'scale(1)';
-    }
-  });
-  if(val === 0){
-    // Re-render real state on mouseout by triggering a snapshot re-read
-    const docId = window._cl.currentDocId;
-    if(docId && window.db && window.doc && window.getDoc){
-      window.getDoc(window.doc(window.db, 'cinelatido', docId)).then(snap => {
-        const data = snap.exists() ? snap.data() : {};
-        const ratings = data.ratings || {};
-        const myUid = window.CU?.id;
-        const myRating = myUid ? (ratings[myUid] || 0) : 0;
-        const votes = Object.values(ratings);
-        const total = votes.length;
-        const avg   = total > 0 ? votes.reduce((a,b) => a+b, 0) / total : 0;
-        clRenderStars(myRating, avg, total);
-      }).catch(()=>{});
-    }
-  } else {
-    const fb = document.getElementById('clStarsFeedback');
-    if(fb) fb.textContent = CL_STAR_LABELS[val] || '';
-  }
-};
-
-// Guardar valoración
-window.clRateMovie = async function(val){
-  if(!window.CU){ toast('Iniciá sesión para valorar','err'); return; }
+window.clToggleRxn = async function(emoji){
+  if(!window.CU){ toast('Iniciá sesión para reaccionar','err'); return; }
   const docId = window._cl.currentDocId;
   if(!docId) return;
-  if(!window.db || !window.doc || !window.setDoc) return;
+  if(!window.db || !window.doc || !window.getDoc || !window.setDoc || !window.updateDoc) return;
 
-  const uid = window.CU.id;
-  const ref = window.doc(window.db, 'cinelatido', docId);
-  try {
-    // Usar updateDoc con dot-notation — funciona aunque el doc no exista en versiones recientes
-    // Si falla (doc no existe), setDoc con objeto anidado real
-    const dotKey = 'ratings.' + uid;
-    const updateData = { videoId: window._cl.currentVideoId };
-    updateData[dotKey] = val;
-    try {
-      if(window.updateDoc) {
-        await window.updateDoc(ref, updateData);
-      } else {
-        throw new Error('no updateDoc');
-      }
-    } catch(e2) {
-      // Fallback: setDoc con objeto anidado correcto
-      const nested = { videoId: window._cl.currentVideoId, ratings: {} };
-      nested.ratings[uid] = val;
-      await window.setDoc(ref, nested, { merge: true });
-    }
-    // Re-renderizar estrellas inmediatamente en la UI sin esperar snapshot
-    const stars = document.getElementById('clStars');
-    if(stars) {
-      stars.querySelectorAll('.cl-star').forEach(s => {
-        const v = parseInt(s.dataset.v);
-        s.textContent = v <= val ? '★' : '☆';
-        s.style.color  = v <= val ? '#f5c518' : '#555';
-        s.style.transform = 'scale(1)';
-      });
-    }
-    const fb = document.getElementById('clStarsFeedback');
-    if(fb) fb.textContent = '✅ ¡Gracias! Tu valoración: ' + CL_STAR_LABELS[val];
-  } catch(e){
-    console.warn('[CineLatido] Error al valorar:', e);
-    toast('Error al guardar valoración','err');
+  const ref  = window.doc(window.db, 'cinelatido', docId);
+  const snap = await window.getDoc(ref);
+  const data = snap.exists() ? snap.data() : {};
+  const rxns = data.rxns || {};
+  const arr  = rxns[emoji] || [];
+  const uid  = window.CU.id;
+
+  if(arr.includes(uid)){
+    rxns[emoji] = arr.filter(x => x !== uid);
+  } else {
+    rxns[emoji] = [...arr, uid];
   }
+
+  await window.setDoc(ref, { rxns, videoId: window._cl.currentVideoId }, { merge: true });
 };
 
 /* ══ COMENTARIOS EN TIEMPO REAL (Firebase) ══ */
@@ -33922,7 +33902,6 @@ function clListenComments(docId){
       el.innerHTML = '<div style="text-align:center;color:#444;font-size:.8rem;padding:16px;">Sé el primero en comentar 🎬</div>';
       return;
     }
-    const isAdmin = !!(window.CU && (window.CU.role === 'admin' || window.CU.email === 'synxyes@gmail.com'));
     snap.forEach(d => {
       const c  = d.data();
       const av = c.av
@@ -33930,16 +33909,10 @@ function clListenComments(docId){
         : `<div style="width:100%;height:100%;background:#e50914;display:flex;align-items:center;justify-content:center;">${(c.nick||'?')[0].toUpperCase()}</div>`;
       const div = document.createElement('div');
       div.className = 'cl-comment';
-      const deleteBtn = isAdmin
-        ? `<button class="cl-del-btn" data-doc="${escHtml(docId)}" data-id="${escHtml(d.id)}" title="Borrar comentario" style="background:rgba(229,9,20,.15);border:1px solid rgba(229,9,20,.4);color:#e50914;border-radius:6px;padding:2px 8px;font-size:.7rem;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700;transition:background .15s;flex-shrink:0;">🗑️ Borrar</button>`
-        : '';
       div.innerHTML = `
         <div class="cl-comment-av">${av}</div>
-        <div class="cl-comment-body" style="flex:1;">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
-            <div class="cl-comment-nick">${escHtml(c.nick||'Usuario')}</div>
-            ${deleteBtn}
-          </div>
+        <div class="cl-comment-body">
+          <div class="cl-comment-nick">${escHtml(c.nick||'Usuario')}</div>
           <div class="cl-comment-text">${escHtml(c.text||'')}</div>
           <div class="cl-comment-time">${clTimeAgo(c.time||0)}</div>
         </div>`;
@@ -33976,338 +33949,7 @@ window.clSendComment = async function(){
   }
 };
 
-/* ══════════════════════════════════════════
-   PLUTO TV — canales en vivo con HLS
-══════════════════════════════════════════ */
-
-// Cargar hls.js dinámicamente solo cuando se necesite
-function clLoadHlsJs(cb){
-  if(window.Hls){ cb(); return; }
-  const s = document.createElement('script');
-  s.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js';
-  s.onload = cb;
-  document.head.appendChild(s);
-}
-
-// ══════════ PLUTO TV — VOD MOVIES ══════════
-// Usamos la API pública de Pluto TV LATAM para películas on-demand
-window._plutoMovies   = [];   // todas las películas cargadas
-window._plutoPage     = 0;    // página actual (offset)
-window._plutoCurrentCat = 'all';
-window._plutoHls      = null;
-const PLUTO_PAGE_SIZE = 48;
-
-// Cambiar entre fuente DM y Pluto
-window.clSwitchSource = function(src){
-  const panelDM    = document.getElementById('clPanelDM');
-  const panelPluto = document.getElementById('clPanelPluto');
-  const gridWrap   = document.getElementById('clGridWrap');
-  const tabDM      = document.getElementById('clTabDM');
-  const tabPT      = document.getElementById('clTabPT');
-  if(src === 'dm'){
-    if(panelDM)    panelDM.style.display    = '';
-    if(panelPluto) panelPluto.style.display = 'none';
-    if(gridWrap)   gridWrap.style.display   = '';
-    if(tabDM){ tabDM.style.borderBottomColor='#e50914'; tabDM.style.color='#fff'; }
-    if(tabPT){ tabPT.style.borderBottomColor='transparent'; tabPT.style.color='#666'; }
-    window._cl.source = 'dm';
-  } else {
-    if(panelDM)    panelDM.style.display    = 'none';
-    if(panelPluto) panelPluto.style.display = '';
-    if(gridWrap)   gridWrap.style.display   = 'none';
-    if(tabDM){ tabDM.style.borderBottomColor='transparent'; tabDM.style.color='#666'; }
-    if(tabPT){ tabPT.style.borderBottomColor='#e50914'; tabPT.style.color='#fff'; }
-    window._cl.source = 'pluto';
-    if(window._plutoMovies.length === 0){
-      clPlutoFetchMovies('all', 0, true);
-    }
-  }
-};
-
-// ── Fetch películas VOD de Pluto TV LATAM ──
-async function clPlutoFetchMovies(cat, offset, reset){
-  const loading = document.getElementById('clPlutoLoading');
-  const loadMore = document.getElementById('clPlutoLoadMore');
-  const grid = document.getElementById('clPlutoGrid');
-  if(loading) loading.style.display = 'block';
-  if(loadMore) loadMore.style.display = 'none';
-
-  // Parámetros requeridos por la API de Pluto TV
-  const params = new URLSearchParams({
-    appName: 'web',
-    appVersion: '9.0.0',
-    clientID: 'web-' + Math.random().toString(36).slice(2),
-    clientModelNumber: 'web',
-    serverSideAds: 'false',
-    deviceMake: 'Chrome',
-    deviceModel: 'web',
-    deviceType: 'web',
-    deviceVersion: 'unknown',
-    sid: 'web-sid-' + Date.now(),
-    drmCapabilities: '',
-    includeExtendedEvents: 'false',
-    offset: offset,
-    limit: PLUTO_PAGE_SIZE
-  });
-
-  // Si hay categoría específica, agregarla
-  if(cat && cat !== 'all') params.set('genre', cat);
-
-  const url = `https://cinelatido2.synxyes.workers.dev/v3/vod/categories?${params}`;
-
-  try {
-    const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
-    if(!r.ok) throw new Error('HTTP ' + r.status);
-    const data = await r.json();
-
-    // La respuesta tiene { categories: [{ name, items: [...] }] }
-    // o puede ser { vods: [...] } dependiendo del endpoint
-    let movies = [];
-    if(Array.isArray(data.categories)){
-      data.categories.forEach(catObj => {
-        if(Array.isArray(catObj.items)) movies = movies.concat(catObj.items);
-      });
-    } else if(Array.isArray(data.vods)){
-      movies = data.vods;
-    } else if(Array.isArray(data)){
-      movies = data;
-    }
-
-    if(movies.length === 0) throw new Error('empty');
-
-    if(reset) window._plutoMovies = movies;
-    else window._plutoMovies = window._plutoMovies.concat(movies);
-
-    if(loading) loading.style.display = 'none';
-    clPlutoRenderMovies(reset);
-    if(movies.length >= PLUTO_PAGE_SIZE && loadMore) loadMore.style.display = 'block';
-    return;
-  } catch(e) {
-    console.warn('[PlutoVOD] Error en /v3/vod/categories:', e.message);
-  }
-
-  // Fallback: endpoint /v3/vod/slugs con categorías conocidas
-  try {
-    const catSlug = (cat === 'all') ? '' : cat;
-    const fallbackUrl = `https://cinelatido2.synxyes.workers.dev/v3/vod/categories?appName=web&appVersion=9&clientID=web&deviceType=web&offset=${offset}&limit=${PLUTO_PAGE_SIZE}${catSlug ? '&genre='+encodeURIComponent(catSlug) : ''}`;
-    const r2 = await fetch(fallbackUrl, { headers: { 'Accept': 'application/json' } });
-    if(r2.ok){
-      const d2 = await r2.json();
-      let movies2 = [];
-      if(Array.isArray(d2.categories)) d2.categories.forEach(c => { if(c.items) movies2 = movies2.concat(c.items); });
-      else if(Array.isArray(d2.vods)) movies2 = d2.vods;
-      if(movies2.length > 0){
-        if(reset) window._plutoMovies = movies2;
-        else window._plutoMovies = window._plutoMovies.concat(movies2);
-        if(loading) loading.style.display = 'none';
-        clPlutoRenderMovies(reset);
-        if(movies2.length >= PLUTO_PAGE_SIZE && loadMore) loadMore.style.display = 'block';
-        return;
-      }
-    }
-  } catch(e2) {
-    console.warn('[PlutoVOD] Fallback error:', e2.message);
-  }
-
-  // Si nada funciona, mostrar error
-  if(loading) loading.style.display = 'none';
-  if(grid && reset) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#555;font-size:.9rem;">\u26a0\ufe0f No se pudo cargar Pluto TV. Intent\u00e1 de nuevo m\u00e1s tarde.<br><br><button onclick="clPlutoFetchMovies(&quot;all&quot;,0,true)" style="background:#e50914;border:none;border-radius:8px;padding:8px 20px;color:#fff;cursor:pointer;font-weight:700;font-family:\'Exo 2\',sans-serif;">Reintentar</button></div>';
-}
-
-// ── Renderizar las películas en el grid ──
-function clPlutoRenderMovies(reset){
-  const grid = document.getElementById('clPlutoGrid');
-  if(!grid) return;
-  if(reset) grid.innerHTML = '';
-
-  const movies = window._plutoMovies || [];
-  if(!movies.length){
-    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#555;font-size:.9rem;">Sin películas disponibles 🎬</div>';
-    return;
-  }
-
-  const startIdx = reset ? 0 : grid.querySelectorAll('.cl-card').length;
-  const toRender = reset ? movies : movies.slice(startIdx);
-
-  toRender.forEach((m, i) => {
-    // Normalizar campos — la API puede devolver distintas estructuras
-    const name  = m.name || m.title || 'Película';
-    const desc  = m.description || m.summary || '';
-    const year  = m.releaseYear || m.year || '';
-    const rating = m.rating || '';
-
-    // Imágenes — distintos formatos posibles
-    const imgs  = m.covers || m.images || m.thumbnails || {};
-    const thumb = (Array.isArray(imgs) ? imgs[0]?.url : null)
-                || imgs.tile || imgs.poster || imgs.thumbnail || imgs.background
-                || (m.poster) || (m.thumbnail) || '';
-
-    // Stream URL — para VOD suele estar en stitched o en episodes[0]
-    const episodes = m.episodes || [];
-    const ep0      = episodes[0] || {};
-    const stitched = m.stitched || ep0.stitched || {};
-    const streamUrl = (stitched.urls && stitched.urls[0]?.url) || m.streamUrl || ep0.streamUrl || '';
-
-    // Link directo a Pluto TV si no hay stream embebido
-    const slug   = m.slug || m._id || m.id || '';
-    const extUrl = slug ? `https://pluto.tv/latam/on-demand/movies/${slug}` : 'https://pluto.tv/latam/on-demand';
-
-    const card = document.createElement('div');
-    card.className = 'cl-card';
-    card.style.animationDelay = (i * 0.03) + 's';
-    card.innerHTML = `
-      <div style="position:relative;width:100%;aspect-ratio:2/3;background:#111;display:flex;align-items:flex-end;overflow:hidden;border-radius:8px 8px 0 0;">
-        ${thumb ? `<img src="${escHtml(thumb)}" alt="${escHtml(name)}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.style.display='none'">` : '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:3rem;">🎬</div>'}
-        <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.9) 0%,rgba(0,0,0,.3) 50%,transparent 100%);"></div>
-        ${rating ? `<div style="position:absolute;top:6px;left:6px;background:rgba(0,0,0,.75);color:#fff;font-size:.55rem;font-weight:800;padding:2px 6px;border-radius:4px;border:1px solid rgba(255,255,255,.2);">${escHtml(rating)}</div>` : ''}
-        ${year ? `<div style="position:absolute;top:6px;right:6px;background:rgba(229,9,20,.85);color:#fff;font-size:.55rem;font-weight:800;padding:2px 6px;border-radius:4px;">${year}</div>` : ''}
-      </div>
-      <div class="cl-card-overlay" style="padding:8px 10px 10px;">
-        <div class="cl-card-title" style="font-size:.78rem;font-weight:700;line-height:1.3;margin-bottom:3px;">${escHtml(name)}</div>
-        ${desc ? `<div style="font-size:.65rem;color:#999;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${escHtml(desc)}</div>` : ''}
-      </div>`;
-
-    card.onclick = () => {
-      if(streamUrl) clPlutoOpenMovie(streamUrl, name, desc, thumb);
-      else window.open(extUrl, '_blank');
-    };
-    grid.appendChild(card);
-  });
-}
-
-// ── Cargar más películas (paginación) ──
-window.clPlutoNextPage = function(){
-  window._plutoPage = (window._plutoPage || 0) + 1;
-  clPlutoFetchMovies(window._plutoCurrentCat, window._plutoPage * PLUTO_PAGE_SIZE, false);
-};
-
-// ── Cambiar categoría ──
-window.clPlutoLoadCat = function(btn, cat){
-  document.querySelectorAll('.active-pluto-cat').forEach(b => b.classList.remove('active-pluto-cat'));
-  btn.classList.add('active-pluto-cat');
-  window._plutoCurrentCat = cat;
-  window._plutoPage = 0;
-  window._plutoMovies = [];
-  clPlutoFetchMovies(cat, 0, true);
-};
-
-// ── Abrir película en modal con HLS ──
-window.clPlutoOpenMovie = function(streamUrl, name, desc, thumb){
-  const modal  = document.getElementById('clPlayerModal');
-  const iframe = document.getElementById('clPlayerIframe');
-  const video  = document.getElementById('clPlayerHLS');
-  const mtitle = document.getElementById('clModalTitle');
-  const mdesc  = document.getElementById('clModalDesc');
-  const starsSection = document.getElementById('clStarsSection');
-
-  if(!modal) return;
-
-  if(window._cl && window._cl.rxnUnsub){ window._cl.rxnUnsub(); window._cl.rxnUnsub = null; }
-  if(window._cl && window._cl.cmtUnsub){ window._cl.cmtUnsub(); window._cl.cmtUnsub = null; }
-
-  if(iframe) { iframe.src = ''; iframe.style.display = 'none'; }
-  if(video)  video.style.display = 'block';
-  if(starsSection) starsSection.style.display = 'none';
-
-  if(mtitle) mtitle.textContent = '🎬 ' + name;
-  if(mdesc)  mdesc.textContent  = desc || 'Película de Pluto TV';
-
-  modal.style.display = 'flex';
-  document.body.style.overflow = 'hidden';
-
-  if(!video) return;
-  clLoadHlsJs(function(){
-    if(window._plutoHls){ window._plutoHls.destroy(); window._plutoHls = null; }
-    if(typeof Hls !== 'undefined' && Hls.isSupported()){
-      const hls = new Hls({ enableWorker: false });
-      hls.loadSource(streamUrl);
-      hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(()=>{}));
-      window._plutoHls = hls;
-    } else if(video.canPlayType('application/vnd.apple.mpegurl')){
-      video.src = streamUrl;
-      video.play().catch(()=>{});
-    } else {
-      if(mtitle) mtitle.textContent = '⚠️ Tu navegador no soporta este formato';
-    }
-  });
-};
-
-// ── Parchar clClosePlayer ──
-const _origClosePlayer = window.clClosePlayer;
-window.clClosePlayer = function(){
-  if(window._plutoHls){ window._plutoHls.destroy(); window._plutoHls = null; }
-  const video  = document.getElementById('clPlayerHLS');
-  const iframe = document.getElementById('clPlayerIframe');
-  const starsSection = document.getElementById('clStarsSection');
-  if(video){ video.pause(); video.src = ''; video.style.display = 'none'; }
-  if(iframe) iframe.style.display = '';
-  if(starsSection) starsSection.style.display = '';
-  if(_origClosePlayer) _origClosePlayer();
-};
-
-/* ══ BORRAR COMENTARIO (solo admins) ══ */
-window.clDeleteComment = async function(docId, commentId){
-  const isAdmin = !!(window.CU && (window.CU.role === 'admin' || window.CU.email === 'synxyes@gmail.com'));
-  if(!isAdmin){ toast('No tenés permisos para borrar comentarios','err'); return; }
-  if(!window.db || !window.doc || !window.deleteDoc) return;
-  if(!confirm('¿Borrar este comentario?')) return;
-  try {
-    await window.deleteDoc(window.doc(window.db, 'cinelatido', docId, 'comments', commentId));
-    toast('Comentario borrado','ok');
-  } catch(e){
-    console.warn('[CineLatido] Error al borrar comentario:', e);
-    toast('Error al borrar comentario','err');
-  }
-};
-
-// Delegación de eventos para botones de borrar (evita problemas con onclick inline)
-document.addEventListener('click', function(e){
-  const btn = e.target.closest('.cl-del-btn');
-  if(!btn) return;
-  const docId = btn.dataset.doc;
-  const commentId = btn.dataset.id;
-  if(docId && commentId) window.clDeleteComment(docId, commentId);
-});
-
 })();
-
-// ===== HISTORIA: valorar con estrellas =====
-window._svRate = function(stars) {
-  const emoji = (window.REACTIONS||[])[stars-1]?.emoji;
-  if(!emoji) return;
-  const icon = document.getElementById('svReactIcon');
-  const lbl  = document.getElementById('svStarLabel');
-  if(lbl) lbl.textContent = window.STAR_LABELS[stars] || '';
-  // colorear estrellas activas
-  document.querySelectorAll('.sv-star-btn').forEach(btn => {
-    const s = parseInt(btn.dataset.stars);
-    btn.style.color = s <= stars ? '#f7b125' : 'rgba(255,255,255,.35)';
-  });
-  // llamar al sistema existente de reaccionar a historia
-  if(typeof window._svDoReact === 'function') window._svDoReact(emoji);
-  else if(typeof window.svReaccionar === 'function') window.svReaccionar(emoji);
-};
-window._svHover = function(stars) {
-  document.querySelectorAll('.sv-star-btn').forEach(btn => {
-    const s = parseInt(btn.dataset.stars);
-    btn.style.color = s <= stars ? '#f7b125' : 'rgba(255,255,255,.35)';
-    btn.style.transform = s === stars ? 'scale(1.25)' : 'scale(1)';
-  });
-  const lbl = document.getElementById('svStarLabel');
-  if(lbl) lbl.textContent = window.STAR_LABELS[stars] || '';
-};
-window._svUnhover = function() {
-  // restaurar al estado actual
-  const svLabelEl = document.getElementById('svStarLabel');
-  const currentText = svLabelEl ? svLabelEl.textContent : '';
-  const currentStars = window.STAR_LABELS.indexOf(currentText);
-  document.querySelectorAll('.sv-star-btn').forEach(btn => {
-    const s = parseInt(btn.dataset.stars);
-    btn.style.color = (currentStars > 0 && s <= currentStars) ? '#f7b125' : 'rgba(255,255,255,.35)';
-    btn.style.transform = 'scale(1)';
-  });
-};
 </script>
 </html>
 
