@@ -1328,8 +1328,6 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
         <div class="sl-name" id="slName">Mi Perfil</div>
       </div>
       <div class="divider"></div>
-      <div class="sl-item" onclick="gp('musica')"><span class="sl-item-icon">🎵</span> Videos Musicales</div>
-      <div class="sl-item" onclick="gp('musica2');initMusica2?.()"><span class="sl-item-icon">🎵</span> Música</div>
       <div class="sl-item" onclick="gp('cinelatido');initCineLatido()"><span class="sl-item-icon">🎬</span> CineLatido</div>
       <div class="sl-item" onclick="gp('flashlatido');initFlashLatido()"><span class="sl-item-icon">⚡</span> FlashLatido</div>
       <div class="sl-item" onclick="gp('profile')"><span class="sl-item-icon">👤</span> Mi Perfil</div>
@@ -1736,249 +1734,6 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
     </div>
 </div>
 
-<div class="page" id="page-musica" style="max-width:960px;margin:0 auto;padding:24px 16px 80px;">
-  <div style="margin-bottom:20px;">
-    <div style="font-family:'Orbitron',monospace;font-size:1.3rem;font-weight:900;color:var(--accent);margin-bottom:4px;">🎵 Videos Musicales</div>
-    <div style="font-size:.82rem;color:var(--muted);">Explorá música por género o buscá tu artista favorito</div>
-  </div>
-  <div style="display:flex;gap:10px;margin-bottom:20px;">
-    <input id="dmSearchInput" type="text" placeholder="🔍 Buscar artista, canción..."
-      style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 16px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.9rem;outline:none;"
-      onkeydown="if(event.key==='Enter')searchDailymotion()"
-      oninput="clearTimeout(window._dmDebounce);window._dmDebounce=setTimeout(searchDailymotion,500)">
-    <button onclick="searchDailymotion()" style="background:var(--accent);border:none;border-radius:10px;padding:10px 20px;color:#fff;font-weight:700;font-family:'Exo 2',sans-serif;cursor:pointer;">Buscar</button>
-  </div>
-  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;">
-    <button onclick="dmSearchGenre('rock en espanol')" style="background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:7px 16px;color:var(--text);cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.82rem;font-weight:700;transition:all .2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">🎸 Rock</button>
-    <button onclick="dmSearchGenre('pop latino')" style="background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:7px 16px;color:var(--text);cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.82rem;font-weight:700;transition:all .2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">🌟 Pop</button>
-    <button onclick="dmSearchGenre('reggaeton')" style="background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:7px 16px;color:var(--text);cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.82rem;font-weight:700;transition:all .2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">🔥 Reggaetón</button>
-    <button onclick="dmSearchGenre('cumbia')" style="background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:7px 16px;color:var(--text);cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.82rem;font-weight:700;transition:all .2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">💃 Cumbia</button>
-    <button onclick="dmSearchGenre('trap latino')" style="background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:7px 16px;color:var(--text);cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.82rem;font-weight:700;transition:all .2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">⚡ Trap</button>
-    <button onclick="dmSearchGenre('salsa')" style="background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:7px 16px;color:var(--text);cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.82rem;font-weight:700;transition:all .2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">🎺 Salsa</button>
-    <button onclick="dmSearchGenre('bachata')" style="background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:7px 16px;color:var(--text);cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.82rem;font-weight:700;transition:all .2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">🌹 Bachata</button>
-    <button onclick="dmSearchGenre('electronica')" style="background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:7px 16px;color:var(--text);cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.82rem;font-weight:700;transition:all .2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">🎛️ Electrónica</button>
-    <button onclick="dmSearchGenre('musica pesca relax')" style="background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:7px 16px;color:var(--text);cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.82rem;font-weight:700;transition:all .2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">🎣 Pesca</button>
-    <button onclick="dmSearchGenre('rock clasico')" style="background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:7px 16px;color:var(--text);cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.82rem;font-weight:700;transition:all .2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">🎤 Rock Clásico</button>
-  </div>
-  <div id="dmPlayerWrap" style="display:none;margin-bottom:20px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
-    <div style="position:relative;padding-bottom:56.25%;height:0;">
-      <iframe id="dmPlayer" style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0" allowfullscreen allow="autoplay"></iframe>
-    </div>
-    <div style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center;">
-      <div id="dmPlayerTitle" style="font-size:.88rem;font-weight:700;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
-      <button onclick="document.getElementById('dmPlayerWrap').style.display='none';document.getElementById('dmPlayer').src='';" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.2rem;padding:0 0 0 12px;">✕</button>
-    </div>
-  </div>
-  <div id="dmResults" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;"></div>
-</div>
-
-<!-- ══════════════════════════════════════════════
-     MÚSICA 🎵 — Reproductor Deezer
-     ══════════════════════════════════════════════ -->
-<div class="page" id="page-musica2" style="max-width:960px;margin:0 auto;padding:24px 16px 80px;">
-
-  <div style="margin-bottom:20px;">
-    <div style="font-family:'Orbitron',monospace;font-size:1.3rem;font-weight:900;color:var(--accent);margin-bottom:4px;">🎵 Música</div>
-    <div style="font-size:.82rem;color:var(--muted);">Escuchá música en MiLatido — powered by SoundCloud</div>
-  </div>
-
-  <!-- Buscador -->
-  <div style="display:flex;gap:10px;margin-bottom:16px;">
-    <input id="scSearchInput" type="text" placeholder="🔍 Buscar artista, canción, género..."
-      style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 16px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.9rem;outline:none;"
-      onkeydown="if(event.key==='Enter')scSearch()">
-    <button onclick="scSearch()" style="background:var(--accent);border:none;border-radius:10px;padding:10px 20px;color:#fff;font-weight:700;font-family:'Exo 2',sans-serif;cursor:pointer;">Buscar</button>
-  </div>
-
-  <!-- Categorías -->
-  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;">
-    <button onclick="scLoad('reggaeton')"          data-genre="reggaeton" class="sc-genre-btn">🔥 Reggaetón</button>
-    <button onclick="scLoad('pop latino')"         data-genre="pop latino" class="sc-genre-btn">🌟 Pop Latino</button>
-    <button onclick="scLoad('cumbia')"             data-genre="cumbia" class="sc-genre-btn">💃 Cumbia</button>
-    <button onclick="scLoad('bachata')"            data-genre="bachata" class="sc-genre-btn">🌹 Bachata</button>
-    <button onclick="scLoad('salsa')"              data-genre="salsa" class="sc-genre-btn">🎺 Salsa</button>
-    <button onclick="scLoad('rock en espanol')"    data-genre="rock en espanol" class="sc-genre-btn">🎸 Rock</button>
-    <button onclick="scLoad('trap latino')"        data-genre="trap latino" class="sc-genre-btn">⚡ Trap</button>
-    <button onclick="scLoad('electronica')"        data-genre="electronica" class="sc-genre-btn">🎛️ Electrónica</button>
-    <button onclick="scLoad('romantica')"          data-genre="romantica" class="sc-genre-btn">💕 Romántica</button>
-    <button onclick="scLoad('baladas')"            data-genre="baladas" class="sc-genre-btn">🎤 Baladas</button>
-    <button onclick="scLoad('merengue')"           data-genre="merengue" class="sc-genre-btn">🥁 Merengue</button>
-    <button onclick="scLoad('jazz')"               data-genre="jazz" class="sc-genre-btn">🎷 Jazz</button>
-    <button onclick="scLoad('blues')"              data-genre="blues" class="sc-genre-btn">🎵 Blues</button>
-    <button onclick="scLoad('folklore uruguayo')" data-genre="folklore uruguayo" class="sc-genre-btn">🇺🇾 Folklore</button>
-    <button onclick="scLoad('musica navidena')"    data-genre="musica navidena" class="sc-genre-btn">🎄 Navidad</button>
-    <button onclick="scLoad('hip hop')"            data-genre="hip hop" class="sc-genre-btn">🎤 Hip Hop</button>
-    <button onclick="scLoad('indie')"              data-genre="indie" class="sc-genre-btn">🎻 Indie</button>
-    <button onclick="scLoad('rock clasico')"       data-genre="rock clasico" class="sc-genre-btn">🤘 Rock Clásico</button>
-  </div>
-
-  <!-- Player SoundCloud embed -->
-  <div id="scPlayerWrap" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:20px;">
-    <iframe id="scPlayer"
-      width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay"
-      style="border:none;display:block;">
-    </iframe>
-    <div style="padding:6px 14px 10px;display:flex;align-items:center;justify-content:space-between;gap:10px;">
-      <div id="scPlayerLabel" style="font-size:.8rem;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">🎵 Seleccioná una canción para reproducir</div>
-    </div>
-  </div>
-
-  <!-- Loading / empty -->
-  <div id="scLoading" style="display:none;text-align:center;padding:30px;color:var(--muted);">
-    <div style="font-size:1.8rem;animation:spin 1s linear infinite;display:inline-block;">🎵</div>
-    <div style="margin-top:8px;">Buscando en SoundCloud...</div>
-  </div>
-  <div id="scEmpty" style="display:none;text-align:center;padding:30px;color:var(--muted);">
-    <div style="font-size:1.8rem;">🔇</div>
-    <div style="margin-top:8px;">No se encontraron resultados.</div>
-  </div>
-
-  <!-- Resultados -->
-  <div id="scResults" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;"></div>
-
-</div>
-
-<style>
-.sc-genre-btn {
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 100px;
-  padding: 7px 16px;
-  color: var(--text);
-  cursor: pointer;
-  font-family: 'Exo 2', sans-serif;
-  font-size: .82rem;
-  font-weight: 700;
-  transition: all .2s;
-}
-.sc-genre-btn:hover, .sc-genre-btn.active { border-color: var(--accent); color: var(--accent); background: var(--bg2); }
-.sc-card {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform .2s, box-shadow .2s;
-}
-.sc-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.3); }
-</style>
-
-<script>
-(function(){
-
-// Playlists públicas reales de SoundCloud por género (URLs verificadas)
-var SC_PLAYLISTS = {
-  'reggaeton':         'https://soundcloud.com/storemusic-974485696/sets/reggaeton-2024',
-  'pop latino':        'https://soundcloud.com/bavikon/reggaeton-mix-2024-reggaeton-2024-lo-mas-nuevo-pop-latino-latino-mix-bavikon-223',
-  'cumbia':            'https://soundcloud.com/bavikon/sets/latin-classics-salsa-cumbia-1',
-  'bachata':           'https://soundcloud.com/sanchez-yair-alemas/sets/salsa-cumbia-bachata',
-  'salsa':             'https://soundcloud.com/michael-shaboo-napier/sets/tropical-latino-mix-2025-4',
-  'rock en espanol':   'https://soundcloud.com/tags/rock-en-espanol',
-  'trap latino':       'https://soundcloud.com/tags/trap-latino',
-  'electronica':       'https://soundcloud.com/tags/electronica',
-  'romantica':         'https://soundcloud.com/tags/romantica',
-  'baladas':           'https://soundcloud.com/tags/baladas',
-  'merengue':          'https://soundcloud.com/shanmugarajah-balasupramaniam/sets/salsa-merengue-vallenato',
-  'jazz':              'https://soundcloud.com/tags/jazz',
-  'blues':             'https://soundcloud.com/tags/blues',
-  'folklore uruguayo': 'https://soundcloud.com/tags/folklore-uruguayo',
-  'musica navidena':   'https://soundcloud.com/tags/navidad',
-  'hip hop':           'https://soundcloud.com/tags/hip-hop',
-  'indie':             'https://soundcloud.com/tags/indie',
-  'rock clasico':      'https://soundcloud.com/tags/classic-rock',
-};
-
-// URLs de búsqueda de SoundCloud que SÍ funcionan en el embed (visual mode)
-function scEmbedUrl(scUrl, autoplay){
-  // Las URLs de /tags/ no funcionan en el embed — usar track conocido de ese género
-  var url = scUrl;
-  return 'https://w.soundcloud.com/player/?url=' + encodeURIComponent(url)
-    + '&color=%23ff5500'
-    + '&auto_play=' + (autoplay ? 'true' : 'false')
-    + '&hide_related=false&show_comments=false&show_user=true'
-    + '&show_reposts=false&visual=true';
-}
-
-// Tracks de fallback por género (URLs de tracks reales cuando no hay playlist)
-var SC_FALLBACK_TRACKS = {
-  'rock en espanol':  'https://soundcloud.com/tags/rock-en-espanol',
-  'trap latino':      'https://soundcloud.com/tfentertainment/sets/top-reggaeton-2024-hits',
-  'electronica':      'https://soundcloud.com/tags/electronic',
-  'romantica':        'https://soundcloud.com/bavikon/sets/latin-classics-salsa-cumbia-1',
-  'baladas':          'https://soundcloud.com/bavikon/sets/latin-classics-salsa-cumbia-1',
-  'jazz':             'https://soundcloud.com/tags/jazz',
-  'blues':            'https://soundcloud.com/tags/blues',
-  'folklore uruguayo':'https://soundcloud.com/storemusic-974485696/sets/reggaeton-2024',
-  'musica navidena':  'https://soundcloud.com/storemusic-974485696/sets/reggaeton-2024',
-  'hip hop':          'https://soundcloud.com/tfentertainment/sets/top-reggaeton-2024-hits',
-  'indie':            'https://soundcloud.com/tags/indie',
-  'rock clasico':     'https://soundcloud.com/tags/rock',
-};
-
-/* ══ CARGAR GÉNERO (playlist embed) ══ */
-window.scLoad = function(genre){
-  const inp = document.getElementById('scSearchInput');
-  if(inp) inp.value = genre;
-
-  document.querySelectorAll('.sc-genre-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.sc-genre-btn').forEach(b => {
-    if(b.getAttribute('data-genre') === genre) b.classList.add('active');
-  });
-
-  // Usar playlist real; si es /tags/ usar fallback de track conocido
-  var url = SC_PLAYLISTS[genre] || SC_FALLBACK_TRACKS[genre]
-    || 'https://soundcloud.com/storemusic-974485696/sets/reggaeton-2024';
-  // El widget NO acepta /tags/ — si termina en eso, usar reggaeton como default
-  if(url.includes('/tags/')) {
-    url = SC_FALLBACK_TRACKS[genre] || 'https://soundcloud.com/storemusic-974485696/sets/reggaeton-2024';
-  }
-  scShowEmbed(url, genre);
-};
-
-/* ══ BUSCAR ══ */
-window.scSearch = function(){
-  const q = (document.getElementById('scSearchInput')?.value||'').trim();
-  if(!q) return;
-  document.querySelectorAll('.sc-genre-btn').forEach(b=>b.classList.remove('active'));
-  // Buscar en géneros conocidos primero
-  const genreMatch = Object.keys(SC_PLAYLISTS).find(g => g.includes(q.toLowerCase()));
-  if(genreMatch){
-    scLoad(genreMatch);
-  } else {
-    // Usar playlist de reggaeton como base y mostrar mensaje
-    scShowEmbed('https://soundcloud.com/storemusic-974485696/sets/reggaeton-2024', q + ' (explorá el player)');
-  }
-};
-
-/* ══ MOSTRAR EMBED ══ */
-function scShowEmbed(url, label){
-  const results = document.getElementById('scResults');
-  const loading = document.getElementById('scLoading');
-  const empty   = document.getElementById('scEmpty');
-  const lbl     = document.getElementById('scPlayerLabel');
-
-  if(loading) loading.style.display = 'none';
-  if(empty)   empty.style.display   = 'none';
-  if(lbl)     lbl.textContent = '🎵 ' + label;
-
-  if(!results) return;
-  results.innerHTML =
-    '<div style="grid-column:1/-1;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--bg2);">' +
-      '<iframe width="100%" height="500" scrolling="no" frameborder="no" allow="autoplay"' +
-        ' src="' + scEmbedUrl(url, false) + '">' +
-      '</iframe>' +
-    '</div>';
-}
-
-/* ══ INIT ══ */
-window.initMusica2 = function(){
-  if(window._musica2Loaded) return;
-  window._musica2Loaded = true;
-  scLoad('reggaeton');
-};
-
-})();
-</script>
 
 <!-- ══════════════════════════════════════════════
      FLASHLATIDO ⚡ — Historias de fotos + música estilo TikTok
@@ -9924,7 +9679,6 @@ function acceptTermsAndRegister(){
 }
 
 const ROUTES = {
-  '/musica': 'musica',
   '/cinelatido': 'cinelatido',
   '/': 'home',
   '/home': 'home',
@@ -9951,7 +9705,6 @@ const ROUTES = {
 };
 
 const PAGE_TO_URL = {
-  'musica':        '/musica',
   'cinelatido':    '/cinelatido',
   'home':          '/',
   'amigos':        '/amigos',
@@ -10142,8 +9895,6 @@ window.gp = (id, pushState = true) => {
   }
   const pvBtn = document.getElementById('postVideoBtn');
   if(pvBtn) pvBtn.style.display = window.CU?.verified ? 'flex' : 'none';
-  if(id==='musica') { /* musica loaded on demand */ }
-  if(id==='musica2') { if(typeof window.initMusica2==='function') setTimeout(window.initMusica2, 50); }
   if(id==='cinelatido') { if(typeof window.initCineLatido==='function') setTimeout(window.initCineLatido, 50); }
   if(id==='flashlatido') { if(typeof window.initFlashLatido==='function') setTimeout(window.initFlashLatido, 50); }
   if(id==='compartir-spot') {
@@ -10171,7 +9922,6 @@ window.gp = (id, pushState = true) => {
   if(id==='ranking-semanal') loadRankingSemanal();
   if(id==='salas') { if(typeof window.initSalasPage==='function') setTimeout(window.initSalasPage,50); }
   if(id==='userprofile') {} // cargado desde _loadUserProfilePage
-  if(id==='musica'){ setTimeout(()=>{ if(!document.getElementById('dmResults').innerHTML.trim()) dmSearchGenre('pop latino'); },300); }
   if(typeof updatePresenceActivity === 'function') updatePresenceActivity(id);
 };
 function setNav(el){ document.querySelectorAll('.tb-nav-btn').forEach(b=>b.classList.remove('on')); el.classList.add('on'); }
@@ -27053,8 +26803,6 @@ window._MM_SECTIONS = [
   { icon:'📍', label:'Cerca de Mí',    action:()=>{ gp('cerca');      initCercaDeMi?.();         closeMobileMenu(); } },
   { icon:'🔥', label:'Fotos Pop.',      action:()=>{ gp('fotospopulares'); initFotosPopularesPage?.(); closeMobileMenu(); } },
   { icon:'👁️', label:'Visitantes',     action:()=>{ gp('visitantes'); initVisitantesPage?.();   closeMobileMenu(); } },
-  { icon:'🎵', label:'Videos Mus.',    action:()=>{ gp('musica');                                closeMobileMenu(); } },
-  { icon:'🎵', label:'Música',          action:()=>{ gp('musica2');   initMusica2?.();           closeMobileMenu(); } },
   { icon:'🎬', label:'CineLatido',     action:()=>{ gp('cinelatido'); initCineLatido?.();        closeMobileMenu(); } },
   { icon:'⚡', label:'FlashLatido',    action:()=>{ gp('flashlatido'); initFlashLatido?.();      closeMobileMenu(); } },
   { icon:'🔒', label:'Privacidad',     action:()=>{ gp('privacidad');                            closeMobileMenu(); } },
@@ -27062,7 +26810,7 @@ window._MM_SECTIONS = [
 
 // Auto-detecta secciones del sidebar que no estén ya en la lista
 function _mmAutoDetect(){
-  const known = new Set(['home','profile','amigos','match','fotos','reels','salas','confesionario','cerca','fotospopulares','visitantes','musica','cinelatido','flashlatido','privacidad','superadmin']);
+  const known = new Set(['home','profile','amigos','match','fotos','reels','salas','confesionario','cerca','fotospopulares','visitantes','cinelatido','flashlatido','privacidad','superadmin']);
   document.querySelectorAll('.sl-item[onclick]').forEach(el=>{
     const m = el.getAttribute('onclick').match(/gp\('([^']+)'\)/);
     if(!m) return;
