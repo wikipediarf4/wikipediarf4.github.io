@@ -166,6 +166,13 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <!-- Firebase modulepreload: descarga los módulos ESM en paralelo antes de ejecutar el script -->
+
+<style>
+/* ===== STAR RATING SYSTEM ===== */
+.star-rxn-btn { background:none; border:none; font-size:1.35rem; cursor:pointer; color:#555; transition:color .15s, transform .12s; padding:0 1px; line-height:1; }
+.star-rxn-btn:hover, .star-rxn-btn.star-active { color:#f7b125 !important; transform:scale(1.25); }
+.sv-star-btn { background:none; border:none; font-size:1.5rem; cursor:pointer; transition:color .15s, transform .12s; }
+</style>
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js">
@@ -2271,9 +2278,15 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
 
   <!-- Reacciones -->
   <div id="upAlbumLbReactions" style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;justify-content:center;width:100%;">
-    <button onclick="upReaccionarFoto('❤️')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 14px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background=this.classList.contains('up-rxn-active')?'rgba(255,255,255,.45)':'rgba(255,255,255,.15)'">❤️</button>
+    <div style="display:flex;align-items:center;gap:2px;background:rgba(0,0,0,.4);border-radius:100px;padding:5px 12px;">
+      <span style="font-size:.7rem;color:rgba(255,255,255,.6);margin-right:4px;">Valorar:</span>
+      <button onclick="upReaccionarFoto('⭐')" title="Fea/o" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.35);transition:color .15s;" onmouseover="this.style.color='#f7b125'" onmouseout="this.style.color='rgba(255,255,255,.35)'">★</button>
     <button onclick="upReaccionarFoto('🔥')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 14px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background=this.classList.contains('up-rxn-active')?'rgba(255,255,255,.45)':'rgba(255,255,255,.15)'">🔥</button>
-    <button onclick="upReaccionarFoto('😍')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 14px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background=this.classList.contains('up-rxn-active')?'rgba(255,255,255,.45)':'rgba(255,255,255,.15)'">😍</button>
+      <button onclick="upReaccionarFoto('⭐⭐')" title="Linda/o" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.35);transition:color .15s;" onmouseover="this.style.color='#f7b125'" onmouseout="this.style.color='rgba(255,255,255,.35)'">★</button>
+      <button onclick="upReaccionarFoto('⭐⭐⭐')" title="Muy linda/o" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.35);transition:color .15s;" onmouseover="this.style.color='#f7b125'" onmouseout="this.style.color='rgba(255,255,255,.35)'">★</button>
+      <button onclick="upReaccionarFoto('⭐⭐⭐⭐')" title="Hermosa/o" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.35);transition:color .15s;" onmouseover="this.style.color='#f7b125'" onmouseout="this.style.color='rgba(255,255,255,.35)'">★</button>
+      <button onclick="upReaccionarFoto('⭐⭐⭐⭐⭐')" title="Diosa/Dios" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.35);transition:color .15s;" onmouseover="this.style.color='#f7b125'" onmouseout="this.style.color='rgba(255,255,255,.35)'">★</button>
+    </div>
     <button onclick="upReaccionarFoto('💯')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 14px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background=this.classList.contains('up-rxn-active')?'rgba(255,255,255,.45)':'rgba(255,255,255,.15)'">💯</button>
     <button onclick="upReaccionarFoto('🤩')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 14px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background=this.classList.contains('up-rxn-active')?'rgba(255,255,255,.45)':'rgba(255,255,255,.15)'">🤩</button>
   </div>
@@ -2746,11 +2759,14 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
 
   <!-- Reacciones -->
   <div id="albumLbReactions" style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;justify-content:center;">
-    <button onclick="reaccionarFotoAlbum('❤️')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 12px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background=this.classList.contains('up-rxn-active')?'rgba(255,255,255,.45)':'rgba(255,255,255,.15)'">❤️</button>
-    <button onclick="reaccionarFotoAlbum('🔥')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 12px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background=this.classList.contains('up-rxn-active')?'rgba(255,255,255,.45)':'rgba(255,255,255,.15)'">🔥</button>
-    <button onclick="reaccionarFotoAlbum('😍')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 12px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background=this.classList.contains('up-rxn-active')?'rgba(255,255,255,.45)':'rgba(255,255,255,.15)'">😍</button>
-    <button onclick="reaccionarFotoAlbum('💯')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 12px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background=this.classList.contains('up-rxn-active')?'rgba(255,255,255,.45)':'rgba(255,255,255,.15)'">💯</button>
-    <button onclick="reaccionarFotoAlbum('🤩')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 12px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">🤩</button>
+    <div style="display:flex;align-items:center;gap:2px;background:rgba(0,0,0,.4);border-radius:100px;padding:5px 12px;">
+      <span style="font-size:.7rem;color:rgba(255,255,255,.6);margin-right:4px;">Valorar:</span>
+      <button onclick="reaccionarFotoAlbum('⭐')" title="Fea/o" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.35);transition:color .15s;" onmouseover="this.style.color='#f7b125'" onmouseout="this.style.color='rgba(255,255,255,.35)'">★</button>
+      <button onclick="reaccionarFotoAlbum('⭐⭐')" title="Linda/o" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.35);transition:color .15s;" onmouseover="this.style.color='#f7b125'" onmouseout="this.style.color='rgba(255,255,255,.35)'">★</button>
+      <button onclick="reaccionarFotoAlbum('⭐⭐⭐')" title="Muy linda/o" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.35);transition:color .15s;" onmouseover="this.style.color='#f7b125'" onmouseout="this.style.color='rgba(255,255,255,.35)'">★</button>
+      <button onclick="reaccionarFotoAlbum('⭐⭐⭐⭐')" title="Hermosa/o" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.35);transition:color .15s;" onmouseover="this.style.color='#f7b125'" onmouseout="this.style.color='rgba(255,255,255,.35)'">★</button>
+      <button onclick="reaccionarFotoAlbum('⭐⭐⭐⭐⭐')" title="Diosa/Dios" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.35);transition:color .15s;" onmouseover="this.style.color='#f7b125'" onmouseout="this.style.color='rgba(255,255,255,.35)'">★</button>
+    </div>
   </div>
   <div id="albumLbReactionCounts" style="color:rgba(255,255,255,.7);font-size:.78rem;margin-top:4px;min-height:18px;text-align:center;"></div>
 
@@ -3317,12 +3333,15 @@ window._rechazarAlbumDesdeNotif = async function(visitorUid, ownerUid, btn) {
 
       <div id="svReactWrap" style="margin-bottom:10px;display:flex;align-items:center;gap:8px;">
 
-        <button id="svReactBtn"
-          onclick="_svToggleRxnPop()"
-          style="background:rgba(255,255,255,.18);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.3);border-radius:100px;padding:8px 18px;color:#fff;font-size:.88rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;transition:all .15s;box-shadow:0 2px 10px rgba(0,0,0,.3);"
-          onmouseover="this.style.background='rgba(255,255,255,.28)'" onmouseout="this.style.background='rgba(255,255,255,.18)'">
-          <span id="svReactIcon">❤️</span> <span id="svReactLabel">Reaccionar</span>
-        </button>
+        <div id="svStarWrap" style="display:flex;align-items:center;gap:4px;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:6px 14px;">
+          <span style="font-size:.75rem;color:rgba(255,255,255,.7);margin-right:4px;">Valorar:</span>
+          <button class="sv-star-btn" data-stars="1" onclick="_svRate(1)" title="Fea/o" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.4);transition:color .15s,transform .12s;padding:0 1px;" onmouseover="_svHover(1)" onmouseout="_svUnhover()">★</button>
+          <button class="sv-star-btn" data-stars="2" onclick="_svRate(2)" title="Linda/o" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.4);transition:color .15s,transform .12s;padding:0 1px;" onmouseover="_svHover(2)" onmouseout="_svUnhover()">★</button>
+          <button class="sv-star-btn" data-stars="3" onclick="_svRate(3)" title="Muy linda/o" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.4);transition:color .15s,transform .12s;padding:0 1px;" onmouseover="_svHover(3)" onmouseout="_svUnhover()">★</button>
+          <button class="sv-star-btn" data-stars="4" onclick="_svRate(4)" title="Hermosa/o" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.4);transition:color .15s,transform .12s;padding:0 1px;" onmouseover="_svHover(4)" onmouseout="_svUnhover()">★</button>
+          <button class="sv-star-btn" data-stars="5" onclick="_svRate(5)" title="Diosa/Dios" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.4);transition:color .15s,transform .12s;padding:0 1px;" onmouseover="_svHover(5)" onmouseout="_svUnhover()">★</button>
+          <span id="svStarLabel" style="font-size:.72rem;color:rgba(255,255,255,.6);margin-left:6px;min-width:60px;"></span>
+        </div>
 
         <div id="svRxnCountBar" style="display:none;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);border-radius:100px;padding:4px 10px;font-size:.8rem;color:#fff;"></div>
       </div>
@@ -3335,9 +3354,7 @@ window._rechazarAlbumDesdeNotif = async function(visitorUid, ownerUid, btn) {
   </div>
 </div>
 
-<div id="svReactPopFixed"
-  style="display:none;position:fixed;bottom:160px;left:16px;background:rgba(18,18,18,.96);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.18);border-radius:100px;padding:8px 14px;flex-direction:row;gap:4px;align-items:center;box-shadow:0 8px 32px rgba(0,0,0,.7);z-index:10005;">
-</div>
+<div id="svReactPopFixed" style="display:none;"></div>
 
 <div id="mTerms" style="display:none;position:fixed;inset:0;z-index:10000;background:var(--bg);overflow-y:auto;">
   <div style="max-width:680px;margin:0 auto;padding:32px 20px 60px;">
@@ -7595,18 +7612,27 @@ let _rxnTimers = {};
 let _unsubPosts = null;
 let _unsubStories = null;
 
+const STAR_LABELS = ['','Fea/o','Linda/o','Muy linda/o','Hermosa/o','Diosa/Dios'];
 const REACTIONS = [
-  {emoji:'👍',  label:'Me gusta',    color:'#1877f2', lottieSegment:'Like'   },
-  {emoji:'❤️',  label:'Me encanta',  color:'#f33e58', lottieSegment:'Love'   },
-  {emoji:'😂',  label:'Me divierte', color:'#f7b125', lottieSegment:'Haha'   },
-  {emoji:'😮',  label:'Me asombra',  color:'#f7b125', lottieSegment:'Wow'    },
-  {emoji:'😢',  label:'Me entristece',color:'#6b9de8',lottieSegment:'Sad'    },
-  {emoji:'😡',  label:'Me enoja',    color:'#e9710f', lottieSegment:'Angry'  },
+  {emoji:'⭐',  label:'Fea/o',       color:'#aaa',    stars:1 },
+  {emoji:'⭐⭐', label:'Linda/o',     color:'#f7b125', stars:2 },
+  {emoji:'⭐⭐⭐',label:'Muy linda/o', color:'#f7b125', stars:3 },
+  {emoji:'⭐⭐⭐⭐',label:'Hermosa/o',  color:'#ff8c00', stars:4 },
+  {emoji:'⭐⭐⭐⭐⭐',label:'Diosa/Dios',color:'#f33e58', stars:5 },
 ];
 window.REACTIONS = REACTIONS;
-window.REACTIONS = REACTIONS;
+window.STAR_LABELS = STAR_LABELS;
 const REACTION_CATEGORIES = [{ cat:'', emojis: REACTIONS }];
 const REACTION_EMOJIS = REACTIONS.map(r=>r.emoji);
+
+// Helper: render star rating widget
+window._buildStarWidget = function(pid, myRxn, onClickFn) {
+  const myStars = myRxn ? (REACTIONS.find(r=>r.emoji===myRxn)||{stars:0}).stars : 0;
+  return REACTIONS.map(r => {
+    const active = myStars >= r.stars;
+    return `<button class="star-rxn-btn${active?' star-active':''}" title="${r.label}" onclick="${onClickFn}('${pid}','${r.emoji}')">★</button>`;
+  }).join('');
+};
 const FISH_EMOJIS = {'Pike':'🐟','Catfish':'🦈','Bream':'🐡','Perch':'🐠','Carp':'🐟','Trout':'🐟','Salmon':'🐟','Burbot':'🐟','Ruffe':'🐟','Tench':'🐟'};
 
 function save(k,v){try{localStorage.setItem('crf4_'+k,JSON.stringify(v));}catch(e){}}
@@ -11517,17 +11543,14 @@ function postHTML(p){
     <div class="post-actions fb-actions">
       <!-- Me gusta (con popup reacciones al hover) -->
       <div class="fb-act-wrap" onmouseenter="showRxnPop('${p.id}')" onmouseleave="schedHideRxnPop('${p.id}')">
-        <button class="fb-act-btn fb-like-btn ${myRxn?'fb-reacted':''}" id="rxnt_${p.id}"
-          onclick="quickReact('${p.id}')"
-          title=""
-          style="${myRxnObj?`color:${myRxnObj.color};`:''}"
-        >
-          <span class="fb-act-emoji" style="font-size:1.15rem;line-height:1;">${myRxn || '👍'}</span>
-          <span class="fb-act-label" style="${myRxnObj?`color:${myRxnObj.color};font-weight:700;`:''}">
-            ${myRxnObj?myRxnObj.label:'Me gusta'}
-          </span>
-        </button>
-        <div class="rxn-popup" id="rxnp_${p.id}" onmouseenter="cancelHideRxnPop('${p.id}')" onmouseleave="schedHideRxnPop('${p.id}')">${rxnBtns}</div>
+        <div id="rxnt_${p.id}" style="display:flex;align-items:center;gap:2px;padding:4px 8px;">
+          ${window.REACTIONS.map((r,i)=>{
+            const myStars = myRxn ? (window.REACTIONS.find(x=>x.emoji===myRxn)||{stars:0}).stars : 0;
+            const active = myStars >= r.stars;
+            return `<button class="star-rxn-btn${active?' star-active':''}" title="${r.label}" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:${active?'#f7b125':'#555'};transition:color .15s,transform .12s;padding:0 1px;line-height:1;" onclick="doReact('${p.id}','${r.emoji}')" onmouseover="this.style.color='#f7b125';this.style.transform='scale(1.25)'" onmouseout="this.style.color='${active?'#f7b125':'#555'}';this.style.transform='scale(1)'">★</button>`;
+          }).join('')}
+          <span style="font-size:.72rem;color:var(--muted);margin-left:4px;min-width:50px;">${myRxnObj?myRxnObj.label:''}</span>
+        </div>
       </div>
       <!-- Comentar -->
       <button class="fb-act-btn fb-comment-btn" onclick="toggleComments('${p.id}');setTimeout(()=>{document.querySelector('#cmts_${p.id} .cmt-input')?.focus()},200)">
@@ -20894,7 +20917,7 @@ function openChatWith(uid, nick){
 let _photoModalType = null;
 let _photoModalUserId = null;
 let _photoModalUnsub = null;
-const PHOTO_REACTIONS = ['👍','❤️','😍','😮','😢','🔥','🎣'];
+const PHOTO_REACTIONS = ['⭐','⭐⭐','⭐⭐⭐','⭐⭐⭐⭐','⭐⭐⭐⭐⭐'];
 
 function openPhotoModalUser(type){
   let imgSrc = '';
@@ -34357,6 +34380,43 @@ document.addEventListener('click', function(e){
 });
 
 })();
+
+// ===== HISTORIA: valorar con estrellas =====
+window._svRate = function(stars) {
+  const emoji = (window.REACTIONS||[])[stars-1]?.emoji;
+  if(!emoji) return;
+  const icon = document.getElementById('svReactIcon');
+  const lbl  = document.getElementById('svStarLabel');
+  if(lbl) lbl.textContent = window.STAR_LABELS[stars] || '';
+  // colorear estrellas activas
+  document.querySelectorAll('.sv-star-btn').forEach(btn => {
+    const s = parseInt(btn.dataset.stars);
+    btn.style.color = s <= stars ? '#f7b125' : 'rgba(255,255,255,.35)';
+  });
+  // llamar al sistema existente de reaccionar a historia
+  if(typeof window._svDoReact === 'function') window._svDoReact(emoji);
+  else if(typeof window.svReaccionar === 'function') window.svReaccionar(emoji);
+};
+window._svHover = function(stars) {
+  document.querySelectorAll('.sv-star-btn').forEach(btn => {
+    const s = parseInt(btn.dataset.stars);
+    btn.style.color = s <= stars ? '#f7b125' : 'rgba(255,255,255,.35)';
+    btn.style.transform = s === stars ? 'scale(1.25)' : 'scale(1)';
+  });
+  const lbl = document.getElementById('svStarLabel');
+  if(lbl) lbl.textContent = window.STAR_LABELS[stars] || '';
+};
+window._svUnhover = function() {
+  // restaurar al estado actual
+  const svLabelEl = document.getElementById('svStarLabel');
+  const currentText = svLabelEl ? svLabelEl.textContent : '';
+  const currentStars = window.STAR_LABELS.indexOf(currentText);
+  document.querySelectorAll('.sv-star-btn').forEach(btn => {
+    const s = parseInt(btn.dataset.stars);
+    btn.style.color = (currentStars > 0 && s <= currentStars) ? '#f7b125' : 'rgba(255,255,255,.35)';
+    btn.style.transform = 'scale(1)';
+  });
+};
 </script>
 </html>
 
