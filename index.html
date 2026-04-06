@@ -1779,7 +1779,12 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
   <div id="clHero" style="position:relative;width:100%;height:420px;background:linear-gradient(180deg,rgba(0,0,0,.1) 0%,rgba(0,0,0,.8) 100%),#111;overflow:hidden;display:flex;align-items:flex-end;">
     <div id="clHeroBg" style="position:absolute;inset:0;background-size:cover;background-position:center;transition:opacity .8s;"></div>
     <div style="position:relative;z-index:2;padding:32px 40px 36px;max-width:600px;">
-      <div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:#e50914;letter-spacing:2px;margin-bottom:8px;">🎬 CINELATIDO</div>
+      <div style="display:flex;align-items:center;gap:12px;font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:#e50914;letter-spacing:2px;margin-bottom:8px;">
+        🎬 CINELATIDO
+        <span id="clMovieCounter" style="display:none;font-family:'Exo 2',sans-serif;font-size:.72rem;font-weight:700;color:#fff;background:rgba(229,9,20,.85);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:3px 10px;letter-spacing:.5px;white-space:nowrap;backdrop-filter:blur(4px);">
+          📽️ <span id="clMovieCount">0</span> películas disponibles
+        </span>
+      </div>
       <div id="clHeroTitle" style="font-size:2rem;font-weight:900;color:#fff;line-height:1.2;margin-bottom:10px;text-shadow:0 2px 8px rgba(0,0,0,.8);"></div>
       <div id="clHeroDesc" style="font-size:.88rem;color:rgba(255,255,255,.8);line-height:1.5;margin-bottom:18px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;"></div>
       <div style="display:flex;gap:10px;">
@@ -1831,10 +1836,23 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
           <div style="flex:1;">
             <div id="clModalTitle" style="font-size:1.3rem;font-weight:900;color:#fff;margin-bottom:6px;"></div>
             <div id="clModalDesc" style="font-size:.82rem;color:#aaa;line-height:1.5;margin-bottom:14px;"></div>
-            <!-- Reacciones en tiempo real -->
-            <div style="margin-bottom:12px;">
-              <div style="font-size:.72rem;color:#666;font-weight:700;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Reacciones en tiempo real</div>
-              <div id="clReactions" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+            <!-- Valoración con estrellas -->
+            <div id="clStarsSection" style="margin-bottom:12px;">
+              <div style="font-size:.72rem;color:#666;font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">⭐ Valorá esta película</div>
+              <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+                <div id="clStars" style="display:flex;gap:4px;">
+                  <span class="cl-star" data-v="1" onclick="clRateMovie(1)" onmouseover="clHoverStars(1)" onmouseout="clHoverStars(0)" style="font-size:1.8rem;cursor:pointer;transition:transform .1s;">☆</span>
+                  <span class="cl-star" data-v="2" onclick="clRateMovie(2)" onmouseover="clHoverStars(2)" onmouseout="clHoverStars(0)" style="font-size:1.8rem;cursor:pointer;transition:transform .1s;">☆</span>
+                  <span class="cl-star" data-v="3" onclick="clRateMovie(3)" onmouseover="clHoverStars(3)" onmouseout="clHoverStars(0)" style="font-size:1.8rem;cursor:pointer;transition:transform .1s;">☆</span>
+                  <span class="cl-star" data-v="4" onclick="clRateMovie(4)" onmouseover="clHoverStars(4)" onmouseout="clHoverStars(0)" style="font-size:1.8rem;cursor:pointer;transition:transform .1s;">☆</span>
+                  <span class="cl-star" data-v="5" onclick="clRateMovie(5)" onmouseover="clHoverStars(5)" onmouseout="clHoverStars(0)" style="font-size:1.8rem;cursor:pointer;transition:transform .1s;">☆</span>
+                </div>
+                <div id="clStarsInfo" style="font-size:.8rem;color:#888;">
+                  <span id="clStarsAvg" style="font-weight:700;color:#f5c518;"></span>
+                  <span id="clStarsCount" style="color:#666;margin-left:4px;"></span>
+                </div>
+              </div>
+              <div id="clStarsFeedback" style="font-size:.75rem;color:#aaa;margin-top:5px;min-height:16px;"></div>
             </div>
           </div>
           <button onclick="clClosePlayer()" style="background:#333;border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:1.1rem;flex-shrink:0;transition:background .2s;" onmouseover="this.style.background='#555'" onmouseout="this.style.background='#333'">✕</button>
@@ -33715,8 +33733,15 @@ async function clLoadCat(query, label){
 
     if(!results.length){
       if(grid) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#555;font-size:.9rem;">Sin resultados 🎬</div>';
+      const ctr2 = document.getElementById('clMovieCounter');
+      if(ctr2) ctr2.style.display = 'none';
       return;
     }
+
+    // Actualizar contador de películas en el hero
+    const clCtr = document.getElementById('clMovieCounter');
+    const clCnt = document.getElementById('clMovieCount');
+    if(clCtr && clCnt){ clCnt.textContent = results.length; clCtr.style.display = 'inline-flex'; clCtr.style.alignItems = 'center'; clCtr.style.gap = '4px'; }
 
     // Actualizar hero con primeros 5
     window._cl.heroPeliculas = results.slice(0, 5);
@@ -33834,55 +33859,100 @@ document.addEventListener('click', function(e){
   if(e.target && e.target.id === 'clPlayerModal') window.clClosePlayer();
 });
 
-/* ══ REACCIONES EN TIEMPO REAL (Firebase) ══ */
-const CL_EMOJIS = ['❤️','😂','😱','🔥','👏','😢','🤩','💯'];
+/* ══ VALORACIÓN CON ESTRELLAS (Firebase) ══ */
+
+const CL_STAR_LABELS = ['','Mala','Regular','Buena','Muy buena','¡Excelente!'];
+
+// Renderiza las estrellas según el promedio y la valoración propia del usuario
+function clRenderStars(myRating, avgRating, totalVotes){
+  const stars = document.getElementById('clStars');
+  const avgEl = document.getElementById('clStarsAvg');
+  const cntEl = document.getElementById('clStarsCount');
+  if(!stars) return;
+  stars.querySelectorAll('.cl-star').forEach(s => {
+    const v = parseInt(s.dataset.v);
+    s.textContent = v <= (myRating || 0) ? '★' : '☆';
+    s.style.color  = v <= (myRating || 0) ? '#f5c518' : '#555';
+  });
+  if(avgEl) avgEl.textContent = totalVotes > 0 ? '★ ' + avgRating.toFixed(1) : '';
+  if(cntEl) cntEl.textContent = totalVotes > 0 ? '(' + totalVotes + ' voto' + (totalVotes !== 1 ? 's' : '') + ')' : 'Sé el primero en votar';
+}
 
 function clListenRxns(docId){
-  const el = document.getElementById('clReactions');
-  if(!el) return;
-
-  // Render botones de reacción
-  function renderRxns(data){
-    const myUid = window.CU?.id || null;
-    el.innerHTML = CL_EMOJIS.map(emoji => {
-      const count = (data?.rxns?.[emoji] || []).length;
-      const myRxn = myUid && (data?.rxns?.[emoji] || []).includes(myUid);
-      return `<button class="cl-rxn-btn${myRxn?' my-rxn':''}" onclick="clToggleRxn('${emoji}')" title="${emoji}">
-        ${emoji} <span style="font-size:.78rem;color:${myRxn?'#fff':'#aaa'};">${count||''}</span>
-      </button>`;
-    }).join('');
-  }
-
-  renderRxns({}); // skeleton
+  // Cargar valoraciones actuales desde Firebase
+  clRenderStars(0, 0, 0); // skeleton
 
   if(!window.db || !window.doc || !window.onSnapshot) return;
 
   const ref = window.doc(window.db, 'cinelatido', docId);
   window._cl.rxnUnsub = window.onSnapshot(ref, snap => {
-    renderRxns(snap.exists() ? snap.data() : {});
+    const data = snap.exists() ? snap.data() : {};
+    const ratings = data.ratings || {};
+    const myUid = window.CU?.id;
+    const myRating = myUid ? (ratings[myUid] || 0) : 0;
+    const votes = Object.values(ratings);
+    const total = votes.length;
+    const avg   = total > 0 ? votes.reduce((a,b) => a+b, 0) / total : 0;
+    clRenderStars(myRating, avg, total);
+    const fb = document.getElementById('clStarsFeedback');
+    if(fb && myRating > 0) fb.textContent = 'Tu valoración: ' + CL_STAR_LABELS[myRating];
   });
 }
 
-window.clToggleRxn = async function(emoji){
-  if(!window.CU){ toast('Iniciá sesión para reaccionar','err'); return; }
+// Hover preview de estrellas
+window.clHoverStars = function(val){
+  const stars = document.getElementById('clStars');
+  if(!stars) return;
+  stars.querySelectorAll('.cl-star').forEach(s => {
+    const v = parseInt(s.dataset.v);
+    if(val === 0){
+      // Restaurar al estado real guardado
+      const myUid = window.CU?.id;
+      // Si no hay Firebase, no podemos saber: dejar como está
+    } else {
+      s.textContent = v <= val ? '★' : '☆';
+      s.style.color  = v <= val ? '#f5c518' : '#555';
+      s.style.transform = v <= val ? 'scale(1.15)' : 'scale(1)';
+    }
+  });
+  if(val === 0){
+    // Re-render real state on mouseout by triggering a snapshot re-read
+    const docId = window._cl.currentDocId;
+    if(docId && window.db && window.doc && window.getDoc){
+      window.getDoc(window.doc(window.db, 'cinelatido', docId)).then(snap => {
+        const data = snap.exists() ? snap.data() : {};
+        const ratings = data.ratings || {};
+        const myUid = window.CU?.id;
+        const myRating = myUid ? (ratings[myUid] || 0) : 0;
+        const votes = Object.values(ratings);
+        const total = votes.length;
+        const avg   = total > 0 ? votes.reduce((a,b) => a+b, 0) / total : 0;
+        clRenderStars(myRating, avg, total);
+      }).catch(()=>{});
+    }
+  } else {
+    const fb = document.getElementById('clStarsFeedback');
+    if(fb) fb.textContent = CL_STAR_LABELS[val] || '';
+  }
+};
+
+// Guardar valoración
+window.clRateMovie = async function(val){
+  if(!window.CU){ toast('Iniciá sesión para valorar','err'); return; }
   const docId = window._cl.currentDocId;
   if(!docId) return;
-  if(!window.db || !window.doc || !window.getDoc || !window.setDoc || !window.updateDoc) return;
+  if(!window.db || !window.doc || !window.setDoc) return;
 
-  const ref  = window.doc(window.db, 'cinelatido', docId);
-  const snap = await window.getDoc(ref);
-  const data = snap.exists() ? snap.data() : {};
-  const rxns = data.rxns || {};
-  const arr  = rxns[emoji] || [];
-  const uid  = window.CU.id;
-
-  if(arr.includes(uid)){
-    rxns[emoji] = arr.filter(x => x !== uid);
-  } else {
-    rxns[emoji] = [...arr, uid];
+  const uid = window.CU.id;
+  const ref = window.doc(window.db, 'cinelatido', docId);
+  try {
+    await window.setDoc(ref, { [`ratings.${uid}`]: val, videoId: window._cl.currentVideoId }, { merge: true });
+    const fb = document.getElementById('clStarsFeedback');
+    if(fb) fb.textContent = '✅ ¡Gracias! Tu valoración: ' + CL_STAR_LABELS[val];
+  } catch(e){
+    console.warn('[CineLatido] Error al valorar:', e);
+    toast('Error al guardar valoración','err');
   }
-
-  await window.setDoc(ref, { rxns, videoId: window._cl.currentVideoId }, { merge: true });
 };
 
 /* ══ COMENTARIOS EN TIEMPO REAL (Firebase) ══ */
