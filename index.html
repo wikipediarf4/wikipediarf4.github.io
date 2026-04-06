@@ -1873,15 +1873,34 @@ async function dzFetch(q){
   if(loading) loading.style.display = 'block';
   if(empty)   empty.style.display   = 'none';
 
+  // Proxies CORS con fallback automático
+  const DZ_PROXIES = [
+    q => 'https://corsproxy.io/?' + encodeURIComponent('https://api.deezer.com/search?q=' + encodeURIComponent(q) + '&limit=24'),
+    q => 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://api.deezer.com/search?q=' + encodeURIComponent(q) + '&limit=24'),
+    q => 'https://corsproxy.org/?url=' + encodeURIComponent('https://api.deezer.com/search?q=' + encodeURIComponent(q) + '&limit=24'),
+    q => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent('https://api.deezer.com/search?q=' + encodeURIComponent(q) + '&limit=24'),
+  ];
+
+  async function tryProxies(q){
+    for(const makeUrl of DZ_PROXIES){
+      try{
+        const res = await fetch(makeUrl(q), { signal: AbortSignal.timeout ? AbortSignal.timeout(8000) : undefined });
+        if(!res.ok) continue;
+        const raw = await res.json();
+        // allorigins devuelve { contents: "..." }
+        const data = raw.contents ? JSON.parse(raw.contents) : raw;
+        if(data && Array.isArray(data.data)) return data;
+      } catch(e){ /* probar siguiente */ }
+    }
+    return null;
+  }
+
   try {
-    // Usamos el proxy de Deezer via iframe embed — no necesita API key
-    // Buscamos via la API pública de Deezer (CORS permitido)
-    const res = await fetch('https://corsproxy.io/?' + encodeURIComponent('https://api.deezer.com/search?q=' + encodeURIComponent(q) + '&limit=24'));
-    const data = await res.json();
+    const data = await tryProxies(q);
 
     if(loading) loading.style.display = 'none';
 
-    if(!data.data || data.data.length === 0){
+    if(!data || !data.data || data.data.length === 0){
       if(empty) empty.style.display = 'block';
       return;
     }
