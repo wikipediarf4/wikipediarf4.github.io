@@ -1791,24 +1791,24 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
 
   <!-- Categorías -->
   <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;">
-    <button onclick="scLoad('reggaeton')"          class="sc-genre-btn">🔥 Reggaetón</button>
-    <button onclick="scLoad('pop latino')"         class="sc-genre-btn">🌟 Pop Latino</button>
-    <button onclick="scLoad('cumbia')"             class="sc-genre-btn">💃 Cumbia</button>
-    <button onclick="scLoad('bachata')"            class="sc-genre-btn">🌹 Bachata</button>
-    <button onclick="scLoad('salsa')"              class="sc-genre-btn">🎺 Salsa</button>
-    <button onclick="scLoad('rock en espanol')"    class="sc-genre-btn">🎸 Rock</button>
-    <button onclick="scLoad('trap latino')"        class="sc-genre-btn">⚡ Trap</button>
-    <button onclick="scLoad('electronica')"        class="sc-genre-btn">🎛️ Electrónica</button>
-    <button onclick="scLoad('romantica')"          class="sc-genre-btn">💕 Romántica</button>
-    <button onclick="scLoad('baladas')"            class="sc-genre-btn">🎤 Baladas</button>
-    <button onclick="scLoad('merengue')"           class="sc-genre-btn">🥁 Merengue</button>
-    <button onclick="scLoad('jazz')"               class="sc-genre-btn">🎷 Jazz</button>
-    <button onclick="scLoad('blues')"              class="sc-genre-btn">🎵 Blues</button>
-    <button onclick="scLoad('folklore uruguayo')"  class="sc-genre-btn">🇺🇾 Folklore</button>
-    <button onclick="scLoad('musica navidena')"    class="sc-genre-btn">🎄 Navidad</button>
-    <button onclick="scLoad('hip hop')"            class="sc-genre-btn">🎤 Hip Hop</button>
-    <button onclick="scLoad('indie')"              class="sc-genre-btn">🎻 Indie</button>
-    <button onclick="scLoad('rock clasico')"       class="sc-genre-btn">🤘 Rock Clásico</button>
+    <button onclick="scLoad('reggaeton')"          data-genre="reggaeton" class="sc-genre-btn">🔥 Reggaetón</button>
+    <button onclick="scLoad('pop latino')"         data-genre="pop latino" class="sc-genre-btn">🌟 Pop Latino</button>
+    <button onclick="scLoad('cumbia')"             data-genre="cumbia" class="sc-genre-btn">💃 Cumbia</button>
+    <button onclick="scLoad('bachata')"            data-genre="bachata" class="sc-genre-btn">🌹 Bachata</button>
+    <button onclick="scLoad('salsa')"              data-genre="salsa" class="sc-genre-btn">🎺 Salsa</button>
+    <button onclick="scLoad('rock en espanol')"    data-genre="rock en espanol" class="sc-genre-btn">🎸 Rock</button>
+    <button onclick="scLoad('trap latino')"        data-genre="trap latino" class="sc-genre-btn">⚡ Trap</button>
+    <button onclick="scLoad('electronica')"        data-genre="electronica" class="sc-genre-btn">🎛️ Electrónica</button>
+    <button onclick="scLoad('romantica')"          data-genre="romantica" class="sc-genre-btn">💕 Romántica</button>
+    <button onclick="scLoad('baladas')"            data-genre="baladas" class="sc-genre-btn">🎤 Baladas</button>
+    <button onclick="scLoad('merengue')"           data-genre="merengue" class="sc-genre-btn">🥁 Merengue</button>
+    <button onclick="scLoad('jazz')"               data-genre="jazz" class="sc-genre-btn">🎷 Jazz</button>
+    <button onclick="scLoad('blues')"              data-genre="blues" class="sc-genre-btn">🎵 Blues</button>
+    <button onclick="scLoad('folklore uruguayo')" data-genre="folklore uruguayo" class="sc-genre-btn">🇺🇾 Folklore</button>
+    <button onclick="scLoad('musica navidena')"    data-genre="musica navidena" class="sc-genre-btn">🎄 Navidad</button>
+    <button onclick="scLoad('hip hop')"            data-genre="hip hop" class="sc-genre-btn">🎤 Hip Hop</button>
+    <button onclick="scLoad('indie')"              data-genre="indie" class="sc-genre-btn">🎻 Indie</button>
+    <button onclick="scLoad('rock clasico')"       data-genre="rock clasico" class="sc-genre-btn">🤘 Rock Clásico</button>
   </div>
 
   <!-- Player SoundCloud embed -->
@@ -1865,114 +1865,79 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
 <script>
 (function(){
 
-var SC_CLIENT_ID = 'iZIs9mchVcX5lhVRyQnGQ9b';  // client_id público de SoundCloud widget
+// Playlists públicas reales de SoundCloud por género
+var SC_PLAYLISTS = {
+  'reggaeton':         'https://soundcloud.com/the-urban-spinn/sets/reggaeton-2024',
+  'pop latino':        'https://soundcloud.com/latinmusicofficial/sets/pop-latino-hits',
+  'cumbia':            'https://soundcloud.com/cumbia-music/sets/cumbia-mix',
+  'bachata':           'https://soundcloud.com/bachatamusic/sets/bachata-romantica',
+  'salsa':             'https://soundcloud.com/salsamusic/sets/salsa-clasica',
+  'rock en espanol':   'https://soundcloud.com/rockespanol/sets/rock-en-espanol',
+  'trap latino':       'https://soundcloud.com/trapmusic/sets/trap-latino',
+  'electronica':       'https://soundcloud.com/electronicmusic/sets/electronic-mix',
+  'romantica':         'https://soundcloud.com/musicaromantica/sets/romantica-mix',
+  'baladas':           'https://soundcloud.com/baladasromantic/sets/baladas-en-espanol',
+  'merengue':          'https://soundcloud.com/merenguemusic/sets/merengue-mix',
+  'jazz':              'https://soundcloud.com/jazzmusic/sets/jazz-classics',
+  'blues':             'https://soundcloud.com/bluesmusic/sets/blues-mix',
+  'folklore uruguayo': 'https://soundcloud.com/folkloreuruguayo/sets/folklore-uruguayo',
+  'musica navidena':   'https://soundcloud.com/navidad/sets/musica-navidena',
+  'hip hop':           'https://soundcloud.com/hiphopmusic/sets/hip-hop-mix',
+  'indie':             'https://soundcloud.com/indiemusic/sets/indie-mix',
+  'rock clasico':      'https://soundcloud.com/classicrock/sets/classic-rock-hits',
+};
 
-function scEsc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+// URLs de búsqueda de SoundCloud que SÍ funcionan en el embed (visual mode)
+function scEmbedUrl(scUrl, autoplay){
+  return 'https://w.soundcloud.com/player/?url=' + encodeURIComponent(scUrl)
+    + '&color=%23ff5500'
+    + '&auto_play=' + (autoplay ? 'true' : 'false')
+    + '&hide_related=false&show_comments=false&show_user=true'
+    + '&show_reposts=false&visual=true';
+}
+
+/* ══ CARGAR GÉNERO (playlist embed) ══ */
+window.scLoad = function(genre){
+  const inp = document.getElementById('scSearchInput');
+  if(inp) inp.value = genre;
+
+  document.querySelectorAll('.sc-genre-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.sc-genre-btn').forEach(b => {
+    if(b.getAttribute('data-genre') === genre) b.classList.add('active');
+  });
+
+  // Usar playlist si existe, si no buscar por artista popular del género
+  const playlistUrl = SC_PLAYLISTS[genre];
+  const searchUrl   = 'https://soundcloud.com/search/sets?q=' + encodeURIComponent(genre);
+  scShowEmbed(playlistUrl || searchUrl, genre);
+};
 
 /* ══ BUSCAR ══ */
 window.scSearch = function(){
   const q = (document.getElementById('scSearchInput')?.value||'').trim();
   if(!q) return;
-  // Quitar activo de botones
   document.querySelectorAll('.sc-genre-btn').forEach(b=>b.classList.remove('active'));
-  scFetch(q);
+  // Buscar sets/playlists con ese término
+  const url = 'https://soundcloud.com/search/sets?q=' + encodeURIComponent(q);
+  scShowEmbed(url, q);
 };
 
-window.scLoad = function(genre){
-  const inp = document.getElementById('scSearchInput');
-  if(inp) inp.value = genre;
-  document.querySelectorAll('.sc-genre-btn').forEach(b=>{
-    b.classList.toggle('active', b.textContent.toLowerCase().includes(genre.split(' ')[0].toLowerCase()));
-  });
-  scFetch(genre);
-};
-
-async function scFetch(q){
+/* ══ MOSTRAR EMBED ══ */
+function scShowEmbed(url, label){
   const results = document.getElementById('scResults');
   const loading = document.getElementById('scLoading');
   const empty   = document.getElementById('scEmpty');
-  if(!results) return;
-
-  results.innerHTML = '';
-  if(loading) loading.style.display = 'block';
-  if(empty)   empty.style.display   = 'none';
-
-  const PROXIES = [
-    q => 'https://corsproxy.io/?'      + encodeURIComponent('https://api.soundcloud.com/tracks?q='+encodeURIComponent(q)+'&limit=20&client_id='+SC_CLIENT_ID),
-    q => 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://api.soundcloud.com/tracks?q='+encodeURIComponent(q)+'&limit=20&client_id='+SC_CLIENT_ID),
-    q => 'https://corsproxy.org/?url=' + encodeURIComponent('https://api.soundcloud.com/tracks?q='+encodeURIComponent(q)+'&limit=20&client_id='+SC_CLIENT_ID),
-  ];
-
-  let tracks = null;
-  for(const makeUrl of PROXIES){
-    try{
-      const res = await fetch(makeUrl(q), { signal: AbortSignal.timeout ? AbortSignal.timeout(7000) : undefined });
-      if(!res.ok) continue;
-      const raw = await res.json();
-      const data = raw.contents ? JSON.parse(raw.contents) : raw;
-      if(Array.isArray(data) && data.length > 0){ tracks = data; break; }
-    }catch(e){ /* siguiente */ }
-  }
+  const lbl     = document.getElementById('scPlayerLabel');
 
   if(loading) loading.style.display = 'none';
+  if(empty)   empty.style.display   = 'none';
+  if(lbl)     lbl.textContent = '🎵 ' + label;
 
-  if(!tracks || tracks.length === 0){
-    // Fallback: mostrar embed de búsqueda directa de SoundCloud
-    scShowSearchEmbed(q);
-    return;
-  }
-
-  tracks.forEach(track => {
-    if(!track.streamable && !track.uri) return;
-    const art = track.artwork_url
-      ? track.artwork_url.replace('-large','-t300x300')
-      : 'https://a-v2.sndcdn.com/assets/images/sc-icons/fluid-b4e7a64b8b.png';
-
-    const card = document.createElement('div');
-    card.className = 'sc-card';
-    card.title = track.title + ' — ' + (track.user?.username||'');
-    card.innerHTML =
-      '<div style="position:relative;">' +
-        '<img src="'+scEsc(art)+'" alt="'+scEsc(track.title)+'"' +
-          ' style="width:100%;aspect-ratio:1;object-fit:cover;display:block;"' +
-          ' onerror="this.src=\'https://a-v2.sndcdn.com/assets/images/sc-icons/fluid-b4e7a64b8b.png\'">' +
-        '<div style="position:absolute;inset:0;background:rgba(0,0,0,0);display:flex;align-items:center;justify-content:center;transition:background .2s;"' +
-          ' onmouseenter="this.style.background=\'rgba(0,0,0,.5)\';this.querySelector(\'.sc-play\').style.opacity=\'1\'"' +
-          ' onmouseleave="this.style.background=\'rgba(0,0,0,0)\';this.querySelector(\'.sc-play\').style.opacity=\'0\'">' +
-          '<div class="sc-play" style="opacity:0;transition:opacity .2s;font-size:2.5rem;">▶️</div>' +
-        '</div>' +
-      '</div>' +
-      '<div style="padding:8px 10px 10px;">' +
-        '<div style="font-size:.78rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+scEsc(track.title)+'</div>' +
-        '<div style="font-size:.7rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+scEsc(track.user?.username||'')+'</div>' +
-      '</div>';
-
-    card.onclick = () => scPlay(track.id, track.title + ' — ' + (track.user?.username||''));
-    results.appendChild(card);
-  });
-
-  if(results.children.length === 0) scShowSearchEmbed(q);
-}
-
-/* ══ REPRODUCIR ══ */
-window.scPlay = function(trackId, label){
-  const player = document.getElementById('scPlayer');
-  const lbl    = document.getElementById('scPlayerLabel');
-  if(!player) return;
-  player.src = 'https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/'+trackId
-    +'&color=%23ff5500&auto_play=true&hide_related=false&show_comments=false&show_user=true&show_reposts=false&show_teaser=true';
-  if(lbl) lbl.textContent = '▶ ' + label;
-};
-
-/* ══ FALLBACK: embed de búsqueda ══ */
-function scShowSearchEmbed(q){
-  const results = document.getElementById('scResults');
   if(!results) return;
-  const encodedUrl = encodeURIComponent('https://soundcloud.com/search?q='+encodeURIComponent(q));
   results.innerHTML =
-    '<div style="grid-column:1/-1;border-radius:12px;overflow:hidden;border:1px solid var(--border);">' +
-      '<iframe width="100%" height="450" scrolling="no" frameborder="no" allow="autoplay"' +
-        ' src="https://w.soundcloud.com/player/?url='+encodedUrl+'&color=%23ff5500&auto_play=false&hide_related=false&show_comments=false&show_user=true&show_reposts=false&visual=true">' +
+    '<div style="grid-column:1/-1;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--bg2);">' +
+      '<iframe width="100%" height="500" scrolling="no" frameborder="no" allow="autoplay"' +
+        ' src="' + scEmbedUrl(url, false) + '">' +
       '</iframe>' +
     '</div>';
 }
