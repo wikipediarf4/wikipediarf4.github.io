@@ -2200,11 +2200,11 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
 
   <!-- Reacciones -->
   <div id="upAlbumLbReactions" style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;justify-content:center;width:100%;">
-    <button onclick="upReaccionarFoto('❤️')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 14px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">❤️</button>
-    <button onclick="upReaccionarFoto('🔥')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 14px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">🔥</button>
-    <button onclick="upReaccionarFoto('😍')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 14px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">😍</button>
-    <button onclick="upReaccionarFoto('💯')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 14px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">💯</button>
-    <button onclick="upReaccionarFoto('🤩')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 14px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">🤩</button>
+    <button onclick="upReaccionarFoto('❤️')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 14px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background=this.classList.contains('up-rxn-active')?'rgba(255,255,255,.45)':'rgba(255,255,255,.15)'">❤️</button>
+    <button onclick="upReaccionarFoto('🔥')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 14px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background=this.classList.contains('up-rxn-active')?'rgba(255,255,255,.45)':'rgba(255,255,255,.15)'">🔥</button>
+    <button onclick="upReaccionarFoto('😍')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 14px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background=this.classList.contains('up-rxn-active')?'rgba(255,255,255,.45)':'rgba(255,255,255,.15)'">😍</button>
+    <button onclick="upReaccionarFoto('💯')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 14px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background=this.classList.contains('up-rxn-active')?'rgba(255,255,255,.45)':'rgba(255,255,255,.15)'">💯</button>
+    <button onclick="upReaccionarFoto('🤩')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 14px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background=this.classList.contains('up-rxn-active')?'rgba(255,255,255,.45)':'rgba(255,255,255,.15)'">🤩</button>
   </div>
   <div id="upAlbumLbReactionCounts" style="color:rgba(255,255,255,.7);font-size:.78rem;margin-top:4px;min-height:18px;text-align:center;width:100%;"></div>
 
@@ -2373,6 +2373,8 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
       var em = btn.textContent.trim();
       var active = myUid && foto.reactedBy && foto.reactedBy[myUid] === em;
       btn.style.background = active ? 'rgba(255,255,255,.45)' : 'rgba(255,255,255,.15)';
+      if(active) btn.classList.add('up-rxn-active');
+      else btn.classList.remove('up-rxn-active');
     });
   }
 
@@ -2673,10 +2675,10 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
 
   <!-- Reacciones -->
   <div id="albumLbReactions" style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;justify-content:center;">
-    <button onclick="reaccionarFotoAlbum('❤️')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 12px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">❤️</button>
-    <button onclick="reaccionarFotoAlbum('🔥')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 12px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">🔥</button>
-    <button onclick="reaccionarFotoAlbum('😍')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 12px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">😍</button>
-    <button onclick="reaccionarFotoAlbum('💯')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 12px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">💯</button>
+    <button onclick="reaccionarFotoAlbum('❤️')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 12px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background=this.classList.contains('up-rxn-active')?'rgba(255,255,255,.45)':'rgba(255,255,255,.15)'">❤️</button>
+    <button onclick="reaccionarFotoAlbum('🔥')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 12px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background=this.classList.contains('up-rxn-active')?'rgba(255,255,255,.45)':'rgba(255,255,255,.15)'">🔥</button>
+    <button onclick="reaccionarFotoAlbum('😍')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 12px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background=this.classList.contains('up-rxn-active')?'rgba(255,255,255,.45)':'rgba(255,255,255,.15)'">😍</button>
+    <button onclick="reaccionarFotoAlbum('💯')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 12px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background=this.classList.contains('up-rxn-active')?'rgba(255,255,255,.45)':'rgba(255,255,255,.15)'">💯</button>
     <button onclick="reaccionarFotoAlbum('🤩')" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;padding:6px 12px;font-size:1.1rem;cursor:pointer;color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">🤩</button>
   </div>
   <div id="albumLbReactionCounts" style="color:rgba(255,255,255,.7);font-size:.78rem;margin-top:4px;min-height:18px;text-align:center;"></div>
@@ -2960,8 +2962,10 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
     var btns = document.querySelectorAll('#albumLbReactions button');
     btns.forEach(function(btn) {
       var em = btn.textContent.trim();
-      btn.style.background = (counts[em] && myUid && foto.reactedBy && foto.reactedBy[myUid] === em)
-        ? 'rgba(255,255,255,.45)' : 'rgba(255,255,255,.15)';
+      var active = counts[em] && myUid && foto.reactedBy && foto.reactedBy[myUid] === em;
+      btn.style.background = active ? 'rgba(255,255,255,.45)' : 'rgba(255,255,255,.15)';
+      if(active) btn.classList.add('up-rxn-active');
+      else btn.classList.remove('up-rxn-active');
     });
   }
 
@@ -17418,9 +17422,15 @@ async function renderSuggestedUsers(){
     const snap = await getDocs(query(collection(db,'users'), orderBy('createdAt','desc'), limit(30)));
     const myId = window.CU?.id;
     const myFriends = window.CU?.friends || [];
+    const myGender = (window.CU?.gender || '').toLowerCase();
+    const targetGender = myGender === 'masculino' ? 'femenino' : myGender === 'femenino' ? 'masculino' : null;
     const users = snap.docs
       .map(d=>({id:d.id,...d.data()}))
-      .filter(u => u.id !== myId && !myFriends.includes(u.id))
+      .filter(u => {
+        if(u.id === myId || myFriends.includes(u.id)) return false;
+        if(targetGender && u.gender && u.gender.toLowerCase() !== targetGender) return false;
+        return true;
+      })
       .sort(()=>Math.random()-0.5)
       .slice(0,8);
 
