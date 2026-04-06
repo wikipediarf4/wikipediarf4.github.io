@@ -1776,236 +1776,69 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
      ══════════════════════════════════════════════ -->
 <div class="page" id="page-musica2" style="max-width:960px;margin:0 auto;padding:24px 16px 80px;">
 
-  <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-    <div>
-      <div style="font-family:'Orbitron',monospace;font-size:1.3rem;font-weight:900;color:var(--accent);margin-bottom:4px;">🎵 Música</div>
-      <div style="font-size:.82rem;color:var(--muted);">Escuchá música directamente en MiLatido</div>
-    </div>
-    <!-- Toggle modo -->
-    <div style="display:flex;gap:8px;">
-      <button id="btnModoBoo" onclick="muzSetMode('boo')"
-        style="background:var(--accent);border:none;border-radius:8px;padding:7px 16px;color:#fff;font-weight:700;font-family:'Exo 2',sans-serif;font-size:.8rem;cursor:pointer;">🌐 BooMusica</button>
-      <button id="btnModoDz" onclick="muzSetMode('dz')"
-        style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:7px 16px;color:var(--text);font-weight:700;font-family:'Exo 2',sans-serif;font-size:.8rem;cursor:pointer;">🎧 Deezer</button>
+  <div style="margin-bottom:20px;">
+    <div style="font-family:'Orbitron',monospace;font-size:1.3rem;font-weight:900;color:var(--accent);margin-bottom:4px;">🎵 Música</div>
+    <div style="font-size:.82rem;color:var(--muted);">Escuchá música en MiLatido — powered by SoundCloud</div>
+  </div>
+
+  <!-- Buscador -->
+  <div style="display:flex;gap:10px;margin-bottom:16px;">
+    <input id="scSearchInput" type="text" placeholder="🔍 Buscar artista, canción, género..."
+      style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 16px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.9rem;outline:none;"
+      onkeydown="if(event.key==='Enter')scSearch()">
+    <button onclick="scSearch()" style="background:var(--accent);border:none;border-radius:10px;padding:10px 20px;color:#fff;font-weight:700;font-family:'Exo 2',sans-serif;cursor:pointer;">Buscar</button>
+  </div>
+
+  <!-- Categorías -->
+  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;">
+    <button onclick="scLoad('reggaeton')"          class="sc-genre-btn">🔥 Reggaetón</button>
+    <button onclick="scLoad('pop latino')"         class="sc-genre-btn">🌟 Pop Latino</button>
+    <button onclick="scLoad('cumbia')"             class="sc-genre-btn">💃 Cumbia</button>
+    <button onclick="scLoad('bachata')"            class="sc-genre-btn">🌹 Bachata</button>
+    <button onclick="scLoad('salsa')"              class="sc-genre-btn">🎺 Salsa</button>
+    <button onclick="scLoad('rock en espanol')"    class="sc-genre-btn">🎸 Rock</button>
+    <button onclick="scLoad('trap latino')"        class="sc-genre-btn">⚡ Trap</button>
+    <button onclick="scLoad('electronica')"        class="sc-genre-btn">🎛️ Electrónica</button>
+    <button onclick="scLoad('romantica')"          class="sc-genre-btn">💕 Romántica</button>
+    <button onclick="scLoad('baladas')"            class="sc-genre-btn">🎤 Baladas</button>
+    <button onclick="scLoad('merengue')"           class="sc-genre-btn">🥁 Merengue</button>
+    <button onclick="scLoad('jazz')"               class="sc-genre-btn">🎷 Jazz</button>
+    <button onclick="scLoad('blues')"              class="sc-genre-btn">🎵 Blues</button>
+    <button onclick="scLoad('folklore uruguayo')"  class="sc-genre-btn">🇺🇾 Folklore</button>
+    <button onclick="scLoad('musica navidena')"    class="sc-genre-btn">🎄 Navidad</button>
+    <button onclick="scLoad('hip hop')"            class="sc-genre-btn">🎤 Hip Hop</button>
+    <button onclick="scLoad('indie')"              class="sc-genre-btn">🎻 Indie</button>
+    <button onclick="scLoad('rock clasico')"       class="sc-genre-btn">🤘 Rock Clásico</button>
+  </div>
+
+  <!-- Player SoundCloud embed -->
+  <div id="scPlayerWrap" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:20px;">
+    <iframe id="scPlayer"
+      width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay"
+      style="border:none;display:block;">
+    </iframe>
+    <div style="padding:6px 14px 10px;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+      <div id="scPlayerLabel" style="font-size:.8rem;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">🎵 Seleccioná una canción para reproducir</div>
     </div>
   </div>
 
-  <!-- ══ MODO BOOMUSICA (iframe) ══ -->
-  <div id="muzBooPanel">
-
-    <!-- Categorías Boomusica -->
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
-      <button onclick="muzBooLoad('reggaeton')"   class="dz-genre-btn">🔥 Reggaetón</button>
-      <button onclick="muzBooLoad('pop')"          class="dz-genre-btn">🌟 Pop</button>
-      <button onclick="muzBooLoad('cumbia')"       class="dz-genre-btn">💃 Cumbia</button>
-      <button onclick="muzBooLoad('bachatas')"     class="dz-genre-btn">🌹 Bachata</button>
-      <button onclick="muzBooLoad('salsa')"        class="dz-genre-btn">🎺 Salsa</button>
-      <button onclick="muzBooLoad('rock')"         class="dz-genre-btn">🎸 Rock</button>
-      <button onclick="muzBooLoad('trap')"         class="dz-genre-btn">⚡ Trap</button>
-      <button onclick="muzBooLoad('electronica')"  class="dz-genre-btn">🎛️ Electrónica</button>
-      <button onclick="muzBooLoad('romantica')"    class="dz-genre-btn">💕 Romántica</button>
-      <button onclick="muzBooLoad('baladas')"      class="dz-genre-btn">🎤 Baladas</button>
-      <button onclick="muzBooLoad('merengues')"    class="dz-genre-btn">🥁 Merengue</button>
-      <button onclick="muzBooLoad('jazz')"         class="dz-genre-btn">🎷 Jazz</button>
-      <button onclick="muzBooLoad('blues')"        class="dz-genre-btn">🎵 Blues</button>
-      <button onclick="muzBooLoad('folklore')"     class="dz-genre-btn">🇺🇾 Folklore</button>
-      <button onclick="muzBooLoad('musica-navidena')" class="dz-genre-btn">🎄 Navidad</button>
-    </div>
-
-    <!-- Buscador Boomusica -->
-    <div style="display:flex;gap:10px;margin-bottom:16px;">
-      <input id="booSearchInput" type="text" placeholder="🔍 Buscar en BooMusica..."
-        style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 16px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.9rem;outline:none;"
-        onkeydown="if(event.key==='Enter')muzBooSearch()">
-      <button onclick="muzBooSearch()" style="background:var(--accent);border:none;border-radius:10px;padding:10px 20px;color:#fff;font-weight:700;font-family:'Exo 2',sans-serif;cursor:pointer;">Buscar</button>
-    </div>
-
-    <!-- Iframe Boomusica -->
-    <div id="muzBooWrap" style="position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--bg2);min-height:500px;">
-      <div id="muzBooLoading" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--muted);font-size:.9rem;z-index:2;background:var(--bg2);">
-        <div style="font-size:2rem;animation:spin 1s linear infinite;display:inline-block;">🎵</div>
-        <div>Cargando BooMusica...</div>
-      </div>
-      <div id="muzBooError" style="display:none;position:absolute;inset:0;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--muted);text-align:center;padding:30px;z-index:3;background:var(--bg2);">
-        <div style="font-size:2.5rem;">🚫</div>
-        <div style="font-weight:700;color:var(--text);">BooMusica no se puede mostrar aquí</div>
-        <div style="font-size:.82rem;">El sitio bloquea la carga en otras webs.</div>
-        <button onclick="muzSetMode('dz')" style="background:var(--accent);border:none;border-radius:10px;padding:10px 24px;color:#fff;font-weight:700;font-family:'Exo 2',sans-serif;cursor:pointer;margin-top:6px;">🎧 Usar Deezer en su lugar</button>
-      </div>
-      <iframe id="muzBooFrame"
-        style="width:100%;height:600px;border:none;display:block;position:relative;z-index:1;"
-        sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-        referrerpolicy="no-referrer">
-      </iframe>
-    </div>
-    <div style="text-align:center;margin-top:8px;font-size:.75rem;color:var(--muted);">
-      Si no carga, <button onclick="muzSetMode('dz')" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:.75rem;text-decoration:underline;padding:0;">cambiá a modo Deezer</button>
-    </div>
+  <!-- Loading / empty -->
+  <div id="scLoading" style="display:none;text-align:center;padding:30px;color:var(--muted);">
+    <div style="font-size:1.8rem;animation:spin 1s linear infinite;display:inline-block;">🎵</div>
+    <div style="margin-top:8px;">Buscando en SoundCloud...</div>
+  </div>
+  <div id="scEmpty" style="display:none;text-align:center;padding:30px;color:var(--muted);">
+    <div style="font-size:1.8rem;">🔇</div>
+    <div style="margin-top:8px;">No se encontraron resultados.</div>
   </div>
 
-  <!-- ══ MODO DEEZER ══ -->
-  <div id="muzDzPanel" style="display:none;">
-
-    <!-- Buscador Deezer -->
-    <div style="display:flex;gap:10px;margin-bottom:16px;">
-      <input id="dzSearchInput" type="text" placeholder="🔍 Buscar artista, canción, álbum..."
-        style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 16px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.9rem;outline:none;"
-        onkeydown="if(event.key==='Enter')dzSearch()"
-        oninput="clearTimeout(window._dzDebounce);window._dzDebounce=setTimeout(dzSearch,500)">
-      <button onclick="dzSearch()" style="background:var(--accent);border:none;border-radius:10px;padding:10px 20px;color:#fff;font-weight:700;font-family:'Exo 2',sans-serif;cursor:pointer;">Buscar</button>
-    </div>
-
-    <!-- Géneros Deezer -->
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;">
-      <button onclick="dzSearchGenre('pop latino')"      class="dz-genre-btn">🌟 Pop Latino</button>
-      <button onclick="dzSearchGenre('reggaeton')"       class="dz-genre-btn">🔥 Reggaetón</button>
-      <button onclick="dzSearchGenre('rock en espanol')" class="dz-genre-btn">🎸 Rock</button>
-      <button onclick="dzSearchGenre('cumbia')"          class="dz-genre-btn">💃 Cumbia</button>
-      <button onclick="dzSearchGenre('bachata')"         class="dz-genre-btn">🌹 Bachata</button>
-      <button onclick="dzSearchGenre('salsa')"           class="dz-genre-btn">🎺 Salsa</button>
-      <button onclick="dzSearchGenre('trap latino')"     class="dz-genre-btn">⚡ Trap</button>
-      <button onclick="dzSearchGenre('electronica')"     class="dz-genre-btn">🎛️ Electrónica</button>
-      <button onclick="dzSearchGenre('romantica')"       class="dz-genre-btn">💕 Romántica</button>
-      <button onclick="dzSearchGenre('baladas')"         class="dz-genre-btn">🎤 Baladas</button>
-      <button onclick="dzSearchGenre('merengue')"        class="dz-genre-btn">🥁 Merengue</button>
-      <button onclick="dzSearchGenre('jazz')"            class="dz-genre-btn">🎷 Jazz</button>
-      <button onclick="dzSearchGenre('blues')"           class="dz-genre-btn">🎵 Blues</button>
-      <button onclick="dzSearchGenre('folklore uruguayo')" class="dz-genre-btn">🇺🇾 Folklore</button>
-      <button onclick="dzSearchGenre('musica navidena')" class="dz-genre-btn">🎄 Navidad</button>
-    </div>
-
-    <!-- Player embed Deezer -->
-    <div id="dzPlayerWrap" style="display:none;margin-bottom:20px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
-      <iframe id="dzPlayer" scrolling="no" frameborder="0" allowtransparency="true" allow="autoplay"
-        style="width:100%;height:152px;border:none;"></iframe>
-      <div style="padding:8px 16px;display:flex;justify-content:space-between;align-items:center;">
-        <div id="dzPlayerTitle" style="font-size:.85rem;font-weight:700;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
-        <button onclick="document.getElementById('dzPlayerWrap').style.display='none';document.getElementById('dzPlayer').src='';" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.2rem;">✕</button>
-      </div>
-    </div>
-
-    <!-- Resultados Deezer -->
-    <div id="dzResults" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;"></div>
-    <div id="dzLoading" style="display:none;text-align:center;padding:40px;color:var(--muted);">🎵 Buscando...</div>
-    <div id="dzEmpty" style="display:none;text-align:center;padding:40px;color:var(--muted);">No se encontraron resultados.</div>
-  </div>
+  <!-- Resultados -->
+  <div id="scResults" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;"></div>
 
 </div>
 
-<script>
-(function(){
-
-/* ══ TOGGLE MODOS ══ */
-window.muzSetMode = function(mode){
-  const boo = document.getElementById('muzBooPanel');
-  const dz  = document.getElementById('muzDzPanel');
-  const btnB = document.getElementById('btnModoBoo');
-  const btnD = document.getElementById('btnModoDz');
-  if(mode === 'boo'){
-    if(boo) boo.style.display = 'block';
-    if(dz)  dz.style.display  = 'none';
-    if(btnB){ btnB.style.background = 'var(--accent)'; btnB.style.color = '#fff'; btnB.style.border = 'none'; }
-    if(btnD){ btnD.style.background = 'var(--bg3)'; btnD.style.color = 'var(--text)'; btnD.style.border = '1px solid var(--border)'; }
-    // Cargar página inicial si el iframe está vacío
-    const fr = document.getElementById('muzBooFrame');
-    if(fr && !fr.src) muzBooLoad('reggaeton');
-  } else {
-    if(boo) boo.style.display = 'none';
-    if(dz)  dz.style.display  = 'block';
-    if(btnD){ btnD.style.background = 'var(--accent)'; btnD.style.color = '#fff'; btnD.style.border = 'none'; }
-    if(btnB){ btnB.style.background = 'var(--bg3)'; btnB.style.color = 'var(--text)'; btnB.style.border = '1px solid var(--border)'; }
-    // Cargar Deezer si no tiene resultados
-    const res = document.getElementById('dzResults');
-    if(res && !res.innerHTML.trim()) dzSearchGenre('pop latino');
-  }
-  try{ localStorage.setItem('muz_mode', mode); }catch(e){}
-};
-
-/* ══ BOOMUSICA IFRAME ══ */
-var _booLoadTimer = null;
-
-window.muzBooLoad = function(categoria){
-  const fr      = document.getElementById('muzBooFrame');
-  const loading = document.getElementById('muzBooLoading');
-  const errEl   = document.getElementById('muzBooError');
-  if(!fr) return;
-
-  if(loading){ loading.style.display = 'flex'; }
-  if(errEl)  { errEl.style.display   = 'none'; }
-
-  // Adjuntar listeners via JS (no inline para evitar errores de scope)
-  fr.onload  = window.muzBooOnLoad;
-  fr.onerror = window.muzBooOnError;
-
-  // Timer de fallback — si en 8s no cargó, mostrar error
-  if(_booLoadTimer) clearTimeout(_booLoadTimer);
-  _booLoadTimer = setTimeout(muzBooOnError, 8000);
-
-  fr.src = 'https://www.boomusica.com/' + encodeURIComponent(categoria) + '/';
-};
-
-window.muzBooSearch = function(){
-  const q = (document.getElementById('booSearchInput')?.value || '').trim();
-  if(!q) return;
-  const fr      = document.getElementById('muzBooFrame');
-  const loading = document.getElementById('muzBooLoading');
-  const errEl   = document.getElementById('muzBooError');
-  if(!fr) return;
-  if(loading) loading.style.display = 'flex';
-  if(errEl)   errEl.style.display   = 'none';
-  fr.onload  = window.muzBooOnLoad;
-  fr.onerror = window.muzBooOnError;
-  if(_booLoadTimer) clearTimeout(_booLoadTimer);
-  _booLoadTimer = setTimeout(muzBooOnError, 8000);
-  fr.src = 'https://www.boomusica.com/?s=' + encodeURIComponent(q);
-};
-
-window.muzBooOnLoad = function(){
-  if(_booLoadTimer){ clearTimeout(_booLoadTimer); _booLoadTimer = null; }
-  const loading = document.getElementById('muzBooLoading');
-  const errEl   = document.getElementById('muzBooError');
-  // Intentar detectar si el iframe cargó contenido real
-  // Si el iframe src sigue vacío o hubo bloqueo, onerror dispara
-  if(loading) loading.style.display = 'none';
-  // Verificar si el iframe tiene contenido accesible
-  try{
-    const fr = document.getElementById('muzBooFrame');
-    if(fr && fr.contentDocument && fr.contentDocument.body){
-      const body = fr.contentDocument.body.innerHTML;
-      if(!body || body.length < 100){
-        muzBooOnError(); return;
-      }
-    }
-  }catch(e){
-    // Cross-origin: no podemos leer el contenido, pero el iframe cargó OK
-    // Eso es normal si el sitio permite embed — ocultamos loading
-    if(loading) loading.style.display = 'none';
-  }
-};
-
-window.muzBooOnError = function(){
-  if(_booLoadTimer){ clearTimeout(_booLoadTimer); _booLoadTimer = null; }
-  const loading = document.getElementById('muzBooLoading');
-  const errEl   = document.getElementById('muzBooError');
-  if(loading) loading.style.display = 'none';
-  if(errEl)   errEl.style.display   = 'flex';
-};
-
-/* ══ INICIALIZACIÓN ══ */
-window.initMusica2 = function(){
-  if(window._musica2Loaded) return;
-  window._musica2Loaded = true;
-  // Recordar último modo
-  var lastMode = 'boo';
-  try{ lastMode = localStorage.getItem('muz_mode') || 'boo'; }catch(e){}
-  muzSetMode(lastMode);
-};
-
-})();
-</script>
-
 <style>
-.dz-genre-btn {
+.sc-genre-btn {
   background: var(--bg3);
   border: 1px solid var(--border);
   border-radius: 100px;
@@ -2017,8 +1850,8 @@ window.initMusica2 = function(){
   font-weight: 700;
   transition: all .2s;
 }
-.dz-genre-btn:hover { border-color: var(--accent); color: var(--accent); }
-.dz-card {
+.sc-genre-btn:hover, .sc-genre-btn.active { border-color: var(--accent); color: var(--accent); background: var(--bg2); }
+.sc-card {
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -2026,113 +1859,129 @@ window.initMusica2 = function(){
   cursor: pointer;
   transition: transform .2s, box-shadow .2s;
 }
-.dz-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+.sc-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.3); }
 </style>
 
 <script>
 (function(){
 
-function dzEscHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+var SC_CLIENT_ID = 'iZIs9mchVcX5lhVRyQnGQ9b';  // client_id público de SoundCloud widget
 
-window.dzSearch = function(){
-  const q = (document.getElementById('dzSearchInput')?.value || '').trim();
+function scEsc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* ══ BUSCAR ══ */
+window.scSearch = function(){
+  const q = (document.getElementById('scSearchInput')?.value||'').trim();
   if(!q) return;
-  dzFetch(q);
+  // Quitar activo de botones
+  document.querySelectorAll('.sc-genre-btn').forEach(b=>b.classList.remove('active'));
+  scFetch(q);
 };
 
-window.dzSearchGenre = function(genre){
-  const inp = document.getElementById('dzSearchInput');
+window.scLoad = function(genre){
+  const inp = document.getElementById('scSearchInput');
   if(inp) inp.value = genre;
-  dzFetch(genre);
+  document.querySelectorAll('.sc-genre-btn').forEach(b=>{
+    b.classList.toggle('active', b.textContent.toLowerCase().includes(genre.split(' ')[0].toLowerCase()));
+  });
+  scFetch(genre);
 };
 
-async function dzFetch(q){
-  const results = document.getElementById('dzResults');
-  const loading = document.getElementById('dzLoading');
-  const empty   = document.getElementById('dzEmpty');
+async function scFetch(q){
+  const results = document.getElementById('scResults');
+  const loading = document.getElementById('scLoading');
+  const empty   = document.getElementById('scEmpty');
   if(!results) return;
 
   results.innerHTML = '';
   if(loading) loading.style.display = 'block';
   if(empty)   empty.style.display   = 'none';
 
-  // Proxies CORS con fallback automático
-  const DZ_PROXIES = [
-    q => 'https://corsproxy.io/?' + encodeURIComponent('https://api.deezer.com/search?q=' + encodeURIComponent(q) + '&limit=24'),
-    q => 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://api.deezer.com/search?q=' + encodeURIComponent(q) + '&limit=24'),
-    q => 'https://corsproxy.org/?url=' + encodeURIComponent('https://api.deezer.com/search?q=' + encodeURIComponent(q) + '&limit=24'),
-    q => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent('https://api.deezer.com/search?q=' + encodeURIComponent(q) + '&limit=24'),
+  const PROXIES = [
+    q => 'https://corsproxy.io/?'      + encodeURIComponent('https://api.soundcloud.com/tracks?q='+encodeURIComponent(q)+'&limit=20&client_id='+SC_CLIENT_ID),
+    q => 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://api.soundcloud.com/tracks?q='+encodeURIComponent(q)+'&limit=20&client_id='+SC_CLIENT_ID),
+    q => 'https://corsproxy.org/?url=' + encodeURIComponent('https://api.soundcloud.com/tracks?q='+encodeURIComponent(q)+'&limit=20&client_id='+SC_CLIENT_ID),
   ];
 
-  async function tryProxies(q){
-    for(const makeUrl of DZ_PROXIES){
-      try{
-        const res = await fetch(makeUrl(q), { signal: AbortSignal.timeout ? AbortSignal.timeout(8000) : undefined });
-        if(!res.ok) continue;
-        const raw = await res.json();
-        // allorigins devuelve { contents: "..." }
-        const data = raw.contents ? JSON.parse(raw.contents) : raw;
-        if(data && Array.isArray(data.data)) return data;
-      } catch(e){ /* probar siguiente */ }
-    }
-    return null;
+  let tracks = null;
+  for(const makeUrl of PROXIES){
+    try{
+      const res = await fetch(makeUrl(q), { signal: AbortSignal.timeout ? AbortSignal.timeout(7000) : undefined });
+      if(!res.ok) continue;
+      const raw = await res.json();
+      const data = raw.contents ? JSON.parse(raw.contents) : raw;
+      if(Array.isArray(data) && data.length > 0){ tracks = data; break; }
+    }catch(e){ /* siguiente */ }
   }
 
-  try {
-    const data = await tryProxies(q);
+  if(loading) loading.style.display = 'none';
 
-    if(loading) loading.style.display = 'none';
+  if(!tracks || tracks.length === 0){
+    // Fallback: mostrar embed de búsqueda directa de SoundCloud
+    scShowSearchEmbed(q);
+    return;
+  }
 
-    if(!data || !data.data || data.data.length === 0){
-      if(empty) empty.style.display = 'block';
-      return;
-    }
+  tracks.forEach(track => {
+    if(!track.streamable && !track.uri) return;
+    const art = track.artwork_url
+      ? track.artwork_url.replace('-large','-t300x300')
+      : 'https://a-v2.sndcdn.com/assets/images/sc-icons/fluid-b4e7a64b8b.png';
 
-    data.data.forEach(track => {
-      const card = document.createElement('div');
-      card.className = 'dz-card';
-      card.innerHTML =
-        '<div style="position:relative;">' +
-          '<img src="' + dzEscHtml(track.album.cover_medium) + '" alt="' + dzEscHtml(track.title) + '"' +
-            ' style="width:100%;aspect-ratio:1;object-fit:cover;display:block;"' +
-            ' onerror="this.src=\'\';this.style.background=\'#222\'">' +
-          '<div style="position:absolute;inset:0;background:rgba(0,0,0,0);display:flex;align-items:center;justify-content:center;transition:background .2s;"' +
-            ' onmouseenter="this.style.background=\'rgba(0,0,0,.5)\';this.querySelector(\'.dz-play\').style.opacity=\'1\'"' +
-            ' onmouseleave="this.style.background=\'rgba(0,0,0,0)\';this.querySelector(\'.dz-play\').style.opacity=\'0\'">' +
-            '<div class="dz-play" style="opacity:0;transition:opacity .2s;font-size:2.5rem;">▶️</div>' +
-          '</div>' +
+    const card = document.createElement('div');
+    card.className = 'sc-card';
+    card.title = track.title + ' — ' + (track.user?.username||'');
+    card.innerHTML =
+      '<div style="position:relative;">' +
+        '<img src="'+scEsc(art)+'" alt="'+scEsc(track.title)+'"' +
+          ' style="width:100%;aspect-ratio:1;object-fit:cover;display:block;"' +
+          ' onerror="this.src=\'https://a-v2.sndcdn.com/assets/images/sc-icons/fluid-b4e7a64b8b.png\'">' +
+        '<div style="position:absolute;inset:0;background:rgba(0,0,0,0);display:flex;align-items:center;justify-content:center;transition:background .2s;"' +
+          ' onmouseenter="this.style.background=\'rgba(0,0,0,.5)\';this.querySelector(\'.sc-play\').style.opacity=\'1\'"' +
+          ' onmouseleave="this.style.background=\'rgba(0,0,0,0)\';this.querySelector(\'.sc-play\').style.opacity=\'0\'">' +
+          '<div class="sc-play" style="opacity:0;transition:opacity .2s;font-size:2.5rem;">▶️</div>' +
         '</div>' +
-        '<div style="padding:8px 10px 10px;">' +
-          '<div style="font-size:.78rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + dzEscHtml(track.title) + '</div>' +
-          '<div style="font-size:.7rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + dzEscHtml(track.artist.name) + '</div>' +
-        '</div>';
+      '</div>' +
+      '<div style="padding:8px 10px 10px;">' +
+        '<div style="font-size:.78rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+scEsc(track.title)+'</div>' +
+        '<div style="font-size:.7rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+scEsc(track.user?.username||'')+'</div>' +
+      '</div>';
 
-      card.onclick = () => dzPlay(track.id, track.title + ' — ' + track.artist.name);
-      results.appendChild(card);
-    });
-  } catch(e) {
-    if(loading) loading.style.display = 'none';
-    if(empty){ empty.style.display = 'block'; empty.textContent = '⚠️ Error al cargar música. Intentá de nuevo.'; }
-    console.warn('[Música]', e);
-  }
+    card.onclick = () => scPlay(track.id, track.title + ' — ' + (track.user?.username||''));
+    results.appendChild(card);
+  });
+
+  if(results.children.length === 0) scShowSearchEmbed(q);
 }
 
-window.dzPlay = function(trackId, title){
-  const wrap   = document.getElementById('dzPlayerWrap');
-  const player = document.getElementById('dzPlayer');
-  const ptitle = document.getElementById('dzPlayerTitle');
-  if(!wrap || !player) return;
-  player.src = 'https://widget.deezer.com/widget/dark/track/' + trackId;
-  if(ptitle) ptitle.textContent = title;
-  wrap.style.display = 'block';
-  wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+/* ══ REPRODUCIR ══ */
+window.scPlay = function(trackId, label){
+  const player = document.getElementById('scPlayer');
+  const lbl    = document.getElementById('scPlayerLabel');
+  if(!player) return;
+  player.src = 'https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/'+trackId
+    +'&color=%23ff5500&auto_play=true&hide_related=false&show_comments=false&show_user=true&show_reposts=false&show_teaser=true';
+  if(lbl) lbl.textContent = '▶ ' + label;
 };
 
-// Cargar pop latino por defecto al abrir la sección
+/* ══ FALLBACK: embed de búsqueda ══ */
+function scShowSearchEmbed(q){
+  const results = document.getElementById('scResults');
+  if(!results) return;
+  const encodedUrl = encodeURIComponent('https://soundcloud.com/search?q='+encodeURIComponent(q));
+  results.innerHTML =
+    '<div style="grid-column:1/-1;border-radius:12px;overflow:hidden;border:1px solid var(--border);">' +
+      '<iframe width="100%" height="450" scrolling="no" frameborder="no" allow="autoplay"' +
+        ' src="https://w.soundcloud.com/player/?url='+encodedUrl+'&color=%23ff5500&auto_play=false&hide_related=false&show_comments=false&show_user=true&show_reposts=false&visual=true">' +
+      '</iframe>' +
+    '</div>';
+}
+
+/* ══ INIT ══ */
 window.initMusica2 = function(){
   if(window._musica2Loaded) return;
   window._musica2Loaded = true;
-  dzSearchGenre('pop latino');
+  scLoad('reggaeton');
 };
 
 })();
