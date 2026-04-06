@@ -500,14 +500,23 @@
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
   // ── CONFIG ── Reemplaza con tus credenciales de Firebase ──────────────────
+  // =======================================================================
+  //  PASO 1: Reemplaza los valores de firebaseConfig con los tuyos reales
+  //  Firebase Console -> tu proyecto -> Configuracion -> "Tus apps" -> </>
+  // =======================================================================
   const firebaseConfig = {
-    apiKey:            "TU_API_KEY",
-    authDomain:        "TU_AUTH_DOMAIN",
-    projectId:         "TU_PROJECT_ID",
-    storageBucket:     "TU_BUCKET",
-    messagingSenderId: "TU_SENDER_ID",
-    appId:             "TU_APP_ID"
+    apiKey:            "TU_API_KEY",            // <- reemplaza
+    authDomain:        "TU_AUTH_DOMAIN",        // <- reemplaza
+    projectId:         "TU_PROJECT_ID",         // <- reemplaza
+    storageBucket:     "TU_BUCKET",             // <- reemplaza
+    messagingSenderId: "TU_SENDER_ID",          // <- reemplaza
+    appId:             "TU_APP_ID"              // <- reemplaza
   };
+  // =======================================================================
+  //  PASO 2: Authentication -> Sign-in method -> activar Google + Email
+  //  PASO 3: Firestore Database -> Crear base de datos (modo prueba)
+  //  PASO 4: Authentication -> Dominios autorizados -> agregar tu dominio
+  // =======================================================================
   // ─────────────────────────────────────────────────────────────────────────
 
   const app  = initializeApp(firebaseConfig);
@@ -733,7 +742,7 @@
       const msgs = snap.docs.map(d => d.data()).sort((a,b) => (a.ts?.seconds || 0) - (b.ts?.seconds || 0));
       const box = document.getElementById('chat-messages');
       box.innerHTML = msgs.map(m => `
-        <div class="chat-msg ${m.from === currentUser.uid ? 'me' : 'them'}">${escapeHtml(m.text)}</div>
+        <div class="chat-msg ${(m.uid || m.senderId) === currentUser.uid ? 'me' : 'them'}">${escapeHtml(m.text)}</div>
       `).join('');
       box.scrollTop = box.scrollHeight;
     });
@@ -756,7 +765,8 @@
     input.value = '';
     const chatId = [currentUser.uid, chatTargetId].sort().join('_');
     await addDoc(collection(db, 'chats', chatId, 'messages'), {
-      from: currentUser.uid,
+      uid:      currentUser.uid,
+      senderId: currentUser.uid,
       text,
       ts: serverTimestamp()
     });
