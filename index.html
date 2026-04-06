@@ -33731,17 +33731,14 @@ async function clLoadCat(query, label){
     if(loader) loader.style.display = 'none';
     window._cl.loading = false;
 
+    // Actualizar contador siempre
+    const clCnt = document.getElementById('clMovieCount');
+    if(clCnt) clCnt.textContent = results.length;
+
     if(!results.length){
       if(grid) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#555;font-size:.9rem;">Sin resultados 🎬</div>';
-      const ctr2 = document.getElementById('clMovieCounter');
-      if(ctr2) ctr2.style.display = 'none';
       return;
     }
-
-    // Actualizar contador de películas en el hero
-    const clCtr = document.getElementById('clMovieCounter');
-    const clCnt = document.getElementById('clMovieCount');
-    if(clCtr && clCnt){ clCnt.textContent = results.length; clCtr.style.display = 'inline-flex'; clCtr.style.alignItems = 'center'; clCtr.style.gap = '4px'; }
 
     // Actualizar hero con primeros 5
     window._cl.heroPeliculas = results.slice(0, 5);
@@ -33864,7 +33861,7 @@ document.addEventListener('click', function(e){
 const CL_STAR_LABELS = ['','Mala','Regular','Buena','Muy buena','¡Excelente!'];
 
 // Renderiza las estrellas según el promedio y la valoración propia del usuario
-function clRenderStars(myRating, avgRating, totalVotes){
+window.clRenderStars = function clRenderStars(myRating, avgRating, totalVotes){
   const stars = document.getElementById('clStars');
   const avgEl = document.getElementById('clStarsAvg');
   const cntEl = document.getElementById('clStarsCount');
@@ -33946,17 +33943,32 @@ window.clRateMovie = async function(val){
   const uid = window.CU.id;
   const ref = window.doc(window.db, 'cinelatido', docId);
   try {
-    // Primero intentar updateDoc (funciona si el doc ya existe)
-    const updateData = {};
-    updateData[`ratings.${uid}`] = val;
-    updateData['videoId'] = window._cl.currentVideoId;
+    // Usar updateDoc con dot-notation — funciona aunque el doc no exista en versiones recientes
+    // Si falla (doc no existe), setDoc con objeto anidado real
+    const dotKey = 'ratings.' + uid;
+    const updateData = { videoId: window._cl.currentVideoId };
+    updateData[dotKey] = val;
     try {
-      await window.updateDoc(ref, updateData);
-    } catch(updateErr) {
-      // Si el doc no existe, crearlo con setDoc
-      const initData = { videoId: window._cl.currentVideoId, ratings: {} };
-      initData.ratings[uid] = val;
-      await window.setDoc(ref, initData, { merge: true });
+      if(window.updateDoc) {
+        await window.updateDoc(ref, updateData);
+      } else {
+        throw new Error('no updateDoc');
+      }
+    } catch(e2) {
+      // Fallback: setDoc con objeto anidado correcto
+      const nested = { videoId: window._cl.currentVideoId, ratings: {} };
+      nested.ratings[uid] = val;
+      await window.setDoc(ref, nested, { merge: true });
+    }
+    // Re-renderizar estrellas inmediatamente en la UI sin esperar snapshot
+    const stars = document.getElementById('clStars');
+    if(stars) {
+      stars.querySelectorAll('.cl-star').forEach(s => {
+        const v = parseInt(s.dataset.v);
+        s.textContent = v <= val ? '★' : '☆';
+        s.style.color  = v <= val ? '#f5c518' : '#555';
+        s.style.transform = 'scale(1)';
+      });
     }
     const fb = document.getElementById('clStarsFeedback');
     if(fb) fb.textContent = '✅ ¡Gracias! Tu valoración: ' + CL_STAR_LABELS[val];
@@ -33992,7 +34004,7 @@ function clListenComments(docId){
       const div = document.createElement('div');
       div.className = 'cl-comment';
       const deleteBtn = isAdmin
-        ? `<button onclick="clDeleteComment('${docId}','${d.id}')" title="Borrar comentario" style="background:rgba(229,9,20,.15);border:1px solid rgba(229,9,20,.4);color:#e50914;border-radius:6px;padding:2px 8px;font-size:.7rem;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700;transition:background .15s;flex-shrink:0;" onmouseover="this.style.background='rgba(229,9,20,.35)'" onmouseout="this.style.background='rgba(229,9,20,.15)'">🗑️ Borrar</button>`
+        ? `<button class="cl-del-btn" data-doc="${escHtml(docId)}" data-id="${escHtml(d.id)}" title="Borrar comentario" style="background:rgba(229,9,20,.15);border:1px solid rgba(229,9,20,.4);color:#e50914;border-radius:6px;padding:2px 8px;font-size:.7rem;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700;transition:background .15s;flex-shrink:0;">🗑️ Borrar</button>`
         : '';
       div.innerHTML = `
         <div class="cl-comment-av">${av}</div>
@@ -34051,6 +34063,15 @@ window.clDeleteComment = async function(docId, commentId){
     toast('Error al borrar comentario','err');
   }
 };
+
+// Delegación de eventos para botones de borrar (evita problemas con onclick inline)
+document.addEventListener('click', function(e){
+  const btn = e.target.closest('.cl-del-btn');
+  if(!btn) return;
+  const docId = btn.dataset.doc;
+  const commentId = btn.dataset.id;
+  if(docId && commentId) window.clDeleteComment(docId, commentId);
+});
 
 })();
 </script>
