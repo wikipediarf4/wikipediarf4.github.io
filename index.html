@@ -34059,7 +34059,7 @@ async function clPlutoFetchMovies(cat, offset, reset){
   // Si hay categoría específica, agregarla
   if(cat && cat !== 'all') params.set('genre', cat);
 
-  const url = `https://cinelatido2.synxyes.workers.dev/v3/vod/categories?${params}`;
+  const url = `https://api.pluto.tv/v3/vod/categories?${params}`;
 
   try {
     const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
@@ -34095,7 +34095,7 @@ async function clPlutoFetchMovies(cat, offset, reset){
   // Fallback: endpoint /v3/vod/slugs con categorías conocidas
   try {
     const catSlug = (cat === 'all') ? '' : cat;
-    const fallbackUrl = `https://cinelatido2.synxyes.workers.dev/v3/vod/categories?appName=web&appVersion=9&clientID=web&deviceType=web&offset=${offset}&limit=${PLUTO_PAGE_SIZE}${catSlug ? '&genre='+encodeURIComponent(catSlug) : ''}`;
+    const fallbackUrl = `https://api.pluto.tv/v3/vod/categories?appName=web&appVersion=9&clientID=web&deviceType=web&offset=${offset}&limit=${PLUTO_PAGE_SIZE}${catSlug ? '&genre='+encodeURIComponent(catSlug) : ''}`;
     const r2 = await fetch(fallbackUrl, { headers: { 'Accept': 'application/json' } });
     if(r2.ok){
       const d2 = await r2.json();
