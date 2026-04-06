@@ -9043,14 +9043,6 @@ function closeSV(){
   document.getElementById('storyViewer').classList.remove('open');
   if(_svAutoTimer){clearTimeout(_svAutoTimer);_svAutoTimer=null;}
   if(window._svViewsUnsub){ window._svViewsUnsub(); window._svViewsUnsub=null; }
-  // Stop any video playing in the story background
-  const svBg = document.getElementById('svBg');
-  if(svBg){
-    const videoEl = svBg.querySelector('video');
-    if(videoEl){ videoEl.pause(); videoEl.src=''; }
-    const iframeEl = svBg.querySelector('iframe');
-    if(iframeEl){ iframeEl.src=''; }
-  }
   const audioEl = document.getElementById('svAudioEl');
   if(audioEl){
     audioEl.pause();
@@ -33586,7 +33578,10 @@ window.clClosePlayer = function(){
 
 // Cerrar con Escape
 document.addEventListener('keydown', e=>{
-  if(e.key === 'Escape') window.clClosePlayer();
+  if(e.key === 'Escape'){
+    const clModal = document.getElementById('clPlayerModal');
+    if(clModal && clModal.style.display === 'flex') window.clClosePlayer();
+  }
 });
 
 // Cerrar clickeando fondo del modal
