@@ -1796,6 +1796,15 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
 
   <!-- TOPBAR DE BÚSQUEDA + CATEGORÍAS -->
   <div style="background:#0a0a0a;padding:20px 28px 0;sticky;top:48px;z-index:10;">
+
+    <!-- PESTAÑAS FUENTE -->
+    <div id="clSourceTabs" style="display:flex;gap:0;margin-bottom:16px;border-bottom:2px solid #1e1e1e;">
+      <button id="clTabDM" onclick="clSwitchSource('dm')" style="background:none;border:none;border-bottom:3px solid #e50914;color:#fff;font-family:'Exo 2',sans-serif;font-size:.88rem;font-weight:800;padding:8px 20px;cursor:pointer;transition:all .2s;letter-spacing:.3px;">🎬 Dailymotion</button>
+      <button id="clTabPT" onclick="clSwitchSource('pluto')" style="background:none;border:none;border-bottom:3px solid transparent;color:#666;font-family:'Exo 2',sans-serif;font-size:.88rem;font-weight:800;padding:8px 20px;cursor:pointer;transition:all .2s;letter-spacing:.3px;">📺 Pluto TV</button>
+    </div>
+
+    <!-- PANEL DAILYMOTION: búsqueda -->
+    <div id="clPanelDM">
     <!-- Búsqueda -->
     <div style="display:flex;gap:10px;margin-bottom:16px;">
       <div style="flex:1;display:flex;align-items:center;background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:0 14px;gap:10px;">
@@ -1822,6 +1831,31 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
       <button onclick="clSelectCat(this,'serie netflix')" class="cl-cat" data-q="serie netflix">📺 Series</button>
       <button onclick="clSelectCat(this,'documental')" class="cl-cat" data-q="documental">🎥 Documental</button>
     </div>
+    </div><!-- /clPanelDM -->
+
+    <!-- PANEL PLUTO TV -->
+    <div id="clPanelPluto" style="display:none;">
+      <div id="clPlutoCats" style="display:flex;gap:8px;flex-wrap:wrap;padding-bottom:16px;border-bottom:1px solid #1a1a1a;">
+        <button onclick="clPlutoLoadCat(this,'Movies')" class="cl-cat active-pluto-cat" data-pcat="Movies">🎬 Todas</button>
+        <button onclick="clPlutoLoadCat(this,'Action')" class="cl-cat" data-pcat="Action">🔥 Acción</button>
+        <button onclick="clPlutoLoadCat(this,'Comedy')" class="cl-cat" data-pcat="Comedy">😂 Comedia</button>
+        <button onclick="clPlutoLoadCat(this,'Drama')" class="cl-cat" data-pcat="Drama">🎭 Drama</button>
+        <button onclick="clPlutoLoadCat(this,'Horror')" class="cl-cat" data-pcat="Horror">👻 Terror</button>
+        <button onclick="clPlutoLoadCat(this,'Thriller')" class="cl-cat" data-pcat="Thriller">🕵️ Thriller</button>
+        <button onclick="clPlutoLoadCat(this,'Science Fiction')" class="cl-cat" data-pcat="Science Fiction">🚀 Sci-Fi</button>
+        <button onclick="clPlutoLoadCat(this,'Romance')" class="cl-cat" data-pcat="Romance">💕 Romance</button>
+        <button onclick="clPlutoLoadCat(this,'Animation')" class="cl-cat" data-pcat="Animation">🎨 Animación</button>
+        <button onclick="clPlutoLoadCat(this,'Documentary')" class="cl-cat" data-pcat="Documentary">🎥 Documental</button>
+        <button onclick="clPlutoLoadCat(this,'Spanish')" class="cl-cat" data-pcat="Spanish">🌎 Español</button>
+        <button onclick="clPlutoLoadCat(this,'Kids')" class="cl-cat" data-pcat="Kids">🧸 Niños</button>
+      </div>
+      <div id="clPlutoGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px;padding:20px 0 0;"></div>
+      <div id="clPlutoLoading" style="display:none;text-align:center;padding:40px;color:#666;">
+        <div style="font-size:2.5rem;margin-bottom:10px;animation:spin 1s linear infinite;display:inline-block;">📺</div>
+        <div>Cargando canales de Pluto TV...</div>
+      </div>
+    </div><!-- /clPanelPluto -->
+
   </div>
 
   <!-- PLAYER MODAL -->
@@ -1829,6 +1863,7 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
     <div style="width:min(860px,95vw);background:#141414;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.8);">
       <div style="position:relative;padding-bottom:56.25%;background:#000;">
         <iframe id="clPlayerIframe" style="position:absolute;inset:0;width:100%;height:100%;border:none;" allowfullscreen allow="autoplay;encrypted-media"></iframe>
+        <video id="clPlayerHLS" controls autoplay style="display:none;position:absolute;inset:0;width:100%;height:100%;background:#000;"></video>
       </div>
       <!-- Info del modal -->
       <div style="padding:20px 24px;">
@@ -1836,7 +1871,7 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
           <div style="flex:1;">
             <div id="clModalTitle" style="font-size:1.3rem;font-weight:900;color:#fff;margin-bottom:6px;"></div>
             <div id="clModalDesc" style="font-size:.82rem;color:#aaa;line-height:1.5;margin-bottom:14px;"></div>
-            <!-- Valoración con estrellas -->
+            <!-- Valoración con estrellas (solo Dailymotion) -->
             <div id="clStarsSection" style="margin-bottom:12px;">
               <div style="font-size:.72rem;color:#666;font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">⭐ Valorá esta película</div>
               <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
@@ -1874,7 +1909,7 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
   </div>
 
   <!-- GRID DE RESULTADOS -->
-  <div style="padding:20px 28px 80px;">
+  <div id="clGridWrap" style="padding:20px 28px 80px;">
     <div id="clSectionTitle" style="font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:14px;">🔥 Acción</div>
     <div id="clGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px;"></div>
     <div id="clLoading" style="display:none;text-align:center;padding:40px;color:#666;">
@@ -1903,6 +1938,10 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
 }
 .cl-cat:hover { border-color: #e50914; color: #fff; }
 .cl-cat.active-cat { background: #e50914; border-color: #e50914; color: #fff; }
+.cl-cat.active-pluto-cat { background: #ff6b00; border-color: #ff6b00; color: #fff; }
+#clTabDM, #clTabPT { outline: none; }
+#clPlayerHLS:focus { outline: none; }
+#clPlutoGrid .cl-card-thumb { aspect-ratio: 16/9 !important; }
 .cl-card {
   position: relative;
   border-radius: 8px;
@@ -34047,6 +34086,214 @@ window.clSendComment = async function(){
     console.warn('[CineLatido] Error comentando:', e);
     toast('Error al enviar comentario','err');
   }
+};
+
+/* ══════════════════════════════════════════
+   PLUTO TV — canales en vivo con HLS
+══════════════════════════════════════════ */
+
+// Cargar hls.js dinámicamente solo cuando se necesite
+function clLoadHlsJs(cb){
+  if(window.Hls){ cb(); return; }
+  const s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js';
+  s.onload = cb;
+  document.head.appendChild(s);
+}
+
+// Cache de canales Pluto
+window._plutoChannels = null;
+window._plutoHls = null;
+
+// Cambiar entre fuente DM y Pluto
+window.clSwitchSource = function(src){
+  const panelDM    = document.getElementById('clPanelDM');
+  const panelPluto = document.getElementById('clPanelPluto');
+  const gridWrap   = document.getElementById('clGridWrap');
+  const tabDM      = document.getElementById('clTabDM');
+  const tabPT      = document.getElementById('clTabPT');
+  if(src === 'dm'){
+    if(panelDM)    panelDM.style.display    = '';
+    if(panelPluto) panelPluto.style.display = 'none';
+    if(gridWrap)   gridWrap.style.display   = '';
+    if(tabDM){ tabDM.style.borderBottomColor='#e50914'; tabDM.style.color='#fff'; }
+    if(tabPT){ tabPT.style.borderBottomColor='transparent'; tabPT.style.color='#666'; }
+    window._cl.source = 'dm';
+  } else {
+    if(panelDM)    panelDM.style.display    = 'none';
+    if(panelPluto) panelPluto.style.display = '';
+    if(gridWrap)   gridWrap.style.display   = 'none';
+    if(tabDM){ tabDM.style.borderBottomColor='transparent'; tabDM.style.color='#666'; }
+    if(tabPT){ tabPT.style.borderBottomColor='#e50914'; tabPT.style.color='#fff'; }
+    window._cl.source = 'pluto';
+    // Cargar canales si no están cargados
+    if(!window._plutoChannels){
+      clPlutoFetchChannels().then(() => {
+        const activeBtn = document.querySelector('.active-pluto-cat');
+        const cat = activeBtn ? activeBtn.dataset.pcat : 'Movies';
+        clPlutoRenderCat(cat);
+      });
+    }
+  }
+};
+
+// Fetch canales de Pluto TV
+async function clPlutoFetchChannels(){
+  const loading = document.getElementById('clPlutoLoading');
+  if(loading) loading.style.display = 'block';
+  try {
+    // API pública de Pluto TV (sin CORS issues desde browser)
+    const r = await fetch('https://api.pluto.tv/v2/channels?offset=0&limit=1000', {
+      headers: { 'Accept': 'application/json' }
+    });
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    const channels = Array.isArray(data) ? data : (data.data || data.channels || []);
+    window._plutoChannels = channels;
+    if(loading) loading.style.display = 'none';
+    return channels;
+  } catch(e) {
+    console.warn('[Pluto] Error:', e);
+    if(loading) loading.style.display = 'none';
+    const grid = document.getElementById('clPlutoGrid');
+    if(grid) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#555;font-size:.9rem;">⚠️ No se pudo conectar con Pluto TV. Intentá de nuevo más tarde.</div>';
+    return [];
+  }
+}
+
+// Renderizar canales por categoría
+window.clPlutoLoadCat = function(btn, cat){
+  document.querySelectorAll('.active-pluto-cat').forEach(b => b.classList.remove('active-pluto-cat'));
+  btn.classList.add('active-pluto-cat');
+  if(!window._plutoChannels){
+    clPlutoFetchChannels().then(() => clPlutoRenderCat(cat));
+  } else {
+    clPlutoRenderCat(cat);
+  }
+};
+
+function clPlutoRenderCat(cat){
+  const grid = document.getElementById('clPlutoGrid');
+  if(!grid) return;
+  const channels = window._plutoChannels || [];
+
+  // Filtrar por categoría
+  let filtered = channels.filter(c => {
+    if(!c.stitched || !c.stitched.urls || !c.stitched.urls.length) return false;
+    const name = (c.name || '').toLowerCase();
+    const catField = (c.category || c.genre || c.type || '').toLowerCase();
+    const subcats = (c.subGenre || c.subCategory || '').toLowerCase();
+    if(cat === 'Movies') {
+      return catField.includes('movie') || catField.includes('film') || catField.includes('cine') ||
+             name.includes('movie') || name.includes('film') || name.includes('cine') ||
+             subcats.includes('movie');
+    }
+    const catLow = cat.toLowerCase();
+    return catField.includes(catLow) || subcats.includes(catLow) ||
+           name.includes(catLow);
+  });
+
+  // Si no hay resultados con filtro estricto, mostrar todos con streams
+  if(filtered.length === 0 && cat === 'Movies'){
+    filtered = channels.filter(c => c.stitched && c.stitched.urls && c.stitched.urls.length > 0).slice(0, 40);
+  }
+
+  grid.innerHTML = '';
+  if(!filtered.length){
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#555;font-size:.9rem;">Sin canales en esta categoría 📺</div>';
+    return;
+  }
+
+  // Actualizar contador
+  const clCnt = document.getElementById('clMovieCount');
+  if(clCnt) clCnt.textContent = filtered.length;
+
+  filtered.slice(0, 60).forEach((ch, i) => {
+    const name     = ch.name || 'Canal';
+    const logo     = (ch.images && (ch.images.logo || ch.images.thumbnail)) || '';
+    const thumb    = (ch.images && (ch.images.tile || ch.images.background)) || logo;
+    const streamUrl = ch.stitched.urls[0].url;
+    const card = document.createElement('div');
+    card.className = 'cl-card';
+    card.style.animationDelay = (i * 0.03) + 's';
+    card.innerHTML = `
+      <div style="position:relative;width:100%;aspect-ratio:16/9;background:#111;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+        ${thumb
+          ? `<img src="${escHtml(thumb)}" alt="" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">`
+          : ''}
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.85));display:flex;align-items:center;justify-content:center;">
+          ${logo ? `<img src="${escHtml(logo)}" alt="${escHtml(name)}" style="max-width:70%;max-height:60px;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(0,0,0,.8));">` : `<div style="color:#fff;font-weight:800;font-size:.85rem;text-align:center;padding:8px;">${escHtml(name)}</div>`}
+        </div>
+        <div style="position:absolute;top:6px;right:6px;background:#e50914;color:#fff;font-size:.6rem;font-weight:800;padding:2px 6px;border-radius:4px;font-family:'Exo 2',sans-serif;">EN VIVO</div>
+      </div>
+      <div class="cl-card-overlay">
+        <button class="cl-card-play" onclick="event.stopPropagation();">▶</button>
+        <div class="cl-card-title">${escHtml(name)}</div>
+      </div>`;
+    card.onclick = () => clPlutoOpenChannel(streamUrl, name);
+    grid.appendChild(card);
+  });
+}
+
+// Abrir canal Pluto TV en el modal con HLS
+window.clPlutoOpenChannel = function(streamUrl, name){
+  const modal  = document.getElementById('clPlayerModal');
+  const iframe = document.getElementById('clPlayerIframe');
+  const video  = document.getElementById('clPlayerHLS');
+  const mtitle = document.getElementById('clModalTitle');
+  const mdesc  = document.getElementById('clModalDesc');
+  const starsSection = document.getElementById('clStarsSection');
+  const cmtSection   = document.querySelector('#clPlayerModal .cl-comment-section');
+
+  if(!modal || !video) return;
+
+  // Detener listeners Firebase anteriores
+  if(window._cl.rxnUnsub){ window._cl.rxnUnsub(); window._cl.rxnUnsub = null; }
+  if(window._cl.cmtUnsub){ window._cl.cmtUnsub(); window._cl.cmtUnsub = null; }
+
+  // Mostrar video HLS, ocultar iframe
+  if(iframe) { iframe.src = ''; iframe.style.display = 'none'; }
+  video.style.display = 'block';
+
+  // Ocultar estrellas/comentarios en modo live
+  if(starsSection) starsSection.style.display = 'none';
+
+  if(mtitle) mtitle.textContent = '📺 ' + name + ' — En Vivo';
+  if(mdesc)  mdesc.textContent  = 'Canal en vivo de Pluto TV';
+
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+
+  // Iniciar HLS
+  clLoadHlsJs(function(){
+    if(window._plutoHls){ window._plutoHls.destroy(); window._plutoHls = null; }
+    if(Hls.isSupported()){
+      const hls = new Hls({ enableWorker: false });
+      hls.loadSource(streamUrl);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(()=>{}));
+      window._plutoHls = hls;
+    } else if(video.canPlayType('application/vnd.apple.mpegurl')){
+      // Safari nativo
+      video.src = streamUrl;
+      video.play().catch(()=>{});
+    } else {
+      if(mtitle) mtitle.textContent = '⚠️ Tu navegador no soporta HLS';
+    }
+  });
+};
+
+// Parchar clClosePlayer para limpiar HLS también
+const _origClosePlayer = window.clClosePlayer;
+window.clClosePlayer = function(){
+  if(window._plutoHls){ window._plutoHls.destroy(); window._plutoHls = null; }
+  const video  = document.getElementById('clPlayerHLS');
+  const iframe = document.getElementById('clPlayerIframe');
+  const starsSection = document.getElementById('clStarsSection');
+  if(video){ video.pause(); video.src = ''; video.style.display = 'none'; }
+  if(iframe) iframe.style.display = '';
+  if(starsSection) starsSection.style.display = '';
+  if(_origClosePlayer) _origClosePlayer();
 };
 
 /* ══ BORRAR COMENTARIO (solo admins) ══ */
