@@ -34168,6 +34168,9 @@ async function clPlutoFetchChannels(){
       if(channels.length > 0){
         window._plutoChannels = channels;
         if(loading) loading.style.display = 'none';
+        // Debug: mostrar categorías disponibles en consola
+        const cats = [...new Set(channels.map(c => c.category || c.genre || c.group || 'sin-cat').filter(Boolean))];
+        console.log('[Pluto] Canales cargados:', channels.length, '| Categorías:', cats.slice(0,20));
         return channels;
       }
     } catch(e) {
@@ -34197,27 +34200,38 @@ function clPlutoRenderCat(cat){
   if(!grid) return;
   const channels = window._plutoChannels || [];
 
-  // Filtrar por categoría
-  let filtered = channels.filter(c => {
-    if(!c.stitched || !c.stitched.urls || !c.stitched.urls.length) return false;
-    const name = (c.name || '').toLowerCase();
-    const catField = (c.category || c.genre || c.type || '').toLowerCase();
-    const subcats = (c.subGenre || c.subCategory || '').toLowerCase();
-    if(cat === 'Movies') {
-      return catField.includes('movie') || catField.includes('film') || catField.includes('cine') ||
-             catField.includes('pel') || catField.includes('movies') || catField.includes('cinema') ||
-             name.includes('movie') || name.includes('film') || name.includes('cine') ||
-             name.includes('pel') || name.includes('cinema') ||
-             subcats.includes('movie') || subcats.includes('pel') || subcats.includes('film');
-    }
-    const catLow = cat.toLowerCase();
-    return catField.includes(catLow) || subcats.includes(catLow) ||
-           name.includes(catLow);
-  });
+  // Todos los canales con stream disponible
+  const allWithStream = channels.filter(c => c.stitched && c.stitched.urls && c.stitched.urls.length > 0);
 
-  // Si no hay resultados con filtro estricto, mostrar todos con streams
-  if(filtered.length === 0 && cat === 'Movies'){
-    filtered = channels.filter(c => c.stitched && c.stitched.urls && c.stitched.urls.length > 0);
+  let filtered;
+  if(cat === 'Movies') {
+    // "Todas" → mostrar todos los canales con stream
+    filtered = allWithStream;
+  } else {
+    // Filtrar por categoría con términos en inglés y español
+    const catMap = {
+      'Action':           ['action','accion','acción','aventura','adventure'],
+      'Comedy':           ['comedy','comedia','humor'],
+      'Drama':            ['drama'],
+      'Horror':           ['horror','terror','scary','miedo'],
+      'Thriller':         ['thriller','suspense','suspenso'],
+      'Science Fiction':  ['science fiction','sci-fi','scifi','ciencia ficcion','ciencia ficción'],
+      'Romance':          ['romance','romanc','amor','love'],
+      'Animation':        ['animation','animacion','animación','cartoon','anime'],
+      'Documentary':      ['documentary','documental','docu'],
+      'Spanish':          ['spanish','español','espanol','latino','latinx','latam','hispanx'],
+      'Kids':             ['kids','niños','ninos','infantil','children','family','familia']
+    };
+    const terms = catMap[cat] || [cat.toLowerCase()];
+    filtered = allWithStream.filter(c => {
+      const name = (c.name || '').toLowerCase();
+      const catField = (c.category || c.genre || c.type || '').toLowerCase();
+      const subcats = (c.subGenre || c.subCategory || '').toLowerCase();
+      const combined = name + ' ' + catField + ' ' + subcats;
+      return terms.some(t => combined.includes(t));
+    });
+    // Si no hay resultados con filtro específico, mostrar todos
+    if(filtered.length === 0) filtered = allWithStream;
   }
 
   grid.innerHTML = '';
