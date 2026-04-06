@@ -9154,7 +9154,14 @@ function _renderViewersList(docs){
   }).join('');
 }
 document.addEventListener('keydown',function(e){
-  if(e.key==='Escape'){ const sv=document.getElementById('storyViewer'); if(sv&&sv.classList.contains('open')){ closeSV(); if(typeof gp==='function') gp('inicio'); return; } }
+  if(e.key==='Escape'){
+    const sv=document.getElementById('storyViewer');
+    if(sv&&sv.classList.contains('open')){
+      closeSV();
+      if(typeof window.gp==='function') window.gp('home');
+      return;
+    }
+  }
 });
 function svNav(dir){
   _svNavInGroup(dir);
@@ -33578,10 +33585,7 @@ window.clClosePlayer = function(){
 
 // Cerrar con Escape
 document.addEventListener('keydown', e=>{
-  if(e.key === 'Escape'){
-    const clModal = document.getElementById('clPlayerModal');
-    if(clModal && clModal.style.display === 'flex') window.clClosePlayer();
-  }
+  if(e.key === 'Escape') window.clClosePlayer();
 });
 
 // Cerrar clickeando fondo del modal
