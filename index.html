@@ -9041,6 +9041,8 @@ function openSV(idx){
 }
 function closeSV(){
   document.getElementById('storyViewer').classList.remove('open');
+  const _svBgEl = document.getElementById('svBg');
+  if(_svBgEl) _svBgEl.innerHTML = '';
   if(_svAutoTimer){clearTimeout(_svAutoTimer);_svAutoTimer=null;}
   if(window._svViewsUnsub){ window._svViewsUnsub(); window._svViewsUnsub=null; }
   const audioEl = document.getElementById('svAudioEl');
