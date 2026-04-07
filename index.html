@@ -389,21 +389,21 @@ import { initializeApp }       from "https://www.gstatic.com/firebasejs/10.12.0/
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
          signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, updateProfile }
                                from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getDatabase, ref, push, set, get, update, onValue, runTransaction,
-         serverTimestamp, query, orderByChild, equalTo, off, onChildAdded, limitToLast }
-                               from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getFirestore, doc, collection, addDoc, setDoc, getDoc, getDocs, updateDoc,
+         onSnapshot, query, where, orderBy, limit, serverTimestamp, increment,
+         deleteField, arrayUnion, arrayRemove, runTransaction }
+                               from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const fbApp  = initializeApp({
   apiKey:            "AIzaSyA9oat9dd0S9vlxkg1osH4dW3XhRDGiOiw",
   authDomain:        "charlasrf4.firebaseapp.com",
-  databaseURL:       "https://charlasrf4-default-rtdb.firebaseio.com",
   projectId:         "charlasrf4",
   storageBucket:     "charlasrf4.firebasestorage.app",
   messagingSenderId: "345019626508",
   appId:             "1:345019626508:web:d099ca499acb29eac12a29"
 });
 const auth      = getAuth(fbApp);
-const db        = getDatabase(fbApp);
+const db        = getFirestore(fbApp);
 const gProvider = new GoogleAuthProvider();
 
 const CLD_CLOUD  = 'da0n5tg3g';
@@ -411,17 +411,20 @@ const CLD_PRESET = 'milatido_video';
 const IMGBB_KEY  = '75c60bcb472ab597b1dee463438b18ba';
 
 // ── State ──
-let CU          = null;  // { uid, nick, email, photo }
+let CU          = null;
 let curTab      = 'login';
 let uType       = 'photo';
 let selFile     = null;
 let curPage     = 'feedPage';
-let otherUser   = null;  // user being viewed or chatting with
-let privChatId  = null;  // current open chat id
-let privMsgRef  = null;  // current msgs listener ref
-let typingTimer = null;
-let allUsers    = {};    // uid→{nick,email,photo}
+let otherUser   = null;
+let privChatId  = null;
+let unsubMsgs   = null;
+let unsubTyping = null;
 let unsubConvs  = null;
+let unsubFeed   = null;
+let unsubUnread = null;
+let typingTimer = null;
+let allUsers    = {};
 
 const $    = id => document.getElementById(id);
 const toast = msg => {
@@ -430,14 +433,14 @@ const toast = msg => {
   $('toasts').appendChild(t);
   setTimeout(()=>t.remove(), 2800);
 };
-const setBar = pct => $('upBar').style.width = pct+'%';
-const chatId = (a,b) => [a,b].sort().join('_');
+const setBar  = pct => $('upBar').style.width = pct+'%';
+const chatId  = (a,b) => [a,b].sort().join('_');
 const fmtTime = ts => {
-  const d = new Date(ts);
+  const d = new Date(typeof ts==='object'&&ts?.toDate ? ts.toDate() : ts);
   return d.toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'});
 };
 const fmtDate = ts => {
-  const d = new Date(ts), now = new Date();
+  const d = new Date(typeof ts==='object'&&ts?.toDate ? ts.toDate() : ts), now = new Date();
   if (d.toDateString()===now.toDateString()) return 'Hoy';
   const y = new Date(now); y.setDate(y.getDate()-1);
   if (d.toDateString()===y.toDateString()) return 'Ayer';
@@ -446,18 +449,17 @@ const fmtDate = ts => {
 const avHTML = (photo,nick,cls='av') =>
   photo ? `<div class="${cls}"><img src="${photo}" alt=""></div>`
         : `<div class="${cls}">${(nick||'?')[0].toUpperCase()}</div>`;
+const tsToMs = ts => ts?.toDate ? ts.toDate().getTime() : (ts||0);
 
 // ── Page switcher ──
 window.showPage = id => {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   $(id).classList.add('on');
   curPage = id;
-  // update bottom nav
   ['bnFeed','bnChat','bnProf'].forEach(b=>$(b).classList.remove('on'));
   if(id==='feedPage') $('bnFeed').classList.add('on');
   if(id==='chatPage'){ $('bnChat').classList.add('on'); loadChatList(); }
   if(id==='profPage'){ $('bnProf').classList.add('on'); loadMyProfile(); }
-  // hide top nav on chat page
   $('topNav').style.display = id==='chatPage' ? 'none' : 'flex';
 };
 
@@ -480,7 +482,7 @@ window.doAuth = async () => {
       if(!nick){$('aErr').textContent='Ingresá un nombre de usuario.';return;}
       const c = await createUserWithEmailAndPassword(auth,email,pass);
       await updateProfile(c.user,{displayName:nick});
-      await set(ref(db,`vibely_users/${c.user.uid}`),{nick,email,photo:'',createdAt:Date.now()});
+      await setDoc(doc(db,'users',c.user.uid),{nick,email,photo:'',createdAt:serverTimestamp()});
     } else {
       await signInWithEmailAndPassword(auth,email,pass);
     }
@@ -498,8 +500,8 @@ window.doGoogle = async () => {
   try {
     const r = await signInWithPopup(auth,gProvider);
     const u = r.user;
-    const s = await get(ref(db,`vibely_users/${u.uid}`));
-    if(!s.exists()) await set(ref(db,`vibely_users/${u.uid}`),{nick:u.displayName||u.email.split('@')[0],email:u.email,photo:u.photoURL||'',createdAt:Date.now()});
+    const s = await getDoc(doc(db,'users',u.uid));
+    if(!s.exists()) await setDoc(doc(db,'users',u.uid),{nick:u.displayName||u.email.split('@')[0],email:u.email,photo:u.photoURL||'',createdAt:serverTimestamp()});
   } catch(e){ if(e.code!=='auth/popup-closed-by-user') $('aErr').textContent=e.message; }
 };
 
@@ -508,8 +510,8 @@ window.doLogout = async () => { await signOut(auth); };
 // ── Auth state ──
 onAuthStateChanged(auth, async user => {
   if(user){
-    const s = await get(ref(db,`vibely_users/${user.uid}`));
-    const d = s.val()||{};
+    const s = await getDoc(doc(db,'users',user.uid));
+    const d = s.data()||{};
     CU = { uid:user.uid, nick:d.nick||user.displayName||user.email.split('@')[0], email:user.email, photo:d.photo||user.photoURL||'' };
     $('authWrap').classList.add('gone');
     $('app').classList.add('on');
@@ -518,25 +520,26 @@ onAuthStateChanged(auth, async user => {
     listenUnreadCount();
   } else {
     CU=null;
+    if(unsubFeed){ unsubFeed(); unsubFeed=null; }
+    if(unsubUnread){ unsubUnread(); unsubUnread=null; }
     $('authWrap').classList.remove('gone');
     $('app').classList.remove('on');
   }
 });
 
-// ── Load all users (for search & display) ──
+// ── Load all users ──
 function loadAllUsers(){
-  onValue(ref(db,'vibely_users'), snap=>{
-    allUsers={};
-    snap.forEach(c=>{ allUsers[c.key]=c.val(); });
+  onSnapshot(collection(db,'users'), snap=>{
+    snap.forEach(d=>{ allUsers[d.id]=d.data(); });
   });
 }
 
 // ── FEED ──
 function loadFeed(){
-  onValue(ref(db,'vibely_posts'), snap=>{
-    const posts=[];
-    snap.forEach(c=>posts.push({id:c.key,...c.val()}));
-    posts.reverse();
+  if(unsubFeed) unsubFeed();
+  const q = query(collection(db,'posts'), orderBy('createdAt','desc'), limit(50));
+  unsubFeed = onSnapshot(q, snap=>{
+    const posts = snap.docs.map(d=>({id:d.id,...d.data()}));
     renderFeed(posts);
   });
 }
@@ -597,34 +600,40 @@ function setupIO(){
 window.toggleFire = async (pid,btn)=>{
   if(!CU){toast('Iniciá sesión primero');return;}
   const uid=CU.uid;
-  await runTransaction(ref(db,`vibely_posts/${pid}`),post=>{
-    if(!post) return post;
-    if(!post.firedBy) post.firedBy={};
-    if(post.firedBy[uid]){ delete post.firedBy[uid]; post.fires=Math.max(0,(post.fires||1)-1); btn.classList.remove('fired'); }
-    else { post.firedBy[uid]=true; post.fires=(post.fires||0)+1; btn.classList.add('fired'); }
-    return post;
-  });
+  const postRef=doc(db,'posts',pid);
+  try {
+    await runTransaction(db, async tx=>{
+      const snap=await tx.get(postRef);
+      if(!snap.exists()) return;
+      const data=snap.data();
+      const firedBy=data.firedBy||{};
+      if(firedBy[uid]){
+        const upd={fires:Math.max(0,(data.fires||1)-1),[`firedBy.${uid}`]:deleteField()};
+        tx.update(postRef,upd);
+        btn.classList.remove('fired');
+      } else {
+        tx.update(postRef,{fires:(data.fires||0)+1,[`firedBy.${uid}`]:true});
+        btn.classList.add('fired');
+      }
+    });
+  } catch(e){ console.error(e); }
 };
 
 // ── MY PROFILE ──
 function loadMyProfile(){
   if(!CU) return;
-  // avatar
   const avEl=$('myAvLg');
   if(CU.photo) avEl.innerHTML=`<img src="${CU.photo}" alt="">`;
   else avEl.textContent=CU.nick[0].toUpperCase();
   $('myNick').textContent='@'+CU.nick;
   $('myEmail').textContent=CU.email;
-  // posts
-  onValue(ref(db,'vibely_posts'), snap=>{
-    const posts=[];
-    snap.forEach(c=>{ const v=c.val(); if(v.uid===CU.uid) posts.push({id:c.key,...v}); });
-    posts.reverse();
+  getDocs(query(collection(db,'posts'),where('uid','==',CU.uid),orderBy('createdAt','desc'))).then(snap=>{
+    const posts=snap.docs.map(d=>({id:d.id,...d.data()}));
     $('myPostCount').textContent=posts.length;
     let totalFires=0; posts.forEach(p=>totalFires+=(p.fires||0));
     $('myFireCount').textContent=totalFires;
-    renderGrid($('myGrid'), posts, true);
-  },{onlyOnce:true});
+    renderGrid($('myGrid'),posts,true);
+  });
 }
 
 // ── OTHER USER PROFILE ──
@@ -638,11 +647,8 @@ window.openOtherProfile = async uid=>{
   const avEl=$('otherAvLg');
   if(u.photo) avEl.innerHTML=`<img src="${u.photo}" alt="">`;
   else avEl.textContent=u.nick[0].toUpperCase();
-  // load posts
-  const snap=await get(ref(db,'vibely_posts'));
-  const posts=[];
-  snap.forEach(c=>{ const v=c.val(); if(v.uid===uid) posts.push({id:c.key,...v}); });
-  posts.reverse();
+  const snap=await getDocs(query(collection(db,'posts'),where('uid','==',uid),orderBy('createdAt','desc')));
+  const posts=snap.docs.map(d=>({id:d.id,...d.data()}));
   $('otherPostCount').textContent=posts.length;
   let tf=0; posts.forEach(p=>tf+=(p.fires||0));
   $('otherFireCount').textContent=tf;
@@ -650,7 +656,7 @@ window.openOtherProfile = async uid=>{
   openPanel('otherProfPanel');
 };
 
-function renderGrid(container, posts, isMine){
+function renderGrid(container,posts,isMine){
   container.innerHTML='';
   if(!posts.length){
     container.innerHTML=`<div class="prof-empty"><em>📸</em><p>${isMine?'Aún no publicaste nada':'Sin publicaciones aún'}</p></div>`;
@@ -676,14 +682,14 @@ window.startChatWith = ()=>{
 function loadChatList(){
   if(!CU) return;
   if(unsubConvs) unsubConvs();
-  const convRef=ref(db,`vibely_convs/${CU.uid}`);
-  const unsub=onValue(convRef, snap=>{
-    const convs=[];
-    snap.forEach(c=>convs.push({id:c.key,...c.val()}));
-    convs.sort((a,b)=>(b.lastTs||0)-(a.lastTs||0));
+  const chatRef=collection(db,'chats');
+  const cid1=`${CU.uid}_`; // workaround: listen to chats doc for this user
+  // We store conv metadata in /chats/{chatId} doc itself
+  const q1=query(chatRef, where('members','array-contains',CU.uid), orderBy('lastTs','desc'), limit(30));
+  unsubConvs=onSnapshot(q1, snap=>{
+    const convs=snap.docs.map(d=>({id:d.id,...d.data()}));
     renderChatList(convs);
   });
-  unsubConvs=()=>off(convRef);
 }
 
 function renderChatList(convs){
@@ -694,21 +700,22 @@ function renderChatList(convs){
     return;
   }
   convs.forEach(c=>{
-    const u=allUsers[c.withUid]||{nick:c.withNick||'?',photo:''};
-    const unread=c.unread||0;
+    const otherUid=c.members?.find(m=>m!==CU.uid)||'';
+    const u=allUsers[otherUid]||{nick:c.withNick||'?',photo:''};
+    const unread=c[`unread_${CU.uid}`]||0;
     const el=document.createElement('div');
     el.className='chat-item';
     el.innerHTML=`
-      ${avHTML(u.photo||c.withPhoto,u.nick||c.withNick)}
+      ${avHTML(u.photo||'',u.nick||'?')}
       <div class="chat-item-info">
         <div class="chat-item-nick">
-          @${u.nick||c.withNick||'?'}
-          <span class="chat-item-time">${c.lastTs?fmtTime(c.lastTs):''}</span>
+          @${u.nick||'?'}
+          <span class="chat-item-time">${c.lastTs?fmtTime(tsToMs(c.lastTs)):''}</span>
         </div>
         <div class="chat-item-preview">${c.lastMsg||'Iniciar conversación'}</div>
       </div>
       ${unread>0?`<span class="unread-badge">${unread}</span>`:''}`;
-    el.onclick=()=>openPrivateChat({uid:c.withUid,nick:u.nick||c.withNick,photo:u.photo||c.withPhoto||''});
+    el.onclick=()=>openPrivateChat({uid:otherUid,nick:u.nick||'?',photo:u.photo||''});
     list.appendChild(el);
   });
 }
@@ -718,7 +725,6 @@ function openPrivateChat(user){
   otherUser=user;
   const cid=chatId(CU.uid,user.uid);
   privChatId=cid;
-  // update header
   const avEl=$('pcAv');
   if(user.photo) avEl.innerHTML=`<img src="${user.photo}" alt="">`;
   else avEl.textContent=(user.nick||'?')[0].toUpperCase();
@@ -726,25 +732,25 @@ function openPrivateChat(user){
   $('chatMsgs').innerHTML='';
   openPanel('privChat');
   // mark as read
-  update(ref(db,`vibely_convs/${CU.uid}/${user.uid}`),{unread:0}).catch(()=>{});
+  updateDoc(doc(db,'chats',cid),{[`unread_${CU.uid}`]:0}).catch(()=>{});
   // listen messages
-  if(privMsgRef) off(privMsgRef);
-  privMsgRef=query(ref(db,`vibely_msgs/${cid}`),orderByChild('ts'),limitToLast(100));
-  onValue(privMsgRef, snap=>{
-    const msgs=[];
-    snap.forEach(c=>msgs.push({id:c.key,...c.val()}));
+  if(unsubMsgs){ unsubMsgs(); unsubMsgs=null; }
+  const msgsQ=query(collection(db,'chats',cid,'messages'),orderBy('ts','asc'),limit(100));
+  unsubMsgs=onSnapshot(msgsQ, snap=>{
+    const msgs=snap.docs.map(d=>({id:d.id,...d.data()}));
     renderMsgs(msgs);
   });
   // listen typing
-  onValue(ref(db,`vibely_typing/${cid}/${user.uid}`), snap=>{
-    $('typingInd').classList.toggle('on', !!snap.val());
+  if(unsubTyping){ unsubTyping(); unsubTyping=null; }
+  unsubTyping=onSnapshot(doc(db,'presence',`${cid}_${user.uid}`), snap=>{
+    $('typingInd').classList.toggle('on', !!(snap.exists()&&snap.data()?.typing));
   });
 }
 
 window.closePrivChat = ()=>{
-  if(privMsgRef){ off(privMsgRef); privMsgRef=null; }
-  // clear typing
-  if(privChatId&&CU) set(ref(db,`vibely_typing/${privChatId}/${CU.uid}`),null).catch(()=>{});
+  if(unsubMsgs){ unsubMsgs(); unsubMsgs=null; }
+  if(unsubTyping){ unsubTyping(); unsubTyping=null; }
+  if(privChatId&&CU) setDoc(doc(db,'presence',`${privChatId}_${CU.uid}`),{typing:false},{merge:true}).catch(()=>{});
   privChatId=null;
   closePanel('privChat');
 };
@@ -754,7 +760,7 @@ function renderMsgs(msgs){
   container.innerHTML='';
   let lastDate='';
   msgs.forEach(m=>{
-    const ts=m.ts||0;
+    const ts=tsToMs(m.ts)||m.tsMs||0;
     const dateStr=fmtDate(ts);
     if(dateStr!==lastDate){
       const sep=document.createElement('div');
@@ -768,7 +774,7 @@ function renderMsgs(msgs){
     if(!mine){ const av=document.createElement('div'); av.className='av'; av.textContent=(otherUser?.nick||'?')[0].toUpperCase(); if(otherUser?.photo) av.innerHTML=`<img src="${otherUser.photo}" alt="">`; row.appendChild(av); }
     const bub=document.createElement('div');
     bub.className='bubble';
-    bub.innerHTML=`${escHtml(m.text)}<div class="bubble-time">${fmtTime(ts)}</div>`;
+    bub.innerHTML=`${escHtml(m.text)}<div class="bubble-time">${ts?fmtTime(ts):''}</div>`;
     row.appendChild(bub);
     container.appendChild(row);
   });
@@ -783,38 +789,40 @@ window.sendMsg = async ()=>{
   const inp=$('chatInp');
   const text=inp.value.trim(); if(!text) return;
   inp.value=''; autoResize(inp);
-  // clear typing
-  set(ref(db,`vibely_typing/${privChatId}/${CU.uid}`),null).catch(()=>{});
+  setDoc(doc(db,'presence',`${privChatId}_${CU.uid}`),{typing:false},{merge:true}).catch(()=>{});
   clearTimeout(typingTimer);
-  const ts=Date.now();
-  const msgData={uid:CU.uid,text,ts};
-  await push(ref(db,`vibely_msgs/${privChatId}`),msgData);
-  // update both conversation records
+  const tsMs=Date.now();
+  const chatRef=doc(db,'chats',privChatId);
+  const msgRef=collection(db,'chats',privChatId,'messages');
   const preview=text.length>40?text.slice(0,40)+'…':text;
-  const myConv={withUid:otherUser.uid,withNick:otherUser.nick,withPhoto:otherUser.photo||'',lastMsg:preview,lastTs:ts,unread:0};
-  const theirConv={withUid:CU.uid,withNick:CU.nick,withPhoto:CU.photo||'',lastMsg:preview,lastTs:ts};
-  await update(ref(db,`vibely_convs/${CU.uid}/${otherUser.uid}`),myConv);
-  // increment unread for other
-  const theirRef=ref(db,`vibely_convs/${otherUser.uid}/${CU.uid}`);
-  await runTransaction(theirRef, cur=>{
-    const base=cur||{};
-    return {...base,...theirConv, unread:(base.unread||0)+1};
-  });
+  // ensure chat doc exists with members
+  await setDoc(chatRef,{
+    members:[CU.uid,otherUser.uid],
+    lastMsg:preview,
+    lastTs:serverTimestamp(),
+    [`unread_${otherUser.uid}`]:increment(1),
+    [`unread_${CU.uid}`]:0
+  },{merge:true});
+  await addDoc(msgRef,{uid:CU.uid,text,ts:serverTimestamp(),tsMs});
 };
 
 // ── Typing indicator ──
 window.handleTyping = ()=>{
   if(!CU||!privChatId) return;
-  set(ref(db,`vibely_typing/${privChatId}/${CU.uid}`),true).catch(()=>{});
+  setDoc(doc(db,'presence',`${privChatId}_${CU.uid}`),{typing:true},{merge:true}).catch(()=>{});
   clearTimeout(typingTimer);
-  typingTimer=setTimeout(()=>{ set(ref(db,`vibely_typing/${privChatId}/${CU.uid}`),null).catch(()=>{}); },2000);
+  typingTimer=setTimeout(()=>{
+    setDoc(doc(db,'presence',`${privChatId}_${CU.uid}`),{typing:false},{merge:true}).catch(()=>{});
+  },2000);
 };
 
 // ── Unread count listener ──
 function listenUnreadCount(){
-  onValue(ref(db,`vibely_convs/${CU.uid}`), snap=>{
+  if(unsubUnread) unsubUnread();
+  const q=query(collection(db,'chats'),where('members','array-contains',CU.uid));
+  unsubUnread=onSnapshot(q, snap=>{
     let total=0;
-    snap.forEach(c=>{ total+=(c.val().unread||0); });
+    snap.forEach(d=>{ total+=(d.data()[`unread_${CU.uid}`]||0); });
     const badge=$('chatBadge'), dot=$('chatDot');
     if(total>0){ badge.textContent=total>99?'99+':total; badge.classList.add('on'); dot.classList.add('on'); }
     else { badge.classList.remove('on'); dot.classList.remove('on'); }
@@ -857,7 +865,7 @@ window.submitPost = async ()=>{
   try {
     const url=uType==='photo'?await uploadImgBB(selFile):await uploadCloudinary(selFile);
     setBar(90);
-    await push(ref(db,'vibely_posts'),{url,type:uType,caption,nick:CU.nick,uid:CU.uid,userPhoto:CU.photo||'',fires:0,firedBy:{},createdAt:serverTimestamp()});
+    await addDoc(collection(db,'posts'),{url,type:uType,caption,nick:CU.nick,uid:CU.uid,userPhoto:CU.photo||'',fires:0,firedBy:{},createdAt:serverTimestamp()});
     setBar(100); toast('¡Publicado! 🔥'); closeModal('upModal'); resetUpload();
   } catch(e){ toast('Error: '+e.message); console.error(e); }
   finally{ btn.disabled=false; btn.textContent='Publicar 🔥'; $('upProg').style.display='none'; }
