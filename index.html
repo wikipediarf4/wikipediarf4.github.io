@@ -85,13 +85,15 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
 .notif-dot.on{display:block}
 
 /* ── BOTTOM NAV ── */
-#botNav{position:fixed;bottom:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-around;padding:8px 0 22px;background:linear-gradient(to top,rgba(7,7,9,.95) 65%,transparent)}
-.bn-btn{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:.58rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;transition:color .2s;position:relative}
-.bn-btn span.icon{font-size:1.35rem}
+#botNav{position:fixed;bottom:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-around;padding:6px 0 20px;background:rgba(7,7,9,.92);backdrop-filter:blur(12px);border-top:1px solid rgba(255,255,255,.06)}
+.bn-btn{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:.62rem;font-weight:500;letter-spacing:.03em;transition:color .2s;position:relative;padding:4px 10px}
+.bn-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:stroke .2s}
 .bn-btn.on{color:#fff}
-.bn-plus{width:50px;height:34px;border-radius:10px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:1.25rem;border:none;cursor:pointer;transition:transform .15s,opacity .15s}
+.bn-btn.on svg{stroke:#fff}
+.bn-plus{width:44px;height:30px;border-radius:8px;background:var(--grad);display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;transition:transform .15s,opacity .15s;margin-bottom:2px}
+.bn-plus svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round}
 .bn-plus:active{transform:scale(.91);opacity:.82}
-.bn-badge{position:absolute;top:-2px;right:-2px;min-width:16px;height:16px;border-radius:8px;background:var(--accent);color:#fff;font-size:.6rem;font-weight:700;display:none;align-items:center;justify-content:center;padding:0 3px}
+.bn-badge{position:absolute;top:0px;right:4px;min-width:16px;height:16px;border-radius:8px;background:var(--accent);color:#fff;font-size:.6rem;font-weight:700;display:none;align-items:center;justify-content:center;padding:0 3px}
 .bn-badge.on{display:flex}
 
 /* ── MODALS (upload) ── */
@@ -190,7 +192,25 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
 .user-row-nick{font-family:var(--fh);font-weight:600;font-size:.9rem}
 .user-row-email{color:var(--muted);font-size:.78rem;margin-top:1px}
 
-/* ── TOAST ── */
+/* ── MUSIC SECTION ── */
+.music-section{margin-bottom:12px}
+.music-label{font-size:.82rem;font-weight:600;color:var(--muted);margin-bottom:8px;letter-spacing:.04em}
+.dz-track{display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .15s}
+.dz-track:last-child{border-bottom:none}
+.dz-track:hover,.dz-track:active{background:var(--s3)}
+.dz-track img{width:38px;height:38px;border-radius:6px;object-fit:cover;flex-shrink:0}
+.dz-track-info{flex:1;min-width:0}
+.dz-track-title{font-size:.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dz-track-artist{font-size:.75rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dz-track-preview{width:28px;height:28px;border-radius:50%;background:var(--grad);border:none;color:#fff;font-size:.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+/* music bar on posts */
+.pst-music{position:absolute;left:14px;bottom:70px;z-index:3;display:flex;align-items:center;gap:8px;max-width:60%}
+.pst-music-disc{width:32px;height:32px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid rgba(255,255,255,.4);animation:spin 4s linear infinite}
+.pst-music-disc.paused{animation-play-state:paused}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pst-music-info{display:flex;flex-direction:column;gap:1px}
+.pst-music-name{font-size:.72rem;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;text-shadow:0 1px 4px rgba(0,0,0,.8)}
+.pst-music-artist{font-size:.65rem;color:rgba(255,255,255,.7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px}
 #toasts{position:fixed;bottom:86px;left:50%;transform:translateX(-50%);z-index:999;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none}
 .tst{padding:9px 20px;border-radius:50px;background:rgba(28,28,35,.95);color:#fff;font-size:.86rem;font-weight:500;backdrop-filter:blur(8px);white-space:nowrap;animation:tIn .25s ease,tOut .25s ease 2.5s forwards}
 @keyframes tIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
@@ -287,15 +307,20 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
   <!-- Bottom nav -->
   <div id="botNav">
     <button class="bn-btn on" id="bnFeed" onclick="showPage('feedPage')">
-      <span class="icon">🏠</span><span>Inicio</span>
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Inicio</span>
     </button>
-    <button class="bn-plus" onclick="openUpload()">➕</button>
+    <button class="bn-plus" onclick="openUpload()">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
     <button class="bn-btn" id="bnChat" onclick="showPage('chatPage')">
-      <span class="icon">💬</span><span>Chat</span>
+      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span>Chat</span>
       <span class="bn-badge" id="chatBadge"></span>
     </button>
     <button class="bn-btn" id="bnProf" onclick="showPage('profPage')">
-      <span class="icon">👤</span><span>Perfil</span>
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Perfil</span>
     </button>
   </div>
 </div>
@@ -314,6 +339,25 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
     </div>
     <input type="file" id="fInput" style="display:none" accept="image/*" onchange="onFile(this)">
     <textarea class="ucap" id="capInput" rows="2" placeholder="Descripción (opcional)..."></textarea>
+
+    <!-- Deezer music picker -->
+    <div class="music-section" id="musicSection">
+      <div class="music-label">🎵 Agregar música</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <input class="a-inp" id="dzSearch" type="text" placeholder="Buscar canción o artista..." style="flex:1;padding:10px 13px;font-size:.9rem">
+        <button class="btn-sm" onclick="searchDeezer()" style="padding:10px 14px;white-space:nowrap">Buscar</button>
+      </div>
+      <div id="dzResults" style="max-height:160px;overflow-y:auto;border-radius:10px;background:var(--s2)"></div>
+      <div id="dzSelected" style="display:none;margin-top:8px;padding:10px 12px;border-radius:10px;background:rgba(255,45,85,.1);border:1px solid rgba(255,45,85,.3);display:flex;align-items:center;gap:10px">
+        <img id="dzSelCover" src="" style="width:36px;height:36px;border-radius:6px;object-fit:cover">
+        <div style="flex:1;min-width:0">
+          <div id="dzSelTitle" style="font-size:.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+          <div id="dzSelArtist" style="font-size:.75rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+        </div>
+        <button onclick="clearDzSel()" style="background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;flex-shrink:0">✕</button>
+      </div>
+    </div>
+
     <div class="uprog" id="upProg"><div class="uprog-bar" id="upBar"></div></div>
     <button class="btn-main" id="upBtn" onclick="submitPost()">Publicar 🔥</button>
   </div>
@@ -571,6 +615,13 @@ function renderFeed(posts){
         <div class="pst-user" onclick="openOtherProfile('${p.uid}')">${av}@${p.nick||'usuario'}</div>
         ${p.caption?`<div class="pst-caption">${p.caption}</div>`:''}
       </div>
+      ${p.music?`<div class="pst-music" onclick="playPostMusic(event,'${p.id}','${p.music.preview||''}')">
+        <div class="pst-music-disc" id="disc_${p.id}"><img src="${p.music.cover}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"></div>
+        <div class="pst-music-info">
+          <div class="pst-music-name">♪ ${p.music.title}</div>
+          <div class="pst-music-artist">${p.music.artist}</div>
+        </div>
+      </div>`:''}
       <div class="pst-acts">
         <button class="act-btn${fired?' fired':''}" onclick="toggleFire('${p.id}',this)">
           <div class="act-ico">🔥</div>
@@ -584,6 +635,24 @@ function renderFeed(posts){
   });
   setupIO();
 }
+
+// ── Play music on post ──
+let postAudio = null;
+let postAudioId = null;
+window.playPostMusic = (e, pid, previewUrl)=>{
+  e.stopPropagation();
+  const disc = document.getElementById('disc_'+pid);
+  if(postAudioId===pid && postAudio && !postAudio.paused){
+    postAudio.pause(); disc?.classList.add('paused'); return;
+  }
+  if(postAudio){ postAudio.pause(); document.getElementById('disc_'+postAudioId)?.classList.add('paused'); }
+  if(!previewUrl) return;
+  postAudio=new Audio(previewUrl);
+  postAudioId=pid;
+  disc?.classList.remove('paused');
+  postAudio.play().catch(()=>{});
+  postAudio.onended=()=>{ disc?.classList.add('paused'); };
+};
 
 function setupIO(){
   const io=new IntersectionObserver(entries=>{
@@ -845,7 +914,60 @@ window.searchUsers = q=>{
   });
 };
 
-// ── UPLOAD ──
+// ── DEEZER ──
+let dzSelected = null;
+let dzAudio    = null;
+
+window.searchDeezer = async () => {
+  const q = document.getElementById('dzSearch').value.trim();
+  if(!q) return;
+  const res = document.getElementById('dzResults');
+  res.innerHTML = '<div style="padding:12px;color:var(--muted);font-size:.83rem;text-align:center">Buscando...</div>';
+  try {
+    const r = await fetch(`https://api.deezer.com/search?q=${encodeURIComponent(q)}&limit=6&output=jsonp`, {mode:'no-cors'});
+    // Deezer no permite CORS directo, usamos un proxy público
+    const r2 = await fetch(`https://corsproxy.io/?${encodeURIComponent('https://api.deezer.com/search?q='+encodeURIComponent(q)+'&limit=6')}`);
+    const j = await r2.json();
+    const tracks = j.data||[];
+    if(!tracks.length){ res.innerHTML='<div style="padding:12px;color:var(--muted);font-size:.83rem;text-align:center">Sin resultados</div>'; return; }
+    res.innerHTML='';
+    tracks.forEach(t=>{
+      const el=document.createElement('div'); el.className='dz-track';
+      el.innerHTML=`
+        <img src="${t.album?.cover_small||''}" alt="">
+        <div class="dz-track-info">
+          <div class="dz-track-title">${t.title}</div>
+          <div class="dz-track-artist">${t.artist?.name||''}</div>
+        </div>
+        <button class="dz-track-preview" onclick="previewDz(event,'${t.preview}')">▶</button>`;
+      el.addEventListener('click', ev=>{ if(ev.target.closest('.dz-track-preview')) return; selectDz(t); });
+      res.appendChild(el);
+    });
+  } catch(e){ res.innerHTML='<div style="padding:12px;color:var(--muted);font-size:.83rem;text-align:center">Error al buscar. Intentá de nuevo.</div>'; }
+};
+
+window.previewDz = (e, url)=>{
+  e.stopPropagation();
+  if(dzAudio){ dzAudio.pause(); dzAudio=null; }
+  if(url){ dzAudio=new Audio(url); dzAudio.play().catch(()=>{}); }
+};
+
+window.selectDz = t=>{
+  dzSelected={id:t.id,title:t.title,artist:t.artist?.name||'',cover:t.album?.cover_small||'',preview:t.preview};
+  if(dzAudio){ dzAudio.pause(); dzAudio=null; }
+  const sel=document.getElementById('dzSelected');
+  document.getElementById('dzSelCover').src=dzSelected.cover;
+  document.getElementById('dzSelTitle').textContent=dzSelected.title;
+  document.getElementById('dzSelArtist').textContent=dzSelected.artist;
+  sel.style.display='flex';
+  document.getElementById('dzResults').innerHTML='';
+  document.getElementById('dzSearch').value='';
+};
+
+window.clearDzSel = ()=>{
+  dzSelected=null;
+  document.getElementById('dzSelected').style.display='none';
+};
 window.openUpload = ()=>{ if(!CU){toast('Iniciá sesión primero');return;} $('upModal').classList.add('open'); };
 window.setUType = type=>{
   uType=type;
@@ -865,7 +987,7 @@ window.submitPost = async ()=>{
   try {
     const url=uType==='photo'?await uploadImgBB(selFile):await uploadCloudinary(selFile);
     setBar(90);
-    await addDoc(collection(db,'posts'),{url,type:uType,caption,nick:CU.nick,uid:CU.uid,userPhoto:CU.photo||'',fires:0,firedBy:{},createdAt:serverTimestamp()});
+    await addDoc(collection(db,'posts'),{url,type:uType,caption,nick:CU.nick,uid:CU.uid,userPhoto:CU.photo||'',fires:0,firedBy:{},music:dzSelected||null,createdAt:serverTimestamp()});
     setBar(100); toast('¡Publicado! 🔥'); closeModal('upModal'); resetUpload();
   } catch(e){ toast('Error: '+e.message); console.error(e); }
   finally{ btn.disabled=false; btn.textContent='Publicar 🔥'; $('upProg').style.display='none'; }
@@ -883,7 +1005,7 @@ async function uploadCloudinary(file){
   const j=await r.json(); if(j.error) throw new Error(j.error.message);
   return j.secure_url;
 }
-function resetUpload(){ selFile=null; $('capInput').value=''; $('fInput').value=''; $('dropHint').textContent='Toca para elegir una imagen (JPG/PNG, max 32MB)'; setUType('photo'); }
+function resetUpload(){ selFile=null; dzSelected=null; document.getElementById('dzSelected').style.display='none'; document.getElementById('dzResults').innerHTML=''; $('capInput').value=''; $('fInput').value=''; $('dropHint').textContent='Toca para elegir una imagen (JPG/PNG, max 32MB)'; setUType('photo'); }
 
 // ── UI helpers ──
 window.closeModal = id=>{ $(id).classList.remove('open'); resetUpload(); };
