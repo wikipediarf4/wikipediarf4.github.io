@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Mivo 🔥</title>
+<title>Vibely 🔥</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -206,7 +206,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
 
 <!-- ═══ AUTH ═══ -->
 <div id="authWrap">
-  <div class="auth-brand">Mivo</div>
+  <div class="auth-brand">Vibely</div>
   <p class="auth-tagline">Tu feed. Tu vibra. 🔥</p>
   <div class="auth-tabs">
     <button class="a-tab on" id="tabL" onclick="swTab('login')">Entrar</button>
@@ -231,7 +231,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
 
   <!-- Top nav -->
   <div id="topNav">
-    <div class="nav-logo">Mivo</div>
+    <div class="nav-logo">Vibely</div>
     <div class="nav-r">
       <button class="nav-btn" id="navChatBtn" onclick="showPage('chatPage')">
         💬<span class="notif-dot" id="chatDot"></span>
@@ -480,7 +480,7 @@ window.doAuth = async () => {
       if(!nick){$('aErr').textContent='Ingresá un nombre de usuario.';return;}
       const c = await createUserWithEmailAndPassword(auth,email,pass);
       await updateProfile(c.user,{displayName:nick});
-      await set(ref(db,`mivo_users/${c.user.uid}`),{nick,email,photo:'',createdAt:Date.now()});
+      await set(ref(db,`vibely_users/${c.user.uid}`),{nick,email,photo:'',createdAt:Date.now()});
     } else {
       await signInWithEmailAndPassword(auth,email,pass);
     }
@@ -498,8 +498,8 @@ window.doGoogle = async () => {
   try {
     const r = await signInWithPopup(auth,gProvider);
     const u = r.user;
-    const s = await get(ref(db,`mivo_users/${u.uid}`));
-    if(!s.exists()) await set(ref(db,`mivo_users/${u.uid}`),{nick:u.displayName||u.email.split('@')[0],email:u.email,photo:u.photoURL||'',createdAt:Date.now()});
+    const s = await get(ref(db,`vibely_users/${u.uid}`));
+    if(!s.exists()) await set(ref(db,`vibely_users/${u.uid}`),{nick:u.displayName||u.email.split('@')[0],email:u.email,photo:u.photoURL||'',createdAt:Date.now()});
   } catch(e){ if(e.code!=='auth/popup-closed-by-user') $('aErr').textContent=e.message; }
 };
 
@@ -508,7 +508,7 @@ window.doLogout = async () => { await signOut(auth); };
 // ── Auth state ──
 onAuthStateChanged(auth, async user => {
   if(user){
-    const s = await get(ref(db,`mivo_users/${user.uid}`));
+    const s = await get(ref(db,`vibely_users/${user.uid}`));
     const d = s.val()||{};
     CU = { uid:user.uid, nick:d.nick||user.displayName||user.email.split('@')[0], email:user.email, photo:d.photo||user.photoURL||'' };
     $('authWrap').classList.add('gone');
@@ -525,7 +525,7 @@ onAuthStateChanged(auth, async user => {
 
 // ── Load all users (for search & display) ──
 function loadAllUsers(){
-  onValue(ref(db,'mivo_users'), snap=>{
+  onValue(ref(db,'vibely_users'), snap=>{
     allUsers={};
     snap.forEach(c=>{ allUsers[c.key]=c.val(); });
   });
@@ -533,7 +533,7 @@ function loadAllUsers(){
 
 // ── FEED ──
 function loadFeed(){
-  onValue(ref(db,'mivo_posts'), snap=>{
+  onValue(ref(db,'vibely_posts'), snap=>{
     const posts=[];
     snap.forEach(c=>posts.push({id:c.key,...c.val()}));
     posts.reverse();
@@ -597,7 +597,7 @@ function setupIO(){
 window.toggleFire = async (pid,btn)=>{
   if(!CU){toast('Iniciá sesión primero');return;}
   const uid=CU.uid;
-  await runTransaction(ref(db,`mivo_posts/${pid}`),post=>{
+  await runTransaction(ref(db,`vibely_posts/${pid}`),post=>{
     if(!post) return post;
     if(!post.firedBy) post.firedBy={};
     if(post.firedBy[uid]){ delete post.firedBy[uid]; post.fires=Math.max(0,(post.fires||1)-1); btn.classList.remove('fired'); }
@@ -616,7 +616,7 @@ function loadMyProfile(){
   $('myNick').textContent='@'+CU.nick;
   $('myEmail').textContent=CU.email;
   // posts
-  onValue(ref(db,'mivo_posts'), snap=>{
+  onValue(ref(db,'vibely_posts'), snap=>{
     const posts=[];
     snap.forEach(c=>{ const v=c.val(); if(v.uid===CU.uid) posts.push({id:c.key,...v}); });
     posts.reverse();
@@ -639,7 +639,7 @@ window.openOtherProfile = async uid=>{
   if(u.photo) avEl.innerHTML=`<img src="${u.photo}" alt="">`;
   else avEl.textContent=u.nick[0].toUpperCase();
   // load posts
-  const snap=await get(ref(db,'mivo_posts'));
+  const snap=await get(ref(db,'vibely_posts'));
   const posts=[];
   snap.forEach(c=>{ const v=c.val(); if(v.uid===uid) posts.push({id:c.key,...v}); });
   posts.reverse();
@@ -676,7 +676,7 @@ window.startChatWith = ()=>{
 function loadChatList(){
   if(!CU) return;
   if(unsubConvs) unsubConvs();
-  const convRef=ref(db,`mivo_convs/${CU.uid}`);
+  const convRef=ref(db,`vibely_convs/${CU.uid}`);
   const unsub=onValue(convRef, snap=>{
     const convs=[];
     snap.forEach(c=>convs.push({id:c.key,...c.val()}));
@@ -726,17 +726,17 @@ function openPrivateChat(user){
   $('chatMsgs').innerHTML='';
   openPanel('privChat');
   // mark as read
-  update(ref(db,`mivo_convs/${CU.uid}/${user.uid}`),{unread:0}).catch(()=>{});
+  update(ref(db,`vibely_convs/${CU.uid}/${user.uid}`),{unread:0}).catch(()=>{});
   // listen messages
   if(privMsgRef) off(privMsgRef);
-  privMsgRef=query(ref(db,`mivo_msgs/${cid}`),orderByChild('ts'),limitToLast(100));
+  privMsgRef=query(ref(db,`vibely_msgs/${cid}`),orderByChild('ts'),limitToLast(100));
   onValue(privMsgRef, snap=>{
     const msgs=[];
     snap.forEach(c=>msgs.push({id:c.key,...c.val()}));
     renderMsgs(msgs);
   });
   // listen typing
-  onValue(ref(db,`mivo_typing/${cid}/${user.uid}`), snap=>{
+  onValue(ref(db,`vibely_typing/${cid}/${user.uid}`), snap=>{
     $('typingInd').classList.toggle('on', !!snap.val());
   });
 }
@@ -744,7 +744,7 @@ function openPrivateChat(user){
 window.closePrivChat = ()=>{
   if(privMsgRef){ off(privMsgRef); privMsgRef=null; }
   // clear typing
-  if(privChatId&&CU) set(ref(db,`mivo_typing/${privChatId}/${CU.uid}`),null).catch(()=>{});
+  if(privChatId&&CU) set(ref(db,`vibely_typing/${privChatId}/${CU.uid}`),null).catch(()=>{});
   privChatId=null;
   closePanel('privChat');
 };
@@ -784,18 +784,18 @@ window.sendMsg = async ()=>{
   const text=inp.value.trim(); if(!text) return;
   inp.value=''; autoResize(inp);
   // clear typing
-  set(ref(db,`mivo_typing/${privChatId}/${CU.uid}`),null).catch(()=>{});
+  set(ref(db,`vibely_typing/${privChatId}/${CU.uid}`),null).catch(()=>{});
   clearTimeout(typingTimer);
   const ts=Date.now();
   const msgData={uid:CU.uid,text,ts};
-  await push(ref(db,`mivo_msgs/${privChatId}`),msgData);
+  await push(ref(db,`vibely_msgs/${privChatId}`),msgData);
   // update both conversation records
   const preview=text.length>40?text.slice(0,40)+'…':text;
   const myConv={withUid:otherUser.uid,withNick:otherUser.nick,withPhoto:otherUser.photo||'',lastMsg:preview,lastTs:ts,unread:0};
   const theirConv={withUid:CU.uid,withNick:CU.nick,withPhoto:CU.photo||'',lastMsg:preview,lastTs:ts};
-  await update(ref(db,`mivo_convs/${CU.uid}/${otherUser.uid}`),myConv);
+  await update(ref(db,`vibely_convs/${CU.uid}/${otherUser.uid}`),myConv);
   // increment unread for other
-  const theirRef=ref(db,`mivo_convs/${otherUser.uid}/${CU.uid}`);
+  const theirRef=ref(db,`vibely_convs/${otherUser.uid}/${CU.uid}`);
   await runTransaction(theirRef, cur=>{
     const base=cur||{};
     return {...base,...theirConv, unread:(base.unread||0)+1};
@@ -805,14 +805,14 @@ window.sendMsg = async ()=>{
 // ── Typing indicator ──
 window.handleTyping = ()=>{
   if(!CU||!privChatId) return;
-  set(ref(db,`mivo_typing/${privChatId}/${CU.uid}`),true).catch(()=>{});
+  set(ref(db,`vibely_typing/${privChatId}/${CU.uid}`),true).catch(()=>{});
   clearTimeout(typingTimer);
-  typingTimer=setTimeout(()=>{ set(ref(db,`mivo_typing/${privChatId}/${CU.uid}`),null).catch(()=>{}); },2000);
+  typingTimer=setTimeout(()=>{ set(ref(db,`vibely_typing/${privChatId}/${CU.uid}`),null).catch(()=>{}); },2000);
 };
 
 // ── Unread count listener ──
 function listenUnreadCount(){
-  onValue(ref(db,`mivo_convs/${CU.uid}`), snap=>{
+  onValue(ref(db,`vibely_convs/${CU.uid}`), snap=>{
     let total=0;
     snap.forEach(c=>{ total+=(c.val().unread||0); });
     const badge=$('chatBadge'), dot=$('chatDot');
@@ -857,7 +857,7 @@ window.submitPost = async ()=>{
   try {
     const url=uType==='photo'?await uploadImgBB(selFile):await uploadCloudinary(selFile);
     setBar(90);
-    await push(ref(db,'mivo_posts'),{url,type:uType,caption,nick:CU.nick,uid:CU.uid,userPhoto:CU.photo||'',fires:0,firedBy:{},createdAt:serverTimestamp()});
+    await push(ref(db,'vibely_posts'),{url,type:uType,caption,nick:CU.nick,uid:CU.uid,userPhoto:CU.photo||'',fires:0,firedBy:{},createdAt:serverTimestamp()});
     setBar(100); toast('¡Publicado! 🔥'); closeModal('upModal'); resetUpload();
   } catch(e){ toast('Error: '+e.message); console.error(e); }
   finally{ btn.disabled=false; btn.textContent='Publicar 🔥'; $('upProg').style.display='none'; }
