@@ -412,6 +412,59 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
 .suspended-banner em{font-style:normal;font-size:4rem}
 .suspended-banner h2{font-family:var(--fh);font-size:1.4rem;color:#ff2d55}
 .suspended-banner p{color:var(--muted);font-size:.9rem;max-width:300px;line-height:1.5}
+
+/* ── EXPLORE PAGE ── */
+#explorePage{overflow-y:auto;flex:1}
+.explore-header{position:sticky;top:0;z-index:10;background:var(--bg);padding:58px 16px 12px;border-bottom:1px solid var(--border)}
+.explore-search-bar{display:flex;align-items:center;gap:10px;background:var(--s2);border-radius:14px;padding:10px 14px;border:1.5px solid var(--border)}
+.explore-search-bar svg{width:18px;height:18px;stroke:var(--muted);fill:none;stroke-width:2;flex-shrink:0}
+.explore-search-bar input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:var(--fb);font-size:.93rem}
+.explore-search-bar input::placeholder{color:var(--muted)}
+.explore-section{padding:16px 16px 8px}
+.explore-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.explore-section-title{font-family:var(--fh);font-weight:700;font-size:1rem;display:flex;align-items:center;gap:6px}
+.explore-see-all{font-size:.8rem;color:var(--accent);font-weight:500;cursor:pointer;background:none;border:none;padding:0}
+/* Trending grid - 3 cols */
+.explore-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+.explore-thumb{aspect-ratio:9/16;border-radius:10px;overflow:hidden;background:var(--s2);cursor:pointer;position:relative;flex-shrink:0}
+.explore-thumb img,.explore-thumb video{width:100%;height:100%;object-fit:cover;display:block}
+.explore-thumb-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7) 0%,transparent 60%);border-radius:10px;opacity:0;transition:opacity .2s}
+.explore-thumb:active .explore-thumb-overlay{opacity:1}
+.explore-thumb-views{position:absolute;bottom:5px;left:5px;display:flex;align-items:center;gap:3px;color:#fff;font-size:.65rem;font-weight:700}
+.explore-thumb-type{position:absolute;top:5px;right:5px;background:rgba(0,0,0,.55);border-radius:4px;padding:2px 5px;font-size:.6rem;color:#fff;font-weight:600}
+/* Photos row - horizontal scroll */
+.explore-photos-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.explore-photos-row::-webkit-scrollbar{display:none}
+.explore-photo-card{width:120px;border-radius:12px;overflow:hidden;background:var(--s2);cursor:pointer;flex-shrink:0;position:relative;aspect-ratio:1/1}
+.explore-photo-card img{width:100%;height:100%;object-fit:cover;display:block}
+.explore-photo-card-views{position:absolute;bottom:4px;left:4px;display:flex;align-items:center;gap:2px;color:#fff;font-size:.6rem;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.8)}
+/* Live section */
+.live-card{display:flex;align-items:center;gap:12px;padding:12px;background:var(--s1);border-radius:14px;border:1.5px solid var(--border);cursor:pointer;transition:background .2s;margin-bottom:8px}
+.live-card:hover{background:var(--s2)}
+.live-badge{background:linear-gradient(135deg,#ff2d55,#ff5e3a);color:#fff;font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:6px;letter-spacing:.05em;flex-shrink:0}
+.live-badge.soon{background:var(--s3);color:var(--muted)}
+.live-card-info{flex:1}
+.live-card-title{font-family:var(--fh);font-weight:700;font-size:.9rem}
+.live-card-sub{color:var(--muted);font-size:.77rem;margin-top:2px}
+.live-avatar{width:44px;height:44px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;overflow:hidden}
+.live-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+/* Explore full view (when clicking see all or a tab) */
+.explore-tab-row{display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:58px;z-index:9}
+.explore-tab{flex:1;padding:12px 0;text-align:center;font-size:.85rem;font-weight:500;color:var(--muted);cursor:pointer;background:none;border:none;border-bottom:2px solid transparent;transition:all .2s;font-family:var(--fb)}
+.explore-tab.on{color:var(--text);border-bottom-color:var(--accent)}
+/* Post viewer panel */
+#postViewPanel{background:#000}
+#postViewPanel .pst-card{width:100%;max-width:100%;height:100%;border-radius:0;box-shadow:none}
+#postViewPanel .pst-media{border-radius:0}
+#postViewPanel .pst-veil{border-radius:0}
+/* ── CHAT PAGE (TikTok style) ── */
+#chatPage .chat-page-header{display:flex;align-items:center;justify-content:space-between;padding:58px 16px 12px;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0}
+#chatPage .chat-page-title{font-family:var(--fh);font-weight:800;font-size:1.2rem}
+#chatPage .chat-item{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.05)}
+#chatPage .chat-item .av{width:46px;height:46px;font-size:1rem;font-weight:800}
+#chatPage .chat-item-nick{font-size:.93rem;font-weight:700}
+#chatPage .chat-item-preview{font-size:.8rem}
+#chatPage .chat-item-time{font-size:.68rem}
 </style>
 </head>
 <body>
@@ -505,12 +558,117 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
     </div>
   </div>
 
+  <!-- ── EXPLORE PAGE ── -->
+  <div class="page" id="explorePage">
+    <div class="explore-header">
+      <div class="explore-search-bar">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Buscar en Vibely...">
+      </div>
+    </div>
+    <!-- Tabs -->
+    <div class="explore-tab-row">
+      <button class="explore-tab on" onclick="switchExploreTab('trending',this)">🔥 Trending</button>
+      <button class="explore-tab" onclick="switchExploreTab('fotos',this)">📸 Fotos</button>
+      <button class="explore-tab" onclick="switchExploreTab('reels',this)">🎬 Reels</button>
+      <button class="explore-tab" onclick="switchExploreTab('live',this)">🔴 Live</button>
+    </div>
+
+    <!-- TRENDING TAB -->
+    <div id="exploreTabTrending" style="padding-bottom:80px">
+      <div class="explore-section">
+        <div class="explore-section-header">
+          <span class="explore-section-title">🔥 Más vistos hoy</span>
+        </div>
+        <div class="explore-grid" id="trendingGrid">
+          <!-- populated by JS -->
+          <div style="grid-column:1/-1;padding:32px 0;text-align:center;color:var(--muted);font-size:.85rem">Cargando contenido...</div>
+        </div>
+      </div>
+      <div class="explore-section">
+        <div class="explore-section-header">
+          <span class="explore-section-title">📸 Fotos populares</span>
+          <button class="explore-see-all" onclick="switchExploreTab('fotos',null)">Ver todo</button>
+        </div>
+        <div class="explore-photos-row" id="popularPhotosRow">
+          <div style="padding:20px 0;color:var(--muted);font-size:.85rem">Cargando...</div>
+        </div>
+      </div>
+      <div class="explore-section">
+        <div class="explore-section-header">
+          <span class="explore-section-title">🎬 Reels más vistos</span>
+          <button class="explore-see-all" onclick="switchExploreTab('reels',null)">Ver todo</button>
+        </div>
+        <div class="explore-grid" id="popularReelsGrid" style="grid-template-columns:repeat(3,1fr)">
+          <div style="grid-column:1/-1;padding:20px 0;text-align:center;color:var(--muted);font-size:.85rem">Cargando...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOTOS TAB -->
+    <div id="exploreTabFotos" style="display:none;padding-bottom:80px">
+      <div class="explore-section">
+        <div class="explore-section-header">
+          <span class="explore-section-title">📸 Fotos más vistas</span>
+        </div>
+        <div class="explore-grid" id="allPhotosGrid">
+          <div style="grid-column:1/-1;padding:32px 0;text-align:center;color:var(--muted);font-size:.85rem">Cargando...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REELS TAB -->
+    <div id="exploreTabReels" style="display:none;padding-bottom:80px">
+      <div class="explore-section">
+        <div class="explore-section-header">
+          <span class="explore-section-title">🎬 Reels más vistos</span>
+        </div>
+        <div class="explore-grid" id="allReelsGrid">
+          <div style="grid-column:1/-1;padding:32px 0;text-align:center;color:var(--muted);font-size:.85rem">Cargando...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIVE TAB -->
+    <div id="exploreTabLive" style="display:none;padding:16px;padding-bottom:80px">
+      <div style="text-align:center;margin-bottom:20px;padding:24px 16px;background:var(--s1);border-radius:18px;border:1.5px solid var(--border)">
+        <div style="font-size:3rem;margin-bottom:8px">🔴</div>
+        <div style="font-family:var(--fh);font-weight:800;font-size:1.2rem;margin-bottom:6px">Live en Vibely</div>
+        <div style="color:var(--muted);font-size:.85rem;line-height:1.5">Transmisiones en vivo de tu comunidad.<br>Muy pronto disponible.</div>
+        <div style="display:inline-block;margin-top:14px;padding:6px 16px;border-radius:20px;background:var(--s3);color:var(--muted);font-size:.78rem;font-weight:700;letter-spacing:.05em">🚧 PRÓXIMAMENTE</div>
+      </div>
+      <div class="live-card">
+        <div class="live-avatar">🎮</div>
+        <div class="live-card-info">
+          <div class="live-card-title">Gaming con la crew</div>
+          <div class="live-card-sub">@gamer_vibe · Proximamente</div>
+        </div>
+        <div class="live-badge soon">PRONTO</div>
+      </div>
+      <div class="live-card">
+        <div class="live-avatar">🎵</div>
+        <div class="live-card-info">
+          <div class="live-card-title">Sesión musical en vivo</div>
+          <div class="live-card-sub">@musicvibely · Proximamente</div>
+        </div>
+        <div class="live-badge soon">PRONTO</div>
+      </div>
+      <div class="live-card">
+        <div class="live-avatar">💬</div>
+        <div class="live-card-info">
+          <div class="live-card-title">Q&amp;A en vivo</div>
+          <div class="live-card-sub">@vibecreator · Proximamente</div>
+        </div>
+        <div class="live-badge soon">PRONTO</div>
+      </div>
+    </div>
+  </div>
+
   <!-- ── CHAT LIST PAGE ── -->
   <div class="page" id="chatPage" style="overflow:hidden;flex-direction:column">
-    <div style="height:58px"></div>
-    <div style="padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)">
-      <span style="font-family:var(--fh);font-weight:700;font-size:1.1rem">Mensajes</span>
-      <button class="btn-sm" onclick="openNewChat()" style="padding:7px 14px;font-size:.82rem">Nuevo chat ✏️</button>
+    <div class="chat-page-header">
+      <span class="chat-page-title">Mensajes</span>
+      <button class="btn-sm" onclick="openNewChat()" style="padding:7px 14px;font-size:.82rem;border-radius:20px">✏️ Nuevo</button>
     </div>
     <div class="chat-list" id="chatList">
       <div class="chat-list-empty"><em>💬</em><p>No tenés conversaciones aún</p></div>
@@ -523,12 +681,16 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
       <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       <span>Inicio</span>
     </button>
+    <button class="bn-btn" id="bnExplore" onclick="showPage('explorePage')">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span>Explorar</span>
+    </button>
     <button class="bn-plus" onclick="openUpload()">
       <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </button>
     <button class="bn-btn" id="bnChat" onclick="showPage('chatPage')">
       <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      <span>Chat</span>
+      <span>Mensajes</span>
       <span class="bn-badge" id="chatBadge"></span>
     </button>
     <button class="bn-btn" id="bnProf" onclick="showPage('profPage')">
@@ -911,11 +1073,110 @@ window.showPage = id => {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   $(id).classList.add('on');
   curPage = id;
-  ['bnFeed','bnChat','bnProf'].forEach(b=>$(b).classList.remove('on'));
+  ['bnFeed','bnExplore','bnChat','bnProf'].forEach(b=>$(b) && $(b).classList.remove('on'));
   if(id==='feedPage') $('bnFeed').classList.add('on');
+  if(id==='explorePage'){ $('bnExplore').classList.add('on'); loadExplore(); }
   if(id==='chatPage'){ $('bnChat').classList.add('on'); loadChatList(); }
   if(id==='profPage'){ $('bnProf').classList.add('on'); loadMyProfile(); }
-  $('topNav').style.display = id==='chatPage' ? 'none' : 'flex';
+  $('topNav').style.display = (id==='chatPage'||id==='explorePage') ? 'none' : 'flex';
+};
+
+// ── Explore ──
+let exploreLoaded = false;
+window.switchExploreTab = (tab, btn) => {
+  ['Trending','Fotos','Reels','Live'].forEach(t=>{
+    const el = $('exploreTab'+t);
+    if(el) el.style.display='none';
+  });
+  const show = $('exploreTab'+(tab.charAt(0).toUpperCase()+tab.slice(1)));
+  if(show) show.style.display='';
+  document.querySelectorAll('.explore-tab').forEach(b=>b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  else {
+    const tabs = document.querySelectorAll('.explore-tab');
+    const map = {fotos:1,reels:2,live:3,trending:0};
+    if(tabs[map[tab]]) tabs[map[tab]].classList.add('on');
+  }
+};
+
+window.loadExplore = async () => {
+  if(exploreLoaded) return;
+  try {
+    const { getDocs: gds2, collection: col2, query: q3, orderBy: ob2, limit: lim2 } =
+      await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    // Load top posts by likes
+    const snap = await gds2(q3(col2(db,'posts'), ob2('likes','desc'), lim2(30)));
+    const posts = snap.docs.map(d=>({id:d.id,...d.data()}));
+    const photos = posts.filter(p=>!p.isVideo);
+    const videos = posts.filter(p=>p.isVideo);
+    renderExploreGrid($('trendingGrid'), posts.slice(0,9), true);
+    renderExplorePhotosRow($('popularPhotosRow'), photos.slice(0,8));
+    renderExploreGrid($('popularReelsGrid'), videos.slice(0,6), true);
+    renderExploreGrid($('allPhotosGrid'), photos, false);
+    renderExploreGrid($('allReelsGrid'), videos, false);
+    exploreLoaded = true;
+  } catch(e){ console.log('explore err',e); }
+};
+
+function fmtViews(n){
+  if(!n) return '0';
+  if(n>=1000000) return (n/1000000).toFixed(1)+'M';
+  if(n>=1000) return (n/1000).toFixed(1)+'K';
+  return String(n);
+}
+
+function renderExploreGrid(container, posts, withLabel){
+  if(!container) return;
+  if(!posts.length){ container.innerHTML='<div style="grid-column:1/-1;padding:32px 0;text-align:center;color:var(--muted);font-size:.85rem">Sin contenido aún</div>'; return; }
+  container.innerHTML = posts.map(p=>`
+    <div class="explore-thumb" onclick="openPostViewer('${p.id}')">
+      ${p.isVideo
+        ? `<video src="${p.url}" muted playsinline style="width:100%;height:100%;object-fit:cover;display:block" preload="metadata"></video><div class="explore-thumb-type">▶ Video</div>`
+        : `<img src="${p.url}" loading="lazy" alt="">`}
+      <div class="explore-thumb-overlay"></div>
+      <div class="explore-thumb-views">👁 ${fmtViews(p.likes||0)}</div>
+    </div>`).join('');
+}
+
+function renderExplorePhotosRow(container, posts){
+  if(!container) return;
+  if(!posts.length){ container.innerHTML='<div style="padding:20px 0;color:var(--muted);font-size:.85rem">Sin fotos aún</div>'; return; }
+  container.innerHTML = posts.map(p=>`
+    <div class="explore-photo-card" onclick="openPostViewer('${p.id}')">
+      <img src="${p.url}" loading="lazy" alt="">
+      <div class="explore-photo-card-views">❤️ ${fmtViews(p.likes||0)}</div>
+    </div>`).join('');
+}
+
+window.openPostViewer = async (pid) => {
+  // Open the post in the feed's post viewer by navigating feed to that post
+  // For now open the panel fullscreen with the media
+  try {
+    const { getDoc: gd2, doc: d3 } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const snap = await gd2(d3(db,'posts',pid));
+    if(!snap.exists()) return;
+    const p = snap.data();
+    let existing = $('quickPostViewer');
+    if(!existing){
+      existing = document.createElement('div');
+      existing.id='quickPostViewer';
+      existing.style.cssText='position:fixed;inset:0;z-index:300;background:#000;display:flex;align-items:center;justify-content:center;flex-direction:column';
+      existing.innerHTML=`
+        <button onclick="document.getElementById('quickPostViewer').remove()" style="position:absolute;top:18px;left:18px;z-index:2;background:rgba(0,0,0,.6);border:none;color:#fff;font-size:1.4rem;width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px)">←</button>
+        <div id="qpvMedia" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center"></div>
+        <div id="qpvInfo" style="position:absolute;bottom:30px;left:16px;right:70px;z-index:2"></div>`;
+      document.body.appendChild(existing);
+    }
+    const media = $('qpvMedia');
+    const info = $('qpvInfo');
+    if(p.isVideo){
+      media.innerHTML=`<video src="${p.url}" controls autoplay playsinline style="max-width:100%;max-height:100%;object-fit:contain"></video>`;
+    } else {
+      media.innerHTML=`<img src="${p.url}" style="max-width:100%;max-height:100%;object-fit:contain">`;
+    }
+    const u = allUsers[p.uid]||{};
+    info.innerHTML=`<div style="font-family:var(--fh);font-weight:700;font-size:.95rem;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.8)">@${u.nick||'usuario'}</div><div style="font-size:.82rem;color:rgba(255,255,255,.75);margin-top:3px">${p.caption||''}</div><div style="margin-top:6px;display:flex;gap:12px;font-size:.8rem;color:rgba(255,255,255,.7)"><span>❤️ ${p.likes||0}</span><span>🔥 ${p.fires||0}</span></div>`;
+  } catch(e){ console.log(e); }
 };
 
 // ── Profile view toggle ──
