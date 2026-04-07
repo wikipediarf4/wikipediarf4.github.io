@@ -1374,6 +1374,7 @@ function renderFeed(posts){
     } else {
       const img=document.createElement('img');
       img.className='pst-media'; img.src=p.url; img.loading='lazy'; img.alt='';
+      img.onerror=()=>{ img.style.display='none'; card.style.background='#1a1a1f'; };
       card.appendChild(img);
     }
 
@@ -1421,8 +1422,8 @@ function renderFeed(posts){
       delBtn.onclick=()=>{ adminDeletePostViewer(p.id); };
       acts.appendChild(delBtn);
     }
-    acts.querySelector('#likebtn_'+p.id).addEventListener('click',function(){ toggleLike(p.id,this); });
-    acts.querySelector('#firebtn_'+p.id).addEventListener('click',function(){ toggleFire(p.id,this); });
+    acts.querySelector('#likebtn_'+p.id).onclick=function(){ toggleLike(p.id,this); };
+    acts.querySelector('#firebtn_'+p.id).onclick=function(){ toggleFire(p.id,this); };
     // Admin menu on post
     if(isAdmin()){
       const adminMenu=document.createElement('div');
@@ -1507,6 +1508,18 @@ window.toggleLike = async (pid, btn)=>{
   const uid=CU.uid;
   const postRef=doc(db,'posts',pid);
   const countEl=document.getElementById('lc_'+pid);
+  // Optimistic UI update
+  const wasLiked=btn.classList.contains('liked');
+  const curCount=parseInt(countEl?.textContent||'0');
+  if(!wasLiked){
+    btn.classList.add('liked');
+    if(countEl) countEl.textContent=curCount+1;
+    const heart=btn.querySelector('.heart-ico');
+    if(heart){heart.classList.remove('heart-pop');void heart.offsetWidth;heart.classList.add('heart-pop');setTimeout(()=>heart.classList.remove('heart-pop'),450);}
+  } else {
+    btn.classList.remove('liked');
+    if(countEl) countEl.textContent=Math.max(0,curCount-1);
+  }
   try{
     await runTransaction(db, async tx=>{
       const snap=await tx.get(postRef);
@@ -1516,18 +1529,19 @@ window.toggleLike = async (pid, btn)=>{
       if(likedBy[uid]){
         const n=Math.max(0,(data.likes||1)-1);
         tx.update(postRef,{likes:n,[`likedBy.${uid}`]:deleteField()});
-        btn.classList.remove('liked');
         if(countEl) countEl.textContent=n;
       } else {
         const n=(data.likes||0)+1;
         tx.update(postRef,{likes:n,[`likedBy.${uid}`]:true});
-        btn.classList.add('liked');
-        const heart=btn.querySelector('.heart-ico');
-        if(heart){heart.classList.remove('heart-pop');void heart.offsetWidth;heart.classList.add('heart-pop');setTimeout(()=>heart.classList.remove('heart-pop'),450);}
         if(countEl) countEl.textContent=n;
       }
     });
-  }catch(e){toast('Error al dar like');}
+  }catch(e){
+    // Revert optimistic update on error
+    if(!wasLiked){ btn.classList.remove('liked'); if(countEl) countEl.textContent=curCount; }
+    else { btn.classList.add('liked'); if(countEl) countEl.textContent=curCount; }
+    toast('Error al dar like: '+e.message);
+  }
 };
 
 // ── Like en perfil feed view ──
@@ -1796,8 +1810,8 @@ function renderProfilePosts(container, posts, isMine, view){
     const grid=document.createElement('div'); grid.className='prof-grid';
     posts.forEach(p=>{
       const el=document.createElement('div'); el.className='prof-thumb';
-      if(p.type==='video') el.innerHTML=`<video src="${p.url}" muted preload="metadata" style="border-radius:10px"></video><span class="vid-badge">▶ Video</span>`;
-      else el.innerHTML=`<img src="${p.url}" alt="" loading="lazy" style="border-radius:10px">`;
+      if(p.type==='video') el.innerHTML=`<video src="${p.url}" muted preload="metadata" style="border-radius:10px" onerror="this.style.display='none'"></video><span class="vid-badge">▶ Video</span>`;
+      else el.innerHTML=`<img src="${p.url}" alt="" loading="lazy" style="border-radius:10px" onerror="this.style.display='none';this.parentElement.style.background='#1a1a1f'">`;
       el.innerHTML+=`<div class="prof-thumb-veil"></div>
       <div class="prof-thumb-stats">
         <span class="prof-thumb-stat">▷ ${fmtViews(p.likes||0)}</span>
@@ -1825,8 +1839,8 @@ function renderProfilePosts(container, posts, isMine, view){
         ${p.caption?`<div class="pfeed-caption">${escHtml(p.caption)}</div>`:''}
         <div class="pfeed-media">
           ${p.type==='video'
-            ?`<video src="${p.url}" controls playsinline muted style="width:100%;height:100%;object-fit:cover;display:block;border-radius:16px"></video>`
-            :`<img src="${p.url}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:16px">`}
+            ?`<video src="${p.url}" controls playsinline muted style="width:100%;height:100%;object-fit:cover;display:block;border-radius:16px" onerror="this.style.display='none'"></video>`
+            :`<img src="${p.url}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:16px" onerror="this.style.display='none';this.parentElement.style.minHeight='60px';this.parentElement.style.background='#1a1a1f'">`}
         </div>
         <div class="pfeed-actions">
           <button class="pfeed-act${liked?' liked':''}" id="pflike_${p.id}" onclick="toggleLikePfeed('${p.id}',this)">
