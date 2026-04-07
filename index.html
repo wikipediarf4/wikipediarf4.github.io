@@ -17,7 +17,7 @@
 }
 html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-family:var(--fb);overflow:hidden;-webkit-tap-highlight-color:transparent}
 
-/* ─── AUTH ─── */
+/* ── AUTH ── */
 #authWrap{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;padding:28px}
 #authWrap.gone{display:none}
 .auth-brand{font-family:var(--fh);font-weight:800;font-size:3rem;letter-spacing:-2px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
@@ -38,49 +38,63 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
 .btn-google svg{width:20px;height:20px;flex-shrink:0}
 .a-err{color:var(--accent);font-size:.83rem;text-align:center;min-height:18px}
 
-/* ─── APP ─── */
+/* ── APP SHELL ── */
 #app{display:none;width:100%;height:100%;flex-direction:column}
 #app.on{display:flex}
 
-/* ─── FEED ─── */
-#feed{flex:1;overflow-y:scroll;overflow-x:hidden;scroll-snap-type:y mandatory;scrollbar-width:none}
-#feed::-webkit-scrollbar{display:none}
+/* ── PAGES ── */
+.page{display:none;flex:1;overflow:hidden;flex-direction:column}
+.page.on{display:flex}
+
+/* ── FEED PAGE ── */
+#feedWrap{flex:1;overflow-y:scroll;overflow-x:hidden;scroll-snap-type:y mandatory;scrollbar-width:none}
+#feedWrap::-webkit-scrollbar{display:none}
 .pst{width:100%;height:100dvh;scroll-snap-align:start;scroll-snap-stop:always;position:relative;display:flex;align-items:flex-end;overflow:hidden;background:#000}
-.pst-media{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#0a0a0a}
-.pst-veil{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.78) 0%,rgba(0,0,0,.08) 55%,transparent 100%)}
-.pst-info{position:relative;z-index:2;padding:18px 76px 32px 18px;flex:1}
-.pst-user{display:flex;align-items:center;gap:9px;font-family:var(--fh);font-weight:700;font-size:.95rem;margin-bottom:7px}
-.av{width:34px;height:34px;border-radius:50%;flex-shrink:0;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:800;color:#fff;overflow:hidden}
-.av img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+.pst-media{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.pst-veil{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.8) 0%,rgba(0,0,0,.06) 55%,transparent 100%)}
+.pst-info{position:relative;z-index:2;padding:18px 76px 34px 18px;flex:1}
+.pst-user{display:flex;align-items:center;gap:9px;font-family:var(--fh);font-weight:700;font-size:.95rem;margin-bottom:6px;cursor:pointer}
 .pst-caption{font-size:.88rem;color:rgba(255,255,255,.82);line-height:1.45}
-.pst-acts{position:absolute;right:10px;bottom:72px;z-index:3;display:flex;flex-direction:column;align-items:center;gap:18px}
+.pst-acts{position:absolute;right:10px;bottom:74px;z-index:3;display:flex;flex-direction:column;align-items:center;gap:18px}
 .act-btn{display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer;color:#fff;user-select:none}
 .act-ico{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:1.3rem;backdrop-filter:blur(6px);transition:transform .15s,background .15s}
 .act-btn:active .act-ico{transform:scale(1.18)}
 .act-btn.fired .act-ico{background:rgba(255,85,0,.38);animation:fpop .35s ease}
 @keyframes fpop{0%{transform:scale(1)}45%{transform:scale(1.45)}75%{transform:scale(.88)}100%{transform:scale(1)}}
-.act-count{font-size:.75rem;font-weight:600;letter-spacing:.02em}
+.act-count{font-size:.75rem;font-weight:600}
+/* msg btn on feed */
+.act-btn.msg-btn .act-ico{font-size:1.15rem}
 .pi{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity .25s}
 .pi.show{opacity:1}
 .pi em{font-style:normal;font-size:4rem;filter:drop-shadow(0 0 18px rgba(0,0,0,.8));animation:piA .5s ease forwards}
 @keyframes piA{0%{transform:scale(.4);opacity:1}100%{transform:scale(1.3);opacity:0}}
 
-/* ─── TOP NAV ─── */
-#topNav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:linear-gradient(to bottom,rgba(7,7,9,.85),transparent)}
+/* ── AV ── */
+.av{width:34px;height:34px;border-radius:50%;flex-shrink:0;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:800;color:#fff;overflow:hidden}
+.av img,.av-lg img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.av-lg{width:72px;height:72px;border-radius:50%;flex-shrink:0;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:800;color:#fff;overflow:hidden}
+
+/* ── TOP NAV ── */
+#topNav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:linear-gradient(to bottom,rgba(7,7,9,.88),transparent);pointer-events:none}
+#topNav>*{pointer-events:all}
 .nav-logo{font-family:var(--fh);font-weight:800;font-size:1.4rem;letter-spacing:-1px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .nav-r{display:flex;gap:8px}
-.nav-btn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.1);border:none;color:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);transition:background .2s}
+.nav-btn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.1);border:none;color:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);transition:background .2s;position:relative}
 .nav-btn:hover{background:rgba(255,255,255,.18)}
+.notif-dot{position:absolute;top:3px;right:3px;width:8px;height:8px;border-radius:50%;background:var(--accent);border:2px solid var(--bg);display:none}
+.notif-dot.on{display:block}
 
-/* ─── BOTTOM NAV ─── */
-#botNav{position:fixed;bottom:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-around;padding:8px 0 22px;background:linear-gradient(to top,rgba(7,7,9,.92) 60%,transparent)}
-.bn-btn{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:.58rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;transition:color .2s}
-.bn-btn span{font-size:1.35rem}
+/* ── BOTTOM NAV ── */
+#botNav{position:fixed;bottom:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-around;padding:8px 0 22px;background:linear-gradient(to top,rgba(7,7,9,.95) 65%,transparent)}
+.bn-btn{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:.58rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;transition:color .2s;position:relative}
+.bn-btn span.icon{font-size:1.35rem}
 .bn-btn.on{color:#fff}
 .bn-plus{width:50px;height:34px;border-radius:10px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:1.25rem;border:none;cursor:pointer;transition:transform .15s,opacity .15s}
 .bn-plus:active{transform:scale(.91);opacity:.82}
+.bn-badge{position:absolute;top:-2px;right:-2px;min-width:16px;height:16px;border-radius:8px;background:var(--accent);color:#fff;font-size:.6rem;font-weight:700;display:none;align-items:center;justify-content:center;padding:0 3px}
+.bn-badge.on{display:flex}
 
-/* ─── MODALS ─── */
+/* ── MODALS (upload) ── */
 .mbd{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.72);backdrop-filter:blur(5px);display:none;align-items:flex-end;justify-content:center}
 .mbd.open{display:flex}
 .msheet{width:100%;max-width:520px;background:var(--s1);border-radius:22px 22px 0 0;padding:18px 18px 44px;animation:sUp .28s ease}
@@ -100,23 +114,84 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
 .uprog{width:100%;height:3px;border-radius:2px;background:var(--border);overflow:hidden;display:none;margin-bottom:12px}
 .uprog-bar{height:100%;width:0%;background:var(--grad);transition:width .3s}
 
-/* ─── PANELS ─── */
-.panel{position:fixed;inset:0;z-index:150;background:var(--bg);display:none;flex-direction:column}
-.panel.open{display:flex}
-.panel-head{padding:52px 16px 16px;border-bottom:1px solid var(--border);font-family:var(--fh);font-weight:700;font-size:1.1rem;display:flex;align-items:center;justify-content:space-between}
-.pcl{background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer}
-.prof-top{padding:50px 16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
-.prof-av{width:58px;height:58px;border-radius:50%;flex-shrink:0;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:800;color:#fff;overflow:hidden}
-.prof-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
-.prof-nick{font-family:var(--fh);font-weight:700;font-size:1.05rem}
-.prof-email{color:var(--muted);font-size:.8rem;margin-top:2px}
-.btn-out{padding:9px 16px;border-radius:10px;border:1px solid var(--border);background:none;color:var(--text);font-family:var(--fb);cursor:pointer;font-size:.85rem;transition:background .2s}
-.btn-out:hover{background:var(--s2)}
-.chat-ph{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:var(--muted)}
-.chat-ph em{font-style:normal;font-size:3rem}
+/* ── FULL PANELS (slide-in) ── */
+.panel{position:fixed;inset:0;z-index:150;background:var(--bg);display:none;flex-direction:column;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.panel.open{display:flex;transform:translateX(0)}
+.ph{padding:52px 16px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.ph-back{background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;padding:4px 8px 4px 0}
+.ph-title{font-family:var(--fh);font-weight:700;font-size:1.1rem;flex:1}
+.ph-action{background:none;border:none;color:var(--accent);font-family:var(--fb);font-size:.9rem;font-weight:500;cursor:pointer}
 
-/* ─── TOAST ─── */
-#toasts{position:fixed;bottom:86px;left:50%;transform:translateX(-50%);z-index:999;display:flex;flex-direction:column;gap:6px;align-items:center}
+/* ── PROFILE PANEL ── */
+.prof-hero{padding:24px 16px 20px;border-bottom:1px solid var(--border)}
+.prof-row{display:flex;align-items:center;gap:16px;margin-bottom:14px}
+.prof-stats{display:flex;gap:28px;margin-top:4px}
+.prof-stat{display:flex;flex-direction:column;align-items:center;gap:2px}
+.prof-stat strong{font-family:var(--fh);font-weight:700;font-size:1.1rem}
+.prof-stat span{color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em}
+.prof-nick{font-family:var(--fh);font-weight:700;font-size:1.1rem}
+.prof-email{color:var(--muted);font-size:.8rem;margin-top:1px}
+.prof-btns{display:flex;gap:8px;margin-top:14px}
+.btn-sm{padding:9px 18px;border-radius:10px;border:1.5px solid var(--border);background:none;color:var(--text);font-family:var(--fb);cursor:pointer;font-size:.85rem;transition:background .2s;font-weight:500}
+.btn-sm:hover{background:var(--s2)}
+.btn-sm.accent{background:var(--grad);border-color:transparent;color:#fff}
+.prof-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;overflow-y:auto;flex:1}
+.prof-thumb{aspect-ratio:1;background:var(--s2);overflow:hidden;cursor:pointer;position:relative}
+.prof-thumb img,.prof-thumb video{width:100%;height:100%;object-fit:cover}
+.prof-thumb .vid-badge{position:absolute;top:5px;right:5px;background:rgba(0,0,0,.6);border-radius:4px;padding:2px 5px;font-size:.65rem;color:#fff}
+.prof-empty{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 0;color:var(--muted);gap:10px}
+.prof-empty em{font-style:normal;font-size:2.5rem}
+
+/* ── CHAT LIST PANEL ── */
+.chat-list{overflow-y:auto;flex:1}
+.chat-item{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .15s;position:relative}
+.chat-item:hover{background:var(--s1)}
+.chat-item-info{flex:1;min-width:0}
+.chat-item-nick{font-family:var(--fh);font-weight:600;font-size:.95rem;display:flex;align-items:center;gap:8px}
+.chat-item-preview{color:var(--muted);font-size:.83rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.chat-item-time{color:var(--muted);font-size:.72rem;white-space:nowrap;margin-left:8px}
+.unread-badge{min-width:18px;height:18px;border-radius:9px;background:var(--accent);color:#fff;font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px}
+.chat-list-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:12px;color:var(--muted)}
+.chat-list-empty em{font-style:normal;font-size:2.8rem}
+.chat-list-empty p{font-size:.88rem}
+
+/* ── PRIVATE CHAT PANEL ── */
+#privChat{z-index:160}
+.chat-msgs{flex:1;overflow-y:auto;padding:12px 12px 8px;display:flex;flex-direction:column;gap:6px;scroll-behavior:smooth}
+.chat-msgs::-webkit-scrollbar{display:none}
+.msg-row{display:flex;align-items:flex-end;gap:6px}
+.msg-row.mine{flex-direction:row-reverse}
+.bubble{max-width:72%;padding:10px 14px;border-radius:18px;font-size:.9rem;line-height:1.45;word-break:break-word;position:relative}
+.msg-row.theirs .bubble{background:var(--s2);border-bottom-left-radius:4px;color:var(--text)}
+.msg-row.mine .bubble{background:var(--grad);border-bottom-right-radius:4px;color:#fff}
+.bubble-time{font-size:.65rem;opacity:.6;margin-top:3px;text-align:right}
+.chat-input-row{display:flex;align-items:center;gap:8px;padding:10px 12px 28px;border-top:1px solid var(--border);background:var(--s1)}
+.chat-inp{flex:1;padding:11px 14px;background:var(--s2);border:none;border-radius:22px;color:var(--text);font-family:var(--fb);font-size:.95rem;outline:none;resize:none;max-height:100px;overflow-y:auto}
+.chat-inp::placeholder{color:var(--muted)}
+.chat-send{width:40px;height:40px;border-radius:50%;background:var(--grad);border:none;color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .2s}
+.chat-send:active{opacity:.75}
+/* typing indicator */
+.typing-ind{display:none;align-items:center;gap:4px;padding:6px 14px;color:var(--muted);font-size:.8rem}
+.typing-ind.on{display:flex}
+.typing-dot{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:tdot 1.2s ease infinite}
+.typing-dot:nth-child(2){animation-delay:.2s}
+.typing-dot:nth-child(3){animation-delay:.4s}
+@keyframes tdot{0%,80%,100%{transform:scale(.8);opacity:.5}40%{transform:scale(1.2);opacity:1}}
+/* date separator */
+.date-sep{text-align:center;color:var(--muted);font-size:.73rem;padding:6px 0;letter-spacing:.04em}
+
+/* ── USER SEARCH (for starting chat) ── */
+.user-search-wrap{padding:12px 16px;border-bottom:1px solid var(--border)}
+.user-search{width:100%;padding:10px 14px;background:var(--s2);border:none;border-radius:22px;color:var(--text);font-family:var(--fb);font-size:.9rem;outline:none}
+.user-search::placeholder{color:var(--muted)}
+.user-results{overflow-y:auto;flex:1}
+.user-row{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .15s}
+.user-row:hover{background:var(--s1)}
+.user-row-nick{font-family:var(--fh);font-weight:600;font-size:.9rem}
+.user-row-email{color:var(--muted);font-size:.78rem;margin-top:1px}
+
+/* ── TOAST ── */
+#toasts{position:fixed;bottom:86px;left:50%;transform:translateX(-50%);z-index:999;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none}
 .tst{padding:9px 20px;border-radius:50px;background:rgba(28,28,35,.95);color:#fff;font-size:.86rem;font-weight:500;backdrop-filter:blur(8px);white-space:nowrap;animation:tIn .25s ease,tOut .25s ease 2.5s forwards}
 @keyframes tIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @keyframes tOut{to{opacity:0}}
@@ -129,7 +204,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
 </head>
 <body>
 
-<!-- AUTH -->
+<!-- ═══ AUTH ═══ -->
 <div id="authWrap">
   <div class="auth-brand">Mivo</div>
   <p class="auth-tagline">Tu feed. Tu vibra. 🔥</p>
@@ -151,24 +226,81 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
   </div>
 </div>
 
-<!-- APP -->
+<!-- ═══ APP ═══ -->
 <div id="app">
+
+  <!-- Top nav -->
   <div id="topNav">
     <div class="nav-logo">Mivo</div>
     <div class="nav-r">
-      <button class="nav-btn" onclick="openPanel('chatPanel')">💬</button>
-      <button class="nav-btn" onclick="openPanel('profPanel')">👤</button>
+      <button class="nav-btn" id="navChatBtn" onclick="showPage('chatPage')">
+        💬<span class="notif-dot" id="chatDot"></span>
+      </button>
+      <button class="nav-btn" onclick="showPage('profPage')">👤</button>
     </div>
   </div>
-  <div id="feed"><div class="feed-load"><div class="spin"></div></div></div>
+
+  <!-- ── FEED PAGE ── -->
+  <div class="page on" id="feedPage" style="flex:1;overflow:hidden">
+    <div id="feedWrap">
+      <div class="feed-load"><div class="spin"></div></div>
+    </div>
+  </div>
+
+  <!-- ── PROFILE PAGE (own) ── -->
+  <div class="page" id="profPage" style="overflow-y:auto">
+    <div style="padding-top:58px"></div>
+    <div class="prof-hero">
+      <div class="prof-row">
+        <div class="av-lg" id="myAvLg">?</div>
+        <div style="flex:1">
+          <div class="prof-nick" id="myNick">—</div>
+          <div class="prof-email" id="myEmail" style="color:var(--muted);font-size:.8rem;margin-top:2px">—</div>
+          <div class="prof-stats" id="myStats">
+            <div class="prof-stat"><strong id="myPostCount">0</strong><span>Posts</span></div>
+            <div class="prof-stat"><strong id="myFireCount">0</strong><span>🔥 Total</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="prof-btns">
+        <button class="btn-sm" onclick="openUpload()" style="flex:1">+ Publicar</button>
+        <button class="btn-sm" onclick="doLogout()">Salir</button>
+      </div>
+    </div>
+    <div class="prof-grid" id="myGrid">
+      <div class="prof-empty"><em>📸</em><p>Aún no publicaste nada</p></div>
+    </div>
+  </div>
+
+  <!-- ── CHAT LIST PAGE ── -->
+  <div class="page" id="chatPage" style="overflow:hidden;flex-direction:column">
+    <div style="padding-top:58px"></div>
+    <div style="padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)">
+      <span style="font-family:var(--fh);font-weight:700;font-size:1.1rem">Mensajes</span>
+      <button class="btn-sm" onclick="openNewChat()" style="padding:7px 14px;font-size:.82rem">Nuevo chat ✏️</button>
+    </div>
+    <div class="chat-list" id="chatList">
+      <div class="chat-list-empty"><em>💬</em><p>No tenés conversaciones aún</p></div>
+    </div>
+  </div>
+
+  <!-- Bottom nav -->
   <div id="botNav">
-    <button class="bn-btn on"><span>🏠</span>Inicio</button>
+    <button class="bn-btn on" id="bnFeed" onclick="showPage('feedPage')">
+      <span class="icon">🏠</span><span>Inicio</span>
+    </button>
     <button class="bn-plus" onclick="openUpload()">➕</button>
-    <button class="bn-btn" onclick="openPanel('chatPanel')"><span>💬</span>Chat</button>
+    <button class="bn-btn" id="bnChat" onclick="showPage('chatPage')">
+      <span class="icon">💬</span><span>Chat</span>
+      <span class="bn-badge" id="chatBadge"></span>
+    </button>
+    <button class="bn-btn" id="bnProf" onclick="showPage('profPage')">
+      <span class="icon">👤</span><span>Perfil</span>
+    </button>
   </div>
 </div>
 
-<!-- UPLOAD MODAL -->
+<!-- ═══ UPLOAD MODAL ═══ -->
 <div class="mbd" id="upModal" onclick="bdClose(event,'upModal')">
   <div class="msheet">
     <div class="mhandle"></div>
@@ -178,8 +310,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
       <button class="utype-btn" id="utVideo" onclick="setUType('video')"><em>🎬</em><span>Video</span></button>
     </div>
     <div class="udrop" onclick="document.getElementById('fInput').click()">
-      <em>📤</em>
-      <p id="dropHint">Toca para elegir una imagen (JPG/PNG)</p>
+      <em>📤</em><p id="dropHint">Toca para elegir una imagen (JPG/PNG)</p>
     </div>
     <input type="file" id="fInput" style="display:none" accept="image/*" onchange="onFile(this)">
     <textarea class="ucap" id="capInput" rows="2" placeholder="Descripción (opcional)..."></textarea>
@@ -188,42 +319,81 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
   </div>
 </div>
 
-<!-- CHAT PANEL -->
-<div class="panel" id="chatPanel">
-  <div class="panel-head"><span>Mensajes</span><button class="pcl" onclick="closePanel('chatPanel')">✕</button></div>
-  <div class="chat-ph"><em>💬</em><p>Chat en construcción — ¡pronto!</p></div>
-</div>
-
-<!-- PROFILE PANEL -->
-<div class="panel" id="profPanel">
-  <div class="prof-top">
-    <div style="display:flex;align-items:center;gap:14px">
-      <div class="prof-av" id="profAv">?</div>
-      <div>
-        <div class="prof-nick" id="profNick">—</div>
-        <div class="prof-email" id="profEmail">—</div>
+<!-- ═══ OTHER-USER PROFILE PANEL ═══ -->
+<div class="panel" id="otherProfPanel">
+  <div class="ph">
+    <button class="ph-back" onclick="closePanel('otherProfPanel')">←</button>
+    <span class="ph-title" id="otherProfTitle">Perfil</span>
+  </div>
+  <div class="prof-hero">
+    <div class="prof-row">
+      <div class="av-lg" id="otherAvLg">?</div>
+      <div style="flex:1">
+        <div class="prof-nick" id="otherNickEl">—</div>
+        <div class="prof-stats">
+          <div class="prof-stat"><strong id="otherPostCount">0</strong><span>Posts</span></div>
+          <div class="prof-stat"><strong id="otherFireCount">0</strong><span>🔥 Total</span></div>
+        </div>
       </div>
     </div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <button class="btn-out" onclick="doLogout()">Salir</button>
-      <button class="pcl" onclick="closePanel('profPanel')">✕</button>
+    <div class="prof-btns">
+      <button class="btn-sm accent" id="msgUserBtn" onclick="startChatWith()" style="flex:1">💬 Enviar mensaje</button>
     </div>
   </div>
-  <div style="padding:20px 16px;color:var(--muted);font-size:.88rem">Tus publicaciones aparecen en el feed en tiempo real.</div>
+  <div class="prof-grid" id="otherGrid"></div>
+</div>
+
+<!-- ═══ NEW CHAT PANEL (user search) ═══ -->
+<div class="panel" id="newChatPanel">
+  <div class="ph">
+    <button class="ph-back" onclick="closePanel('newChatPanel')">←</button>
+    <span class="ph-title">Nueva conversación</span>
+  </div>
+  <div class="user-search-wrap">
+    <input class="user-search" id="userSearchInp" type="text" placeholder="Buscar usuario..." oninput="searchUsers(this.value)">
+  </div>
+  <div class="user-results" id="userResults">
+    <div style="padding:24px;color:var(--muted);font-size:.88rem;text-align:center">Escribí un nombre para buscar</div>
+  </div>
+</div>
+
+<!-- ═══ PRIVATE CHAT PANEL ═══ -->
+<div class="panel" id="privChat">
+  <div class="ph">
+    <button class="ph-back" onclick="closePrivChat()">←</button>
+    <div style="display:flex;align-items:center;gap:10px;flex:1">
+      <div class="av" id="pcAv">?</div>
+      <div>
+        <div style="font-family:var(--fh);font-weight:700;font-size:.95rem" id="pcNick">—</div>
+        <div class="typing-ind" id="typingInd">
+          <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+          <span style="margin-left:4px">escribiendo...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="chat-msgs" id="chatMsgs"></div>
+  <div class="chat-input-row">
+    <textarea class="chat-inp" id="chatInp" placeholder="Escribí un mensaje..." rows="1"
+      oninput="autoResize(this);handleTyping()"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"></textarea>
+    <button class="chat-send" onclick="sendMsg()">➤</button>
+  </div>
 </div>
 
 <div id="toasts"></div>
 
-<!-- FIREBASE MODULE -->
+<!-- ═══ FIREBASE ═══ -->
 <script type="module">
 import { initializeApp }       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
          signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, updateProfile }
                                from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getDatabase, ref, push, onValue, runTransaction, serverTimestamp, set, get }
+import { getDatabase, ref, push, set, get, update, onValue, runTransaction,
+         serverTimestamp, query, orderByChild, equalTo, off, onChildAdded, limitToLast }
                                from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-const app  = initializeApp({
+const fbApp  = initializeApp({
   apiKey:            "AIzaSyA9oat9dd0S9vlxkg1osH4dW3XhRDGiOiw",
   authDomain:        "charlasrf4.firebaseapp.com",
   databaseURL:       "https://charlasrf4-default-rtdb.firebaseio.com",
@@ -232,266 +402,487 @@ const app  = initializeApp({
   messagingSenderId: "345019626508",
   appId:             "1:345019626508:web:d099ca499acb29eac12a29"
 });
-const auth      = getAuth(app);
-const db        = getDatabase(app);
+const auth      = getAuth(fbApp);
+const db        = getDatabase(fbApp);
 const gProvider = new GoogleAuthProvider();
 
 const CLD_CLOUD  = 'da0n5tg3g';
 const CLD_PRESET = 'milatido_video';
 const IMGBB_KEY  = '75c60bcb472ab597b1dee463438b18ba';
 
-let CU      = null;
-let curTab  = 'login';
-let uType   = 'photo';
-let selFile = null;
+// ── State ──
+let CU          = null;  // { uid, nick, email, photo }
+let curTab      = 'login';
+let uType       = 'photo';
+let selFile     = null;
+let curPage     = 'feedPage';
+let otherUser   = null;  // user being viewed or chatting with
+let privChatId  = null;  // current open chat id
+let privMsgRef  = null;  // current msgs listener ref
+let typingTimer = null;
+let allUsers    = {};    // uid→{nick,email,photo}
+let unsubConvs  = null;
 
 const $    = id => document.getElementById(id);
 const toast = msg => {
   const t = document.createElement('div');
-  t.className = 'tst'; t.textContent = msg;
+  t.className='tst'; t.textContent=msg;
   $('toasts').appendChild(t);
-  setTimeout(() => t.remove(), 2800);
+  setTimeout(()=>t.remove(), 2800);
 };
-const setBar = pct => { $('upBar').style.width = pct+'%'; };
+const setBar = pct => $('upBar').style.width = pct+'%';
+const chatId = (a,b) => [a,b].sort().join('_');
+const fmtTime = ts => {
+  const d = new Date(ts);
+  return d.toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'});
+};
+const fmtDate = ts => {
+  const d = new Date(ts), now = new Date();
+  if (d.toDateString()===now.toDateString()) return 'Hoy';
+  const y = new Date(now); y.setDate(y.getDate()-1);
+  if (d.toDateString()===y.toDateString()) return 'Ayer';
+  return d.toLocaleDateString('es',{day:'numeric',month:'short'});
+};
+const avHTML = (photo,nick,cls='av') =>
+  photo ? `<div class="${cls}"><img src="${photo}" alt=""></div>`
+        : `<div class="${cls}">${(nick||'?')[0].toUpperCase()}</div>`;
 
-// AUTH TAB
+// ── Page switcher ──
+window.showPage = id => {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  $(id).classList.add('on');
+  curPage = id;
+  // update bottom nav
+  ['bnFeed','bnChat','bnProf'].forEach(b=>$(b).classList.remove('on'));
+  if(id==='feedPage') $('bnFeed').classList.add('on');
+  if(id==='chatPage'){ $('bnChat').classList.add('on'); loadChatList(); }
+  if(id==='profPage'){ $('bnProf').classList.add('on'); loadMyProfile(); }
+  // hide top nav on chat page
+  $('topNav').style.display = id==='chatPage' ? 'none' : 'flex';
+};
+
+// ── Auth tab ──
 window.swTab = tab => {
-  curTab = tab;
-  $('tabL').classList.toggle('on', tab==='login');
-  $('tabR').classList.toggle('on', tab==='reg');
-  $('aNick').style.display = tab==='reg' ? 'block' : 'none';
-  $('aErr').textContent = '';
+  curTab=tab;
+  $('tabL').classList.toggle('on',tab==='login');
+  $('tabR').classList.toggle('on',tab==='reg');
+  $('aNick').style.display = tab==='reg'?'block':'none';
+  $('aErr').textContent='';
 };
 
-// EMAIL AUTH
+// ── Email auth ──
 window.doAuth = async () => {
-  const email = $('aEmail').value.trim();
-  const pass  = $('aPass').value;
-  const nick  = $('aNick').value.trim();
-  $('aErr').textContent = '';
-  if (!email || !pass) { $('aErr').textContent = 'Completá todos los campos.'; return; }
+  const email=$('aEmail').value.trim(), pass=$('aPass').value, nick=$('aNick').value.trim();
+  $('aErr').textContent='';
+  if(!email||!pass){$('aErr').textContent='Completá todos los campos.';return;}
   try {
-    if (curTab === 'reg') {
-      if (!nick) { $('aErr').textContent = 'Ingresá un nombre de usuario.'; return; }
-      const c = await createUserWithEmailAndPassword(auth, email, pass);
-      await updateProfile(c.user, { displayName: nick });
-      await set(ref(db, `mivo_users/${c.user.uid}`), { nick, email, photo:'', createdAt: Date.now() });
+    if(curTab==='reg'){
+      if(!nick){$('aErr').textContent='Ingresá un nombre de usuario.';return;}
+      const c = await createUserWithEmailAndPassword(auth,email,pass);
+      await updateProfile(c.user,{displayName:nick});
+      await set(ref(db,`mivo_users/${c.user.uid}`),{nick,email,photo:'',createdAt:Date.now()});
     } else {
-      await signInWithEmailAndPassword(auth, email, pass);
+      await signInWithEmailAndPassword(auth,email,pass);
     }
   } catch(e) {
-    const m = {
-      'auth/email-already-in-use':'El email ya está registrado.',
-      'auth/invalid-email':'Email inválido.',
-      'auth/weak-password':'Contraseña mínimo 6 caracteres.',
-      'auth/user-not-found':'Usuario no encontrado.',
-      'auth/wrong-password':'Contraseña incorrecta.',
-      'auth/invalid-credential':'Email o contraseña incorrectos.',
-    };
-    $('aErr').textContent = m[e.code] || e.message;
+    const m={'auth/email-already-in-use':'El email ya está registrado.','auth/invalid-email':'Email inválido.',
+             'auth/weak-password':'Contraseña mínimo 6 caracteres.','auth/user-not-found':'Usuario no encontrado.',
+             'auth/wrong-password':'Contraseña incorrecta.','auth/invalid-credential':'Email o contraseña incorrectos.'};
+    $('aErr').textContent = m[e.code]||e.message;
   }
 };
 
-// GOOGLE AUTH
+// ── Google auth ──
 window.doGoogle = async () => {
-  $('aErr').textContent = '';
+  $('aErr').textContent='';
   try {
-    const result = await signInWithPopup(auth, gProvider);
-    const u = result.user;
-    const snap = await get(ref(db, `mivo_users/${u.uid}`));
-    if (!snap.exists()) {
-      await set(ref(db, `mivo_users/${u.uid}`), {
-        nick:      u.displayName || u.email.split('@')[0],
-        email:     u.email,
-        photo:     u.photoURL || '',
-        createdAt: Date.now()
-      });
-    }
-  } catch(e) {
-    if (e.code !== 'auth/popup-closed-by-user')
-      $('aErr').textContent = e.message;
-  }
+    const r = await signInWithPopup(auth,gProvider);
+    const u = r.user;
+    const s = await get(ref(db,`mivo_users/${u.uid}`));
+    if(!s.exists()) await set(ref(db,`mivo_users/${u.uid}`),{nick:u.displayName||u.email.split('@')[0],email:u.email,photo:u.photoURL||'',createdAt:Date.now()});
+  } catch(e){ if(e.code!=='auth/popup-closed-by-user') $('aErr').textContent=e.message; }
 };
 
-// LOGOUT
-window.doLogout = async () => { await signOut(auth); closePanel('profPanel'); };
+window.doLogout = async () => { await signOut(auth); };
 
-// AUTH STATE
+// ── Auth state ──
 onAuthStateChanged(auth, async user => {
-  if (user) {
-    const snap = await get(ref(db, `mivo_users/${user.uid}`));
-    const data = snap.val() || {};
-    CU = {
-      uid:   user.uid,
-      nick:  data.nick || user.displayName || user.email.split('@')[0],
-      email: user.email,
-      photo: data.photo || user.photoURL || ''
-    };
-    $('profNick').textContent  = '@' + CU.nick;
-    $('profEmail').textContent = CU.email;
-    const avEl = $('profAv');
-    if (CU.photo) { avEl.innerHTML = `<img src="${CU.photo}" alt="">`; }
-    else { avEl.textContent = CU.nick[0].toUpperCase(); }
+  if(user){
+    const s = await get(ref(db,`mivo_users/${user.uid}`));
+    const d = s.val()||{};
+    CU = { uid:user.uid, nick:d.nick||user.displayName||user.email.split('@')[0], email:user.email, photo:d.photo||user.photoURL||'' };
     $('authWrap').classList.add('gone');
     $('app').classList.add('on');
+    loadAllUsers();
     loadFeed();
+    listenUnreadCount();
   } else {
-    CU = null;
+    CU=null;
     $('authWrap').classList.remove('gone');
     $('app').classList.remove('on');
   }
 });
 
-// FEED
-function loadFeed() {
-  onValue(ref(db, 'mivo_posts'), snap => {
-    const posts = [];
-    snap.forEach(c => posts.push({ id: c.key, ...c.val() }));
+// ── Load all users (for search & display) ──
+function loadAllUsers(){
+  onValue(ref(db,'mivo_users'), snap=>{
+    allUsers={};
+    snap.forEach(c=>{ allUsers[c.key]=c.val(); });
+  });
+}
+
+// ── FEED ──
+function loadFeed(){
+  onValue(ref(db,'mivo_posts'), snap=>{
+    const posts=[];
+    snap.forEach(c=>posts.push({id:c.key,...c.val()}));
     posts.reverse();
     renderFeed(posts);
   });
 }
 
-function renderFeed(posts) {
-  const feed = $('feed');
-  feed.querySelectorAll('video').forEach(v => v.pause());
-  feed.innerHTML = '';
-  if (!posts.length) {
-    feed.innerHTML = `<div class="empty-feed"><em>🎬</em><p>¡Sé el primero en publicar!</p></div>`;
-    return;
-  }
-  posts.forEach(p => {
-    const el = document.createElement('div');
-    el.className = 'pst'; el.dataset.id = p.id;
-    const initials = (p.nick||'U')[0].toUpperCase();
-    const fires    = p.fires || 0;
-    const fired    = p.firedBy && CU && p.firedBy[CU.uid];
-    const avHTML   = p.userPhoto
-      ? `<div class="av"><img src="${p.userPhoto}" alt=""></div>`
-      : `<div class="av">${initials}</div>`;
-
-    if (p.type === 'video') {
-      el.innerHTML = `<video class="pst-media" src="${p.url}" loop playsinline muted></video>
-                      <div class="pi" id="pi_${p.id}"><em>▶️</em></div>`;
-      el.addEventListener('click', () => {
-        const v = el.querySelector('video'), pi = $(`pi_${p.id}`);
-        if (v.paused) v.play(); else v.pause();
-        if (pi) { pi.classList.add('show'); setTimeout(()=>pi.classList.remove('show'),550); }
+function renderFeed(posts){
+  const feed=$('feedWrap');
+  feed.querySelectorAll('video').forEach(v=>v.pause());
+  feed.innerHTML='';
+  if(!posts.length){ feed.innerHTML=`<div class="empty-feed"><em>🎬</em><p>¡Sé el primero en publicar!</p></div>`; return; }
+  posts.forEach(p=>{
+    const el=document.createElement('div');
+    el.className='pst'; el.dataset.id=p.id;
+    const fires=p.fires||0, fired=p.firedBy&&CU&&p.firedBy[CU.uid];
+    const av=avHTML(p.userPhoto,p.nick);
+    if(p.type==='video'){
+      el.innerHTML=`<video class="pst-media" src="${p.url}" loop playsinline muted></video><div class="pi" id="pi_${p.id}"><em>▶️</em></div>`;
+      el.addEventListener('click',e=>{
+        if(e.target.closest('.pst-acts')||e.target.closest('.pst-user')) return;
+        const v=el.querySelector('video'), pi=$(`pi_${p.id}`);
+        if(v.paused) v.play(); else v.pause();
+        if(pi){pi.classList.add('show');setTimeout(()=>pi.classList.remove('show'),550);}
       });
     } else {
-      el.innerHTML = `<img class="pst-media" src="${p.url}" alt="" loading="lazy">`;
+      el.innerHTML=`<img class="pst-media" src="${p.url}" alt="" loading="lazy">`;
     }
-
-    el.innerHTML += `
+    el.innerHTML+=`
       <div class="pst-veil"></div>
       <div class="pst-info">
-        <div class="pst-user">${avHTML}@${p.nick||'usuario'}</div>
+        <div class="pst-user" onclick="openOtherProfile('${p.uid}')">${av}@${p.nick||'usuario'}</div>
         ${p.caption?`<div class="pst-caption">${p.caption}</div>`:''}
       </div>
       <div class="pst-acts">
-        <button class="act-btn${fired?' fired':''}" id="fb_${p.id}" onclick="toggleFire('${p.id}',this)">
+        <button class="act-btn${fired?' fired':''}" onclick="toggleFire('${p.id}',this)">
           <div class="act-ico">🔥</div>
           <span class="act-count" id="fc_${p.id}">${fires}</span>
         </button>
+        ${p.uid!==CU?.uid?`<button class="act-btn msg-btn" onclick="openOtherProfile('${p.uid}')">
+          <div class="act-ico">💬</div><span class="act-count">Msg</span>
+        </button>`:''}
       </div>`;
     feed.appendChild(el);
   });
   setupIO();
 }
 
-function setupIO() {
-  const io = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      const v = e.target.querySelector('video');
-      if (!v) return;
-      if (e.isIntersecting) v.play().catch(()=>{}); else v.pause();
+function setupIO(){
+  const io=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      const v=e.target.querySelector('video');
+      if(!v) return;
+      if(e.isIntersecting) v.play().catch(()=>{}); else v.pause();
     });
-  }, { threshold: 0.65 });
-  document.querySelectorAll('.pst').forEach(p => io.observe(p));
+  },{threshold:0.65});
+  document.querySelectorAll('.pst').forEach(p=>io.observe(p));
 }
 
-// FIRE REACTION
-window.toggleFire = async (pid, btn) => {
-  if (!CU) { toast('Iniciá sesión primero'); return; }
-  const uid = CU.uid;
-  await runTransaction(ref(db, `mivo_posts/${pid}`), post => {
-    if (!post) return post;
-    if (!post.firedBy) post.firedBy = {};
-    if (post.firedBy[uid]) {
-      delete post.firedBy[uid];
-      post.fires = Math.max(0,(post.fires||1)-1);
-    } else {
-      post.firedBy[uid] = true;
-      post.fires = (post.fires||0)+1;
-    }
+// ── Fire reaction ──
+window.toggleFire = async (pid,btn)=>{
+  if(!CU){toast('Iniciá sesión primero');return;}
+  const uid=CU.uid;
+  await runTransaction(ref(db,`mivo_posts/${pid}`),post=>{
+    if(!post) return post;
+    if(!post.firedBy) post.firedBy={};
+    if(post.firedBy[uid]){ delete post.firedBy[uid]; post.fires=Math.max(0,(post.fires||1)-1); btn.classList.remove('fired'); }
+    else { post.firedBy[uid]=true; post.fires=(post.fires||0)+1; btn.classList.add('fired'); }
     return post;
   });
 };
 
-// UPLOAD TYPE
-window.setUType = type => {
-  uType = type;
-  $('utPhoto').classList.toggle('on', type==='photo');
-  $('utVideo').classList.toggle('on', type==='video');
-  $('fInput').accept = type==='video' ? 'video/*' : 'image/*';
-  $('dropHint').textContent = type==='video'
-    ? 'Toca para elegir un video (MP4/WebM, max 100MB)'
-    : 'Toca para elegir una imagen (JPG/PNG, max 32MB)';
-  selFile = null;
-};
-window.onFile = inp => { selFile = inp.files[0]||null; if(selFile) $('dropHint').textContent='✅ '+selFile.name; };
+// ── MY PROFILE ──
+function loadMyProfile(){
+  if(!CU) return;
+  // avatar
+  const avEl=$('myAvLg');
+  if(CU.photo) avEl.innerHTML=`<img src="${CU.photo}" alt="">`;
+  else avEl.textContent=CU.nick[0].toUpperCase();
+  $('myNick').textContent='@'+CU.nick;
+  $('myEmail').textContent=CU.email;
+  // posts
+  onValue(ref(db,'mivo_posts'), snap=>{
+    const posts=[];
+    snap.forEach(c=>{ const v=c.val(); if(v.uid===CU.uid) posts.push({id:c.key,...v}); });
+    posts.reverse();
+    $('myPostCount').textContent=posts.length;
+    let totalFires=0; posts.forEach(p=>totalFires+=(p.fires||0));
+    $('myFireCount').textContent=totalFires;
+    renderGrid($('myGrid'), posts, true);
+  },{onlyOnce:true});
+}
 
-// SUBMIT POST
-window.submitPost = async () => {
-  if (!CU)      { toast('No estás autenticado'); return; }
-  if (!selFile) { toast('Seleccioná un archivo'); return; }
-  const btn = $('upBtn');
-  btn.disabled=true; btn.textContent='Subiendo...';
+// ── OTHER USER PROFILE ──
+window.openOtherProfile = async uid=>{
+  if(!uid||uid===CU?.uid){ showPage('profPage'); return; }
+  const u=allUsers[uid];
+  if(!u) return;
+  otherUser={uid,...u};
+  $('otherProfTitle').textContent='@'+u.nick;
+  $('otherNickEl').textContent='@'+u.nick;
+  const avEl=$('otherAvLg');
+  if(u.photo) avEl.innerHTML=`<img src="${u.photo}" alt="">`;
+  else avEl.textContent=u.nick[0].toUpperCase();
+  // load posts
+  const snap=await get(ref(db,'mivo_posts'));
+  const posts=[];
+  snap.forEach(c=>{ const v=c.val(); if(v.uid===uid) posts.push({id:c.key,...v}); });
+  posts.reverse();
+  $('otherPostCount').textContent=posts.length;
+  let tf=0; posts.forEach(p=>tf+=(p.fires||0));
+  $('otherFireCount').textContent=tf;
+  renderGrid($('otherGrid'),posts,false);
+  openPanel('otherProfPanel');
+};
+
+function renderGrid(container, posts, isMine){
+  container.innerHTML='';
+  if(!posts.length){
+    container.innerHTML=`<div class="prof-empty"><em>📸</em><p>${isMine?'Aún no publicaste nada':'Sin publicaciones aún'}</p></div>`;
+    return;
+  }
+  posts.forEach(p=>{
+    const el=document.createElement('div');
+    el.className='prof-thumb';
+    if(p.type==='video') el.innerHTML=`<video src="${p.url}" muted></video><span class="vid-badge">▶ Video</span>`;
+    else el.innerHTML=`<img src="${p.url}" alt="" loading="lazy">`;
+    container.appendChild(el);
+  });
+}
+
+// ── START CHAT FROM OTHER PROFILE ──
+window.startChatWith = ()=>{
+  if(!otherUser) return;
+  closePanel('otherProfPanel');
+  openPrivateChat(otherUser);
+};
+
+// ── CHAT LIST ──
+function loadChatList(){
+  if(!CU) return;
+  if(unsubConvs) unsubConvs();
+  const convRef=ref(db,`mivo_convs/${CU.uid}`);
+  const unsub=onValue(convRef, snap=>{
+    const convs=[];
+    snap.forEach(c=>convs.push({id:c.key,...c.val()}));
+    convs.sort((a,b)=>(b.lastTs||0)-(a.lastTs||0));
+    renderChatList(convs);
+  });
+  unsubConvs=()=>off(convRef);
+}
+
+function renderChatList(convs){
+  const list=$('chatList');
+  list.innerHTML='';
+  if(!convs.length){
+    list.innerHTML=`<div class="chat-list-empty"><em>💬</em><p>No tenés conversaciones aún</p></div>`;
+    return;
+  }
+  convs.forEach(c=>{
+    const u=allUsers[c.withUid]||{nick:c.withNick||'?',photo:''};
+    const unread=c.unread||0;
+    const el=document.createElement('div');
+    el.className='chat-item';
+    el.innerHTML=`
+      ${avHTML(u.photo||c.withPhoto,u.nick||c.withNick)}
+      <div class="chat-item-info">
+        <div class="chat-item-nick">
+          @${u.nick||c.withNick||'?'}
+          <span class="chat-item-time">${c.lastTs?fmtTime(c.lastTs):''}</span>
+        </div>
+        <div class="chat-item-preview">${c.lastMsg||'Iniciar conversación'}</div>
+      </div>
+      ${unread>0?`<span class="unread-badge">${unread}</span>`:''}`;
+    el.onclick=()=>openPrivateChat({uid:c.withUid,nick:u.nick||c.withNick,photo:u.photo||c.withPhoto||''});
+    list.appendChild(el);
+  });
+}
+
+// ── OPEN PRIVATE CHAT ──
+function openPrivateChat(user){
+  otherUser=user;
+  const cid=chatId(CU.uid,user.uid);
+  privChatId=cid;
+  // update header
+  const avEl=$('pcAv');
+  if(user.photo) avEl.innerHTML=`<img src="${user.photo}" alt="">`;
+  else avEl.textContent=(user.nick||'?')[0].toUpperCase();
+  $('pcNick').textContent='@'+(user.nick||'?');
+  $('chatMsgs').innerHTML='';
+  openPanel('privChat');
+  // mark as read
+  update(ref(db,`mivo_convs/${CU.uid}/${user.uid}`),{unread:0}).catch(()=>{});
+  // listen messages
+  if(privMsgRef) off(privMsgRef);
+  privMsgRef=query(ref(db,`mivo_msgs/${cid}`),orderByChild('ts'),limitToLast(100));
+  onValue(privMsgRef, snap=>{
+    const msgs=[];
+    snap.forEach(c=>msgs.push({id:c.key,...c.val()}));
+    renderMsgs(msgs);
+  });
+  // listen typing
+  onValue(ref(db,`mivo_typing/${cid}/${user.uid}`), snap=>{
+    $('typingInd').classList.toggle('on', !!snap.val());
+  });
+}
+
+window.closePrivChat = ()=>{
+  if(privMsgRef){ off(privMsgRef); privMsgRef=null; }
+  // clear typing
+  if(privChatId&&CU) set(ref(db,`mivo_typing/${privChatId}/${CU.uid}`),null).catch(()=>{});
+  privChatId=null;
+  closePanel('privChat');
+};
+
+function renderMsgs(msgs){
+  const container=$('chatMsgs');
+  container.innerHTML='';
+  let lastDate='';
+  msgs.forEach(m=>{
+    const ts=m.ts||0;
+    const dateStr=fmtDate(ts);
+    if(dateStr!==lastDate){
+      const sep=document.createElement('div');
+      sep.className='date-sep'; sep.textContent=dateStr;
+      container.appendChild(sep);
+      lastDate=dateStr;
+    }
+    const mine=m.uid===CU.uid;
+    const row=document.createElement('div');
+    row.className=`msg-row ${mine?'mine':'theirs'}`;
+    if(!mine){ const av=document.createElement('div'); av.className='av'; av.textContent=(otherUser?.nick||'?')[0].toUpperCase(); if(otherUser?.photo) av.innerHTML=`<img src="${otherUser.photo}" alt="">`; row.appendChild(av); }
+    const bub=document.createElement('div');
+    bub.className='bubble';
+    bub.innerHTML=`${escHtml(m.text)}<div class="bubble-time">${fmtTime(ts)}</div>`;
+    row.appendChild(bub);
+    container.appendChild(row);
+  });
+  container.scrollTop=container.scrollHeight;
+}
+
+function escHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
+
+// ── Send message ──
+window.sendMsg = async ()=>{
+  if(!CU||!privChatId||!otherUser) return;
+  const inp=$('chatInp');
+  const text=inp.value.trim(); if(!text) return;
+  inp.value=''; autoResize(inp);
+  // clear typing
+  set(ref(db,`mivo_typing/${privChatId}/${CU.uid}`),null).catch(()=>{});
+  clearTimeout(typingTimer);
+  const ts=Date.now();
+  const msgData={uid:CU.uid,text,ts};
+  await push(ref(db,`mivo_msgs/${privChatId}`),msgData);
+  // update both conversation records
+  const preview=text.length>40?text.slice(0,40)+'…':text;
+  const myConv={withUid:otherUser.uid,withNick:otherUser.nick,withPhoto:otherUser.photo||'',lastMsg:preview,lastTs:ts,unread:0};
+  const theirConv={withUid:CU.uid,withNick:CU.nick,withPhoto:CU.photo||'',lastMsg:preview,lastTs:ts};
+  await update(ref(db,`mivo_convs/${CU.uid}/${otherUser.uid}`),myConv);
+  // increment unread for other
+  const theirRef=ref(db,`mivo_convs/${otherUser.uid}/${CU.uid}`);
+  await runTransaction(theirRef, cur=>{
+    const base=cur||{};
+    return {...base,...theirConv, unread:(base.unread||0)+1};
+  });
+};
+
+// ── Typing indicator ──
+window.handleTyping = ()=>{
+  if(!CU||!privChatId) return;
+  set(ref(db,`mivo_typing/${privChatId}/${CU.uid}`),true).catch(()=>{});
+  clearTimeout(typingTimer);
+  typingTimer=setTimeout(()=>{ set(ref(db,`mivo_typing/${privChatId}/${CU.uid}`),null).catch(()=>{}); },2000);
+};
+
+// ── Unread count listener ──
+function listenUnreadCount(){
+  onValue(ref(db,`mivo_convs/${CU.uid}`), snap=>{
+    let total=0;
+    snap.forEach(c=>{ total+=(c.val().unread||0); });
+    const badge=$('chatBadge'), dot=$('chatDot');
+    if(total>0){ badge.textContent=total>99?'99+':total; badge.classList.add('on'); dot.classList.add('on'); }
+    else { badge.classList.remove('on'); dot.classList.remove('on'); }
+  });
+}
+
+// ── New chat / user search ──
+window.openNewChat = ()=>{ $('userSearchInp').value=''; $('userResults').innerHTML=`<div style="padding:24px;color:var(--muted);font-size:.88rem;text-align:center">Escribí un nombre para buscar</div>`; openPanel('newChatPanel'); };
+window.searchUsers = q=>{
+  const res=$('userResults'); res.innerHTML='';
+  q=q.toLowerCase().trim();
+  if(!q){ res.innerHTML=`<div style="padding:24px;color:var(--muted);font-size:.88rem;text-align:center">Escribí un nombre para buscar</div>`; return; }
+  const found=Object.entries(allUsers).filter(([uid,u])=>uid!==CU.uid&&(u.nick||'').toLowerCase().includes(q));
+  if(!found.length){ res.innerHTML=`<div style="padding:24px;color:var(--muted);font-size:.88rem;text-align:center">No se encontraron usuarios</div>`; return; }
+  found.forEach(([uid,u])=>{
+    const el=document.createElement('div'); el.className='user-row';
+    el.innerHTML=`${avHTML(u.photo,u.nick)}<div><div class="user-row-nick">@${u.nick}</div><div class="user-row-email">${u.email||''}</div></div>`;
+    el.onclick=()=>{ closePanel('newChatPanel'); openPrivateChat({uid,...u}); };
+    res.appendChild(el);
+  });
+};
+
+// ── UPLOAD ──
+window.openUpload = ()=>{ if(!CU){toast('Iniciá sesión primero');return;} $('upModal').classList.add('open'); };
+window.setUType = type=>{
+  uType=type;
+  $('utPhoto').classList.toggle('on',type==='photo');
+  $('utVideo').classList.toggle('on',type==='video');
+  $('fInput').accept=type==='video'?'video/*':'image/*';
+  $('dropHint').textContent=type==='video'?'Toca para elegir un video (MP4/WebM, max 100MB)':'Toca para elegir una imagen (JPG/PNG, max 32MB)';
+  selFile=null;
+};
+window.onFile = inp=>{ selFile=inp.files[0]||null; if(selFile) $('dropHint').textContent='✅ '+selFile.name; };
+window.submitPost = async ()=>{
+  if(!CU){toast('No estás autenticado');return;}
+  if(!selFile){toast('Seleccioná un archivo');return;}
+  const btn=$('upBtn'); btn.disabled=true; btn.textContent='Subiendo...';
   $('upProg').style.display='block'; setBar(10);
-  const caption = $('capInput').value.trim();
+  const caption=$('capInput').value.trim();
   try {
-    let url = uType==='photo' ? await uploadImgBB(selFile) : await uploadCloudinary(selFile);
+    const url=uType==='photo'?await uploadImgBB(selFile):await uploadCloudinary(selFile);
     setBar(90);
-    await push(ref(db,'mivo_posts'), {
-      url, type:uType, caption,
-      nick:CU.nick, uid:CU.uid, userPhoto:CU.photo||'',
-      fires:0, firedBy:{}, createdAt:serverTimestamp()
-    });
-    setBar(100);
-    toast('¡Publicado! 🔥');
-    closeModal('upModal');
-    resetUpload();
-  } catch(e) { toast('Error: '+e.message); console.error(e); }
-  finally { btn.disabled=false; btn.textContent='Publicar 🔥'; $('upProg').style.display='none'; }
+    await push(ref(db,'mivo_posts'),{url,type:uType,caption,nick:CU.nick,uid:CU.uid,userPhoto:CU.photo||'',fires:0,firedBy:{},createdAt:serverTimestamp()});
+    setBar(100); toast('¡Publicado! 🔥'); closeModal('upModal'); resetUpload();
+  } catch(e){ toast('Error: '+e.message); console.error(e); }
+  finally{ btn.disabled=false; btn.textContent='Publicar 🔥'; $('upProg').style.display='none'; }
 };
 
-async function uploadImgBB(file) {
-  const fd = new FormData(); fd.append('image', file);
-  const r = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`,{method:'POST',body:fd});
-  const j = await r.json();
-  if (!j.success) throw new Error(j.error?.message||'ImgBB error');
+async function uploadImgBB(file){
+  const fd=new FormData(); fd.append('image',file);
+  const r=await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`,{method:'POST',body:fd});
+  const j=await r.json(); if(!j.success) throw new Error(j.error?.message||'ImgBB error');
   return j.data.url;
 }
-async function uploadCloudinary(file) {
-  const fd = new FormData();
-  fd.append('file', file); fd.append('upload_preset', CLD_PRESET);
-  const r = await fetch(`https://api.cloudinary.com/v1_1/${CLD_CLOUD}/video/upload`,{method:'POST',body:fd});
-  const j = await r.json();
-  if (j.error) throw new Error(j.error.message);
+async function uploadCloudinary(file){
+  const fd=new FormData(); fd.append('file',file); fd.append('upload_preset',CLD_PRESET);
+  const r=await fetch(`https://api.cloudinary.com/v1_1/${CLD_CLOUD}/video/upload`,{method:'POST',body:fd});
+  const j=await r.json(); if(j.error) throw new Error(j.error.message);
   return j.secure_url;
 }
-function resetUpload() {
-  selFile=null; $('capInput').value=''; $('fInput').value='';
-  $('dropHint').textContent='Toca para elegir una imagen (JPG/PNG, max 32MB)';
-  setUType('photo');
-}
+function resetUpload(){ selFile=null; $('capInput').value=''; $('fInput').value=''; $('dropHint').textContent='Toca para elegir una imagen (JPG/PNG, max 32MB)'; setUType('photo'); }
 
-// UI HELPERS
-window.openUpload  = () => { if(!CU){toast('Iniciá sesión primero');return;} $('upModal').classList.add('open'); };
-window.closeModal  = id => { $(id).classList.remove('open'); resetUpload(); };
-window.bdClose     = (e,id) => { if(e.target.id===id) closeModal(id); };
-window.openPanel   = id => $(id).classList.add('open');
-window.closePanel  = id => $(id).classList.remove('open');
+// ── UI helpers ──
+window.closeModal = id=>{ $(id).classList.remove('open'); resetUpload(); };
+window.bdClose    = (e,id)=>{ if(e.target.id===id) closeModal(id); };
+window.openPanel  = id=>{ const p=$(id); p.style.display='flex'; requestAnimationFrame(()=>p.classList.add('open')); };
+window.closePanel = id=>{ const p=$(id); p.classList.remove('open'); setTimeout(()=>{ if(!p.classList.contains('open')) p.style.display='none'; },320); };
+window.autoResize = el=>{ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,100)+'px'; };
 </script>
 </body>
 </html>
