@@ -2070,8 +2070,58 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
 }
 
 .fl-upload-btn {
-  position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
-  z-index: 60;
+  display: none; /* oculto — se usa solo el inline del wrap */
+}
+
+/* Sidebar izquierdo con botón subir — dentro del wrap */
+.fl-left-acts {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  flex-shrink: 0;
+  z-index: 10;
+  gap: 12px;
+}
+.fl-upload-side-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg,#e91e8c,#c2185b);
+  border: none;
+  color: #fff;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(233,30,140,.65);
+  transition: transform .18s, box-shadow .18s;
+  position: relative;
+}
+.fl-upload-side-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 28px rgba(233,30,140,.9);
+}
+.fl-upload-side-label {
+  font-size: .6rem;
+  font-weight: 800;
+  color: rgba(255,255,255,.7);
+  font-family: 'Exo 2', sans-serif;
+  letter-spacing: .3px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+@media(max-width:540px){
+  .fl-left-acts { width: 52px; }
+  .fl-upload-side-btn { width: 44px; height: 44px; font-size: 1.25rem; }
+}
+
+/* Botón inline para empty state */
+.fl-upload-btn-inline {
   background: linear-gradient(135deg,#e91e8c,#c2185b);
   border: none; color: #fff;
   padding: 12px 28px; border-radius: 100px;
@@ -2080,9 +2130,9 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
   letter-spacing: .6px;
   box-shadow: 0 4px 20px rgba(233,30,140,.5);
   display: flex; align-items: center; gap: 8px;
-  white-space: nowrap; transition: all .2s;
+  transition: all .2s;
 }
-.fl-upload-btn:hover { transform: translateX(-50%) scale(1.05); }
+.fl-upload-btn-inline:hover { transform: scale(1.05); box-shadow: 0 6px 28px rgba(233,30,140,.7); }
 
 .fl-scroll-hint {
   position: absolute; right: 76px; bottom: 110px;
@@ -2141,13 +2191,21 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
     <div class="fl-empty-glow">⚡</div>
     <div style="font-size:1.3rem;font-weight:900;color:#fff;font-family:'Orbitron',monospace;text-shadow:0 0 20px rgba(233,30,140,.7);">FlashLatido</div>
     <div style="font-size:.88rem;color:rgba(255,255,255,.45);max-width:260px;line-height:1.6;">Sé el primero en subir un FlashLatido de fotos y música</div>
-    <button onclick="flOpenUpload()" class="fl-upload-btn" style="position:relative;bottom:auto;left:auto;transform:none;">
-      <span style="font-size:1.1rem;">⚡</span> Crear FlashLatido
+    <button onclick="flOpenUpload()" class="fl-upload-btn-inline">
+      <span>⚡</span> Crear FlashLatido
     </button>
   </div>
 
   <!-- Main TikTok viewer -->
   <div class="fl-tiktok-wrap" id="flTiktokWrap" style="display:none;">
+
+    <!-- Sidebar IZQUIERDO — botón subir -->
+    <div class="fl-left-acts">
+      <button class="fl-upload-side-btn" onclick="flOpenUpload()" title="Subir FlashLatido">
+        ⚡
+      </button>
+      <span class="fl-upload-side-label">Subir<br>Flash</span>
+    </div>
 
     <!-- The card -->
     <div class="fl-card" id="flCard">
@@ -2231,10 +2289,6 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
     </div>
   </div>
 
-  <!-- Upload button — always centered bottom -->
-  <button class="fl-upload-btn" onclick="flOpenUpload()" id="flUploadBtnMain">
-    <span style="font-size:1rem;">⚡</span> Subir FlashLatido
-  </button>
 
   <!-- Comments panel — TikTok exact -->
   <div id="flCommentsPanel">
@@ -2360,7 +2414,6 @@ window.initFlashLatido = async function(){
 function _showEmpty(){
   document.getElementById('flEmptyState').style.display = 'flex';
   document.getElementById('flTiktokWrap').style.display = 'none';
-  document.getElementById('flUploadBtnMain').style.display = 'none';
 }
 
 function _loadStories(){
@@ -2378,7 +2431,6 @@ function _loadStories(){
     } else {
       document.getElementById('flEmptyState').style.display = 'none';
       document.getElementById('flTiktokWrap').style.display = 'flex';
-      document.getElementById('flUploadBtnMain').style.display = 'flex';
       if(_fl.currentIdx < 0) _openStory(0);
     }
   });
@@ -2936,14 +2988,22 @@ window.flHandleDrop=function(e){
   flHandleFiles(e.dataTransfer.files);
 };
 window.flHandleFiles=function(files){
-  Array.from(files).slice(0,10-_fl.selectedFiles.length).forEach(function(f){
-    if(!f.type.startsWith('image/')) return;
-    if(f.size>5*1024*1024){ toast('Máx 5MB por foto','err'); return; }
+  var added=0;
+  Array.from(files).forEach(function(f){
+    if(_fl.selectedFiles.length >= 10){ toast('Máximo 10 fotos','err'); return; }
+    if(!f.type.startsWith('image/')){ toast('Solo imágenes (JPG, PNG, WEBP)','err'); return; }
+    if(f.size > 15*1024*1024){ toast('Foto muy grande, máx 15MB','err'); return; }
     _fl.selectedFiles.push(f);
+    added++;
     var r=new FileReader();
-    r.onload=function(ev){ _fl.imgDataURLs.push(ev.target.result); _addPreview(ev.target.result,_fl.imgDataURLs.length-1); };
+    r.onload=function(ev){
+      _fl.imgDataURLs.push(ev.target.result);
+      _addPreview(ev.target.result, _fl.imgDataURLs.length-1);
+    };
+    r.onerror=function(){ toast('Error leyendo archivo','err'); };
     r.readAsDataURL(f);
   });
+  if(added > 0) toast(added+' foto'+(added>1?'s':'')+' agregada'+(added>1?'s':''),'ok');
 };
 function _addPreview(url,idx){
   var g=document.getElementById('flPreviewGrid');
@@ -2999,56 +3059,89 @@ window.flClearMusic=function(){
 // Publish
 window.flPublish=async function(){
   var isVideo = _fl.activeTab === 'video';
+  if(!window.CU){ toast('Iniciá sesión para publicar','err'); return; }
+
   if(isVideo){
-    if(!_fl.selectedVideoFile){ toast('Seleccioná un video de máx 30 segundos','err'); return; }
+    if(!_fl.selectedVideoFile){ toast('Seleccioná un video primero','err'); return; }
     var vidEl = document.getElementById('flVideoEl');
     if(vidEl && vidEl.duration > 30){ toast('El video supera 30 segundos','err'); return; }
   } else {
-    if(!_fl.imgDataURLs.length){ toast('Agregá al menos 1 foto','err'); return; }
+    if(!_fl.selectedFiles.length && !_fl.imgDataURLs.length){
+      toast('Agregá al menos 1 foto','err'); return;
+    }
   }
-  if(!window.CU){ toast('Iniciá sesión','err'); return; }
+
   var btn=document.getElementById('flPublishBtn');
   btn.textContent='Publicando... ⏳'; btn.disabled=true;
+
   try{
-    var doc={uid:window.CU.id,nick:window.CU.nick||'Usuario',av:window.CU.av||'',
-      caption:document.getElementById('flCaption').value.trim(),
-      time:Date.now(),likes:[],shares:0};
+    var docData={
+      uid:     window.CU.id,
+      nick:    window.CU.nick || 'Usuario',
+      av:      window.CU.av   || '',
+      caption: (document.getElementById('flCaption').value||'').trim(),
+      time:    Date.now(),
+      likes:   [],
+      shares:  0,
+      bookmarks: 0
+    };
+
+    var hasStorage = window.storageRef && window.uploadBytes && window.getDownloadURL && window.storage;
 
     if(isVideo){
-      // Upload video
-      var videoURL='';
-      if(window.storageRef&&window.uploadBytes&&window.getDownloadURL){
-        var vRef=window.storageRef(window.storage,'flashlatido/vid_'+window.CU.id+'_'+Date.now());
-        await window.uploadBytes(vRef,_fl.selectedVideoFile);
-        videoURL=await window.getDownloadURL(vRef);
+      var videoURL = '';
+      if(hasStorage){
+        toast('Subiendo video...','ok');
+        var vRef = window.storageRef(window.storage,'flashlatido/vid_'+window.CU.id+'_'+Date.now());
+        var vSnap = await window.uploadBytes(vRef, _fl.selectedVideoFile);
+        videoURL  = await window.getDownloadURL(vSnap.ref);
+      } else {
+        // Fallback: base64 (solo para pruebas sin storage)
+        videoURL = URL.createObjectURL(_fl.selectedVideoFile);
       }
-      doc.videoURL=videoURL;
-      doc.type='video';
-      doc.photos=[];
+      docData.videoURL = videoURL;
+      docData.type     = 'video';
+      docData.photos   = [];
     } else {
-      var photoURLs=[];
-      if(window.storageRef&&window.uploadBytes&&window.getDownloadURL){
-        for(var i=0;i<_fl.selectedFiles.length;i++){
-          var sRef=window.storageRef(window.storage,'flashlatido/'+window.CU.id+'_'+Date.now()+'_'+i);
-          await window.uploadBytes(sRef,_fl.selectedFiles[i]);
-          photoURLs.push(await window.getDownloadURL(sRef));
+      var photoURLs = [];
+      if(hasStorage){
+        toast('Subiendo fotos...','ok');
+        for(var i=0; i<_fl.selectedFiles.length; i++){
+          var sRef  = window.storageRef(window.storage,'flashlatido/'+window.CU.id+'_'+Date.now()+'_'+i);
+          var sSnap = await window.uploadBytes(sRef, _fl.selectedFiles[i]);
+          photoURLs.push(await window.getDownloadURL(sSnap.ref));
         }
-      } else { photoURLs=_fl.imgDataURLs.slice(); }
-      doc.photos=photoURLs;
-      doc.type='photos';
+      } else {
+        // Fallback: usar dataURLs directamente
+        photoURLs = _fl.imgDataURLs.slice();
+      }
+      if(!photoURLs.length){ toast('Error al subir las fotos','err'); return; }
+      docData.photos = photoURLs;
+      docData.type   = 'photos';
     }
 
     if(_fl.selectedMusic){
-      doc.musicName=_fl.selectedMusic.name;
-      doc.musicArtist=_fl.selectedMusic.artist;
-      doc.musicPreview=_fl.selectedMusic.preview;
-      doc.musicImage=_fl.selectedMusic.image;
+      docData.musicName    = _fl.selectedMusic.name;
+      docData.musicArtist  = _fl.selectedMusic.artist;
+      docData.musicPreview = _fl.selectedMusic.preview;
+      docData.musicImage   = _fl.selectedMusic.image;
     }
-    await window.addDoc(window.collection(window.db,'flashlatido'),doc);
+
+    await window.addDoc(window.collection(window.db,'flashlatido'), docData);
     toast('¡FlashLatido publicado! ⚡','ok');
     document.getElementById('flUploadModal').classList.remove('open');
-  } catch(e){ console.error(e); toast('Error al publicar','err'); }
-  finally{ btn.textContent='⚡ Publicar FlashLatido'; btn.disabled=false; }
+
+    // Resetear
+    _fl.selectedFiles=[]; _fl.imgDataURLs=[]; _fl.selectedVideoFile=null; _fl.selectedMusic=null;
+    document.getElementById('flPreviewGrid').innerHTML='';
+
+  } catch(e){
+    console.error('[FL] publish error:',e);
+    toast('Error al publicar: '+(e.message||'intenta de nuevo'),'err');
+  } finally{
+    btn.textContent='⚡ Publicar FlashLatido';
+    btn.disabled=false;
+  }
 };
 
 function _stopTimer(){ if(_fl.timer){clearTimeout(_fl.timer);_fl.timer=null;} }
