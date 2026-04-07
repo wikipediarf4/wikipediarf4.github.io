@@ -424,8 +424,8 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
 .explore-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .explore-section-title{font-family:var(--fh);font-weight:700;font-size:1rem;display:flex;align-items:center;gap:6px}
 .explore-see-all{font-size:.8rem;color:var(--accent);font-weight:500;cursor:pointer;background:none;border:none;padding:0}
-/* Trending grid - 3 cols */
-.explore-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+/* Trending grid - 6 cols (fotos más chicas) */
+.explore-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:2px}
 .explore-thumb{aspect-ratio:9/16;border-radius:10px;overflow:hidden;background:var(--s2);cursor:pointer;position:relative;flex-shrink:0}
 .explore-thumb img,.explore-thumb video{width:100%;height:100%;object-fit:cover;display:block}
 .explore-thumb-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7) 0%,transparent 60%);border-radius:10px;opacity:0;transition:opacity .2s}
@@ -1117,8 +1117,8 @@ window.loadExplore = async () => {
     // Load top posts by likes
     const snap = await gds2(q3(col2(db,'posts'), ob2('likes','desc'), lim2(30)));
     const posts = snap.docs.map(d=>({id:d.id,...d.data()}));
-    const photos = posts.filter(p=>!p.isVideo);
-    const videos = posts.filter(p=>p.isVideo);
+    const photos = posts.filter(p=>p.type!=='video'&&!p.isVideo);
+    const videos = posts.filter(p=>p.type==='video'||p.isVideo);
     // New split layout: fotos left, videos right
     renderExploreSplitGrid($('trendingPhotosGrid'), photos.slice(0,8));
     renderExploreSplitGrid($('trendingVideosGrid'), videos.slice(0,8));
@@ -1141,7 +1141,7 @@ function renderExploreSplitGrid(container, posts){
   if(!posts.length){ container.innerHTML='<div class="explore-split-loading">Sin contenido aún</div>'; return; }
   container.innerHTML = posts.map(p=>`
     <div class="explore-split-thumb" onclick="openPostViewer('${p.id}')">
-      ${p.isVideo
+      ${(p.type==='video'||p.isVideo)
         ? `<video src="${p.url}" muted playsinline style="width:100%;height:100%;object-fit:cover;display:block;border-radius:8px" preload="metadata"></video><div class="explore-split-thumb-type">▶</div>`
         : `<img src="${p.url}" loading="lazy" alt="" style="border-radius:8px">`}
       <div class="explore-split-thumb-overlay"></div>
@@ -1154,7 +1154,7 @@ function renderExploreGrid(container, posts, withLabel){
   if(!posts.length){ container.innerHTML='<div style="grid-column:1/-1;padding:32px 0;text-align:center;color:var(--muted);font-size:.85rem">Sin contenido aún</div>'; return; }
   container.innerHTML = posts.map(p=>`
     <div class="explore-thumb" onclick="openPostViewer('${p.id}')">
-      ${p.isVideo
+      ${(p.type==='video'||p.isVideo)
         ? `<video src="${p.url}" muted playsinline style="width:100%;height:100%;object-fit:cover;display:block" preload="metadata"></video><div class="explore-thumb-type">▶ Video</div>`
         : `<img src="${p.url}" loading="lazy" alt="">`}
       <div class="explore-thumb-overlay"></div>
