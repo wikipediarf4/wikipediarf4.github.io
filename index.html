@@ -1758,6 +1758,10 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
   background: #000;
   z-index: 50;
 }
+.fl-left-acts {
+  position: relative;
+  z-index: 200;
+}
 
 .fl-card {
   position: relative;
@@ -2081,7 +2085,8 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
   justify-content: center;
   width: 64px;
   flex-shrink: 0;
-  z-index: 10;
+  position: relative;
+  z-index: 200;
   gap: 12px;
 }
 .fl-upload-side-btn {
@@ -2159,6 +2164,7 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
 .fl-anim-in   { animation: flSlideIn   .28s cubic-bezier(.34,1.56,.64,1) both; }
 .fl-anim-down { animation: flSlideDown .28s cubic-bezier(.34,1.56,.64,1) both; }
 
+#flUploadModal { z-index: 3000 !important; }
 #flUploadModal .modal { max-width:520px;padding:24px;background:rgba(8,8,8,.98);border:1px solid rgba(233,30,140,.3);backdrop-filter:blur(20px); }
 #flUploadModal .mt { color:#e91e8c;font-family:'Orbitron',monospace; }
 .fl-drop-zone { border:2px dashed rgba(233,30,140,.4);border-radius:12px;padding:28px;text-align:center;cursor:pointer;transition:all .2s;color:rgba(255,255,255,.45);background:rgba(233,30,140,.04); }
