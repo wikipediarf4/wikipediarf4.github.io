@@ -452,6 +452,20 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
 .explore-tab-row{display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:58px;z-index:9}
 .explore-tab{flex:1;padding:12px 0;text-align:center;font-size:.85rem;font-weight:500;color:var(--muted);cursor:pointer;background:none;border:none;border-bottom:2px solid transparent;transition:all .2s;font-family:var(--fb)}
 .explore-tab.on{color:var(--text);border-bottom-color:var(--accent)}
+/* ── EXPLORE SPLIT (fotos | videos) ── */
+.explore-split-row{display:flex;gap:0;padding:8px 10px 0;align-items:flex-start}
+.explore-split-col{flex:1;min-width:0;padding:0 4px}
+.explore-split-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding:0 2px}
+.explore-split-title{font-family:var(--fh);font-weight:800;font-size:.9rem;letter-spacing:-.01em}
+.explore-split-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:3px}
+.explore-split-loading{grid-column:1/-1;text-align:center;padding:20px 0;color:var(--muted);font-size:.8rem}
+/* each thumb in split grid: portrait 9/16 like TikTok */
+.explore-split-thumb{aspect-ratio:9/16;border-radius:8px;overflow:hidden;background:var(--s2);cursor:pointer;position:relative;flex-shrink:0}
+.explore-split-thumb img,.explore-split-thumb video{width:100%;height:100%;object-fit:cover;display:block}
+.explore-split-thumb-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.78) 0%,transparent 55%);border-radius:8px}
+.explore-split-thumb-views{position:absolute;bottom:5px;left:5px;display:flex;align-items:center;gap:2px;color:#fff;font-size:.58rem;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.9)}
+.explore-split-thumb-type{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);border-radius:4px;padding:2px 4px;font-size:.55rem;color:#fff;font-weight:700}
+
 /* Post viewer panel */
 #postViewPanel{background:#000}
 #postViewPanel .pst-card{width:100%;max-width:100%;height:100%;border-radius:0;box-shadow:none}
@@ -576,31 +590,27 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
 
     <!-- TRENDING TAB -->
     <div id="exploreTabTrending" style="padding-bottom:80px">
-      <div class="explore-section">
-        <div class="explore-section-header">
-          <span class="explore-section-title">🔥 Más vistos hoy</span>
+      <!-- Two-column: Fotos left | Videos right -->
+      <div class="explore-split-row">
+        <!-- LEFT: Fotos populares -->
+        <div class="explore-split-col">
+          <div class="explore-split-header">
+            <span class="explore-split-title">📸 Fotos</span>
+            <button class="explore-see-all" onclick="switchExploreTab('fotos',null)">Ver todo</button>
+          </div>
+          <div class="explore-split-grid" id="trendingPhotosGrid">
+            <div class="explore-split-loading">Cargando...</div>
+          </div>
         </div>
-        <div class="explore-grid" id="trendingGrid">
-          <!-- populated by JS -->
-          <div style="grid-column:1/-1;padding:32px 0;text-align:center;color:var(--muted);font-size:.85rem">Cargando contenido...</div>
-        </div>
-      </div>
-      <div class="explore-section">
-        <div class="explore-section-header">
-          <span class="explore-section-title">📸 Fotos populares</span>
-          <button class="explore-see-all" onclick="switchExploreTab('fotos',null)">Ver todo</button>
-        </div>
-        <div class="explore-photos-row" id="popularPhotosRow">
-          <div style="padding:20px 0;color:var(--muted);font-size:.85rem">Cargando...</div>
-        </div>
-      </div>
-      <div class="explore-section">
-        <div class="explore-section-header">
-          <span class="explore-section-title">🎬 Reels más vistos</span>
-          <button class="explore-see-all" onclick="switchExploreTab('reels',null)">Ver todo</button>
-        </div>
-        <div class="explore-grid" id="popularReelsGrid" style="grid-template-columns:repeat(3,1fr)">
-          <div style="grid-column:1/-1;padding:20px 0;text-align:center;color:var(--muted);font-size:.85rem">Cargando...</div>
+        <!-- RIGHT: Videos populares -->
+        <div class="explore-split-col">
+          <div class="explore-split-header">
+            <span class="explore-split-title">🎬 Videos</span>
+            <button class="explore-see-all" onclick="switchExploreTab('reels',null)">Ver todo</button>
+          </div>
+          <div class="explore-split-grid" id="trendingVideosGrid">
+            <div class="explore-split-loading">Cargando...</div>
+          </div>
         </div>
       </div>
     </div>
@@ -1109,9 +1119,9 @@ window.loadExplore = async () => {
     const posts = snap.docs.map(d=>({id:d.id,...d.data()}));
     const photos = posts.filter(p=>!p.isVideo);
     const videos = posts.filter(p=>p.isVideo);
-    renderExploreGrid($('trendingGrid'), posts.slice(0,9), true);
-    renderExplorePhotosRow($('popularPhotosRow'), photos.slice(0,8));
-    renderExploreGrid($('popularReelsGrid'), videos.slice(0,6), true);
+    // New split layout: fotos left, videos right
+    renderExploreSplitGrid($('trendingPhotosGrid'), photos.slice(0,8));
+    renderExploreSplitGrid($('trendingVideosGrid'), videos.slice(0,8));
     renderExploreGrid($('allPhotosGrid'), photos, false);
     renderExploreGrid($('allReelsGrid'), videos, false);
     exploreLoaded = true;
@@ -1123,6 +1133,20 @@ function fmtViews(n){
   if(n>=1000000) return (n/1000000).toFixed(1)+'M';
   if(n>=1000) return (n/1000).toFixed(1)+'K';
   return String(n);
+}
+
+// Split grid: portrait 9/16 thumbs, 2-col each side
+function renderExploreSplitGrid(container, posts){
+  if(!container) return;
+  if(!posts.length){ container.innerHTML='<div class="explore-split-loading">Sin contenido aún</div>'; return; }
+  container.innerHTML = posts.map(p=>`
+    <div class="explore-split-thumb" onclick="openPostViewer('${p.id}')">
+      ${p.isVideo
+        ? `<video src="${p.url}" muted playsinline style="width:100%;height:100%;object-fit:cover;display:block;border-radius:8px" preload="metadata"></video><div class="explore-split-thumb-type">▶</div>`
+        : `<img src="${p.url}" loading="lazy" alt="" style="border-radius:8px">`}
+      <div class="explore-split-thumb-overlay"></div>
+      <div class="explore-split-thumb-views">▷ ${fmtViews(p.likes||0)}</div>
+    </div>`).join('');
 }
 
 function renderExploreGrid(container, posts, withLabel){
