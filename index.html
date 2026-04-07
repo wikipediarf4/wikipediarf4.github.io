@@ -2955,7 +2955,59 @@ if(typeof _gpOrig==='function'){
     </div>
   </div>
 
+  <!-- ══════════════════════════════════════════════
+       CATÁLOGO YOUTUBE — Reproductor + Grid fijo
+  ══════════════════════════════════════════════ -->
+  <div id="cl-yt-section" style="padding:32px 28px 48px;">
 
+    <!-- Divisor -->
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;">
+      <div style="width:4px;height:28px;background:#e50914;border-radius:4px;flex-shrink:0;"></div>
+      <div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:#fff;letter-spacing:2px;">📺 CATÁLOGO YOUTUBE</div>
+      <div style="flex:1;height:1px;background:linear-gradient(to right,#333,transparent);"></div>
+    </div>
+
+    <!-- Buscador YouTube -->
+    <div style="display:flex;align-items:center;background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:0 14px;gap:10px;margin-bottom:20px;max-width:480px;">
+      <span style="color:#888;font-size:1rem;">🔍</span>
+      <input id="clYtSearch" type="text" placeholder="Filtrar catálogo YouTube..."
+        style="flex:1;background:none;border:none;outline:none;color:#fff;font-family:'Exo 2',sans-serif;font-size:.9rem;padding:11px 0;"
+        oninput="clYtFilter(this.value)">
+    </div>
+
+    <!-- Tabs de categoría YouTube -->
+    <div id="clYtCats" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;"></div>
+
+    <!-- REPRODUCTOR YOUTUBE INLINE -->
+    <div id="cl-yt-player-wrap" style="width:100%;max-width:860px;margin:0 auto 28px;display:none;">
+      <div style="position:relative;padding-bottom:56.25%;background:#000;border-radius:10px;overflow:hidden;box-shadow:0 0 40px rgba(229,9,20,.25);">
+        <iframe id="cl-yt-iframe"
+          style="position:absolute;inset:0;width:100%;height:100%;border:none;"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen></iframe>
+      </div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-top:14px;">
+        <div>
+          <div id="cl-yt-player-title" style="font-size:1.2rem;font-weight:900;color:#fff;line-height:1.2;"></div>
+          <div id="cl-yt-player-meta" style="font-size:.8rem;color:#888;margin-top:4px;"></div>
+          <div id="cl-yt-player-desc" style="font-size:.82rem;color:#aaa;line-height:1.5;margin-top:6px;max-width:600px;"></div>
+        </div>
+        <button onclick="clYtClosePlayer()"
+          style="background:#2a2a2a;border:1px solid #444;color:#aaa;border-radius:8px;padding:7px 14px;cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.8rem;white-space:nowrap;flex-shrink:0;transition:background .2s;"
+          onmouseover="this.style.background='#e50914';this.style.color='#fff';this.style.borderColor='#e50914'"
+          onmouseout="this.style.background='#2a2a2a';this.style.color='#aaa';this.style.borderColor='#444'">✕ Cerrar</button>
+      </div>
+    </div>
+
+    <!-- GRID YOUTUBE -->
+    <div id="cl-yt-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:18px;"></div>
+
+    <!-- Sin resultados -->
+    <div id="cl-yt-empty" style="display:none;text-align:center;padding:48px 20px;color:#555;">
+      <div style="font-size:3rem;margin-bottom:10px;">🎬</div>
+      <div style="font-size:1rem;color:#888;">Sin resultados para tu búsqueda.</div>
+    </div>
+  </div>
 
 </div>
 
@@ -35041,6 +35093,300 @@ window.clSendComment = async function(){
 })();
 </script>
 
+<!-- ══════════════════════════════════════════════
+     CATÁLOGO YOUTUBE — CSS + JS
+══════════════════════════════════════════════ -->
+<style>
+/* Tarjetas YouTube */
+@keyframes clYtIn { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+.cl-yt-card {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  background: #1a1a1a;
+  border: 1px solid #252525;
+  transition: transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .25s, border-color .25s;
+  animation: clYtIn .38s ease both;
+}
+.cl-yt-card:hover {
+  transform: translateY(-8px) scale(1.04);
+  box-shadow: 0 18px 48px rgba(229,9,20,.3);
+  border-color: #e50914;
+  z-index: 3;
+}
+.cl-yt-thumb {
+  position: relative;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+  background: #111;
+}
+.cl-yt-thumb img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform .3s;
+}
+.cl-yt-card:hover .cl-yt-thumb img { transform: scale(1.07); }
+.cl-yt-thumb-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,.85) 0%, transparent 55%);
+  opacity: 0;
+  transition: opacity .25s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cl-yt-card:hover .cl-yt-thumb-overlay { opacity: 1; }
+.cl-yt-play-btn {
+  width: 50px; height: 50px;
+  border-radius: 50%;
+  background: #e50914;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem;
+  box-shadow: 0 0 28px rgba(229,9,20,.7);
+  transform: scale(.75);
+  transition: transform .2s;
+}
+.cl-yt-card:hover .cl-yt-play-btn { transform: scale(1); }
+.cl-yt-cat-badge {
+  position: absolute; top: 7px; left: 7px;
+  background: rgba(229,9,20,.92);
+  color: #fff;
+  font-size: .6rem; font-weight: 800;
+  padding: 3px 8px; border-radius: 4px;
+  letter-spacing: .7px; text-transform: uppercase;
+}
+.cl-yt-body { padding: 11px 13px 13px; }
+.cl-yt-title {
+  font-weight: 800; font-size: .85rem;
+  color: #fff; line-height: 1.3;
+  margin-bottom: 5px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.cl-yt-meta { font-size: .72rem; color: #777; display: flex; gap: 8px; align-items: center; }
+.cl-yt-rating { color: #f5c518; font-weight: 700; }
+.cl-yt-btn-ver {
+  margin-top: 9px; width: 100%;
+  background: #e50914; color: #fff;
+  border: none; border-radius: 6px;
+  padding: 7px; font-family: 'Exo 2', sans-serif;
+  font-weight: 800; font-size: .78rem;
+  cursor: pointer; letter-spacing: .4px;
+  transition: background .2s, transform .1s;
+}
+.cl-yt-btn-ver:hover { background: #ff2230; }
+.cl-yt-btn-ver:active { transform: scale(.97); }
+
+/* Tabs categorías YouTube */
+.cl-yt-tab {
+  background: #1a1a1a; border: 1px solid #333;
+  border-radius: 100px; padding: 7px 16px;
+  color: #aaa; cursor: pointer;
+  font-family: 'Exo 2', sans-serif;
+  font-size: .78rem; font-weight: 700;
+  transition: all .2s; white-space: nowrap;
+}
+.cl-yt-tab:hover { border-color: #e50914; color: #fff; }
+.cl-yt-tab.on { background: #e50914; border-color: #e50914; color: #fff; box-shadow: 0 4px 14px rgba(229,9,20,.35); }
+
+@media(max-width:640px){
+  #cl-yt-section { padding: 24px 12px 40px; }
+  #cl-yt-grid { grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 12px; }
+}
+</style>
+
+<script>
+(function(){
+'use strict';
+
+/* ══ BASE DE DATOS YOUTUBE ══
+   Cambiá o sumá películas a gusto.
+   id = el código del video en youtube.com/watch?v=ESTE
+═══════════════════════════════════════════ */
+const CL_YT_MOVIES = [
+  /* ACCIÓN */
+  { id:'FPfQkXoFhh0', title:'The Dark Knight — Tráiler',        cat:'Acción',       year:2008, rating:'9.0', desc:'Batman enfrenta al Joker, el villano más caótico de Gotham City.' },
+  { id:'KAE5ymVLmZU', title:'John Wick — Capítulo 1',           cat:'Acción',       year:2014, rating:'7.4', desc:'Un ex asesino a sueldo regresa a la oscuridad para vengarse.' },
+  { id:'hA6hldpSTF8', title:'Misión: Imposible — Tráiler',      cat:'Acción',       year:1996, rating:'7.1', desc:'El agente Ethan Hunt debe limpiar su nombre tras una misión fallida.' },
+  { id:'JfVOs4VSpmA', title:'Deadpool — Tráiler Oficial',       cat:'Acción',       year:2016, rating:'8.0', desc:'El mercenario más carismático del universo Marvel.' },
+  /* TERROR */
+  { id:'9XnFg6YUVIY', title:'Hereditary — Tráiler Oficial',     cat:'Terror',       year:2018, rating:'7.3', desc:'Tras la muerte de su abuela, una familia descubre oscuros secretos.' },
+  { id:'k2J3RVsZKOM', title:'It — El Capítulo Uno',             cat:'Terror',       year:2017, rating:'7.3', desc:'Niños enfrentan una entidad aterradora en Derry.' },
+  { id:'xKJmEC5ieOk', title:'Get Out — Tráiler Oficial',        cat:'Terror',       year:2017, rating:'7.7', desc:'Un joven descubre inquietantes verdades en casa de sus suegros.' },
+  { id:'eFDmEKHGxO4', title:'El Conjuro — Tráiler',             cat:'Terror',       year:2013, rating:'7.5', desc:'Los Warren enfrentan el caso más aterrador de su carrera.' },
+  /* DRAMA */
+  { id:'6hB3S9bIaco', title:'The Shawshank Redemption',         cat:'Drama',        year:1994, rating:'9.3', desc:'La amistad y la esperanza dentro de una prisión brutal.' },
+  { id:'5WRRhgVcq6s', title:'Forrest Gump — Momentos Icónicos', cat:'Drama',        year:1994, rating:'8.8', desc:'La vida extraordinaria de un hombre ordinario.' },
+  { id:'0kD7TOKY9Qk', title:'A Beautiful Mind — Clip',          cat:'Drama',        year:2001, rating:'8.2', desc:'La brillante pero tormentosa vida del matemático John Nash.' },
+  /* COMEDIA */
+  { id:'3hRNdUUMBfM', title:'Superbad — Tráiler',               cat:'Comedia',      year:2007, rating:'7.6', desc:'Dos amigos inseparables en su última noche de high school.' },
+  { id:'gHzdAHkh_YQ', title:'The Grand Budapest Hotel',         cat:'Comedia',      year:2014, rating:'8.1', desc:'Las aventuras de un legendario conserje y su botones.' },
+  /* SCI-FI */
+  { id:'m8e-FF8MsqU', title:'Interstellar — Tráiler Oficial',   cat:'Sci-Fi',       year:2014, rating:'8.6', desc:'Astronautas viajan más allá de la galaxia para salvar a la humanidad.' },
+  { id:'LvZo_sFaO5E', title:'Blade Runner 2049 — Tráiler',      cat:'Sci-Fi',       year:2017, rating:'8.0', desc:'Un blade runner descubre un secreto que puede cambiar el mundo.' },
+  { id:'eYiOEpEy1K4', title:'Matrix — Píldora Roja',            cat:'Sci-Fi',       year:1999, rating:'8.7', desc:'Neo elige conocer la verdad sobre la realidad simulada.' },
+  { id:'nCgQDjiotG0', title:'Avatar — Pandora',                 cat:'Sci-Fi',       year:2009, rating:'7.8', desc:'Un soldado lisiado se une a los Na\'vi en el planeta Pandora.' },
+  /* DOCUMENTALES */
+  { id:'6BS_mMGONzg', title:'Planeta Tierra II — Islas',        cat:'Documentales', year:2016, rating:'9.5', desc:'BBC explora ecosistemas insulares únicos del planeta.' },
+  { id:'tZBm4NkZo_c', title:'Blackfish — Documental',           cat:'Documentales', year:2013, rating:'8.1', desc:'La realidad detrás del cautiverio de orcas en parques temáticos.' },
+  { id:'kGMESnN2-xQ', title:'Una Verdad Inconveniente',         cat:'Documentales', year:2006, rating:'7.4', desc:'Al Gore expone la crisis climática con datos científicos.' },
+  /* ANIMACIÓN */
+  { id:'KLnXEHqEFbU', title:'Spirited Away — Clip Oficial',     cat:'Animación',    year:2001, rating:'8.6', desc:'Una niña trabaja en el mundo de los espíritus para salvar a sus padres.' },
+  { id:'KnZEiCaRIbM', title:'Coco — Recuérdame',                cat:'Animación',    year:2017, rating:'8.4', desc:'Miguel visita el mundo de los muertos buscando su bisabuelo músico.' },
+  { id:'9lGXTgHgEq4', title:'Up — Intro Emocional',             cat:'Animación',    year:2009, rating:'8.2', desc:'Carl cumple su sueño viajando a Sudamérica en su casa voladora.' },
+  /* THRILLER */
+  { id:'A5oHLOCl5cA', title:'Parasite — Tráiler Oficial',       cat:'Thriller',     year:2019, rating:'8.5', desc:'Una familia pobre se infiltra en la vida de adinerados en Seúl.' },
+  { id:'oVzR2T6bEeU', title:'Gone Girl — Tráiler',              cat:'Thriller',     year:2014, rating:'8.1', desc:'La misteriosa desaparición de una mujer desata una perturbadora investigación.' },
+  { id:'Gk5s5Dli3ms', title:'Inception — Dream Levels',         cat:'Thriller',     year:2010, rating:'8.8', desc:'Un ladrón extrae información de sueños; ahora debe implantar una idea.' },
+  /* ROMANCE */
+  { id:'aSHs224Dge0', title:'La La Land — Tráiler Oficial',     cat:'Romance',      year:2016, rating:'8.0', desc:'Un músico y una actriz persiguen sus sueños en Los Ángeles.' },
+  { id:'Q5gSAoWjGFg', title:'Titanic — Escenas Icónicas',       cat:'Romance',      year:1997, rating:'7.9', desc:'El amor imposible entre Jack y Rose a bordo del Titanic.' },
+];
+
+/* ══ ESTADO ══ */
+let _ytActiveCat = 'Todos';
+let _ytQuery     = '';
+let _ytPlaying   = false;
+
+/* ══ THUMB YOUTUBE ══ */
+function ytThumb(id){ return `https://img.youtube.com/vi/${id}/hqdefault.jpg`; }
+
+/* ══ CATEGORÍAS ══ */
+function ytCats(){
+  return ['Todos', ...new Set(CL_YT_MOVIES.map(m => m.cat))];
+}
+
+/* ══ FILTRADO ══ */
+function ytFiltered(){
+  return CL_YT_MOVIES.filter(m => {
+    const okCat = _ytActiveCat === 'Todos' || m.cat === _ytActiveCat;
+    const q     = _ytQuery.toLowerCase();
+    const okQ   = !q || m.title.toLowerCase().includes(q) || m.cat.toLowerCase().includes(q) || (m.desc||'').toLowerCase().includes(q);
+    return okCat && okQ;
+  });
+}
+
+/* ══ RENDER TABS ══ */
+function ytRenderTabs(){
+  const el = document.getElementById('clYtCats');
+  if(!el) return;
+  el.innerHTML = ytCats().map(c => `
+    <button class="cl-yt-tab${c===_ytActiveCat?' on':''}" onclick="clYtSelectCat('${c}')">${c}</button>
+  `).join('');
+}
+
+/* ══ RENDER GRID ══ */
+function ytRenderGrid(){
+  const grid  = document.getElementById('cl-yt-grid');
+  const empty = document.getElementById('cl-yt-empty');
+  if(!grid) return;
+  const movies = ytFiltered();
+  if(!movies.length){
+    grid.innerHTML = '';
+    if(empty) empty.style.display = 'block';
+    return;
+  }
+  if(empty) empty.style.display = 'none';
+  grid.innerHTML = movies.map((m, i) => {
+    const delay = Math.min(i * 35, 350);
+    const safeTitle = m.title.replace(/'/g,"&#39;").replace(/"/g,'&quot;');
+    const safeDesc  = (m.desc||'').replace(/'/g,"&#39;").replace(/"/g,'&quot;');
+    return `
+    <div class="cl-yt-card" style="animation-delay:${delay}ms"
+         onclick="clYtPlay('${m.id}','${safeTitle}','${safeDesc}','${m.cat}','${m.year}','${m.rating}')">
+      <div class="cl-yt-thumb">
+        <img src="${ytThumb(m.id)}" alt="${safeTitle}" loading="lazy">
+        <div class="cl-yt-thumb-overlay">
+          <div class="cl-yt-play-btn">▶</div>
+        </div>
+        <div class="cl-yt-cat-badge">${m.cat}</div>
+      </div>
+      <div class="cl-yt-body">
+        <div class="cl-yt-title">${m.title}</div>
+        <div class="cl-yt-meta">
+          <span class="cl-yt-rating">★ ${m.rating}</span>
+          <span>${m.year}</span>
+        </div>
+        <button class="cl-yt-btn-ver"
+          onclick="event.stopPropagation();clYtPlay('${m.id}','${safeTitle}','${safeDesc}','${m.cat}','${m.year}','${m.rating}')">▶ Ver ahora</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ══ REPRODUCIR ══ */
+window.clYtPlay = function(id, title, desc, cat, year, rating){
+  const wrap   = document.getElementById('cl-yt-player-wrap');
+  const iframe = document.getElementById('cl-yt-iframe');
+  const ptitle = document.getElementById('cl-yt-player-title');
+  const pmeta  = document.getElementById('cl-yt-player-meta');
+  const pdesc  = document.getElementById('cl-yt-player-desc');
+  if(!wrap || !iframe) return;
+
+  iframe.src = `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&modestbranding=1`;
+  if(ptitle) ptitle.textContent = title;
+  if(pmeta)  pmeta.textContent  = `${cat} · ${year} · ★ ${rating}`;
+  if(pdesc)  pdesc.textContent  = desc || '';
+
+  wrap.style.display = 'block';
+  _ytPlaying = true;
+
+  // Scroll suave al reproductor
+  wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+/* ══ CERRAR PLAYER ══ */
+window.clYtClosePlayer = function(){
+  const wrap   = document.getElementById('cl-yt-player-wrap');
+  const iframe = document.getElementById('cl-yt-iframe');
+  if(iframe) iframe.src = '';
+  if(wrap)   wrap.style.display = 'none';
+  _ytPlaying = false;
+};
+
+/* ══ FILTRO POR CATEGORÍA ══ */
+window.clYtSelectCat = function(cat){
+  _ytActiveCat = cat;
+  _ytQuery = '';
+  const si = document.getElementById('clYtSearch');
+  if(si) si.value = '';
+  ytRenderTabs();
+  ytRenderGrid();
+};
+
+/* ══ FILTRO POR TEXTO ══ */
+window.clYtFilter = function(q){
+  _ytQuery = q.trim();
+  _ytActiveCat = 'Todos';
+  ytRenderTabs();
+  ytRenderGrid();
+};
+
+/* ══ INIT YOUTUBE CATALOG ══ */
+// Se inicializa cuando se abre la sección CineLatido
+function initYtCatalog(){
+  ytRenderTabs();
+  ytRenderGrid();
+}
+
+// Hook en initCineLatido existente
+const _origInitCineLatido = window.initCineLatido;
+window.initCineLatido = async function(){
+  if(typeof _origInitCineLatido === 'function') await _origInitCineLatido.apply(this, arguments);
+  initYtCatalog();
+};
+
+// Si ya se llamó a initCineLatido antes que este script cargue
+if(document.getElementById('cl-yt-grid')){
+  initYtCatalog();
+}
+
+})();
+</script>
 
 </html>
 
