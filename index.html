@@ -3102,6 +3102,17 @@ window.flPublish=async function(){
       bookmarks: 0
     };
 
+    // Esperar a que las funciones de upload estén listas (se definen en el módulo async)
+    await new Promise(function(resolve, reject){
+      if(typeof window.uploadImage === 'function' && typeof window.uploadVideo === 'function'){ resolve(); return; }
+      var elapsed = 0;
+      var iv = setInterval(function(){
+        elapsed += 100;
+        if(typeof window.uploadImage === 'function' && typeof window.uploadVideo === 'function'){ clearInterval(iv); resolve(); }
+        else if(elapsed >= 8000){ clearInterval(iv); reject(new Error('Servicio de subida no disponible. Recargá la página.')); }
+      }, 100);
+    });
+
     if(isVideo){
       toast('Subiendo video... ⏳','ok');
       var videoURL = await window.uploadVideo(_fl.selectedVideoFile, 'flashlatido');
