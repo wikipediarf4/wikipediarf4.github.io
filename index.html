@@ -1949,8 +1949,8 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
 
 /* Upload button — centered bottom */
 .fl-upload-btn {
-  position:absolute;bottom:18px;left:50%;transform:translateX(-50%);
-  z-index:20;
+  position:fixed;bottom:18px;left:50%;transform:translateX(-50%);
+  z-index:25;
   background:linear-gradient(135deg,#e91e8c,#c2185b,#9c27b0);
   border:none;color:#fff;
   padding:13px 32px;border-radius:100px;
@@ -1998,11 +1998,12 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
   50%{filter:drop-shadow(0 0 32px #e91e8c) drop-shadow(0 0 60px rgba(233,30,140,.6))}
 }
 
-/* Comments panel — next to actions, TikTok style */
+/* Comments panel — centered bottom drawer */
 #flCommentsPanel {
   position:fixed;
-  right:80px;bottom:0;
-  width:min(340px,calc(100vw - 90px));
+  left:50%;bottom:0;
+  transform:translateX(-50%);
+  width:min(420px,100vw);
   max-height:70vh;
   background:rgba(10,10,10,.97);
   border:1px solid rgba(233,30,140,.25);
@@ -2283,6 +2284,7 @@ window.initFlashLatido = async function(){
   }
   _loadStories();
   _attachWheel();
+  _attachHold();
 };
 
 function _showEmpty(){
@@ -2448,6 +2450,35 @@ window.flNextPhoto = function(){ _advancePhoto(1); };
 window.flPrevPhoto = function(){ _advancePhoto(-1); };
 
 // ── Mouse wheel navigation ──
+function _attachHold(){
+  // Hold mouse/touch on card → pause auto-advance
+  var card = document.getElementById('flCard');
+  if(!card) return;
+  function _pause(){
+    _stopTimer();
+    // pause progress bar animation
+    var fills = document.querySelectorAll('.fl-prog-fill');
+    fills.forEach(function(f){ f.style.animationPlayState='paused'; f.style.webkitAnimationPlayState='paused'; });
+    card.style.transform='scale(.98)';
+    card.style.transition='transform .15s';
+    _fl._holdPaused = true;
+  }
+  function _resume(){
+    if(!_fl._holdPaused) return;
+    _fl._holdPaused = false;
+    card.style.transform='';
+    // restart timer for remaining time of current photo
+    _fl.timer = setTimeout(function(){ _advancePhoto(1); }, _fl.duration * 0.5);
+    var fills = document.querySelectorAll('.fl-prog-fill');
+    fills.forEach(function(f){ f.style.animationPlayState='running'; f.style.webkitAnimationPlayState='running'; });
+  }
+  card.addEventListener('mousedown', _pause);
+  card.addEventListener('mouseup',   _resume);
+  card.addEventListener('mouseleave',_resume);
+  card.addEventListener('touchstart', _pause, {passive:true});
+  card.addEventListener('touchend',   _resume);
+}
+
 function _attachWheel(){
   var page = document.getElementById('page-flashlatido');
   if(!page) return;
@@ -2575,6 +2606,23 @@ window.flOpenComments = function(){
   var p=document.getElementById('flCommentsPanel');
   p.classList.toggle('open');
 };
+
+// ESC → go to home + stop music
+document.addEventListener('keydown', function(e){
+  if(e.key !== 'Escape') return;
+  var flashPage = document.getElementById('page-flashlatido');
+  if(!flashPage || !flashPage.classList.contains('active')) return;
+  // Stop audio
+  var audio = document.getElementById('flAudioEl');
+  if(audio){ audio.pause(); audio.src=''; }
+  var disc = document.getElementById('flDisc');
+  if(disc) disc.classList.remove('playing');
+  // Close comments panel
+  var panel = document.getElementById('flCommentsPanel');
+  if(panel) panel.classList.remove('open');
+  // Navigate to home
+  if(typeof window.gp === 'function') window.gp('home');
+});
 window.flSendComment = async function(){
   if(!window.CU){ toast('Iniciá sesión','err'); return; }
   var s=_fl.stories[_fl.currentIdx]; if(!s) return;
@@ -2792,10 +2840,17 @@ function escHtml(s){
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// Patch gp router
+// Patch gp router — stop music when leaving flashlatido
 var _gpOrig=window.gp;
 if(typeof _gpOrig==='function'){
   window.gp=function(id,ps){
+    // Stop FlashLatido music if leaving
+    if(id !== 'flashlatido'){
+      var _audio=document.getElementById('flAudioEl');
+      if(_audio){ _audio.pause(); _audio.src=''; }
+      var _disc=document.getElementById('flDisc');
+      if(_disc) _disc.classList.remove('playing');
+    }
     _gpOrig.apply(this,arguments);
     if(id==='flashlatido') setTimeout(window.initFlashLatido,60);
   };
