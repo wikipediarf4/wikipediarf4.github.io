@@ -160,8 +160,8 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
 .prof-content{flex:1;overflow-y:auto}
 
 /* Grid view — Instagram/TikTok style */
-.prof-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5px;background:var(--border)}
-.prof-thumb{aspect-ratio:3/4;background:var(--s2);overflow:hidden;cursor:pointer;position:relative}
+.prof-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--border)}
+.prof-thumb{aspect-ratio:1/1;background:var(--s2);overflow:hidden;cursor:pointer;position:relative}
 .prof-thumb img,.prof-thumb video{width:100%;height:100%;object-fit:cover;display:block;border-radius:0}
 .prof-thumb .vid-badge{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.65);border-radius:3px;padding:1px 4px;font-size:.6rem;color:#fff}
 .prof-thumb-stats{position:absolute;bottom:0;left:0;right:0;padding:3px 5px;background:linear-gradient(transparent,rgba(0,0,0,.65));display:flex;gap:6px;align-items:center;opacity:0;transition:opacity .15s}
@@ -173,8 +173,8 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
 /* Feed list view inside profile */
 .prof-feed{display:flex;flex-direction:column;gap:0}
 .pfeed-item{border-bottom:1px solid var(--border);padding:14px 16px}
-.pfeed-media{width:100%;border-radius:12px;overflow:hidden;margin:10px 0;max-height:320px;background:var(--s2);position:relative}
-.pfeed-media img,.pfeed-media video{width:100%;height:100%;object-fit:cover;display:block;max-height:320px}
+.pfeed-media{width:100%;border-radius:12px;overflow:hidden;margin:10px 0;max-height:280px;background:var(--s2);position:relative;display:flex;align-items:center;justify-content:center}
+.pfeed-media img,.pfeed-media video{width:100%;height:280px;object-fit:contain;display:block;background:#000}
 .pfeed-user{display:flex;align-items:center;gap:9px;font-family:var(--fh);font-weight:700;font-size:.88rem}
 .pfeed-caption{font-size:.86rem;color:rgba(255,255,255,.78);line-height:1.45;margin:6px 0}
 .pfeed-actions{display:flex;gap:18px;align-items:center;margin-top:8px}
@@ -443,7 +443,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
       <button class="nav-btn" id="navChatBtn" onclick="showPage('chatPage')">
         💬<span class="notif-dot" id="chatDot"></span>
       </button>
-      <button class="nav-btn" onclick="showPage('profPage')">👤</button>
+      <button class="nav-btn" onclick="showPage('profPage')" id="navProfBtn" style="padding:0;overflow:hidden"><span id="navProfIcon">👤</span></button>
     </div>
   </div>
 
@@ -986,6 +986,8 @@ onAuthStateChanged(auth, async user => {
     $('app').classList.add('on');
     // Show admin badge if admin
     if(isAdmin()) $('myAdminBadge').style.display='block';
+    // Update nav profile avatar
+    updateNavAvatar();
     // Mark online
     setDoc(doc(db,'presence',`online_${CU.uid}`),{online:true,lastSeen:serverTimestamp()},{merge:true}).catch(()=>{});
     window.addEventListener('beforeunload',()=>{ setDoc(doc(db,'presence',`online_${CU.uid}`),{online:false,lastSeen:serverTimestamp()},{merge:true}).catch(()=>{}); });
@@ -1007,6 +1009,18 @@ function loadAllUsers(){
   onSnapshot(collection(db,'users'), snap=>{
     snap.forEach(d=>{ allUsers[d.id]=d.data(); });
   });
+}
+
+// ── Update nav profile avatar ──
+function updateNavAvatar(){
+  const btn=$('navProfBtn');
+  const icon=$('navProfIcon');
+  if(!btn||!CU) return;
+  if(CU.photo){
+    btn.innerHTML=`<img src="${CU.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+  } else {
+    btn.innerHTML=`<span style="font-size:.88rem;font-weight:800">${(CU.nick||'?')[0].toUpperCase()}</span>`;
+  }
 }
 
 // ══════════════════════════════════════════
@@ -1549,6 +1563,7 @@ window.saveProfile=async()=>{
     toast('¡Perfil actualizado!');
     closePanel('editProfPanel');
     loadMyProfile();
+    updateNavAvatar();
   }catch(e){ toast('Error: '+e.message); }
   finally{ btn.textContent='Guardar'; btn.disabled=false; }
 };
