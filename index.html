@@ -3074,6 +3074,63 @@ window.flClearMusic=function(){
   document.getElementById('flSelectedMusicDisplay').style.display='none';
 };
 
+// ── Upload helpers propios (no dependen del módulo) ──
+var FL_IMGBB_KEY = '75c60bcb472ab597b1dee463438b18ba';
+var FL_CLD_CLOUD = 'da0n5tg3g';
+var FL_CLD_IMG_PRESET = 'milatido_fotos';
+var FL_CLD_VID_PRESET = 'milatido_video';
+
+async function _flUploadPhoto(file){
+  // Comprimir si es muy grande
+  var blob = file;
+  if(file.size > 800000){
+    try{
+      blob = await new Promise(function(resolve){
+        var img = new Image();
+        var url = URL.createObjectURL(file);
+        img.onload = function(){
+          URL.revokeObjectURL(url);
+          var canvas = document.createElement('canvas');
+          var max = 1200;
+          var w = img.width, h = img.height;
+          if(w > max){ h = Math.round(h * max / w); w = max; }
+          if(h > max){ w = Math.round(w * max / h); h = max; }
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          canvas.toBlob(function(b){ resolve(b || file); }, 'image/jpeg', 0.82);
+        };
+        img.onerror = function(){ resolve(file); };
+        img.src = url;
+      });
+    }catch(e){ blob = file; }
+  }
+  // Subir a ImgBB
+  var base64 = await new Promise(function(resolve, reject){
+    var r = new FileReader();
+    r.onload = function(){ resolve(r.result.split(',')[1]); };
+    r.onerror = reject;
+    r.readAsDataURL(blob);
+  });
+  var fd = new FormData();
+  fd.append('image', base64);
+  fd.append('name', 'fl_' + Date.now());
+  var res = await fetch('https://api.imgbb.com/1/upload?key=' + FL_IMGBB_KEY, { method:'POST', body:fd });
+  var data = await res.json();
+  if(data.success && data.data && data.data.url) return data.data.url;
+  throw new Error(data.error && data.error.message ? data.error.message : 'Error subiendo foto');
+}
+
+async function _flUploadVideo(file){
+  var fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', FL_CLD_VID_PRESET);
+  fd.append('folder', 'rf4/flashlatido');
+  var res = await fetch('https://api.cloudinary.com/v1_1/' + FL_CLD_CLOUD + '/video/upload', { method:'POST', body:fd });
+  var data = await res.json();
+  if(data.secure_url) return data.secure_url;
+  throw new Error(data.error && data.error.message ? data.error.message : 'Error subiendo video');
+}
+
 // Publish
 window.flPublish=async function(){
   var isVideo = _fl.activeTab === 'video';
@@ -3084,7 +3141,7 @@ window.flPublish=async function(){
     var vidEl = document.getElementById('flVideoEl');
     if(vidEl && vidEl.duration > 30){ toast('El video supera 30 segundos','err'); return; }
   } else {
-    if(!_fl.selectedFiles.length && !_fl.imgDataURLs.length){
+    if(!_fl.selectedFiles.length){
       toast('Agregá al menos 1 foto','err'); return;
     }
   }
@@ -3104,20 +3161,9 @@ window.flPublish=async function(){
       bookmarks: 0
     };
 
-    // Esperar a que las funciones de upload estén listas (se definen en el módulo async)
-    await new Promise(function(resolve, reject){
-      if(typeof window.uploadImage === 'function' && typeof window.uploadVideo === 'function'){ resolve(); return; }
-      var elapsed = 0;
-      var iv = setInterval(function(){
-        elapsed += 100;
-        if(typeof window.uploadImage === 'function' && typeof window.uploadVideo === 'function'){ clearInterval(iv); resolve(); }
-        else if(elapsed >= 8000){ clearInterval(iv); reject(new Error('Servicio de subida no disponible. Recargá la página.')); }
-      }, 100);
-    });
-
     if(isVideo){
       toast('Subiendo video... ⏳','ok');
-      var videoURL = await window.uploadVideo(_fl.selectedVideoFile, 'flashlatido');
+      var videoURL = await _flUploadVideo(_fl.selectedVideoFile);
       docData.videoURL = videoURL;
       docData.type     = 'video';
       docData.photos   = [];
@@ -3125,7 +3171,8 @@ window.flPublish=async function(){
       toast('Subiendo fotos... ⏳','ok');
       var photoURLs = [];
       for(var i=0; i<_fl.selectedFiles.length; i++){
-        var url = await window.uploadImage(_fl.selectedFiles[i], 'flashlatido');
+        toast('Subiendo foto '+(i+1)+' de '+_fl.selectedFiles.length+'...','ok');
+        var url = await _flUploadPhoto(_fl.selectedFiles[i]);
         photoURLs.push(url);
       }
       if(!photoURLs.length){ toast('Error al subir las fotos','err'); return; }
@@ -3144,7 +3191,6 @@ window.flPublish=async function(){
     toast('¡FlashLatido publicado! ⚡','ok');
     document.getElementById('flUploadModal').classList.remove('open');
 
-    // Resetear
     _fl.selectedFiles=[]; _fl.imgDataURLs=[]; _fl.selectedVideoFile=null; _fl.selectedMusic=null;
     document.getElementById('flPreviewGrid').innerHTML='';
 
