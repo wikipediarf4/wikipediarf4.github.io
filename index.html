@@ -344,6 +344,12 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
 .cmt-nick{font-size:.78rem;font-weight:700;color:var(--text)}
 .cmt-text{font-size:.85rem;color:rgba(255,255,255,.82);line-height:1.4;margin-top:1px}
 .cmt-empty{color:var(--muted);font-size:.85rem;text-align:center;padding:24px 0}
+.cmt-actions{display:flex;gap:6px;margin-top:4px}
+.cmt-act-btn{background:none;border:none;color:var(--muted);font-size:.72rem;cursor:pointer;padding:2px 6px;border-radius:6px;transition:color .15s,background .15s;font-family:var(--fb)}
+.cmt-act-btn:hover{color:var(--text);background:var(--s3)}
+.cmt-act-btn.danger:hover{color:var(--accent);background:rgba(255,45,85,.12)}
+.cmt-edit-inp{width:100%;padding:6px 10px;background:var(--s3);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--fb);font-size:.85rem;outline:none;margin-top:5px;transition:border-color .2s}
+.cmt-edit-inp:focus{border-color:var(--accent)}
 .cmts-input-row{display:flex;gap:8px;padding:10px 14px 18px;border-top:1px solid var(--border);flex-shrink:0}
 .cmts-inp{flex:1;padding:9px 14px;background:var(--s2);border:1.5px solid var(--border);border-radius:20px;color:var(--text);font-family:var(--fb);font-size:.9rem;outline:none;transition:border-color .2s}
 .cmts-inp:focus{border-color:var(--accent)}
@@ -1087,18 +1093,25 @@ function renderFeed(posts){
 
     // side actions — right side
     const acts=document.createElement('div'); acts.className='pst-acts';
+    const firedAlready=p.firedBy&&CU&&p.firedBy[CU.uid];
     acts.innerHTML=`
       <div onclick="openOtherProfile('${p.uid}')">
         <div class="act-av-ring"><div class="act-av-inner">${avInner}</div></div>
       </div>
-      <button class="act-btn${liked?' liked':''}" id="likebtn_${p.id}" onclick="toggleLike('${p.id}',this)">
-        <div class="act-ico"><span class="heart-ico">❤️</span></div>
+      <button class="act-btn${liked?' liked':''}" id="likebtn_${p.id}">
+        <div class="act-ico"><span class="heart-ico">&#x2764;&#xFE0F;</span></div>
         <span class="act-count" id="lc_${p.id}">${p.likes||0}</span>
       </button>
+      <button class="act-btn${firedAlready?' fired':''}" id="firebtn_${p.id}">
+        <div class="act-ico"><span class="fire-ico">&#x1F525;</span></div>
+        <span class="act-count" id="fc_${p.id}">${p.fires||0}</span>
+      </button>
       <button class="act-btn" onclick="openComments('${p.id}')">
-        <div class="act-ico">💬</div>
+        <div class="act-ico">&#x1F4AC;</div>
         <span class="act-count" id="cc_${p.id}">${p.comments||0}</span>
       </button>`;
+    acts.querySelector('#likebtn_'+p.id).addEventListener('click',function(){ toggleLike(p.id,this); });
+    acts.querySelector('#firebtn_'+p.id).addEventListener('click',function(){ toggleFire(p.id,this); });
     // Admin menu on post
     if(isAdmin()){
       const adminMenu=document.createElement('div');
@@ -1266,6 +1279,78 @@ window.toggleFire = async (pid,btn)=>{
 // ── 💬 COMMENTS (feed sheet) ──
 // ══════════════════════════════════════════
 let cmtPostId=null, unsubCmts=null;
+
+function renderCmtItem(c, cid, list){
+  const canEdit = CU && c.uid === CU.uid;
+  const canDelete = CU && (c.uid === CU.uid || isAdmin());
+  const avH = c.userPhoto ? `<img src="${c.userPhoto}" alt="">` : `${(c.nick||'?')[0].toUpperCase()}`;
+  const div = document.createElement('div');
+  div.className = 'cmt-item';
+  div.dataset.cid = cid;
+
+  const actionsHtml = (canEdit||canDelete) ? `<div class="cmt-actions">
+    ${canEdit ? `<button class="cmt-act-btn" data-action="edit">✏️ Editar</button>` : ''}
+    ${canDelete ? `<button class="cmt-act-btn danger" data-action="delete">🗑️ Borrar</button>` : ''}
+  </div>` : '';
+
+  div.innerHTML = `<div class="cmt-av">${avH}</div><div class="cmt-body">
+    <div class="cmt-nick">@${c.nick||'usuario'}</div>
+    <div class="cmt-text" data-orig="${escHtml(c.text)}">${escHtml(c.text)}</div>
+    ${actionsHtml}
+  </div>`;
+
+  // Edit button
+  const editBtn = div.querySelector('[data-action="edit"]');
+  if(editBtn) editBtn.addEventListener('click', ()=>startEditCmt(div, cid, c.text));
+
+  // Delete button
+  const delBtn = div.querySelector('[data-action="delete"]');
+  if(delBtn) delBtn.addEventListener('click', async ()=>{
+    if(!confirm('¿Borrar este comentario?')) return;
+    try{
+      const { deleteDoc: dd, doc: d2 } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+      await dd(d2(db,'posts',cmtPostId,'comments',cid));
+      const n = Math.max(0, parseInt(document.getElementById('cc_'+cmtPostId)?.textContent||0)-1);
+      await updateDoc(doc(db,'posts',cmtPostId),{comments:n});
+      const cc=document.getElementById('cc_'+cmtPostId); if(cc) cc.textContent=n;
+      div.remove(); toast('Comentario eliminado');
+    }catch(e){ toast('Error al borrar'); }
+  });
+
+  list.appendChild(div);
+}
+
+function startEditCmt(div, cid, origText){
+  const body = div.querySelector('.cmt-body');
+  const textEl = div.querySelector('.cmt-text');
+  const actionsEl = div.querySelector('.cmt-actions');
+  textEl.style.display='none';
+  if(actionsEl) actionsEl.style.display='none';
+  // Create inline edit input
+  const inp = document.createElement('input');
+  inp.className='cmt-edit-inp'; inp.value=origText; inp.maxLength=200;
+  const saveBtn = document.createElement('button');
+  saveBtn.className='cmt-act-btn'; saveBtn.textContent='Guardar'; saveBtn.style.marginTop='4px';
+  const cancelBtn = document.createElement('button');
+  cancelBtn.className='cmt-act-btn'; cancelBtn.textContent='Cancelar'; cancelBtn.style.marginTop='4px';
+  const row = document.createElement('div'); row.style.cssText='display:flex;gap:4px;flex-wrap:wrap';
+  row.appendChild(saveBtn); row.appendChild(cancelBtn);
+  body.appendChild(inp); body.appendChild(row);
+  inp.focus(); inp.select();
+
+  const cleanup=()=>{ inp.remove(); row.remove(); textEl.style.display=''; if(actionsEl) actionsEl.style.display=''; };
+  cancelBtn.onclick=cleanup;
+  saveBtn.onclick=async()=>{
+    const newText=inp.value.trim(); if(!newText){ toast('El comentario no puede estar vacío'); return; }
+    try{
+      const { updateDoc: ud, doc: d2 } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+      await ud(d2(db,'posts',cmtPostId,'comments',cid),{text:newText});
+      textEl.textContent=newText; cleanup(); toast('Comentario editado ✓');
+    }catch(e){ toast('Error al editar'); }
+  };
+  inp.onkeydown=e=>{ if(e.key==='Enter'){e.preventDefault();saveBtn.click();} if(e.key==='Escape') cleanup(); };
+}
+
 window.openComments = pid=>{
   if(!CU){toast('Iniciá sesión primero');return;}
   cmtPostId=pid;
@@ -1277,15 +1362,9 @@ window.openComments = pid=>{
     query(collection(db,'posts',pid,'comments'),orderBy('createdAt','asc'),limit(80)),
     snap=>{
       const list=$('cmtsList');
-      const cmts=snap.docs.map(d=>d.data());
-      if(!cmts.length){list.innerHTML='<div class="cmt-empty">Sin comentarios aún. ¡Sé el primero!</div>';return;}
+      if(!snap.docs.length){list.innerHTML='<div class="cmt-empty">Sin comentarios aún. ¡Sé el primero!</div>';return;}
       list.innerHTML='';
-      cmts.forEach(c=>{
-        const div=document.createElement('div'); div.className='cmt-item';
-        const avH=c.userPhoto?`<img src="${c.userPhoto}" alt="">`:`${(c.nick||'?')[0].toUpperCase()}`;
-        div.innerHTML=`<div class="cmt-av">${avH}</div><div class="cmt-body"><div class="cmt-nick">@${c.nick||'usuario'}</div><div class="cmt-text">${escHtml(c.text)}</div></div>`;
-        list.appendChild(div);
-      });
+      snap.docs.forEach(d=>renderCmtItem(d.data(), d.id, list));
       list.scrollTop=list.scrollHeight;
     }
   );
