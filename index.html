@@ -552,6 +552,82 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
 
+  /* ADMIN PANEL */
+  #admin-panel {
+    background: linear-gradient(135deg, rgba(124,106,255,.08), rgba(255,106,176,.06));
+    border-bottom: 1px solid rgba(124,106,255,.25);
+    padding: 10px 16px;
+    flex-shrink: 0;
+    display: none;
+  }
+  #admin-panel.visible { display: block; }
+
+  .admin-header {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 10px;
+  }
+  .admin-badge {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; font-size: .7rem; font-weight: 700;
+    padding: 2px 8px; border-radius: 99px;
+    font-family: var(--font-head); letter-spacing: .5px;
+  }
+  .admin-title {
+    font-family: var(--font-head); font-weight: 700;
+    font-size: .95rem; color: var(--text);
+  }
+
+  .admin-yt-row {
+    display: flex; gap: 8px; align-items: center;
+  }
+  .admin-yt-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid rgba(124,106,255,.35);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: .85rem;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .admin-yt-input:focus { border-color: var(--accent); }
+  .admin-yt-input::placeholder { color: var(--text-muted); }
+
+  .btn-admin {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; border-radius: 8px;
+    padding: 8px 16px; color: #fff;
+    font-family: var(--font-head); font-weight: 700;
+    font-size: .8rem; cursor: pointer;
+    transition: opacity .2s; white-space: nowrap;
+  }
+  .btn-admin:hover { opacity: .85; }
+
+  .btn-admin-danger {
+    background: linear-gradient(135deg, #ff4444, #cc0000);
+    border: none; border-radius: 8px;
+    padding: 8px 14px; color: #fff;
+    font-family: var(--font-head); font-weight: 700;
+    font-size: .8rem; cursor: pointer;
+    transition: opacity .2s; white-space: nowrap;
+  }
+  .btn-admin-danger:hover { opacity: .85; }
+
+  /* MSG delete btn for admin */
+  .msg-delete-btn {
+    display: none;
+    background: rgba(255,60,60,.15);
+    border: 1px solid rgba(255,60,60,.3);
+    border-radius: 6px;
+    color: #ff6060; font-size: .7rem;
+    padding: 2px 7px; cursor: pointer;
+    transition: all .2s; margin-top: 4px;
+  }
+  .msg-delete-btn:hover { background: rgba(255,60,60,.3); }
+  body.is-admin .msg-delete-btn { display: inline-block; }
+
   /* RESPONSIVE */
   @media (max-width: 600px) {
     .yt-frame-wrap { padding-bottom: 45%; }
@@ -653,9 +729,13 @@
 <!-- PROFILE MODAL -->
 <div id="profile-modal" class="hidden">
   <div class="profile-card">
-    <h2>Completar Perfil</h2>
-    <p class="sub">Necesitás foto de perfil para poder chatear.</p>
+    <h2>Editar Perfil</h2>
+    <p class="sub">Actualizá tu información y foto de perfil.</p>
 
+    <div class="input-group">
+      <label>Nombre / Nick</label>
+      <input class="inp" id="edit-name" type="text" placeholder="TuNombre"/>
+    </div>
     <div class="input-group">
       <label>Foto de Perfil <span style="color:var(--accent2)">*</span></label>
       <div class="avatar-upload-area" id="edit-upload-area">
@@ -716,25 +796,27 @@
     </div>
   </header>
 
-  <!-- YOUTUBE PLAYER -->
-  <div class="yt-section">
-    <div class="yt-controls">
-      <input class="yt-input" id="yt-url-input" type="text" placeholder="Pegá un link de YouTube..."/>
-      <button class="btn-yt" onclick="loadYouTube()">▶ Reproducir</button>
+  <!-- ADMIN PANEL (solo visible para synxyes@gmail.com) -->
+  <div id="admin-panel">
+    <div class="admin-header">
+      <span class="admin-badge">👑 ADMIN</span>
+      <span class="admin-title">Panel de Administración</span>
     </div>
+    <div class="admin-yt-row">
+      <input class="admin-yt-input" id="admin-yt-input" type="text" placeholder="Pegá un link de YouTube para todos..."/>
+      <button class="btn-admin" onclick="adminSetVideo()">▶ Poner video</button>
+      <button class="btn-admin-danger" onclick="adminClearChat()">🗑 Limpiar chat</button>
+    </div>
+  </div>
+
+  <!-- YOUTUBE PLAYER (solo visualización para usuarios) -->
+  <div class="yt-section">
     <div class="yt-frame-wrap" id="yt-frame-wrap">
       <iframe id="yt-iframe"
         src="https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=0"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowfullscreen>
       </iframe>
-    </div>
-    <div class="yt-playlist">
-      <div class="yt-chip" onclick="playPreset('jfKfPfyJRdk')">🎵 lofi beats</div>
-      <div class="yt-chip" onclick="playPreset('DWcJFNfaw9c')">🎸 rock vibes</div>
-      <div class="yt-chip" onclick="playPreset('ktvTqknDobU')">🎹 piano chill</div>
-      <div class="yt-chip" onclick="playPreset('36YnV9STBqc')">🎧 synthwave</div>
-      <div class="yt-chip" onclick="playPreset('5qap5aO4i9A')">🌙 late night</div>
     </div>
   </div>
 
@@ -763,7 +845,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, doc, setDoc, getDoc, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, doc, setDoc, getDoc, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // ══════════════════════════════════════════════
 // 🔥 CONFIGURACIÓN FIREBASE
@@ -783,6 +865,9 @@ const firebaseConfig = {
 const CLOUDINARY_CLOUD_NAME = "da0n5tg3g";
 const CLOUDINARY_UPLOAD_PRESET = "wikipediarf4";
 
+// ── ADMIN EMAIL ──
+const ADMIN_EMAIL = "synxyes@gmail.com";
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -793,6 +878,7 @@ let currentProfile = null;
 let avatarFileReg = null;
 let avatarFileEdit = null;
 let unsubscribeChat = null;
+let unsubscribeVideo = null;
 
 // ── Expose globals ──
 window._auth = auth;
@@ -804,6 +890,7 @@ window._CLOUDINARY_CLOUD_NAME = CLOUDINARY_CLOUD_NAME;
 window._CLOUDINARY_UPLOAD_PRESET = CLOUDINARY_UPLOAD_PRESET;
 window._createUserWithEmailAndPassword = createUserWithEmailAndPassword;
 window._signInWithEmailAndPassword = signInWithEmailAndPassword;
+window._ADMIN_EMAIL = ADMIN_EMAIL;
 
 window._setCurrentUser = (u) => { currentUser = u; };
 window._getCurrentUser = () => currentUser;
@@ -813,6 +900,7 @@ window._setAvatarFileReg = (f) => { avatarFileReg = f; };
 window._getAvatarFileReg = () => avatarFileReg;
 window._setAvatarFileEdit = (f) => { avatarFileEdit = f; };
 window._getAvatarFileEdit = () => avatarFileEdit;
+window._isAdmin = () => currentUser?.email === ADMIN_EMAIL;
 
 // ── Auth state ──
 onAuthStateChanged(auth, async (user) => {
@@ -826,10 +914,20 @@ onAuthStateChanged(auth, async (user) => {
     showMainApp(user, profile);
     startChat();
     updateOnlinePresence(user.uid);
+    startVideoSync();
+
+    // Mostrar panel admin si corresponde
+    if (user.email === ADMIN_EMAIL) {
+      document.body.classList.add('is-admin');
+      const panel = document.getElementById('admin-panel');
+      if (panel) panel.classList.add('visible');
+    }
   } else {
     currentUser = null;
     currentProfile = null;
     if (unsubscribeChat) { unsubscribeChat(); unsubscribeChat = null; }
+    if (unsubscribeVideo) { unsubscribeVideo(); unsubscribeVideo = null; }
+    document.body.classList.remove('is-admin');
     showAuthOverlay();
   }
 });
@@ -839,10 +937,27 @@ function updateOnlinePresence(uid) {
   const presRef = doc(db, 'online', uid);
   setDoc(presRef, { online: true, ts: Date.now() });
 
-  // Escuchar cambios en la colección online
   onSnapshot(collection(db, 'online'), snap => {
     const el = document.getElementById('online-count');
     if (el) el.textContent = `${snap.size} online`;
+  });
+}
+
+// ── Sincronizar video en tiempo real para todos ──
+function startVideoSync() {
+  if (unsubscribeVideo) unsubscribeVideo();
+  const videoRef = doc(db, 'config', 'currentVideo');
+  unsubscribeVideo = onSnapshot(videoRef, (snap) => {
+    if (snap.exists()) {
+      const data = snap.data();
+      const iframe = document.getElementById('yt-iframe');
+      if (iframe && data.videoId) {
+        const newSrc = `https://www.youtube.com/embed/${data.videoId}?autoplay=1`;
+        if (!iframe.src.includes(data.videoId)) {
+          iframe.src = newSrc;
+        }
+      }
+    }
   });
 }
 
@@ -861,6 +976,7 @@ function renderMessages(msgs) {
   if (!container) return;
   container.innerHTML = '';
   const uid = currentUser?.uid;
+  const isAdmin = currentUser?.email === ADMIN_EMAIL;
   msgs.forEach(msg => {
     const isOwn = msg.uid === uid;
     const div = document.createElement('div');
@@ -869,6 +985,12 @@ function renderMessages(msgs) {
     const ts = msg.ts?.toDate ? msg.ts.toDate() : (msg.ts ? new Date(msg.ts) : null);
     const time = ts ? ts.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) : '';
     const locationStr = msg.city ? `${msg.city}, ${msg.country || ''}` : (msg.country || '');
+
+    const adminControls = isAdmin ? `
+      <div>
+        <button class="msg-delete-btn" onclick="adminDeleteMsg('${msg.id}')">🗑 Borrar</button>
+        ${!isOwn ? `<button class="msg-delete-btn" style="margin-left:4px" onclick="adminBanUser('${msg.uid}', '${(msg.name||'').replace(/'/g,"\\'")}')">🚫 Banear</button>` : ''}
+      </div>` : '';
 
     div.innerHTML = `
       <img class="msg-avatar" src="${msg.avatar || 'https://api.dicebear.com/7.x/thumbs/svg?seed=' + msg.uid}"
@@ -880,6 +1002,7 @@ function renderMessages(msgs) {
           <span class="msg-time">${time}</span>
         </div>
         <div class="msg-bubble">${escapeHtml(msg.text)}</div>
+        ${adminControls}
       </div>
     `;
     container.appendChild(div);
@@ -903,6 +1026,37 @@ window._saveUserProfile = async (uid, data) => {
 window._loadUserProfile = async (uid) => {
   const snap = await getDoc(doc(db, 'users', uid));
   return snap.exists() ? snap.data() : null;
+};
+
+// ── ADMIN: Set video global ──
+window._adminSetVideoId = async (videoId) => {
+  await setDoc(doc(db, 'config', 'currentVideo'), { videoId, setAt: Date.now() });
+};
+
+// ── ADMIN: Borrar mensaje ──
+window._adminDeleteMsg = async (msgId) => {
+  await deleteDoc(doc(db, 'messages', msgId));
+};
+
+// ── ADMIN: Banear usuario (borrar su perfil y mensajes) ──
+window._adminBanUser = async (uid) => {
+  // Marcar usuario como baneado
+  await setDoc(doc(db, 'banned', uid), { bannedAt: Date.now() });
+  // Borrar sus mensajes
+  const q = query(collection(db, 'messages'));
+  const snap = await getDocs(q);
+  const toDelete = snap.docs.filter(d => d.data().uid === uid);
+  for (const d of toDelete) {
+    await deleteDoc(d.ref);
+  }
+};
+
+// ── ADMIN: Limpiar todo el chat ──
+window._adminClearChat = async () => {
+  const snap = await getDocs(collection(db, 'messages'));
+  for (const d of snap.docs) {
+    await deleteDoc(d.ref);
+  }
 };
 </script>
 
@@ -966,6 +1120,7 @@ function checkChatAccess(profile) {
 function openProfileModal() {
   const profile = window._getCurrentProfile ? window._getCurrentProfile() : null;
   if (profile) {
+    document.getElementById('edit-name').value = profile.name || '';
     document.getElementById('edit-country').value = profile.country || '';
     document.getElementById('edit-city').value = profile.city || '';
     document.getElementById('edit-age').value = profile.age || '';
@@ -1136,6 +1291,7 @@ async function saveProfile() {
   const user = window._getCurrentUser ? window._getCurrentUser() : null;
   if (!user) return;
 
+  const name = document.getElementById('edit-name').value.trim();
   const country = document.getElementById('edit-country').value.trim();
   const city = document.getElementById('edit-city').value.trim();
   const age = document.getElementById('edit-age').value.trim();
@@ -1145,6 +1301,8 @@ async function saveProfile() {
   const btn = document.getElementById('btn-save-profile');
 
   errEl.classList.remove('visible');
+
+  if (!name) { showError(errEl, '⚠️ Ingresá tu nombre/nick.'); return; }
 
   const existingProfile = window._getCurrentProfile ? window._getCurrentProfile() : {};
   const hasExistingAvatar = existingProfile && existingProfile.avatar;
@@ -1164,7 +1322,7 @@ async function saveProfile() {
 
     const updatedProfile = {
       ...(existingProfile || {}),
-      country, city, age, phone,
+      name, country, city, age, phone,
       avatar: avatarUrl,
       uid: user.uid
     };
@@ -1236,13 +1394,56 @@ function autoResize(el) {
   el.style.height = Math.min(el.scrollHeight, 120) + 'px';
 }
 
-// ── YOUTUBE ──
-function loadYouTube() {
-  const url = document.getElementById('yt-url-input').value.trim();
+// ── ADMIN: Set video ──
+async function adminSetVideo() {
+  if (!window._isAdmin || !window._isAdmin()) return;
+  const url = document.getElementById('admin-yt-input').value.trim();
   if (!url) return;
   const id = extractYouTubeId(url);
   if (!id) { showToast('⚠️ URL de YouTube no válida'); return; }
-  setYouTubeVideo(id);
+  try {
+    await window._adminSetVideoId(id);
+    document.getElementById('admin-yt-input').value = '';
+    showToast('✅ Video actualizado para todos');
+  } catch(e) {
+    showToast('❌ Error: ' + e.message);
+  }
+}
+
+// ── ADMIN: Borrar mensaje ──
+async function adminDeleteMsg(msgId) {
+  if (!window._isAdmin || !window._isAdmin()) return;
+  if (!confirm('¿Borrar este mensaje?')) return;
+  try {
+    await window._adminDeleteMsg(msgId);
+    showToast('🗑 Mensaje borrado');
+  } catch(e) {
+    showToast('❌ Error: ' + e.message);
+  }
+}
+
+// ── ADMIN: Banear usuario ──
+async function adminBanUser(uid, name) {
+  if (!window._isAdmin || !window._isAdmin()) return;
+  if (!confirm(`¿Banear a "${name}" y borrar todos sus mensajes?`)) return;
+  try {
+    await window._adminBanUser(uid);
+    showToast(`🚫 ${name} baneado`);
+  } catch(e) {
+    showToast('❌ Error: ' + e.message);
+  }
+}
+
+// ── ADMIN: Limpiar chat ──
+async function adminClearChat() {
+  if (!window._isAdmin || !window._isAdmin()) return;
+  if (!confirm('¿Limpiar TODO el chat? Esta acción no se puede deshacer.')) return;
+  try {
+    await window._adminClearChat();
+    showToast('🗑 Chat limpiado');
+  } catch(e) {
+    showToast('❌ Error: ' + e.message);
+  }
 }
 
 function extractYouTubeId(url) {
@@ -1257,15 +1458,6 @@ function extractYouTubeId(url) {
     if (m) return m[1];
   }
   return null;
-}
-
-function setYouTubeVideo(id) {
-  document.getElementById('yt-iframe').src =
-    `https://www.youtube.com/embed/${id}?autoplay=1`;
-}
-
-function playPreset(id) {
-  setYouTubeVideo(id);
 }
 
 // ── USER POPUP ──
