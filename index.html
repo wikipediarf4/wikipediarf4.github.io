@@ -2625,15 +2625,55 @@ function _listenRxns(){
 }
 
 window.flToggleLike = async function(){
-  if(!window.CU){ toast('Iniciá sesión','err'); return; }
+  if(!window.CU){ toast('Iniciá sesión para reaccionar','err'); return; }
   var s = _fl.stories[_fl.currentIdx]; if(!s) return;
-  var ref  = window.doc(window.db,'flashlatido',s.id);
-  var snap = await window.getDoc(ref);
-  var data = snap.exists()?snap.data():{};
-  var likes= data.likes||[];
-  var uid  = window.CU.id;
-  likes = likes.includes(uid) ? likes.filter(function(x){return x!==uid;}) : [...likes,uid];
-  await window.setDoc(ref,{likes},{merge:true});
+
+  // Animación inmediata en el botón
+  var btn = document.getElementById('flLikeBtn');
+  var circle = btn ? btn.querySelector('.fl-act-circle') : null;
+  if(circle){
+    circle.style.transition = 'transform .15s ease';
+    circle.style.transform = 'scale(1.4)';
+    setTimeout(function(){ circle.style.transform = ''; }, 200);
+  }
+
+  try {
+    var ref  = window.doc(window.db, 'flashlatido', s.id);
+    var snap = await window.getDoc(ref);
+    var data = snap.exists() ? snap.data() : {};
+    var likes = data.likes || [];
+    var uid   = window.CU.id;
+    var yaLikeado = likes.includes(uid);
+
+    likes = yaLikeado
+      ? likes.filter(function(x){ return x !== uid; })
+      : [...likes, uid];
+
+    await window.updateDoc(ref, { likes: likes });
+
+    // Notificar al dueño si es un like nuevo y no es el mismo usuario
+    if(!yaLikeado && s.uid && s.uid !== uid && window.arrayUnion){
+      var notif = {
+        text: '❤️ ' + (window.CU.nick||'Alguien') + ' reaccionó a tu FlashLatido' + (s.caption ? ': "'+s.caption.slice(0,40)+'"' : ''),
+        time: Date.now(),
+        read: false,
+        fromUid: uid,
+        fromAv:  window.CU.av  || '',
+        fromNick:window.CU.nick || '',
+        type: 'flashlatido_like',
+        refId: s.id
+      };
+      try {
+        await window.updateDoc(
+          window.doc(window.db, 'users', s.uid),
+          { notifs: window.arrayUnion(notif) }
+        );
+      } catch(ne){ console.warn('[FL] notif like:', ne); }
+    }
+  } catch(e){
+    toast('Error al reaccionar','err');
+    console.error('[FL] flToggleLike:', e);
+  }
 };
 
 function _listenComments(){
@@ -2753,13 +2793,27 @@ document.addEventListener('keydown', function(e){
   if(typeof window.gp === 'function') window.gp('home');
 });
 window.flSendComment = async function(){
-  if(!window.CU){ toast('Iniciá sesión','err'); return; }
-  var s=_fl.stories[_fl.currentIdx]; if(!s) return;
-  var inp=document.getElementById('flCommentInput');
-  var text=(inp?.value||'').trim(); if(!text) return;
-  inp.value='';
-  try{ await window.addDoc(window.collection(window.db,'flashlatido',s.id,'comments'),{text,uid:window.CU.id,nick:window.CU.nick||'Usuario',av:window.CU.av||'',time:Date.now(),likeCount:0}); }
-  catch(e){ toast('Error al comentar','err'); }
+  if(!window.CU){ toast('Iniciá sesión para comentar','err'); return; }
+  var s = _fl.stories[_fl.currentIdx]; if(!s) return;
+  var inp  = document.getElementById('flCommentInput');
+  var text = (inp ? inp.value : '').trim(); if(!text) return;
+  inp.value = '';
+  try{
+    await window.addDoc(window.collection(window.db,'flashlatido',s.id,'comments'),{
+      text, uid:window.CU.id, nick:window.CU.nick||'Usuario',
+      av:window.CU.av||'', time:Date.now(), likeCount:0
+    });
+    // Notificar al dueño
+    if(s.uid && s.uid !== window.CU.id && window.arrayUnion){
+      var notif = {
+        text: '💬 '+(window.CU.nick||'Alguien')+' comentó en tu FlashLatido: "'+text.slice(0,60)+'"',
+        time: Date.now(), read: false,
+        fromUid:window.CU.id, fromAv:window.CU.av||'', fromNick:window.CU.nick||'',
+        type:'flashlatido_comment', refId:s.id
+      };
+      window.updateDoc(window.doc(window.db,'users',s.uid),{notifs:window.arrayUnion(notif)}).catch(function(){});
+    }
+  } catch(e){ toast('Error al comentar','err'); console.error('[FL] comment:',e); }
 };
 
 // Like en comentario individual
@@ -2805,6 +2859,16 @@ window.flShareToFeed = async function(){
       imgs:(s.photos||[]).slice(0,4),flashlatidoRef:s.id,
       time:Date.now(),type:'flashlatido',
     });
+    // Notificar al dueño
+    if(s.uid && s.uid !== window.CU.id && window.arrayUnion){
+      var notif = {
+        text: '↗️ '+(window.CU.nick||'Alguien')+' compartió tu FlashLatido en el feed',
+        time: Date.now(), read: false,
+        fromUid:window.CU.id, fromAv:window.CU.av||'', fromNick:window.CU.nick||'',
+        type:'flashlatido_share', refId:s.id
+      };
+      window.updateDoc(window.doc(window.db,'users',s.uid),{notifs:window.arrayUnion(notif)}).catch(function(){});
+    }
     toast('¡Compartido en el feed! ⚡','ok');
   } catch(e){ toast('Error al compartir','err'); }
 };
