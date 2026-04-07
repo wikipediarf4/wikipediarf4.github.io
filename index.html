@@ -1754,6 +1754,7 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
   align-items: center;
   justify-content: center;
   height: calc(100vh - 48px);
+  padding-bottom: 70px;
   position: relative;
   overflow: hidden;
   background: radial-gradient(ellipse at 50% 0%, rgba(233,30,140,.18) 0%, transparent 60%),
@@ -1776,8 +1777,8 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
 /* The vertical card — phone-like proportions */
 .fl-card {
   position: relative;
-  width: min(390px, calc(100vw - 120px));
-  height: min(693px, calc(100vh - 80px));
+  width: min(340px, calc(100vw - 120px));
+  height: min(580px, calc(100vh - 140px));
   border-radius: 20px;
   overflow: hidden;
   background: #111;
@@ -1806,7 +1807,8 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
   object-fit: cover;
   display: block;
   user-select: none;
-  transition: opacity .3s ease;
+  transition: opacity .35s ease, transform .4s ease;
+  transform-origin: center center;
 }
 
 /* Top gradient */
@@ -1996,12 +1998,12 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
   50%{filter:drop-shadow(0 0 32px #e91e8c) drop-shadow(0 0 60px rgba(233,30,140,.6))}
 }
 
-/* Comments panel */
+/* Comments panel — next to actions, TikTok style */
 #flCommentsPanel {
   position:fixed;
-  right:0;bottom:0;
-  width:min(360px,100vw);
-  max-height:65vh;
+  right:80px;bottom:0;
+  width:min(340px,calc(100vw - 90px));
+  max-height:70vh;
   background:rgba(10,10,10,.97);
   border:1px solid rgba(233,30,140,.25);
   border-radius:16px 16px 0 0;
@@ -2193,14 +2195,35 @@ button:not(.tb-nav-btn):not(.bottom-nav-btn):not(.ml-rxn-btn):not([disabled]) {
     <div class="mt">⚡ Crear FlashLatido</div>
 
     <div style="margin-bottom:14px;">
-      <label class="fl" style="color:rgba(255,255,255,.5);">FOTOS (máx 10)</label>
-      <div class="fl-drop-zone" id="flDropZone" onclick="document.getElementById('flFileInput').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="flHandleDrop(event)">
-        <div class="fl-dz-icon">📸</div>
-        <div style="font-size:.85rem;font-weight:700;">Arrastrá fotos o hacé click</div>
-        <div style="font-size:.72rem;margin-top:4px;color:rgba(255,255,255,.35);">JPG, PNG, WEBP</div>
+      <!-- Tabs: fotos / video -->
+      <div style="display:flex;gap:0;margin-bottom:10px;border-radius:10px;overflow:hidden;border:1px solid rgba(233,30,140,.3);">
+        <button id="flTabFotos" onclick="flSwitchTab('fotos')" style="flex:1;background:linear-gradient(135deg,#e91e8c,#c2185b);border:none;color:#fff;padding:8px;font-weight:800;font-size:.78rem;cursor:pointer;font-family:'Exo 2',sans-serif;">📸 FOTOS (máx 10)</button>
+        <button id="flTabVideo" onclick="flSwitchTab('video')" style="flex:1;background:rgba(255,255,255,.05);border:none;color:rgba(255,255,255,.5);padding:8px;font-weight:800;font-size:.78rem;cursor:pointer;font-family:'Exo 2',sans-serif;">🎬 VIDEO (máx 30s)</button>
       </div>
-      <input type="file" id="flFileInput" multiple accept="image/*" style="display:none" onchange="flHandleFiles(this.files)">
-      <div id="flPreviewGrid" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;"></div>
+      <!-- Fotos panel -->
+      <div id="flPanelFotos">
+        <div class="fl-drop-zone" id="flDropZone" onclick="document.getElementById('flFileInput').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="flHandleDrop(event)">
+          <div class="fl-dz-icon">📸</div>
+          <div style="font-size:.85rem;font-weight:700;">Arrastrá fotos o hacé click</div>
+          <div style="font-size:.72rem;margin-top:4px;color:rgba(255,255,255,.35);">JPG, PNG, WEBP</div>
+        </div>
+        <input type="file" id="flFileInput" multiple accept="image/*" style="display:none" onchange="flHandleFiles(this.files)">
+        <div id="flPreviewGrid" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;"></div>
+      </div>
+      <!-- Video panel -->
+      <div id="flPanelVideo" style="display:none;">
+        <div class="fl-drop-zone" id="flVideoDropZone" onclick="document.getElementById('flVideoInput').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="flHandleVideoDrop(event)">
+          <div class="fl-dz-icon">🎬</div>
+          <div style="font-size:.85rem;font-weight:700;">Arrastrá un video o hacé click</div>
+          <div style="font-size:.72rem;margin-top:4px;color:rgba(255,255,255,.35);">MP4, MOV, WEBM — Máximo 30 segundos</div>
+        </div>
+        <input type="file" id="flVideoInput" accept="video/*" style="display:none" onchange="flHandleVideoFile(this.files[0])">
+        <div id="flVideoPreview" style="margin-top:10px;display:none;">
+          <video id="flVideoEl" style="width:100%;border-radius:10px;border:1.5px solid rgba(233,30,140,.4);max-height:220px;object-fit:cover;" controls muted playsinline></video>
+          <div id="flVideoDurationWarn" style="display:none;color:#e91e8c;font-size:.75rem;margin-top:6px;font-weight:700;">⚠️ El video supera 30 segundos. Seleccioná uno más corto.</div>
+          <button onclick="flClearVideo()" style="margin-top:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);border-radius:8px;padding:5px 14px;cursor:pointer;font-size:.75rem;">✕ Quitar video</button>
+        </div>
+      </div>
     </div>
 
     <div style="margin-bottom:14px;">
@@ -2247,6 +2270,8 @@ var _fl = {
   selectedMusic: null,
   imgDataURLs: [],
   scrollLocked: false,
+  selectedVideoFile: null,
+  activeTab: 'fotos',
 };
 
 // ── Init ──
@@ -2315,8 +2340,27 @@ function _renderCard(dir){
   document.getElementById('flOwnerAvImg').src = s.av || '';
   document.getElementById('flCardCaption').textContent = s.caption || '';
 
+  // Video vs fotos
+  var mainPhoto = document.getElementById('flMainPhoto');
+  var existingVid = document.getElementById('flStoryVideo');
+  if(existingVid) existingVid.remove();
+
+  if(s.videoURL){
+    mainPhoto.style.display='none';
+    var vidEl = document.createElement('video');
+    vidEl.id='flStoryVideo';
+    vidEl.src=s.videoURL;
+    vidEl.autoplay=true; vidEl.loop=true; vidEl.muted=false; vidEl.playsInline=true;
+    vidEl.controls=false;
+    vidEl.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;';
+    document.getElementById('flCard').insertBefore(vidEl, document.getElementById('flCard').firstChild);
+    vidEl.play().catch(function(){});
+  } else {
+    mainPhoto.style.display='block';
+  }
+
   // Music
-  if(s.musicPreview){ _playMusic(s); }
+  if(s.musicPreview && !s.videoURL){ _playMusic(s); }
   else {
     document.getElementById('flMusicBar').style.display='none';
     var audio=document.getElementById('flAudioEl');
@@ -2324,8 +2368,8 @@ function _renderCard(dir){
     document.getElementById('flDisc').classList.remove('playing');
   }
 
-  _buildProgressBars(s.photos||[]);
-  _showPhoto();
+  _buildProgressBars(s.videoURL ? [] : (s.photos||[]));
+  if(!s.videoURL) _showPhoto();
 }
 
 function _buildProgressBars(photos){
@@ -2341,9 +2385,18 @@ function _showPhoto(){
   var photos = s.photos||[];
   var img = document.getElementById('flMainPhoto');
   img.style.opacity='0';
+  img.style.transform='scale(1.06)';
   img.src = photos[_fl.photoIdx]||'';
-  img.onload = function(){ img.style.opacity='1'; };
-  setTimeout(function(){ img.style.opacity='1'; },80);
+  img.onload = function(){
+    img.style.transition='opacity .35s ease, transform .4s ease';
+    img.style.opacity='1';
+    img.style.transform='scale(1)';
+  };
+  setTimeout(function(){
+    img.style.transition='opacity .35s ease, transform .4s ease';
+    img.style.opacity='1';
+    img.style.transform='scale(1)';
+  },80);
 
   // Dots
   var dots = document.getElementById('flDots');
@@ -2402,7 +2455,19 @@ function _attachWheel(){
     e.preventDefault();
     if(_fl.scrollLocked) return;
     _fl.scrollLocked = true;
-    setTimeout(function(){ _fl.scrollLocked=false; }, 600);
+    // Visual ripple effect on scroll
+    var card = document.getElementById('flCard');
+    if(card){
+      card.style.transition = 'transform .15s ease, box-shadow .15s ease';
+      card.style.transform = e.deltaY > 0 ? 'scale(.97) translateY(4px)' : 'scale(.97) translateY(-4px)';
+      card.style.boxShadow = '0 0 0 2px rgba(233,30,140,.9), 0 0 60px rgba(233,30,140,.7), 0 0 120px rgba(233,30,140,.3)';
+      setTimeout(function(){
+        card.style.transform = '';
+        card.style.boxShadow = '';
+        card.style.transition = '';
+      }, 200);
+    }
+    setTimeout(function(){ _fl.scrollLocked=false; }, 500);
     if(e.deltaY > 0) _advancePhoto(1);
     else              _advancePhoto(-1);
   }, { passive:false });
@@ -2430,13 +2495,29 @@ function _listenRxns(){
   var s = _fl.stories[_fl.currentIdx];
   if(!s||!window.doc||!window.onSnapshot) return;
   var ref = window.doc(window.db,'flashlatido',s.id);
+  var _prevLikeCount = 0;
   window._fl_rxnUnsub = window.onSnapshot(ref,function(snap){
     if(!snap.exists()) return;
     var d = snap.data();
-    document.getElementById('flLikeCount').textContent  = (d.likes||[]).length;
+    var newLikes = (d.likes||[]).length;
+    document.getElementById('flLikeCount').textContent  = newLikes;
     document.getElementById('flShareCount').textContent = d.shares||0;
     var liked = window.CU && (d.likes||[]).includes(window.CU.id);
     document.getElementById('flLikeBtn').classList.toggle('fl-act-liked', !!liked);
+    // Flash heart when someone new likes in real time
+    if(newLikes > _prevLikeCount && _prevLikeCount >= 0){
+      var heartCircle = document.querySelector('#flLikeBtn .fl-act-circle');
+      if(heartCircle){
+        heartCircle.style.transition='transform .2s ease, box-shadow .2s ease';
+        heartCircle.style.transform='scale(1.35)';
+        heartCircle.style.boxShadow='0 0 24px rgba(233,30,140,1)';
+        setTimeout(function(){
+          heartCircle.style.transform='';
+          heartCircle.style.boxShadow='';
+        }, 300);
+      }
+    }
+    _prevLikeCount = newLikes;
   });
 }
 
@@ -2470,7 +2551,22 @@ function _listenComments(){
       div.innerHTML=av+'<div style="background:rgba(255,255,255,.06);border-radius:12px;padding:6px 11px;flex:1;min-width:0;border:1px solid rgba(255,255,255,.06);"><span style="font-size:.7rem;font-weight:800;color:#e91e8c;">'+escHtml(c.nick||'Usuario')+'</span><div style="font-size:.8rem;color:rgba(255,255,255,.9);line-height:1.45;word-break:break-word;margin-top:2px;">'+escHtml(c.text||'')+'</div></div>';
       el.appendChild(div);
     });
+    var prevCnt = parseInt(document.getElementById('flCommentCount').textContent)||0;
     document.getElementById('flCommentCount').textContent=cnt;
+    // Flash the comment button when new comment arrives in real time
+    if(cnt > prevCnt && prevCnt >= 0){
+      var cmtBtn = document.querySelector('#flTiktokWrap .fl-act .fl-act-circle');
+      var allBtns = document.querySelectorAll('#flTiktokWrap .fl-act');
+      allBtns.forEach(function(b){
+        if(b.querySelector('.fl-act-circle') && b.querySelector('.fl-act-circle').textContent.trim()==='💬'){
+          var circle = b.querySelector('.fl-act-circle');
+          circle.style.transition='all .2s';
+          circle.style.background='rgba(233,30,140,.5)';
+          circle.style.boxShadow='0 0 20px rgba(233,30,140,.8)';
+          setTimeout(function(){ circle.style.background=''; circle.style.boxShadow=''; }, 600);
+        }
+      });
+    }
     el.scrollTop=el.scrollHeight;
   });
 }
@@ -2507,15 +2603,59 @@ window.flShareToFeed = async function(){
 window.flSaveStory=function(){ toast('Guardado 🔖','ok'); };
 
 // ── Upload ──
+window.flSwitchTab = function(tab){
+  var isVideo = tab === 'video';
+  document.getElementById('flPanelFotos').style.display = isVideo ? 'none' : 'block';
+  document.getElementById('flPanelVideo').style.display = isVideo ? 'block' : 'none';
+  document.getElementById('flTabFotos').style.background = isVideo ? 'rgba(255,255,255,.05)' : 'linear-gradient(135deg,#e91e8c,#c2185b)';
+  document.getElementById('flTabFotos').style.color = isVideo ? 'rgba(255,255,255,.5)' : '#fff';
+  document.getElementById('flTabVideo').style.background = isVideo ? 'linear-gradient(135deg,#e91e8c,#c2185b)' : 'rgba(255,255,255,.05)';
+  document.getElementById('flTabVideo').style.color = isVideo ? '#fff' : 'rgba(255,255,255,.5)';
+  _fl.activeTab = tab;
+};
+window.flHandleVideoDrop = function(e){
+  e.preventDefault();
+  document.getElementById('flVideoDropZone').classList.remove('drag');
+  if(e.dataTransfer.files[0]) flHandleVideoFile(e.dataTransfer.files[0]);
+};
+window.flHandleVideoFile = function(f){
+  if(!f || !f.type.startsWith('video/')) return;
+  if(f.size > 150*1024*1024){ toast('Máx 150MB por video','err'); return; }
+  var vid = document.getElementById('flVideoEl');
+  var warn = document.getElementById('flVideoDurationWarn');
+  var preview = document.getElementById('flVideoPreview');
+  var url = URL.createObjectURL(f);
+  vid.src = url;
+  vid.onloadedmetadata = function(){
+    if(vid.duration > 30){
+      warn.style.display='block';
+      _fl.selectedVideoFile = null;
+    } else {
+      warn.style.display='none';
+      _fl.selectedVideoFile = f;
+    }
+  };
+  preview.style.display = 'block';
+};
+window.flClearVideo = function(){
+  _fl.selectedVideoFile = null;
+  var vid = document.getElementById('flVideoEl');
+  vid.src = '';
+  document.getElementById('flVideoPreview').style.display='none';
+  document.getElementById('flVideoDurationWarn').style.display='none';
+  document.getElementById('flVideoInput').value='';
+};
 window.flOpenUpload = function(){
   if(!window.CU){ toast('Iniciá sesión para subir','err'); return; }
-  _fl.selectedFiles=[]; _fl.imgDataURLs=[]; _fl.selectedMusic=null;
+  _fl.selectedFiles=[]; _fl.imgDataURLs=[]; _fl.selectedMusic=null; _fl.selectedVideoFile=null; _fl.activeTab='fotos';
   document.getElementById('flPreviewGrid').innerHTML='';
   document.getElementById('flFileInput').value='';
   document.getElementById('flMusicSearchInput').value='';
   document.getElementById('flMusicResults').innerHTML='';
   document.getElementById('flCaption').value='';
   document.getElementById('flSelectedMusicDisplay').style.display='none';
+  flClearVideo();
+  flSwitchTab('fotos');
   document.getElementById('flUploadModal').classList.add('open');
 };
 window.flHandleDrop=function(e){
@@ -2586,22 +2726,46 @@ window.flClearMusic=function(){
 
 // Publish
 window.flPublish=async function(){
-  if(!_fl.imgDataURLs.length){ toast('Agregá al menos 1 foto','err'); return; }
+  var isVideo = _fl.activeTab === 'video';
+  if(isVideo){
+    if(!_fl.selectedVideoFile){ toast('Seleccioná un video de máx 30 segundos','err'); return; }
+    var vidEl = document.getElementById('flVideoEl');
+    if(vidEl && vidEl.duration > 30){ toast('El video supera 30 segundos','err'); return; }
+  } else {
+    if(!_fl.imgDataURLs.length){ toast('Agregá al menos 1 foto','err'); return; }
+  }
   if(!window.CU){ toast('Iniciá sesión','err'); return; }
   var btn=document.getElementById('flPublishBtn');
   btn.textContent='Publicando... ⏳'; btn.disabled=true;
   try{
-    var photoURLs=[];
-    if(window.storageRef&&window.uploadBytes&&window.getDownloadURL){
-      for(var i=0;i<_fl.selectedFiles.length;i++){
-        var sRef=window.storageRef(window.storage,'flashlatido/'+window.CU.id+'_'+Date.now()+'_'+i);
-        await window.uploadBytes(sRef,_fl.selectedFiles[i]);
-        photoURLs.push(await window.getDownloadURL(sRef));
-      }
-    } else { photoURLs=_fl.imgDataURLs.slice(); }
     var doc={uid:window.CU.id,nick:window.CU.nick||'Usuario',av:window.CU.av||'',
-      photos:photoURLs,caption:document.getElementById('flCaption').value.trim(),
+      caption:document.getElementById('flCaption').value.trim(),
       time:Date.now(),likes:[],shares:0};
+
+    if(isVideo){
+      // Upload video
+      var videoURL='';
+      if(window.storageRef&&window.uploadBytes&&window.getDownloadURL){
+        var vRef=window.storageRef(window.storage,'flashlatido/vid_'+window.CU.id+'_'+Date.now());
+        await window.uploadBytes(vRef,_fl.selectedVideoFile);
+        videoURL=await window.getDownloadURL(vRef);
+      }
+      doc.videoURL=videoURL;
+      doc.type='video';
+      doc.photos=[];
+    } else {
+      var photoURLs=[];
+      if(window.storageRef&&window.uploadBytes&&window.getDownloadURL){
+        for(var i=0;i<_fl.selectedFiles.length;i++){
+          var sRef=window.storageRef(window.storage,'flashlatido/'+window.CU.id+'_'+Date.now()+'_'+i);
+          await window.uploadBytes(sRef,_fl.selectedFiles[i]);
+          photoURLs.push(await window.getDownloadURL(sRef));
+        }
+      } else { photoURLs=_fl.imgDataURLs.slice(); }
+      doc.photos=photoURLs;
+      doc.type='photos';
+    }
+
     if(_fl.selectedMusic){
       doc.musicName=_fl.selectedMusic.name;
       doc.musicArtist=_fl.selectedMusic.artist;
