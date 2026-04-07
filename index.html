@@ -45,37 +45,34 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
 .page.on{display:flex}
 
 /* ── FEED ── */
-#feedWrap{flex:1;overflow-y:scroll;overflow-x:hidden;scroll-snap-type:y mandatory;scrollbar-width:none}
+#feedWrap{flex:1;overflow-y:scroll;overflow-x:hidden;scroll-snap-type:y mandatory;scrollbar-width:none;background:var(--bg)}
 #feedWrap::-webkit-scrollbar{display:none}
-.pst{width:100%;height:100dvh;scroll-snap-align:start;scroll-snap-stop:always;position:relative;display:flex;align-items:flex-end;overflow:hidden;background:#000}
-.pst-media{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.pst-veil{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.85) 0%,rgba(0,0,0,.05) 55%,transparent 100%)}
-.pst-info{position:relative;z-index:2;padding:14px 80px 28px 16px;flex:1}
-.pst-user{display:flex;align-items:center;gap:9px;font-family:var(--fh);font-weight:700;font-size:.95rem;margin-bottom:5px;cursor:pointer}
-.pst-caption{font-size:.86rem;color:rgba(255,255,255,.82);line-height:1.45;margin-bottom:6px}
+.pst{width:100%;height:100dvh;scroll-snap-align:start;scroll-snap-stop:always;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--bg);padding:56px 0 72px}
+/* card container */
+.pst-card{position:relative;width:100%;max-width:340px;height:100%;border-radius:20px;overflow:hidden;background:#000;box-shadow:0 8px 40px rgba(0,0,0,.7);display:flex;align-items:flex-end}
+.pst-media{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:20px}
+.pst-veil{position:absolute;inset:0;border-radius:20px;background:linear-gradient(to top,rgba(0,0,0,.88) 0%,rgba(0,0,0,.06) 55%,transparent 100%)}
+.pst-info{position:relative;z-index:2;padding:14px 68px 22px 16px;flex:1}
+.pst-user{display:flex;align-items:center;gap:8px;font-family:var(--fh);font-weight:700;font-size:.92rem;margin-bottom:5px;cursor:pointer;color:#fff}
+.pst-caption{font-size:.83rem;color:rgba(255,255,255,.82);line-height:1.45;margin-bottom:4px}
 
-/* side actions */
-.pst-acts{position:absolute;right:8px;bottom:70px;z-index:3;display:flex;flex-direction:column;align-items:center;gap:16px}
-.act-av-ring{width:44px;height:44px;border-radius:50%;padding:2px;background:var(--grad);cursor:pointer;flex-shrink:0}
-.act-av-inner{width:100%;height:100%;border-radius:50%;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#fff;overflow:hidden;border:2px solid var(--bg)}
+/* side actions — docked to right inside card */
+.pst-acts{position:absolute;right:10px;bottom:80px;z-index:3;display:flex;flex-direction:column;align-items:center;gap:18px}
+.act-av-ring{width:42px;height:42px;border-radius:50%;padding:2px;background:var(--grad);cursor:pointer;flex-shrink:0}
+.act-av-inner{width:100%;height:100%;border-radius:50%;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:800;color:#fff;overflow:hidden;border:2px solid #000}
 .act-av-inner img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 .act-btn{display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer;color:#fff;user-select:none}
-.act-ico{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:1.25rem;backdrop-filter:blur(6px);transition:transform .15s,background .15s}
+.act-ico{width:46px;height:46px;border-radius:50%;background:rgba(0,0,0,.38);display:flex;align-items:center;justify-content:center;font-size:1.3rem;backdrop-filter:blur(8px);transition:transform .15s,background .15s;border:1.5px solid rgba(255,255,255,.12)}
 .act-btn:active .act-ico{transform:scale(1.18)}
-.act-count{font-size:.72rem;font-weight:600;color:#fff}
+.act-count{font-size:.72rem;font-weight:700;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.8)}
 /* heart like */
-.act-btn.liked .act-ico{background:rgba(255,45,85,.35)}
+.act-btn.liked .act-ico{background:rgba(255,45,85,.42);border-color:rgba(255,45,85,.6)}
 .act-btn.liked .heart-ico{color:#ff2d55}
-.heart-ico{font-size:1.3rem;transition:transform .2s}
+.heart-ico{font-size:1.35rem;transition:transform .2s}
 @keyframes heartPop{0%{transform:scale(1)}40%{transform:scale(1.5)}70%{transform:scale(.85)}100%{transform:scale(1)}}
 .heart-pop{animation:heartPop .4s ease}
-/* fire */
-.act-btn.fired .act-ico{background:rgba(255,85,0,.38)}
-.fire-ico{display:inline-block;transform-origin:center bottom}
-@keyframes flameDance{0%{transform:scale(1) rotate(-5deg)}50%{transform:scale(1.2) rotate(3deg)}100%{transform:scale(1.05) rotate(-2deg)}}
-.act-btn.fired .fire-ico{animation:flameDance .6s ease infinite alternate}
 /* play indicator */
-.pi{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity .25s}
+.pi{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity .25s;border-radius:20px}
 .pi.show{opacity:1}
 .pi em{font-style:normal;font-size:4rem;filter:drop-shadow(0 0 18px rgba(0,0,0,.8));animation:piA .5s ease forwards}
 @keyframes piA{0%{transform:scale(.4);opacity:1}100%{transform:scale(1.3);opacity:0}}
@@ -807,33 +804,39 @@ function renderFeed(posts){
   posts.forEach(p=>{
     const el=document.createElement('div');
     el.className='pst'; el.dataset.id=p.id;
-    const fires=p.fires||0, liked=p.likedBy&&CU&&p.likedBy[CU.uid], fired=p.firedBy&&CU&&p.firedBy[CU.uid];
+    const liked=p.likedBy&&CU&&p.likedBy[CU.uid];
     const avInner=p.userPhoto?`<img src="${p.userPhoto}" alt="">`:`<span>${(p.nick||'?')[0].toUpperCase()}</span>`;
     const av=avHTML(p.userPhoto,p.nick);
+
+    // Build card
+    const card=document.createElement('div');
+    card.className='pst-card';
+
     if(p.type==='video'){
-      el.innerHTML=`<video class="pst-media" src="${p.url}" loop playsinline muted></video><div class="pi" id="pi_${p.id}"><em>▶️</em></div>`;
-      el.addEventListener('click',e=>{
+      card.innerHTML=`<video class="pst-media" src="${p.url}" loop playsinline muted></video><div class="pi" id="pi_${p.id}"><em>▶️</em></div>`;
+      card.addEventListener('click',e=>{
         if(e.target.closest('.pst-acts')||e.target.closest('.pst-user')) return;
-        const v=el.querySelector('video'), pi=$(`pi_${p.id}`);
+        const v=card.querySelector('video'), pi=$(`pi_${p.id}`);
         if(v.paused) v.play(); else v.pause();
         if(pi){pi.classList.add('show');setTimeout(()=>pi.classList.remove('show'),550);}
       });
     } else {
-      el.innerHTML=`<img class="pst-media" src="${p.url}" alt="" loading="lazy">`;
+      card.innerHTML=`<img class="pst-media" src="${p.url}" alt="" loading="lazy">`;
     }
-    el.innerHTML+=`
+
+    card.innerHTML+=`
       <div class="pst-veil"></div>
       <div class="pst-info">
-        <div class="pst-user" onclick="openOtherProfile('${p.uid}')">${av}@${p.nick||'usuario'}</div>
+        <div class="pst-user" onclick="openOtherProfile('${p.uid}')">${av}<span>@${p.nick||'usuario'}</span></div>
         ${p.caption?`<div class="pst-caption">${p.caption}</div>`:''}
+        ${p.music?`<div class="pst-music" onclick="playPostMusic(event,'${p.id}','${p.music.preview||''}')">
+          <div class="pst-music-disc" id="disc_${p.id}"><img src="${p.music.cover}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"></div>
+          <div class="pst-music-info">
+            <div class="pst-music-name">♪ ${p.music.title}</div>
+            <div class="pst-music-artist">${p.music.artist}</div>
+          </div>
+        </div>`:''}
       </div>
-      ${p.music?`<div class="pst-music" onclick="playPostMusic(event,'${p.id}','${p.music.preview||''}')">
-        <div class="pst-music-disc" id="disc_${p.id}"><img src="${p.music.cover}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"></div>
-        <div class="pst-music-info">
-          <div class="pst-music-name">♪ ${p.music.title}</div>
-          <div class="pst-music-artist">${p.music.artist}</div>
-        </div>
-      </div>`:''}
       <div class="pst-acts">
         <div onclick="openOtherProfile('${p.uid}')">
           <div class="act-av-ring"><div class="act-av-inner">${avInner}</div></div>
@@ -846,11 +849,9 @@ function renderFeed(posts){
           <div class="act-ico">💬</div>
           <span class="act-count" id="cc_${p.id}">${p.comments||0}</span>
         </button>
-        <button class="act-btn${fired?' fired':''}" id="firebtn_${p.id}" onclick="toggleFire('${p.id}',this)">
-          <div class="act-ico"><span class="fire-ico">🔥</span></div>
-          <span class="act-count" id="fc_${p.id}">${fires}</span>
-        </button>
       </div>`;
+
+    el.appendChild(card);
     feed.appendChild(el);
   });
   setupIO();
@@ -864,7 +865,7 @@ function setupIO(){
       if(!v) return;
       if(e.isIntersecting) v.play().catch(()=>{}); else v.pause();
     });
-  },{threshold:0.65});
+  },{threshold:0.5});
   document.querySelectorAll('.pst').forEach(p=>io.observe(p));
 }
 
