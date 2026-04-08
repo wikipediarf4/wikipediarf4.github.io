@@ -4050,6 +4050,8 @@ async function sendSCPReply(commentId) {
 </script>
 <script>
 // ── SUBIDA DE FOTOS/VIDEOS AL SERVIDOR LOCAL ──────────────
+// ⚠️ CAMBIÁ ESTA URL cada vez que reiniciás ngrok
+// Para ver tu URL actual mirá el CMD de ngrok donde dice 'Forwarding'
 const UPLOAD_SERVER = "https://davon-employable-rosanna.ngrok-free.dev";
 
 function openMedia(url) {
@@ -4077,7 +4079,7 @@ async function uploadFileToServer(files, context) {
     const data = await res.json();
     if (res.ok) {
       const mediaUrl = UPLOAD_SERVER + '/files/' + data.tipo + '/' + data.fecha + '/' + data.archivo;
-      showToast('✅ Archivo guardado (' + data.tamaño + ')');
+      showToast('✅ Archivo guardado (' + (data.tamanio || data.tamaño || '') + ')');
 
       if (_uploadContext === 'chat') {
         // Enviar como mensaje en el chat
