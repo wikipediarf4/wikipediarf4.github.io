@@ -457,12 +457,16 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
 .pc-bubble{
   background:var(--surface2);border:1px solid var(--border);
   border-radius:18px 18px 18px 4px;padding:9px 13px;
-  font-size:.88rem;line-height:1.5;
+  font-size:.88rem;line-height:1.5;cursor:pointer;
+  transition:opacity .15s;
 }
+.pc-bubble:active{opacity:.75;}
 .pc-msg.own .pc-bubble{
-  background:linear-gradient(135deg,rgba(254,44,85,.3),rgba(37,244,238,.2));
-  border-color:rgba(254,44,85,.3);border-radius:18px 18px 4px 18px;
+  background:linear-gradient(135deg,rgba(254,44,85,.35),rgba(37,244,238,.25));
+  border-color:rgba(254,44,85,.4);border-radius:18px 18px 4px 18px;
 }
+.pc-msg.own { align-self:flex-end; }
+.pc-msg:not(.own) { align-self:flex-start; }
 .pc-bubble-img{max-width:180px;border-radius:12px;cursor:pointer;display:block;}
 .pc-time{font-size:.65rem;color:var(--text-dim);margin-top:3px;text-align:right;}
 .pc-input-bar{
@@ -859,16 +863,55 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
 <div id="private-chat">
   <div class="pc-header">
     <button class="pc-back" onclick="closePrivateChat()">←</button>
-    <img class="pc-avatar" id="pc-avatar" src=""/>
-    <div>
-      <div class="pc-name" id="pc-name"></div>
-      <div class="pc-status">En línea</div>
+    <div style="position:relative">
+      <img class="pc-avatar" id="pc-avatar" src=""/>
+      <div class="online-dot" style="width:10px;height:10px;bottom:0;right:0"></div>
     </div>
+    <div style="flex:1">
+      <div class="pc-name" id="pc-name"></div>
+      <div class="pc-status" id="pc-status">En línea</div>
+    </div>
+    <button onclick="document.getElementById('pc-avatar').click()" style="background:none;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;padding:4px">ℹ️</button>
   </div>
   <div class="pc-messages" id="pc-messages"></div>
+  <!-- Emoji picker -->
+  <div id="emoji-picker" style="display:none;padding:8px 12px;background:var(--surface);border-top:1px solid var(--border);flex-wrap:wrap;gap:6px;flex-direction:row;max-height:120px;overflow-y:auto">
+    <span style="font-size:1.4rem;cursor:pointer" onclick="insertEmoji('❤️')">❤️</span>
+    <span style="font-size:1.4rem;cursor:pointer" onclick="insertEmoji('😂')">😂</span>
+    <span style="font-size:1.4rem;cursor:pointer" onclick="insertEmoji('😍')">😍</span>
+    <span style="font-size:1.4rem;cursor:pointer" onclick="insertEmoji('🔥')">🔥</span>
+    <span style="font-size:1.4rem;cursor:pointer" onclick="insertEmoji('👏')">👏</span>
+    <span style="font-size:1.4rem;cursor:pointer" onclick="insertEmoji('😭')">😭</span>
+    <span style="font-size:1.4rem;cursor:pointer" onclick="insertEmoji('🥺')">🥺</span>
+    <span style="font-size:1.4rem;cursor:pointer" onclick="insertEmoji('✨')">✨</span>
+    <span style="font-size:1.4rem;cursor:pointer" onclick="insertEmoji('💀')">💀</span>
+    <span style="font-size:1.4rem;cursor:pointer" onclick="insertEmoji('👀')">👀</span>
+    <span style="font-size:1.4rem;cursor:pointer" onclick="insertEmoji('😊')">😊</span>
+    <span style="font-size:1.4rem;cursor:pointer" onclick="insertEmoji('🙏')">🙏</span>
+    <span style="font-size:1.4rem;cursor:pointer" onclick="insertEmoji('💯')">💯</span>
+    <span style="font-size:1.4rem;cursor:pointer" onclick="insertEmoji('🎉')">🎉</span>
+    <span style="font-size:1.4rem;cursor:pointer" onclick="insertEmoji('😎')">😎</span>
+    <span style="font-size:1.4rem;cursor:pointer" onclick="insertEmoji('🤣')">🤣</span>
+    <span style="font-size:1.4rem;cursor:pointer" onclick="insertEmoji('😢')">😢</span>
+    <span style="font-size:1.4rem;cursor:pointer" onclick="insertEmoji('💪')">💪</span>
+    <span style="font-size:1.4rem;cursor:pointer" onclick="insertEmoji('👍')">👍</span>
+    <span style="font-size:1.4rem;cursor:pointer" onclick="insertEmoji('🤩')">🤩</span>
+    <span style="font-size:1.4rem;cursor:pointer" onclick="insertEmoji('😴')">😴</span>
+    <span style="font-size:1.4rem;cursor:pointer" onclick="insertEmoji('🤔')">🤔</span>
+    <span style="font-size:1.4rem;cursor:pointer" onclick="insertEmoji('🫶')">🫶</span>
+    <span style="font-size:1.4rem;cursor:pointer" onclick="insertEmoji('😈')">😈</span>
+  </div>
+  <!-- Reply preview -->
+  <div id="reply-preview" style="display:none;padding:8px 14px;background:var(--surface2);border-top:1px solid var(--border);border-left:3px solid var(--accent);margin:0 12px 4px;border-radius:8px;font-size:.8rem;color:var(--text-muted)">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span id="reply-preview-text"></span>
+      <button onclick="cancelReply()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1rem">✕</button>
+    </div>
+  </div>
   <div class="pc-input-bar">
     <button class="pc-attach" onclick="document.getElementById('pc-file-inp').click()">📎</button>
     <input type="file" id="pc-file-inp" accept="image/*,video/*" style="display:none" onchange="sendPcMedia(this)"/>
+    <button class="pc-attach" onclick="toggleEmojiPicker()" style="font-size:1.2rem">😊</button>
     <input class="pc-inp" id="pc-inp" placeholder="Mensaje..." onkeydown="if(event.key==='Enter')sendPcMsg()"/>
     <button class="pc-send" onclick="sendPcMsg()">
       <svg width="16" height="16" fill="white" viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
@@ -1349,7 +1392,13 @@ window.openComments = (clipId) => {
 };
 
 // ── FOLLOW ──
-window.toggleFollow = async (uid) => {
+window.handleFollowBtn = async (btn, uid) => {
+  btn.disabled = true;
+  await toggleFollow(uid, btn);
+  btn.disabled = false;
+};
+
+window.toggleFollow = async (uid, btn) => {
   if(!currentUser) return;
   const myRef = doc(db,'users',currentUser.uid);
   const theirRef = doc(db,'users',uid);
@@ -1364,6 +1413,11 @@ window.toggleFollow = async (uid) => {
     });
     await updateDoc(theirRef, { followers: increment(isFollowing ? -1 : 1) });
     showToast(isFollowing ? 'Dejaste de seguir' : '✅ Siguiendo');
+    if(btn) { btn.textContent = isFollowing ? 'Seguir' : '✅ Siguiendo'; }
+    // update inline follow buttons in feed
+    document.querySelectorAll(`[onclick*="toggleFollow('${uid}')"]`).forEach(b => {
+      b.textContent = isFollowing ? 'Seguir' : '✅ Siguiendo';
+    });
   } catch(e) { showToast('❌ Error'); }
 };
 
@@ -1710,7 +1764,7 @@ window.openUserProfile = async (uid) => {
           <div style="flex:1"><div style="font-weight:700">${fmtNum(p.following||0)}</div><div style="font-size:.72rem;color:var(--text-muted)">Siguiendo</div></div>
         </div>
         <div style="display:flex;gap:8px">
-          ${currentUser && uid !== currentUser.uid ? `<button class="btn-main" style="flex:1" onclick="toggleFollow('${uid}');this.textContent='✅ Siguiendo';this.disabled=true">Seguir</button>` : ''}
+          ${currentUser && uid !== currentUser.uid ? `<button class="btn-main" style="flex:1" id="follow-btn-${uid}" onclick="handleFollowBtn(this,'${uid}')">Seguir</button>` : ''}
           ${currentUser && uid !== currentUser.uid ? `<button class="btn-outline" style="flex:1" onclick="openPrivateChat('${uid}','${escHtml(name)}','${escHtml(avatar)}');this.closest('[style]').remove()">Mensaje</button>` : ''}
         </div>
       </div>`;
@@ -1793,41 +1847,148 @@ window.closePrivateChat = () => {
   loadChatList();
 };
 
+let _replyTo = null;
+
+window.cancelReply = () => {
+  _replyTo = null;
+  document.getElementById('reply-preview').style.display = 'none';
+};
+
+window.setReply = (msgId, text) => {
+  _replyTo = { msgId, text };
+  const prev = document.getElementById('reply-preview');
+  document.getElementById('reply-preview-text').textContent = '↩ ' + text.slice(0,60) + (text.length>60?'...':'');
+  prev.style.display = 'block';
+  document.getElementById('pc-inp').focus();
+};
+
+window.toggleEmojiPicker = () => {
+  const ep = document.getElementById('emoji-picker');
+  ep.style.display = ep.style.display === 'flex' ? 'none' : 'flex';
+};
+
+window.insertEmoji = (emoji) => {
+  const inp = document.getElementById('pc-inp');
+  inp.value += emoji;
+  inp.focus();
+};
+
+window.addMsgReaction = async (msgId, emoji) => {
+  if(!currentUser || !window._currentChatId) return;
+  try {
+    const msgRef = doc(db,'chats',window._currentChatId,'messages',msgId);
+    const snap = await getDoc(msgRef);
+    if(!snap.exists()) return;
+    const reactions = snap.data().reactions || {};
+    const users = reactions[emoji] || [];
+    if(users.includes(currentUser.uid)) {
+      reactions[emoji] = users.filter(u => u !== currentUser.uid);
+      if(!reactions[emoji].length) delete reactions[emoji];
+    } else {
+      reactions[emoji] = [...users, currentUser.uid];
+    }
+    await updateDoc(msgRef, { reactions });
+  } catch(e) {}
+};
+
 function renderPcMessages(msgs) {
   const container = document.getElementById('pc-messages');
+  const wasAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 60;
   container.innerHTML = '';
-  msgs.forEach(m => {
+  let lastDate = '';
+  msgs.forEach((m, idx) => {
     const isOwn = m.uid === currentUser?.uid;
+    const msgDate = m.ts?.toDate ? m.ts.toDate().toLocaleDateString('es') : '';
+    // Date separator
+    if(msgDate && msgDate !== lastDate) {
+      lastDate = msgDate;
+      const sep = document.createElement('div');
+      sep.style.cssText = 'text-align:center;color:var(--text-dim);font-size:.72rem;padding:8px 0;';
+      sep.textContent = msgDate;
+      container.appendChild(sep);
+    }
     const div = document.createElement('div');
     div.className = 'pc-msg' + (isOwn?' own':'');
+    div.dataset.msgid = m.id;
+    // Reactions HTML
+    const rxns = m.reactions || {};
+    const rxnHtml = Object.entries(rxns).filter(([,u])=>u.length).map(([e,u])=>
+      `<span onclick="addMsgReaction('${m.id}','${e}')" style="cursor:pointer;background:rgba(255,255,255,.1);border-radius:99px;padding:2px 6px;font-size:.85rem;">${e} ${u.length}</span>`
+    ).join('');
+    // Read receipt
+    const isLast = idx === msgs.length-1;
+    const readHtml = isOwn && isLast ? `<div style="font-size:.62rem;color:var(--accent2);margin-top:2px;text-align:right;">${m.read ? '✓✓ Visto' : '✓ Enviado'}</div>` : '';
+    // Reply context
+    const replyHtml = m.replyTo ? `<div style="background:rgba(255,255,255,.07);border-left:2px solid var(--accent);padding:4px 8px;border-radius:6px;font-size:.75rem;color:var(--text-muted);margin-bottom:4px;">↩ ${escHtml(m.replyTo.text?.slice(0,50)||'')}</div>` : '';
     div.innerHTML = `
       ${!isOwn ? `<img class="pc-msg-avatar" src="${escHtml(m.avatar||avatarFallback(m.uid||'u'))}" onerror="this.src='${avatarFallback(m.uid||'u')}'"/>` : ''}
-      <div>
-        <div class="pc-bubble">
+      <div style="max-width:75%">
+        <div class="pc-bubble" oncontextmenu="event.preventDefault();showMsgMenu('${m.id}','${escHtml((m.text||'').replace(/'/g,'\''))}',${isOwn})">
+          ${replyHtml}
           ${m.text ? escHtml(m.text) : ''}
           ${m.mediaUrl ? `<img class="pc-bubble-img" data-src="${escHtml(m.mediaUrl)}" onclick="window.open('${escHtml(m.mediaUrl)}','_blank')"/>` : ''}
         </div>
+        ${rxnHtml ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:3px;">${rxnHtml}</div>` : ''}
         <div class="pc-time">${timeAgo(m.ts)}</div>
+        ${readHtml}
       </div>
     `;
     container.appendChild(div);
   });
+  // Mark messages as read
+  if(msgs.length && window._currentChatId) {
+    const last = msgs[msgs.length-1];
+    if(last && last.uid !== currentUser?.uid && !last.read) {
+      updateDoc(doc(db,'chats',window._currentChatId,'messages',last.id), { read: true }).catch(()=>{});
+    }
+  }
   loadNgrokMedia(container);
-  container.scrollTop = container.scrollHeight;
+  if(wasAtBottom || msgs.length <= 3) container.scrollTop = container.scrollHeight;
 }
+
+window.showMsgMenu = (msgId, text, isOwn) => {
+  document.getElementById('msg-ctx-menu')?.remove();
+  const menu = document.createElement('div');
+  menu.id = 'msg-ctx-menu';
+  menu.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:12px;z-index:500;display:flex;flex-direction:column;gap:0;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,.5)';
+  const reactionEmojis = ['❤️','😂','😮','😢','👏','🔥'];
+  menu.innerHTML = `
+    <div style="display:flex;gap:8px;justify-content:center;padding:8px 0 12px;border-bottom:1px solid var(--border);margin-bottom:8px;">
+      ${reactionEmojis.map(e=>`<span style="font-size:1.6rem;cursor:pointer" onclick="addMsgReaction('${msgId}','${e}');document.getElementById('msg-ctx-menu').remove()">${e}</span>`).join('')}
+    </div>
+    <div onclick="setReply('${msgId}','${text}');document.getElementById('msg-ctx-menu').remove()" style="padding:10px 8px;cursor:pointer;border-radius:8px;display:flex;align-items:center;gap:10px;font-size:.9rem;">↩ Responder</div>
+    ${isOwn ? `<div onclick="deleteMsgConfirm('${msgId}');document.getElementById('msg-ctx-menu').remove()" style="padding:10px 8px;cursor:pointer;border-radius:8px;display:flex;align-items:center;gap:10px;font-size:.9rem;color:#ff5555;">🗑 Eliminar</div>` : ''}
+    <div onclick="navigator.clipboard.writeText('${text}');showToast('📋 Copiado');document.getElementById('msg-ctx-menu').remove()" style="padding:10px 8px;cursor:pointer;border-radius:8px;display:flex;align-items:center;gap:10px;font-size:.9rem;">📋 Copiar</div>
+    <div onclick="document.getElementById('msg-ctx-menu').remove()" style="padding:10px 8px;cursor:pointer;border-radius:8px;text-align:center;color:var(--text-muted);font-size:.85rem;">Cancelar</div>
+  `;
+  document.body.appendChild(menu);
+  menu.addEventListener('click', e => e.stopPropagation());
+  setTimeout(() => document.addEventListener('click', () => menu.remove(), {once:true}), 100);
+};
+
+window.deleteMsgConfirm = async (msgId) => {
+  if(!window._currentChatId) return;
+  try {
+    await deleteDoc(doc(db,'chats',window._currentChatId,'messages',msgId));
+    showToast('🗑 Mensaje eliminado');
+  } catch(e) { showToast('❌ Error'); }
+};
 
 window.sendPcMsg = async () => {
   const inp = document.getElementById('pc-inp');
   const text = inp.value.trim();
   if(!text || !currentUser || !window._currentChatId) return;
   inp.value = '';
+  document.getElementById('emoji-picker').style.display = 'none';
+  const msgData = {
+    uid: currentUser.uid,
+    name: myProfile.name || currentUser.displayName || 'Usuario',
+    avatar: myProfile.avatar || avatarFallback(currentUser.uid),
+    text, ts: serverTimestamp(), read: false
+  };
+  if(_replyTo) { msgData.replyTo = _replyTo; cancelReply(); }
   try {
-    await addDoc(collection(db,'chats',window._currentChatId,'messages'), {
-      uid: currentUser.uid,
-      name: myProfile.name || currentUser.displayName || 'Usuario',
-      avatar: myProfile.avatar || avatarFallback(currentUser.uid),
-      text, ts: serverTimestamp()
-    });
+    await addDoc(collection(db,'chats',window._currentChatId,'messages'), msgData);
     await updateDoc(doc(db,'chats',window._currentChatId), {
       lastMsg: text, lastTs: serverTimestamp()
     });
