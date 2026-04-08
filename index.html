@@ -1331,6 +1331,7 @@ function buildVideoSlide(id, data) {
   const div = document.createElement('div');
   div.className = 'video-slide';
   div.dataset.id = id;
+  if(data.musicPreview) div.dataset.musicPreview = data.musicPreview;
   const isVideo = data.mediaType === 'video';
   const isLiked = data.likes && currentUser && data.likes.includes(currentUser.uid);
   const avatar = data.avatar || avatarFallback(data.uid||'u');
@@ -1355,6 +1356,7 @@ function buildVideoSlide(id, data) {
         <div class="video-music" id="vm-${id}">🎵 ${data.musicName ? escHtml(data.musicName)+' — '+escHtml(data.musicArtist||'') : 'Clipuy original'}</div>
       </div>
       <button id="mute-${id}" onclick="toggleMute('${id}')" style="position:absolute;top:60px;right:12px;background:rgba(0,0,0,.5);border:none;border-radius:50%;width:38px;height:38px;font-size:1.1rem;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;z-index:10;">🔇</button>
+      ${(currentUser && (currentUser.email==='synxyes@gmail.com' || currentUser.uid===data.uid)) ? `<button onclick="deleteMyClip('${id}',this)" style="position:absolute;top:106px;right:12px;background:rgba(254,44,85,.7);border:none;border-radius:50%;width:38px;height:38px;font-size:1rem;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;z-index:10;">🗑️</button>` : ''}
     </div>
     <div class="video-actions">
       <div class="v-action ${isLiked?'liked':''}" id="like-${id}" onclick="toggleLike('${id}',this)">
@@ -1396,18 +1398,47 @@ function buildVideoSlide(id, data) {
   return div;
 }
 
+let _currentMusicAudio = null;
+
 function setupVideoObserver() {
   if(_videoObserver) _videoObserver.disconnect();
   _videoObserver = new IntersectionObserver((entries) => {
     entries.forEach(e => {
       const vid = e.target.querySelector('video');
-      if(!vid) return;
-      if(e.isIntersecting) { vid.play().catch(()=>{}); }
-      else { vid.pause(); }
+      const slideId = e.target.dataset.id;
+      if(e.isIntersecting) {
+        if(vid) vid.play().catch(()=>{});
+        // Play music preview if this slide has music
+        const musicUrl = e.target.dataset.musicPreview;
+        if(musicUrl) {
+          if(_currentMusicAudio) { _currentMusicAudio.pause(); _currentMusicAudio = null; }
+          _currentMusicAudio = new Audio(musicUrl);
+          _currentMusicAudio.volume = 0.5;
+          _currentMusicAudio.loop = true;
+          _currentMusicAudio.play().catch(()=>{});
+        } else {
+          if(_currentMusicAudio) { _currentMusicAudio.pause(); _currentMusicAudio = null; }
+        }
+      } else {
+        if(vid) vid.pause();
+      }
     });
   }, { threshold: 0.7 });
   document.querySelectorAll('.video-slide').forEach(s => _videoObserver.observe(s));
 }
+
+
+window.deleteMyClip = async (clipId, btn) => {
+  if(!currentUser) return;
+  if(!confirm('¿Borrar este clip?')) return;
+  btn.disabled = true;
+  try {
+    await deleteDoc(doc(db,'clips',clipId));
+    const slide = document.querySelector(`.video-slide[data-id="${clipId}"]`);
+    if(slide) slide.remove();
+    showToast('✅ Clip eliminado');
+  } catch(e) { showToast('❌ Error: '+e.message); btn.disabled=false; }
+};
 
 window.switchFeedTab = (tab) => {
   document.querySelectorAll('.feed-tab').forEach((b,i) => b.classList.toggle('active', (i===0&&tab==='following')||(i===1&&tab==='foryou')));
@@ -1761,18 +1792,32 @@ async function loadProfileClips() {
       const div = document.createElement('div');
       div.className = 'profile-clip';
       div.onclick = () => {};
+      const clipDocId = d.id;
       div.innerHTML = `
         ${data.mediaType==='imagen'
           ? `<img data-src="${escHtml(data.mediaUrl||'')}" loading="lazy"/>`
           : `<video data-src="${escHtml(data.mediaUrl||'')}" preload="none" style="width:100%;height:100%;object-fit:cover"></video>`
         }
         <div class="profile-clip-views">▶ ${fmtNum(data.likesCount||0)}</div>
+        <button onclick="event.stopPropagation();deleteProfileClip('${d.id}',this)" style="position:absolute;top:4px;right:4px;background:rgba(254,44,85,.8);border:none;border-radius:50%;width:28px;height:28px;font-size:.8rem;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;z-index:5;">🗑️</button>
       `;
       grid.appendChild(div);
     });
     loadNgrokMedia(grid);
   } catch(e) {}
 }
+
+
+window.deleteProfileClip = async (clipId, btn) => {
+  if(!currentUser) return;
+  if(!confirm('¿Borrar este clip?')) return;
+  btn.disabled = true;
+  try {
+    await deleteDoc(doc(db,'clips',clipId));
+    btn.closest('.profile-clip').remove();
+    showToast('✅ Clip eliminado');
+  } catch(e) { showToast('❌ Error: '+e.message); btn.disabled=false; }
+};
 
 window.switchProfileTab = (tab) => {
   document.querySelectorAll('.profile-tab').forEach((b,i) => b.classList.toggle('active', (i===0&&tab==='clips')||(i===1&&tab==='liked')));
