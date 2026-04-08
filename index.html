@@ -2205,7 +2205,7 @@ function renderMessages(msgs) {
         ${replyHtml}
         <div class="msg-bubble">
           ${msg.text ? escapeHtml(msg.text) : ''}
-          ${msg.mediaUrl && msg.mediaType === 'imagen' ? '<br><img src="' + msg.mediaUrl + '" style="max-width:220px;max-height:220px;border-radius:10px;margin-top:6px;cursor:pointer;display:block" onclick="window.open('' + msg.mediaUrl + '','_blank')"/>' : ''}
+          ${msg.mediaUrl && msg.mediaType === 'imagen' ? '<br><img src="' + msg.mediaUrl + '" style="max-width:220px;max-height:220px;border-radius:10px;margin-top:6px;cursor:pointer;display:block" onclick="window.open(this.src,\'_blank\')"/>' : ''}
           ${msg.mediaUrl && msg.mediaType === 'video' ? '<br><video src="' + msg.mediaUrl + '" controls style="max-width:220px;border-radius:10px;margin-top:6px;display:block"></video>' : ''}
         </div>
         ${reactionsHtml}
@@ -3310,7 +3310,7 @@ function openStoryModal(story) {
     textEl.parentNode.insertBefore(storyMediaEl, textEl.nextSibling);
   }
   if (story.mediaUrl && story.mediaType === 'imagen') {
-    storyMediaEl.innerHTML = '<img src="' + story.mediaUrl + '" style="max-width:100%;border-radius:12px;margin-top:8px" onclick="window.open('' + story.mediaUrl + '','_blank')"/>';
+    storyMediaEl.innerHTML = '<img src="' + story.mediaUrl + '" style="max-width:100%;border-radius:12px;margin-top:8px" onclick="window.open(this.src,'_blank')"/>';
   } else if (story.mediaUrl && story.mediaType === 'video') {
     storyMediaEl.innerHTML = '<video src="' + story.mediaUrl + '" controls style="max-width:100%;border-radius:12px;margin-top:8px"></video>';
   } else {
