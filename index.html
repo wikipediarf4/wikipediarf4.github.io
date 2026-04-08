@@ -610,6 +610,48 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
 .ep-inp:focus{border-color:var(--accent2);}
 .ep-inp::placeholder{color:var(--text-dim);}
 
+
+/* ── MUSIC PICKER ── */
+.music-search-wrap { margin-top: 12px; }
+.music-search-wrap input {
+  width:100%;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:10px 14px;color:#fff;
+  font-family:'Space Grotesk',sans-serif;font-size:.88rem;outline:none;
+  transition:border-color .2s;
+}
+.music-search-wrap input:focus { border-color:#1ed760; }
+.music-search-wrap input::placeholder { color:var(--text-dim); }
+.music-results {
+  max-height:180px;overflow-y:auto;margin-top:6px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-sm);display:none;
+}
+.music-result-item {
+  display:flex;align-items:center;gap:10px;padding:9px 12px;
+  cursor:pointer;border-bottom:1px solid var(--border);transition:background .15s;
+  position:relative;
+}
+.music-result-item:last-child { border-bottom:none; }
+.music-result-item:hover { background:var(--surface2); }
+.music-result-item img { width:40px;height:40px;border-radius:6px;object-fit:cover;flex-shrink:0; }
+.music-result-name { font-size:.82rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.music-result-artist { font-size:.7rem;color:var(--text-muted); }
+.music-selected {
+  display:none;margin-top:8px;padding:10px 12px;
+  background:rgba(30,215,96,.08);border:1px solid rgba(30,215,96,.3);
+  border-radius:var(--radius-sm);align-items:center;gap:10px;
+}
+.music-selected.show { display:flex; }
+.music-selected img { width:38px;height:38px;border-radius:6px;object-fit:cover;flex-shrink:0; }
+.music-selected-info { flex:1;min-width:0; }
+.music-selected-name { font-size:.82rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.music-selected-artist { font-size:.7rem;color:#1ed760; }
+.music-disc-spin {
+  width:36px;height:36px;border-radius:50%;object-fit:cover;
+  border:2px solid rgba(30,215,96,.5);
+  animation:spin 4s linear infinite;flex-shrink:0;
+}
+
 /* ── ANIMS ── */
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
@@ -996,6 +1038,25 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
       <option value="public">🌍 Todos</option>
       <option value="followers">👥 Solo seguidores</option>
     </select>
+
+    <div style="margin-top:14px;">
+      <div class="ep-label" style="display:flex;align-items:center;gap:6px;">
+        🎵 Música <span style="font-size:.68rem;color:var(--text-dim);font-weight:400;">(opcional — Deezer / iTunes)</span>
+      </div>
+      <div class="music-search-wrap">
+        <input id="clipMusicSearch" placeholder="🔍 Buscá artista o canción..." oninput="clipMusicDebounce()"/>
+      </div>
+      <div class="music-results" id="clipMusicResults"></div>
+      <div class="music-selected" id="clipMusicSelected">
+        <img id="clipMusicCover" src="" alt=""/>
+        <div class="music-selected-info">
+          <div class="music-selected-name" id="clipMusicName"></div>
+          <div class="music-selected-artist" id="clipMusicArtist"></div>
+        </div>
+        <audio id="clipMusicPreviewAudio" style="display:none"></audio>
+        <button onclick="clipClearMusic()" style="background:none;border:none;color:#ff5555;cursor:pointer;font-size:1rem;flex-shrink:0;">✕</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1279,7 +1340,7 @@ function buildVideoSlide(id, data) {
         </div>
         <div class="video-desc">${escHtml(data.description||'')}</div>
         ${data.tags ? `<div class="video-tags">${escHtml(data.tags)}</div>` : ''}
-        <div class="video-music">🎵 Clipuy original</div>
+        <div class="video-music" id="vm-${id}">🎵 ${data.musicName ? escHtml(data.musicName)+' — '+escHtml(data.musicArtist||'') : 'Clipuy original'}</div>
       </div>
       <button id="mute-${id}" onclick="toggleMute('${id}')" style="position:absolute;top:60px;right:12px;background:rgba(0,0,0,.5);border:none;border-radius:50%;width:38px;height:38px;font-size:1.1rem;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;z-index:10;">🔇</button>
     </div>
@@ -1446,6 +1507,7 @@ window.handleVideoUpload = (inp) => {
 window.closeCaptionModal = () => {
   document.getElementById('caption-modal').style.display = 'none';
   _pendingUploadFile = null;
+  clipClearMusic();
 };
 
 window.publishClip = async () => {
@@ -1456,7 +1518,7 @@ window.publishClip = async () => {
   try {
     const mediaUrl = await uploadToServer(_pendingUploadFile);
     const isVideo = _pendingUploadFile.type.startsWith('video');
-    await addDoc(collection(db,'clips'), {
+    const clipData = {
       uid: currentUser.uid,
       name: myProfile.name || currentUser.displayName || 'Usuario',
       avatar: myProfile.avatar || avatarFallback(currentUser.uid),
@@ -1467,7 +1529,14 @@ window.publishClip = async () => {
       likes: [],
       commentsCount: 0,
       ts: serverTimestamp()
-    });
+    };
+    if(_clipSelectedMusic) {
+      clipData.musicName = _clipSelectedMusic.title;
+      clipData.musicArtist = _clipSelectedMusic.artist;
+      clipData.musicCover = _clipSelectedMusic.cover;
+      clipData.musicPreview = _clipSelectedMusic.preview;
+    }
+    await addDoc(collection(db,'clips'), clipData);
     showToast('✅ ¡Clip publicado!');
     loadFeed();
     goTo('home');
@@ -2060,6 +2129,149 @@ window.openSettings = () => {
   document.getElementById('settings-modal').classList.add('open');
 };
 window.closeSettings = () => { document.getElementById('settings-modal').classList.remove('open'); };
+
+// ══════════════════════════════════════════════
+//  MÚSICA DEEZER / ITUNES
+// ══════════════════════════════════════════════
+let _clipSelectedMusic = null;
+let _clipMusicDebounceTimer = null;
+let _clipPreviewAudio = null;
+let _clipDeezerTracks = [];
+
+const _DEEZER_PROXIES = [
+  q => `https://corsproxy.io/?${encodeURIComponent('https://api.deezer.com/search?q='+encodeURIComponent(q)+'&limit=12')}`,
+  q => `https://api.allorigins.win/get?url=${encodeURIComponent('https://api.deezer.com/search?q='+encodeURIComponent(q)+'&limit=12')}`,
+  q => `https://corsproxy.org/?url=${encodeURIComponent('https://api.deezer.com/search?q='+encodeURIComponent(q)+'&limit=12')}`,
+  q => `https://thingproxy.freeboard.io/fetch/https://api.deezer.com/search?q=${encodeURIComponent(q)}&limit=12`,
+];
+
+async function _fetchMusicTracks(q) {
+  // Try iTunes first (no proxy needed)
+  try {
+    const r = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&entity=song&limit=12`);
+    if(r.ok) {
+      const data = await r.json();
+      const tracks = (data.results || []).filter(t => t.previewUrl).map(t => ({
+        title: t.trackName || '',
+        artist: t.artistName || '',
+        cover: (t.artworkUrl100 || t.artworkUrl60 || '').replace('100x100bb','300x300bb'),
+        preview: t.previewUrl || ''
+      }));
+      if(tracks.length) return tracks;
+    }
+  } catch(e) {}
+
+  // Fallback: Deezer via proxies
+  const _tryProxy = async (proxyFn) => {
+    const ctrl = new AbortController();
+    const tId = setTimeout(() => ctrl.abort(), 5000);
+    try {
+      const r = await fetch(proxyFn(q), { signal: ctrl.signal });
+      clearTimeout(tId);
+      if(!r || !r.ok) return null;
+      const text = await r.text();
+      let raw; try { raw = JSON.parse(text); } catch(e) { return null; }
+      let data = raw;
+      if(raw && raw.contents) { try { data = JSON.parse(raw.contents); } catch(e) { return null; } }
+      if(data && data.data && data.data.length) {
+        return data.data.map(t => ({
+          title: t.title || '',
+          artist: t.artist?.name || '',
+          cover: t.album?.cover_medium || t.album?.cover_small || '',
+          preview: t.preview || ''
+        }));
+      }
+      return null;
+    } catch(e) { clearTimeout(tId); return null; }
+  };
+
+  return await new Promise(resolve => {
+    let done = false;
+    let pending = Math.min(3, _DEEZER_PROXIES.length);
+    _DEEZER_PROXIES.slice(0,3).forEach(fn => {
+      _tryProxy(fn).then(res => {
+        if(done) return;
+        if(res !== null && res !== undefined) { done = true; resolve(res); }
+        else if(--pending === 0) resolve([]);
+      }).catch(() => { if(--pending === 0 && !done) resolve([]); });
+    });
+  });
+}
+
+window.clipMusicDebounce = () => {
+  clearTimeout(_clipMusicDebounceTimer);
+  const q = document.getElementById('clipMusicSearch')?.value.trim() || '';
+  const res = document.getElementById('clipMusicResults');
+  if(!q || q.length < 2) { if(res) res.style.display = 'none'; return; }
+  if(res) { res.style.display = 'block'; res.innerHTML = '<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:.82rem;">🎵 Buscando...</div>'; }
+  _clipMusicDebounceTimer = setTimeout(() => clipSearchMusic(q), 450);
+};
+
+async function clipSearchMusic(q) {
+  const res = document.getElementById('clipMusicResults');
+  if(!res) return;
+  const tracks = await _fetchMusicTracks(q);
+  _clipDeezerTracks = tracks || [];
+  if(!_clipDeezerTracks.length) {
+    res.innerHTML = '<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:.82rem;">Sin resultados para "' + escHtml(q) + '"</div>';
+    return;
+  }
+  res.innerHTML = _clipDeezerTracks.map((t, i) => `
+    <div class="music-result-item" data-ti="${i}">
+      <img src="${escHtml(t.cover)}" onerror="this.style.background='var(--surface2)'" alt="">
+      <div style="flex:1;min-width:0;">
+        <div class="music-result-name">${escHtml(t.title)}</div>
+        <div class="music-result-artist">${escHtml(t.artist)}</div>
+      </div>
+      <span style="font-size:.6rem;color:#1ed760;font-weight:700;">▶ 30s</span>
+    </div>
+  `).join('');
+
+  res.querySelectorAll('[data-ti]').forEach(el => {
+    const i = parseInt(el.dataset.ti);
+    const t = _clipDeezerTracks[i];
+    if(!t) return;
+    el.addEventListener('click', () => clipSelectMusic(t));
+    el.addEventListener('mouseenter', () => {
+      if(t.preview) {
+        _stopClipPreview();
+        _clipPreviewAudio = new Audio(t.preview);
+        _clipPreviewAudio.volume = 0.4;
+        _clipPreviewAudio.play().catch(() => {});
+      }
+    });
+    el.addEventListener('mouseleave', _stopClipPreview);
+  });
+}
+
+function _stopClipPreview() {
+  if(_clipPreviewAudio) { _clipPreviewAudio.pause(); _clipPreviewAudio = null; }
+}
+
+window.clipSelectMusic = (track) => {
+  _stopClipPreview();
+  _clipSelectedMusic = track;
+  document.getElementById('clipMusicResults').style.display = 'none';
+  document.getElementById('clipMusicSearch').value = '';
+  document.getElementById('clipMusicCover').src = track.cover || '';
+  document.getElementById('clipMusicName').textContent = track.title || '';
+  document.getElementById('clipMusicArtist').textContent = track.artist || '';
+  document.getElementById('clipMusicSelected').classList.add('show');
+  // Play preview
+  const audio = document.getElementById('clipMusicPreviewAudio');
+  if(audio && track.preview) { audio.src = track.preview; audio.volume = 0.5; audio.play().catch(()=>{}); }
+};
+
+window.clipClearMusic = () => {
+  _stopClipPreview();
+  _clipSelectedMusic = null;
+  document.getElementById('clipMusicSelected').classList.remove('show');
+  const audio = document.getElementById('clipMusicPreviewAudio');
+  if(audio) { audio.pause(); audio.src = ''; }
+  document.getElementById('clipMusicSearch').value = '';
+  document.getElementById('clipMusicResults').style.display = 'none';
+};
+
 </script>
 </body>
 </html>
