@@ -1312,6 +1312,34 @@
     width: calc(100% + 2px); height: calc(100% + 120px);
     border: none; pointer-events: none;
   }
+  /* Tap overlay para pause/play */
+  .short-tap-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    cursor: pointer;
+  }
+  .short-pause-icon {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background: rgba(0,0,0,.55);
+    border-radius: 50%;
+    width: 70px; height: 70px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem;
+    transition: transform .15s ease, opacity .3s ease;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .short-pause-icon.show {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  .short-pause-icon.hide {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+  }
 
   /* Side action buttons */
   .short-actions {
@@ -3418,7 +3446,7 @@ async function loadShortsByCategory(catId) {
 
 async function fetchYouTubeShorts(query) {
   // YouTube Data API v3 – search for shorts
-  const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoDuration=short&maxResults=20&order=date&q=${encodeURIComponent(query + ' #shorts')}&key=${YT_API_KEY}`;
+  const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoDuration=short&maxResults=20&order=date&q=${encodeURIComponent(query + ' #shorts')}&hl=es&relevanceLanguage=es&regionCode=US&key=${YT_API_KEY}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
@@ -3594,6 +3622,8 @@ function renderShortSlides() {
           data-src="${iframeSrc}"
           allow="autoplay; encrypted-media"
           allowfullscreen></iframe>
+        <div class="short-tap-overlay" onclick="toggleShortPause(${i})"></div>
+        <div class="short-pause-icon" id="short-pause-icon-${i}">▶</div>
       </div>
       <!-- Info overlay -->
       <div class="short-info">
@@ -3652,6 +3682,44 @@ function pauseAllShortIframes() {
     const src = f.getAttribute('data-src') || '';
     f.src = src.replace('autoplay=1&', '');
   });
+  // Reset all pause icons
+  document.querySelectorAll('.short-pause-icon').forEach(ic => {
+    ic.classList.remove('show','hide');
+    ic.textContent = '▶';
+  });
+  _shortsPaused = false;
+}
+
+let _shortsPaused = false;
+
+function toggleShortPause(idx) {
+  const iframe = document.getElementById('short-iframe-' + idx);
+  const icon   = document.getElementById('short-pause-icon-' + idx);
+  if (!iframe || !icon) return;
+
+  const dataSrc = iframe.getAttribute('data-src') || '';
+
+  if (!_shortsPaused) {
+    // Pausar: recargar sin autoplay
+    iframe.src = dataSrc.replace('autoplay=1&', '');
+    icon.textContent = '▶';
+  } else {
+    // Reanudar: recargar con autoplay
+    const src = dataSrc.includes('autoplay=1&') ? dataSrc : dataSrc.replace('mute=0', 'autoplay=1&mute=0');
+    iframe.src = src;
+    icon.textContent = '⏸';
+  }
+
+  _shortsPaused = !_shortsPaused;
+
+  // Mostrar ícono brevemente
+  icon.classList.remove('show', 'hide');
+  void icon.offsetWidth; // reflow
+  icon.classList.add('show');
+  clearTimeout(icon._hideTimer);
+  icon._hideTimer = setTimeout(() => {
+    icon.classList.replace('show', 'hide');
+  }, 800);
 }
 
 // ── NAVIGATION ───────────────────────────────────
@@ -3662,6 +3730,7 @@ function goToShort(newIdx) {
   const prevIframe = document.getElementById('short-iframe-' + _shortsIndex);
   if (prevIframe) prevIframe.src = prevIframe.getAttribute('data-src').replace('autoplay=1&','');
 
+  _shortsPaused = false; // resetear pausa al cambiar de video
   _shortsIndex = newIdx;
   applySlidePositions();
 
