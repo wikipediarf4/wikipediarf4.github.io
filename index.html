@@ -1128,6 +1128,64 @@
   .msg-delete-btn:hover { background: rgba(255,60,60,.3); }
   body.is-admin .msg-delete-btn { display: inline-block; }
 
+  /* MSG HOVER ACTIONS */
+  .msg-hover-actions {
+    display: none; gap: 4px; margin-top: 4px; align-items: center; position: relative;
+  }
+  .msg:hover .msg-hover-actions { display: flex; }
+  .msg.own .msg-hover-actions { flex-direction: row-reverse; }
+  .msg-action-btn {
+    background: var(--surface3); border: 1px solid var(--border);
+    border-radius: 99px; padding: 3px 9px; font-size: .75rem;
+    color: var(--text-muted); cursor: pointer; transition: all .15s; white-space: nowrap;
+  }
+  .msg-action-btn:hover { color: var(--text); border-color: var(--accent); background: rgba(124,106,255,.12); }
+
+  /* EMOJI PICKER */
+  .msg-emoji-picker {
+    display: none; gap: 4px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 99px; padding: 4px 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.4); position: absolute; bottom: 28px; left: 0; z-index: 20;
+  }
+  .msg.own .msg-emoji-picker { left: auto; right: 0; }
+  .msg-emoji-picker.open { display: flex; }
+  .ep-btn {
+    background: none; border: none; font-size: 1.1rem; cursor: pointer;
+    border-radius: 50%; width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center; transition: transform .1s;
+  }
+  .ep-btn:hover { transform: scale(1.3); background: rgba(255,255,255,.08); }
+
+  /* REACTIONS ROW */
+  .msg-reactions { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+  .msg-react-chip {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 99px; padding: 2px 8px; font-size: .78rem;
+    cursor: pointer; transition: all .15s;
+    display: flex; align-items: center; gap: 3px; color: var(--text-muted);
+  }
+  .msg-react-chip:hover { border-color: var(--accent); }
+  .msg-react-chip.mine { border-color: var(--accent); background: rgba(124,106,255,.15); color: var(--text); }
+
+  /* REPLY QUOTE */
+  .reply-quote {
+    background: var(--surface3); border-left: 3px solid var(--accent);
+    border-radius: 6px; padding: 5px 10px; margin-bottom: 5px;
+    font-size: .78rem; color: var(--text-muted);
+  }
+  .reply-quote strong { color: var(--accent); display: block; font-size: .75rem; margin-bottom: 2px; }
+
+  /* REPLY BAR */
+  #reply-bar {
+    display: none; background: var(--surface2); border-top: 1px solid var(--border);
+    padding: 6px 16px; font-size: .8rem; color: var(--text-muted);
+    align-items: center; gap: 8px;
+  }
+  #reply-bar.visible { display: flex; }
+  #reply-bar strong { color: var(--accent); }
+  #reply-bar-close { margin-left: auto; cursor: pointer; background: none; border: none; color: var(--text-muted); font-size: 1rem; }
+  #reply-bar-close:hover { color: var(--text); }
+
   /* RESPONSIVE */
   @media (max-width: 600px) {
     .yt-frame-wrap { height: 120px; }
@@ -1620,6 +1678,10 @@
       <div class="no-profile-warning" id="no-profile-warning">
         ⚠️ Necesitás una <a onclick="openProfileModal()">foto de perfil</a> para poder enviar mensajes.
       </div>
+      <div id="reply-bar">
+        <span>↩ Respondiendo a <strong id="reply-bar-name"></strong>: <span id="reply-bar-text"></span></span>
+        <button id="reply-bar-close" onclick="cancelReply()">✕</button>
+      </div>
       <div class="input-row" id="input-row">
         <textarea class="msg-input" id="msg-input" placeholder="Escribí un mensaje..." rows="1"
           onkeydown="handleMsgKey(event)" oninput="autoResize(this)"></textarea>
@@ -1885,6 +1947,7 @@ function renderMessages(msgs) {
     const isOwn = msg.uid === uid;
     const div = document.createElement('div');
     div.className = `msg${isOwn ? ' own' : ''}`;
+    div.id = 'msg-' + msg.id;
 
     const ts = msg.ts?.toDate ? msg.ts.toDate() : (msg.ts ? new Date(msg.ts) : null);
     const time = ts ? ts.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) : '';
@@ -1896,6 +1959,37 @@ function renderMessages(msgs) {
         ${!isOwn ? `<button class="msg-delete-btn" style="margin-left:4px" onclick="adminBanUser('${msg.uid}', '${(msg.name||'').replace(/'/g,"\\'")}')">🚫 Banear</button>` : ''}
       </div>` : '';
 
+    // Reply quote
+    const replyHtml = msg.replyTo ? `
+      <div class="reply-quote">
+        <strong>↩ ${escapeHtml(msg.replyTo.name)}</strong>
+        ${escapeHtml(msg.replyTo.text.substring(0, 80))}${msg.replyTo.text.length > 80 ? '…' : ''}
+      </div>` : '';
+
+    // Reactions
+    const reactions = msg.reactions || {};
+    const reactionsHtml = Object.keys(reactions).length > 0 ? `
+      <div class="msg-reactions">
+        ${Object.entries(reactions).map(([emoji, uids]) => {
+          const mine = uid && uids.includes(uid);
+          return `<span class="msg-react-chip${mine ? ' mine' : ''}" onclick="toggleMsgReaction('${msg.id}','${emoji}')">
+            ${emoji} ${uids.length}
+          </span>`;
+        }).join('')}
+      </div>` : `<div class="msg-reactions" id="reactions-${msg.id}"></div>`;
+
+    // Hover actions
+    const hoverActions = `
+      <div class="msg-hover-actions">
+        <button class="msg-action-btn" onclick="toggleEmojiPicker('${msg.id}')">😊 Reaccionar</button>
+        <button class="msg-action-btn" onclick="setReply('${msg.id}','${escapeHtml(msg.name||'').replace(/'/g,"\\'")}','${escapeHtml(msg.text||'').replace(/'/g,"\\'").replace(/\n/g,' ')}')">↩ Responder</button>
+        <div class="msg-emoji-picker" id="ep-${msg.id}">
+          ${['❤️','😂','😮','👏','🔥','😢'].map(e =>
+            `<button class="ep-btn" onclick="toggleMsgReaction('${msg.id}','${e}')">${e}</button>`
+          ).join('')}
+        </div>
+      </div>`;
+
     div.innerHTML = `
       <img class="msg-avatar" src="${msg.avatar || 'https://api.dicebear.com/7.x/thumbs/svg?seed=' + msg.uid}"
            alt="" onclick="showUserPopup(event, ${JSON.stringify(msg).replace(/"/g, '&quot;')})"/>
@@ -1905,7 +1999,10 @@ function renderMessages(msgs) {
           ${locationStr ? `<span class="msg-location">📍 ${locationStr}</span>` : ''}
           <span class="msg-time">${time}</span>
         </div>
+        ${replyHtml}
         <div class="msg-bubble">${escapeHtml(msg.text)}</div>
+        ${reactionsHtml}
+        ${hoverActions}
         ${adminControls}
       </div>
     `;
@@ -2279,8 +2376,10 @@ async function sendMessage() {
       avatar: profile.avatar,
       country: profile.country || '',
       city: profile.city || '',
-      ts: Date.now()
+      ts: Date.now(),
+      ...(  _replyTo ? { replyTo: { name: _replyTo.name, text: _replyTo.text } } : {} )
     });
+    cancelReply();
   } catch (err) {
     showToast('❌ Error al enviar: ' + err.message);
   }
@@ -2290,6 +2389,71 @@ function handleMsgKey(e) {
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
     sendMessage();
+  }
+}
+
+// ── REPLY ──
+let _replyTo = null;
+
+function setReply(msgId, name, text) {
+  _replyTo = { msgId, name, text };
+  document.getElementById('reply-bar-name').textContent = name;
+  document.getElementById('reply-bar-text').textContent = text.substring(0, 60) + (text.length > 60 ? '…' : '');
+  document.getElementById('reply-bar').classList.add('visible');
+  document.getElementById('msg-input').focus();
+  closeAllEmojiPickers();
+}
+
+function cancelReply() {
+  _replyTo = null;
+  document.getElementById('reply-bar').classList.remove('visible');
+}
+
+// ── EMOJI PICKER ──
+function toggleEmojiPicker(msgId) {
+  const picker = document.getElementById('ep-' + msgId);
+  if (!picker) return;
+  const isOpen = picker.classList.contains('open');
+  closeAllEmojiPickers();
+  if (!isOpen) picker.classList.add('open');
+}
+
+function closeAllEmojiPickers() {
+  document.querySelectorAll('.msg-emoji-picker.open').forEach(p => p.classList.remove('open'));
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.msg-hover-actions')) closeAllEmojiPickers();
+});
+
+// ── TOGGLE REACCIÓN ──
+async function toggleMsgReaction(msgId, emoji) {
+  closeAllEmojiPickers();
+  const uid = currentUser?.uid;
+  if (!uid) { showToast('⚠️ Iniciá sesión para reaccionar'); return; }
+  try {
+    const { doc, updateDoc, arrayUnion, arrayRemove, getDoc, setDoc }
+      = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const ref = doc(window._db, 'messages', msgId);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return;
+    const data = snap.data();
+    const reactions = data.reactions || {};
+    const uids = reactions[emoji] || [];
+    if (uids.includes(uid)) {
+      // quitar
+      const newUids = uids.filter(u => u !== uid);
+      if (newUids.length === 0) {
+        const upd = { ...reactions }; delete upd[emoji];
+        await updateDoc(ref, { reactions: upd });
+      } else {
+        await updateDoc(ref, { [`reactions.${emoji}`]: newUids });
+      }
+    } else {
+      await updateDoc(ref, { [`reactions.${emoji}`]: arrayUnion(uid) });
+    }
+  } catch(e) {
+    showToast('❌ Error: ' + e.message);
   }
 }
 
