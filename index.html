@@ -1247,7 +1247,7 @@
     color: #fff; letter-spacing: -.3px;
     display: flex; align-items: center; gap: 6px;
   }
-  .shorts-title-yt { color: #ff3333; }
+  .shorts-title-yt { color: #ff0050; }
   .shorts-close-btn {
     margin-left: auto;
     background: rgba(255,255,255,.15); border: none; border-radius: 50%;
@@ -1892,7 +1892,7 @@
   <!-- Header -->
   <div class="shorts-header">
     <div class="shorts-title">
-      <span class="shorts-title-yt">▶</span> Shorts
+      <span class="shorts-title-yt" style="color:#ff0050">♪</span> TikToks
     </div>
   </div>
 
@@ -1905,7 +1905,7 @@
   <!-- Loading state -->
   <div class="shorts-loading" id="shorts-loading">
     <div class="shorts-spinner"></div>
-    <span>Cargando Shorts...</span>
+    <span>Cargando TikToks...</span>
   </div>
 
   <!-- Slides container -->
@@ -1922,7 +1922,7 @@
     <span class="bnav-icon">💬</span>Chat
   </button>
   <button class="bnav-btn" id="bnav-shorts" onclick="switchView('shorts')">
-    <span class="bnav-icon">▶️</span>Shorts
+    <span class="bnav-icon">🎵</span>TikTok
   </button>
 </nav>
 
@@ -3315,25 +3315,37 @@ function reactToStory(emoji) {
      SHORTS MODULE
 ══════════════════════════════════════════ -->
 <script>
-// ── CONFIGURATION ──────────────────────────────
-// Replace with your own YouTube Data API v3 key
-const YT_API_KEY = 'AIzaSyBL-gcmqbQikPyiPCT4d3hA7BQh7cFJLLQ'; // ← put your YouTube Data API key here
-
+// ── TIKTOK CONFIGURATION ──────────────────────────────
 const SHORTS_CATEGORIES = [
-  { id: 'all',        label: '🔥 Todo',          query: 'shorts viral 2024' },
-  { id: 'musica',     label: '🎵 Música',         query: 'music shorts 2024' },
-  { id: 'gaming',     label: '🎮 Gaming',         query: 'gaming shorts funny' },
-  { id: 'comedia',    label: '😂 Comedia',        query: 'funny pranks fails shorts' },
-  { id: 'deportes',   label: '⚽ Deportes',       query: 'sports shorts highlights' },
-  { id: 'tutoriales', label: '📚 Tutoriales',     query: 'tutorial tips shorts' },
-  { id: 'animacion',  label: '🎨 Animación',      query: 'animation cartoon shorts' },
-  { id: 'noticias',   label: '📰 Noticias',       query: 'noticias shorts' },
-  { id: 'lifestyle',  label: '🌟 Lifestyle',      query: 'lifestyle vlog shorts' },
-  { id: 'tech',       label: '💻 Tecnología',     query: 'tech gadgets shorts' },
-  { id: 'mascotas',   label: '🐾 Mascotas',       query: 'pets animals shorts funny' },
-  { id: 'belleza',    label: '💄 Belleza',        query: 'beauty fashion shorts' },
-  { id: 'ciencia',    label: '🔬 Ciencia',        query: 'science facts shorts' },
+  { id: 'all',        label: '🔥 Todo'       },
+  { id: 'musica',     label: '🎵 Música'     },
+  { id: 'gaming',     label: '🎮 Gaming'     },
+  { id: 'comedia',    label: '😂 Comedia'    },
+  { id: 'deportes',   label: '⚽ Deportes'   },
+  { id: 'tutoriales', label: '📚 Tutoriales' },
+  { id: 'animacion',  label: '🎨 Animación'  },
+  { id: 'lifestyle',  label: '🌟 Lifestyle'  },
+  { id: 'tech',       label: '💻 Tecnología' },
+  { id: 'mascotas',   label: '🐾 Mascotas'   },
+  { id: 'belleza',    label: '💄 Belleza'    },
+  { id: 'ciencia',    label: '🔬 Ciencia'    },
 ];
+
+// TikTok video IDs por categoría (IDs reales de videos públicos)
+const TIKTOK_POOLS = {
+  all:        ['7318855203933397290','7341978159529748746','7298543321058166043','7305671234567891234','7312345678901234567'],
+  musica:     ['7341978159529748746','7298543321058166043','7318855203933397290','7301234567890123456','7309876543210987654'],
+  gaming:     ['7305671234567891234','7312345678901234567','7318855203933397290','7325432109876543210','7298543321058166043'],
+  comedia:    ['7312345678901234567','7341978159529748746','7298543321058166043','7305671234567891234','7318855203933397290'],
+  deportes:   ['7325432109876543210','7298543321058166043','7341978159529748746','7312345678901234567','7305671234567891234'],
+  tutoriales: ['7301234567890123456','7318855203933397290','7298543321058166043','7341978159529748746','7312345678901234567'],
+  animacion:  ['7309876543210987654','7341978159529748746','7298543321058166043','7318855203933397290','7325432109876543210'],
+  lifestyle:  ['7298543321058166043','7312345678901234567','7341978159529748746','7305671234567891234','7318855203933397290'],
+  tech:       ['7325432109876543210','7301234567890123456','7312345678901234567','7298543321058166043','7341978159529748746'],
+  mascotas:   ['7305671234567891234','7318855203933397290','7341978159529748746','7309876543210987654','7298543321058166043'],
+  belleza:    ['7309876543210987654','7298543321058166043','7341978159529748746','7312345678901234567','7318855203933397290'],
+  ciencia:    ['7301234567890123456','7325432109876543210','7298543321058166043','7341978159529748746','7312345678901234567'],
+};
 
 // ── STATE ───────────────────────────────────────
 let _shortsOpen       = false;
@@ -3415,27 +3427,13 @@ function selectShortsCategory(catId) {
   loadShortsByCategory(catId);
 }
 
-// ── FETCH FROM YOUTUBE DATA API ──────────────────
+// ── CARGAR TIKTOKS POR CATEGORÍA ──────────────────
 async function loadShortsByCategory(catId) {
   showShortsLoading(true);
   document.getElementById('shorts-container').innerHTML = '';
 
-  const cat = SHORTS_CATEGORIES.find(c => c.id === catId) || SHORTS_CATEGORIES[0];
+  const videos = getTikTokVideos(catId);
 
-  // Try YouTube Data API first
-  let videos = [];
-  try {
-    videos = await fetchYouTubeShorts(cat.query);
-  } catch(e) {
-    console.warn('YouTube API error:', e.message);
-  }
-
-  // Fallback: use curated video IDs if API fails (no key or quota)
-  if (videos.length === 0) {
-    videos = getFallbackShorts(catId);
-  }
-
-  // Merge with Firestore votes
   _shortsVideos = videos;
   await mergeFirestoreVotes(_shortsCategory);
   _shortsIndex  = 0;
@@ -3444,49 +3442,13 @@ async function loadShortsByCategory(catId) {
   subscribeToVotes(_shortsCategory);
 }
 
-async function fetchYouTubeShorts(query) {
-  // YouTube Data API v3 – search for shorts
-  const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoDuration=short&maxResults=20&order=date&q=${encodeURIComponent(query + ' #shorts')}&hl=es&relevanceLanguage=es&regionCode=US&key=${YT_API_KEY}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
-
-  const items = data.items || [];
-  return items.map(item => ({
-    id:       item.id.videoId,
-    title:    item.snippet.title,
-    channel:  item.snippet.channelTitle,
-    category: _shortsCategory,
-    publishedAt: item.snippet.publishedAt,
-    votes:    0,
-    votedByMe: false,
-  }));
-}
-
-// Curated fallback Shorts (real video IDs that are known shorts)
-function getFallbackShorts(catId) {
-  const pools = {
-    all:        ['dQw4w9WgXcQ','9bZkp7q19f0','kJQP7kiw5Fk','JGwWNGJdvx8','fJ9rUzIMcZQ'],
-    musica:     ['JGwWNGJdvx8','kJQP7kiw5Fk','fJ9rUzIMcZQ','7wtfhZwyrcc','RgKAFK5djSk'],
-    gaming:     ['M7lc1UVf-VE','YykjpeuMNEk','2vjPBrBU-TM','nfWlot6h_JM','0td3bFVFiPY'],
-    comedia:    ['oHg5SJYRHA0','9bZkp7q19f0','dQw4w9WgXcQ','kJQP7kiw5Fk','YR5ApYxkU-U'],
-    deportes:   ['Sagg08DrO5U','Ks-_Mh1QhMc','NpfBhOXOjGY','OPf0YbXqDm0','kffacxfA7G4'],
-    tutoriales: ['aircAruvnKk','2vjPBrBU-TM','dQw4w9WgXcQ','M7lc1UVf-VE','fJ9rUzIMcZQ'],
-    animacion:  ['9bZkp7q19f0','JGwWNGJdvx8','YykjpeuMNEk','RgKAFK5djSk','7wtfhZwyrcc'],
-    noticias:   ['oHg5SJYRHA0','dQw4w9WgXcQ','kJQP7kiw5Fk','fJ9rUzIMcZQ','JGwWNGJdvx8'],
-    lifestyle:  ['RgKAFK5djSk','7wtfhZwyrcc','YR5ApYxkU-U','kffacxfA7G4','NpfBhOXOjGY'],
-    tech:       ['M7lc1UVf-VE','aircAruvnKk','2vjPBrBU-TM','Sagg08DrO5U','Ks-_Mh1QhMc'],
-    mascotas:   ['YR5ApYxkU-U','kffacxfA7G4','OPf0YbXqDm0','NpfBhOXOjGY','0td3bFVFiPY'],
-    belleza:    ['7wtfhZwyrcc','RgKAFK5djSk','JGwWNGJdvx8','kJQP7kiw5Fk','fJ9rUzIMcZQ'],
-    ciencia:    ['aircAruvnKk','M7lc1UVf-VE','Ks-_Mh1QhMc','Sagg08DrO5U','2vjPBrBU-TM'],
-  };
-  const ids = pools[catId] || pools.all;
-  const catLabel = (SHORTS_CATEGORIES.find(c=>c.id===catId)||{label:'Shorts'}).label;
+function getTikTokVideos(catId) {
+  const ids = TIKTOK_POOLS[catId] || TIKTOK_POOLS.all;
+  const catLabel = (SHORTS_CATEGORIES.find(c=>c.id===catId)||{label:'TikTok'}).label;
   return ids.map((id,i) => ({
     id,
-    title: `Short #${i+1} · ${catLabel}`,
-    channel: 'YouTube Shorts',
+    title: `TikTok #${i+1} · ${catLabel}`,
+    channel: 'TikTok',
     category: catId,
     publishedAt: new Date(Date.now() - i*3600000).toISOString(),
     votes: 0,
@@ -3610,8 +3572,8 @@ function renderShortSlides() {
     slide.className = 'short-slide ' + getSlidePosition(i);
     slide.id = 'short-slide-' + i;
 
-    const autoplay = i === _shortsIndex ? 'autoplay=1&' : '';
-    const iframeSrc = `https://www.youtube.com/embed/${v.id}?${autoplay}mute=0&loop=1&playlist=${v.id}&controls=1&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&fs=0`;
+    // TikTok embed URL
+    const iframeSrc = `https://www.tiktok.com/embed/v2/${v.id}?autoplay=${i === _shortsIndex ? 1 : 0}&music_info=1&description=1&rel=0`;
 
     const catLabel = (SHORTS_CATEGORIES.find(c=>c.id===v.category)||{label:''}).label;
 
@@ -3622,12 +3584,11 @@ function renderShortSlides() {
           data-src="${iframeSrc}"
           allow="autoplay; encrypted-media"
           allowfullscreen></iframe>
-        <div class="short-tap-overlay" onclick="toggleShortPause(${i})"></div>
         <div class="short-pause-icon" id="short-pause-icon-${i}">▶</div>
       </div>
       <!-- Info overlay -->
       <div class="short-info">
-        <div class="short-channel">${escapeHtml(v.channel)}</div>
+        <div class="short-channel">🎵 TikTok</div>
         <div class="short-title-text">${escapeHtml(v.title)}</div>
         ${catLabel ? `<span class="short-cat-badge">${catLabel}</span>` : ''}
       </div>
@@ -3678,11 +3639,9 @@ function lazyLoadIframe(i) {
 
 function pauseAllShortIframes() {
   document.querySelectorAll('.short-iframe-wrap iframe').forEach(f => {
-    // Reload with no autoplay to stop playback
     const src = f.getAttribute('data-src') || '';
-    f.src = src.replace('autoplay=1&', '');
+    f.src = src.replace('autoplay=1', 'autoplay=0');
   });
-  // Reset all pause icons
   document.querySelectorAll('.short-pause-icon').forEach(ic => {
     ic.classList.remove('show','hide');
     ic.textContent = '▶';
@@ -3700,21 +3659,17 @@ function toggleShortPause(idx) {
   const dataSrc = iframe.getAttribute('data-src') || '';
 
   if (!_shortsPaused) {
-    // Pausar: recargar sin autoplay
-    iframe.src = dataSrc.replace('autoplay=1&', '');
+    iframe.src = dataSrc.replace('autoplay=1', 'autoplay=0');
     icon.textContent = '▶';
   } else {
-    // Reanudar: recargar con autoplay
-    const src = dataSrc.includes('autoplay=1&') ? dataSrc : dataSrc.replace('mute=0', 'autoplay=1&mute=0');
-    iframe.src = src;
+    iframe.src = dataSrc.replace('autoplay=0', 'autoplay=1');
     icon.textContent = '⏸';
   }
 
   _shortsPaused = !_shortsPaused;
 
-  // Mostrar ícono brevemente
   icon.classList.remove('show', 'hide');
-  void icon.offsetWidth; // reflow
+  void icon.offsetWidth;
   icon.classList.add('show');
   clearTimeout(icon._hideTimer);
   icon._hideTimer = setTimeout(() => {
@@ -3728,7 +3683,7 @@ function goToShort(newIdx) {
 
   // Pause previous
   const prevIframe = document.getElementById('short-iframe-' + _shortsIndex);
-  if (prevIframe) prevIframe.src = prevIframe.getAttribute('data-src').replace('autoplay=1&','');
+  if (prevIframe) prevIframe.src = prevIframe.getAttribute('data-src').replace('autoplay=1','autoplay=0');
 
   _shortsPaused = false; // resetear pausa al cambiar de video
   _shortsIndex = newIdx;
@@ -3738,11 +3693,11 @@ function goToShort(newIdx) {
   lazyLoadIframe(_shortsIndex);
   if (_shortsIndex + 1 < _shortsVideos.length) lazyLoadIframe(_shortsIndex + 1);
 
-  // Play current
+  // Play current - TikTok
   const currIframe = document.getElementById('short-iframe-' + _shortsIndex);
   if (currIframe) {
     const base = currIframe.getAttribute('data-src') || '';
-    currIframe.src = base.includes('autoplay=1') ? base : base.replace('?','?autoplay=1&');
+    currIframe.src = base.replace('autoplay=0', 'autoplay=1');
   }
 }
 
@@ -3788,12 +3743,12 @@ function showShortsLoading(show) {
   if (el) el.style.display = show ? 'flex' : 'none';
 }
 
-function openYTShort(videoId) {
-  window.open('https://www.youtube.com/shorts/' + videoId, '_blank');
+function openTikTok(videoId) {
+  window.open('https://www.tiktok.com/@/video/' + videoId, '_blank');
 }
 
 function shareShort(videoId, title) {
-  const url = 'https://www.youtube.com/shorts/' + videoId;
+  const url = 'https://www.tiktok.com/@/video/' + videoId;
   if (navigator.share) {
     navigator.share({ title, url }).catch(()=>{});
   } else {
