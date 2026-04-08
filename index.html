@@ -2205,8 +2205,8 @@ function renderMessages(msgs) {
         ${replyHtml}
         <div class="msg-bubble">
           ${msg.text ? escapeHtml(msg.text) : ''}
-          ${msg.mediaUrl && msg.mediaType === 'imagen' ? '<br><img src="' + msg.mediaUrl + '" style="max-width:220px;max-height:220px;border-radius:10px;margin-top:6px;cursor:pointer;display:block" onclick="openMedia(this.src)"/>' : ''}
-          ${msg.mediaUrl && msg.mediaType === 'video' ? '<br><video src="' + msg.mediaUrl + '" controls style="max-width:220px;border-radius:10px;margin-top:6px;display:block"></video>' : ''}
+          ${msg.mediaUrl && msg.mediaType === 'imagen' ? '<br><img data-mediaurl="' + msg.mediaUrl + '" src="" style="max-width:220px;max-height:220px;border-radius:10px;margin-top:6px;cursor:pointer;display:block" onclick="openMedia(\'' + msg.mediaUrl + '\')" class="lazy-media"/>' : ''}
+          ${msg.mediaUrl && msg.mediaType === 'video' ? '<br><video data-mediaurl="' + msg.mediaUrl + '" src="" controls style="max-width:220px;border-radius:10px;margin-top:6px;display:block" class="lazy-media"></video>' : ''}
         </div>
         ${reactionsHtml}
         ${hoverActions}
@@ -2216,7 +2216,26 @@ function renderMessages(msgs) {
     container.appendChild(div);
   });
   container.scrollTop = container.scrollHeight;
+  loadLazyMedia();
 }
+
+async function loadLazyMedia() {
+  const els = document.querySelectorAll('.lazy-media[data-mediaurl]');
+  els.forEach(async (el) => {
+    const url = el.getAttribute('data-mediaurl');
+    if (!url || el.src) return;
+    try {
+      const res = await fetch(url, { headers: { 'ngrok-skip-browser-warning': 'true' } });
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      el.src = objectUrl;
+      el.removeAttribute('data-mediaurl');
+    } catch(e) {
+      console.warn('No se pudo cargar media:', url, e);
+    }
+  });
+}
+
 
 // ── Push message a Firestore ──
 window._pushMessage = async (msgData) => {
@@ -3310,9 +3329,13 @@ function openStoryModal(story) {
     textEl.parentNode.insertBefore(storyMediaEl, textEl.nextSibling);
   }
   if (story.mediaUrl && story.mediaType === 'imagen') {
-    storyMediaEl.innerHTML = '<img src="' + story.mediaUrl + '" style="max-width:100%;border-radius:12px;margin-top:8px;cursor:pointer" onclick="openMedia(this.src)"/>';
+    storyMediaEl.innerHTML = '<img id="story-modal-img" src="" style="max-width:100%;border-radius:12px;margin-top:8px;cursor:pointer" onclick="openMedia(\'' + story.mediaUrl + '\')"/>';
+    fetch(story.mediaUrl, { headers: { 'ngrok-skip-browser-warning': 'true' } })
+      .then(r => r.blob()).then(b => { const el = document.getElementById('story-modal-img'); if(el) el.src = URL.createObjectURL(b); });
   } else if (story.mediaUrl && story.mediaType === 'video') {
-    storyMediaEl.innerHTML = '<video src="' + story.mediaUrl + '" controls style="max-width:100%;border-radius:12px;margin-top:8px"></video>';
+    storyMediaEl.innerHTML = '<video id="story-modal-vid" src="" controls style="max-width:100%;border-radius:12px;margin-top:8px"></video>';
+    fetch(story.mediaUrl, { headers: { 'ngrok-skip-browser-warning': 'true' } })
+      .then(r => r.blob()).then(b => { const el = document.getElementById('story-modal-vid'); if(el) el.src = URL.createObjectURL(b); });
   } else {
     storyMediaEl.innerHTML = '';
   }
@@ -4055,7 +4078,10 @@ async function sendSCPReply(commentId) {
 const UPLOAD_SERVER = "https://davon-employable-rosanna.ngrok-free.dev";
 
 function openMedia(url) {
-  window.open(url, '_blank');
+  fetch(url, { headers: { 'ngrok-skip-browser-warning': 'true' } })
+    .then(r => r.blob())
+    .then(blob => window.open(URL.createObjectURL(blob), '_blank'))
+    .catch(() => window.open(url, '_blank'));
 }
 
 // Contexto de subida: 'chat' o 'story'
@@ -4104,10 +4130,18 @@ async function uploadFileToServer(files, context) {
         const preview = document.getElementById('story-media-preview');
         if (preview) {
           if (data.tipo === 'imagen') {
-            preview.innerHTML = '<img src="' + mediaUrl + '" style="max-width:100%;border-radius:10px;margin-top:8px"/>';
+            preview.innerHTML = '<img id="story-preview-media" src="" style="max-width:100%;border-radius:10px;margin-top:8px"/>';
           } else {
-            preview.innerHTML = '<video src="' + mediaUrl + '" controls style="max-width:100%;border-radius:10px;margin-top:8px"></video>';
+            preview.innerHTML = '<video id="story-preview-media" src="" controls style="max-width:100%;border-radius:10px;margin-top:8px"></video>';
           }
+          // Cargar con header ngrok para evitar bloqueo
+          fetch(mediaUrl, { headers: { 'ngrok-skip-browser-warning': 'true' } })
+            .then(r => r.blob())
+            .then(blob => {
+              const el = document.getElementById('story-preview-media');
+              if (el) el.src = URL.createObjectURL(blob);
+            })
+            .catch(() => showToast('⚠️ No se pudo previsualizar el archivo'));
         }
         showToast('✅ Archivo listo para la historia');
       }
