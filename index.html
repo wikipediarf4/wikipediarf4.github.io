@@ -126,16 +126,36 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
 
 .video-slide{
   height:100vh;width:100%;scroll-snap-align:start;
-  position:relative;overflow:hidden;background:#000;
+  position:relative;background:#000;
   display:flex;align-items:center;justify-content:center;
+}
+.video-wrap{
+  position:relative;
+  height:100%;
+  flex:1;
+  overflow:hidden;
+  max-width:420px;
+}
+/* Mobile: actions inside/over video (TikTok style) */
+.video-actions{
+  position:absolute;right:8px;bottom:80px;
+  display:flex;flex-direction:column;align-items:center;gap:18px;
+  z-index:10;
+}
+/* Desktop: video centered, actions beside it */
+@media(min-width:600px){
+  .video-slide{ flex-direction:row; justify-content:center; align-items:center; }
+  .video-wrap{ width:360px; flex:none; }
+  .video-actions{
+    position:relative;right:auto;bottom:auto;
+    display:flex;flex-direction:column;align-items:center;gap:24px;
+    align-self:flex-end;padding-bottom:80px;margin-left:16px;
+    flex-shrink:0;
+  }
 }
 .video-el{
   width:100%;height:100%;object-fit:contain;position:absolute;inset:0;
   background:#000;
-}
-@media(min-width:600px){
-  .video-slide{justify-content:center;}
-  .video-el{width:auto;max-width:420px;left:50%;transform:translateX(-50%);right:auto;}
 }
 .video-overlay{
   position:absolute;inset:0;
@@ -167,13 +187,7 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
   color:rgba(255,255,255,.7);margin-top:6px;
 }
 /* Right actions */
-.video-actions{
-  position:absolute;right:12px;bottom:80px;
-  display:flex;flex-direction:column;align-items:center;gap:18px;
-}
-@media(min-width:600px){
-  .video-actions{ right:calc(50% - 150px); }
-}
+
 .v-action{
   display:flex;flex-direction:column;align-items:center;gap:3px;
   cursor:pointer;
@@ -1205,25 +1219,27 @@ function buildVideoSlide(id, data) {
   const isLiked = data.likes && currentUser && data.likes.includes(currentUser.uid);
   const avatar = data.avatar || avatarFallback(data.uid||'u');
   div.innerHTML = `
-    ${isVideo
-      ? `<video class="video-el" data-src="${escHtml(data.mediaUrl||'')}" loop playsinline preload="none"></video>`
-      : `<img class="video-el" data-src="${escHtml(data.mediaUrl||'')}" style="object-fit:cover"/>`
-    }
-    <div class="video-overlay"></div>
-    <div class="play-indicator" id="pi-${id}">
-      <div class="play-indicator-circle">▶</div>
-    </div>
-    <div class="video-info">
-      <div class="video-user" onclick="openUserProfile('${data.uid}')">
-        <img class="video-avatar" src="${avatar}" onerror="this.src='${avatarFallback(data.uid||'u')}'"/>
-        <span class="video-username">${escHtml(data.name||'Usuario')}</span>
-        ${currentUser && data.uid !== currentUser.uid ? `<button class="follow-btn-inline" onclick="event.stopPropagation();toggleFollow('${data.uid}')">Seguir</button>` : ''}
+    <div class="video-wrap">
+      ${isVideo
+        ? `<video class="video-el" data-src="${escHtml(data.mediaUrl||'')}" loop playsinline preload="none"></video>`
+        : `<img class="video-el" data-src="${escHtml(data.mediaUrl||'')}" style="object-fit:contain"/>`
+      }
+      <div class="video-overlay"></div>
+      <div class="play-indicator" id="pi-${id}">
+        <div class="play-indicator-circle">▶</div>
       </div>
-      <div class="video-desc">${escHtml(data.description||'')}</div>
-      ${data.tags ? `<div class="video-tags">${escHtml(data.tags)}</div>` : ''}
-      <div class="video-music">🎵 Clipuy original</div>
+      <div class="video-info">
+        <div class="video-user" onclick="openUserProfile('${data.uid}')">
+          <img class="video-avatar" src="${avatar}" onerror="this.src='${avatarFallback(data.uid||'u')}'"/>
+          <span class="video-username">${escHtml(data.name||'Usuario')}</span>
+          ${currentUser && data.uid !== currentUser.uid ? `<button class="follow-btn-inline" onclick="event.stopPropagation();toggleFollow('${data.uid}')">Seguir</button>` : ''}
+        </div>
+        <div class="video-desc">${escHtml(data.description||'')}</div>
+        ${data.tags ? `<div class="video-tags">${escHtml(data.tags)}</div>` : ''}
+        <div class="video-music">🎵 Clipuy original</div>
+      </div>
+      <button id="mute-${id}" onclick="toggleMute('${id}')" style="position:absolute;top:60px;right:12px;background:rgba(0,0,0,.5);border:none;border-radius:50%;width:38px;height:38px;font-size:1.1rem;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;z-index:10;">🔇</button>
     </div>
-    <button id="mute-${id}" onclick="toggleMute('${id}')" style="position:absolute;top:60px;right:12px;background:rgba(0,0,0,.5);border:none;border-radius:50%;width:38px;height:38px;font-size:1.1rem;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;z-index:10;">🔇</button>
     <div class="video-actions">
       <div class="v-action ${isLiked?'liked':''}" id="like-${id}" onclick="toggleLike('${id}',this)">
         <div class="v-action-icon">${isLiked?'❤️':'🤍'}</div>
