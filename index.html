@@ -509,6 +509,278 @@
   .popup-info { font-size: .8rem; color: var(--text-muted); line-height: 1.7; }
   .popup-info span { color: var(--text-dim); }
 
+  /* ── PROFILE WALL MODAL ── */
+  #profile-wall-modal {
+    position: fixed; inset: 0; z-index: 95;
+    background: rgba(0,0,0,.75);
+    backdrop-filter: blur(8px);
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 20px;
+    overflow-y: auto;
+    animation: fadeIn .3s ease;
+  }
+  #profile-wall-modal.hidden { display: none; }
+
+  .wall-container {
+    width: 100%; max-width: 600px;
+    padding-bottom: 40px;
+  }
+
+  /* Cover + header */
+  .wall-cover {
+    width: 100%; height: 160px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 60%, var(--accent3) 100%);
+    border-radius: var(--radius) var(--radius) 0 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .wall-cover-pattern {
+    position: absolute; inset: 0;
+    background-image: radial-gradient(circle at 20% 50%, rgba(255,255,255,.08) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(255,255,255,.06) 0%, transparent 40%);
+  }
+  .wall-close-btn {
+    position: absolute; top: 12px; right: 12px;
+    background: rgba(0,0,0,.4); border: none;
+    border-radius: 50%; width: 32px; height: 32px;
+    color: #fff; font-size: 1rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s;
+  }
+  .wall-close-btn:hover { background: rgba(0,0,0,.7); }
+
+  .wall-profile-header {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
+    padding: 0 24px 20px;
+    position: relative;
+    border-radius: 0 0 var(--radius) var(--radius);
+    margin-bottom: 16px;
+  }
+
+  .wall-avatar-wrap {
+    position: relative;
+    display: inline-block;
+    margin-top: -40px;
+    margin-bottom: 12px;
+  }
+  .wall-avatar {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--surface);
+    box-shadow: 0 0 0 2px var(--accent), 0 4px 20px rgba(0,0,0,.5);
+  }
+  .wall-online-dot {
+    position: absolute; bottom: 4px; right: 4px;
+    width: 14px; height: 14px;
+    background: var(--accent3);
+    border-radius: 50%;
+    border: 2px solid var(--surface);
+    box-shadow: 0 0 6px var(--accent3);
+  }
+
+  .wall-name {
+    font-family: var(--font-head);
+    font-size: 1.4rem; font-weight: 800;
+    letter-spacing: -.5px;
+    margin-bottom: 2px;
+  }
+  .wall-handle { color: var(--text-muted); font-size: .85rem; margin-bottom: 10px; }
+  .wall-meta-row {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    margin-bottom: 14px;
+  }
+  .wall-meta-chip {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 4px 12px;
+    font-size: .78rem;
+    color: var(--text-dim);
+    display: flex; align-items: center; gap: 5px;
+  }
+
+  .wall-stats-row {
+    display: flex; gap: 0;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+  }
+  .wall-stat {
+    flex: 1; text-align: center;
+    border-right: 1px solid var(--border);
+  }
+  .wall-stat:last-child { border-right: none; }
+  .wall-stat-num {
+    font-family: var(--font-head);
+    font-size: 1.2rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .wall-stat-label { font-size: .72rem; color: var(--text-muted); margin-top: 2px; }
+
+  /* Post composer */
+  .wall-composer {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 14px;
+    display: none;
+  }
+  .wall-composer.visible { display: block; }
+  .wall-composer-row {
+    display: flex; gap: 10px; align-items: flex-start;
+    margin-bottom: 12px;
+  }
+  .wall-composer-avatar {
+    width: 38px; height: 38px;
+    border-radius: 50%; object-fit: cover;
+    border: 2px solid var(--accent); flex-shrink: 0;
+  }
+  .wall-composer-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 10px 16px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: .9rem;
+    outline: none; resize: none;
+    max-height: 120px;
+    line-height: 1.5;
+    transition: border-color .2s, box-shadow .2s;
+    min-height: 42px;
+  }
+  .wall-composer-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(124,106,255,.12); }
+  .wall-composer-input::placeholder { color: var(--text-muted); }
+  .wall-composer-actions {
+    display: flex; justify-content: flex-end; gap: 8px; align-items: center;
+  }
+  .wall-post-btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; border-radius: 20px;
+    padding: 8px 20px; color: #fff;
+    font-family: var(--font-head); font-weight: 700;
+    font-size: .85rem; cursor: pointer;
+    transition: opacity .2s, transform .1s;
+  }
+  .wall-post-btn:hover { opacity: .9; }
+  .wall-post-btn:active { transform: scale(.97); }
+  .wall-post-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* Posts feed */
+  .wall-post {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 12px;
+    overflow: hidden;
+    animation: slideUp .25s ease;
+  }
+  .wall-post-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 16px 10px;
+  }
+  .wall-post-avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%; object-fit: cover;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+  }
+  .wall-post-meta { flex: 1; }
+  .wall-post-author {
+    font-weight: 700; font-size: .9rem;
+    color: var(--accent);
+    font-family: var(--font-head);
+  }
+  .wall-post-time { font-size: .75rem; color: var(--text-muted); margin-top: 1px; }
+  .wall-post-body {
+    padding: 0 16px 14px;
+    font-size: .92rem; line-height: 1.6;
+    color: var(--text);
+    word-break: break-word;
+  }
+  .wall-post-image {
+    width: 100%; max-height: 320px;
+    object-fit: cover; display: block;
+    margin-bottom: 0;
+  }
+  .wall-post-actions {
+    display: flex;
+    border-top: 1px solid var(--border);
+  }
+  .wall-action-btn {
+    flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 10px;
+    background: none; border: none; border-right: 1px solid var(--border);
+    color: var(--text-muted);
+    font-family: var(--font-body); font-size: .82rem;
+    cursor: pointer; transition: all .2s;
+  }
+  .wall-action-btn:last-child { border-right: none; }
+  .wall-action-btn:hover { background: rgba(124,106,255,.07); color: var(--text); }
+  .wall-action-btn.liked { color: var(--accent2); }
+  .wall-action-btn .action-icon { font-size: 1rem; }
+
+  /* Wall comments */
+  .wall-comments {
+    border-top: 1px solid var(--border);
+    padding: 12px 16px;
+    display: none;
+  }
+  .wall-comments.visible { display: block; }
+  .wall-comment {
+    display: flex; gap: 8px; align-items: flex-start;
+    margin-bottom: 10px;
+  }
+  .wall-comment-avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%; object-fit: cover; flex-shrink: 0;
+  }
+  .wall-comment-bubble {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px 12px 12px 4px;
+    padding: 7px 12px;
+    font-size: .82rem; line-height: 1.5;
+    color: var(--text);
+    flex: 1;
+  }
+  .wall-comment-author { font-weight: 700; color: var(--accent); font-size: .78rem; margin-bottom: 2px; }
+  .wall-comment-input-row {
+    display: flex; gap: 8px; align-items: center; margin-top: 8px;
+  }
+  .wall-comment-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 7px 14px;
+    color: var(--text); font-family: var(--font-body); font-size: .85rem;
+    outline: none; transition: border-color .2s;
+  }
+  .wall-comment-input:focus { border-color: var(--accent); }
+  .wall-comment-input::placeholder { color: var(--text-muted); }
+  .wall-comment-send {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; border-radius: 50%;
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: opacity .2s;
+    flex-shrink: 0;
+  }
+  .wall-comment-send:hover { opacity: .85; }
+  .wall-comment-send svg { width: 14px; height: 14px; fill: white; }
+
+  .wall-empty {
+    text-align: center; padding: 40px 20px;
+    color: var(--text-muted); font-size: .9rem;
+  }
+  .wall-empty-icon { font-size: 2.5rem; margin-bottom: 10px; }
+
   /* TOAST */
   #toast {
     position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
@@ -779,6 +1051,46 @@
   <img class="popup-avatar" id="popup-avatar" src="" alt=""/>
   <div class="popup-name" id="popup-name"></div>
   <div class="popup-info" id="popup-info"></div>
+  <button style="margin-top:10px;width:100%;padding:7px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:8px;color:#fff;font-family:var(--font-head);font-weight:700;font-size:.8rem;cursor:pointer;letter-spacing:.3px;" onclick="openProfileWall(window._lastPopupData)">👤 Ver perfil</button>
+</div>
+
+<!-- PROFILE WALL MODAL -->
+<div id="profile-wall-modal" class="hidden">
+  <div class="wall-container">
+    <!-- Cover -->
+    <div class="wall-cover">
+      <div class="wall-cover-pattern"></div>
+      <button class="wall-close-btn" onclick="closeProfileWall()">✕</button>
+    </div>
+
+    <!-- Profile Header -->
+    <div class="wall-profile-header">
+      <div class="wall-avatar-wrap">
+        <img class="wall-avatar" id="wall-avatar" src="" alt=""/>
+        <div class="wall-online-dot" id="wall-online-dot" style="display:none"></div>
+      </div>
+      <div class="wall-name" id="wall-name"></div>
+      <div class="wall-handle" id="wall-handle"></div>
+      <div class="wall-meta-row" id="wall-meta-row"></div>
+      <div class="wall-stats-row" id="wall-stats-row"></div>
+    </div>
+
+    <!-- Post composer (solo visible si es tu propio perfil) -->
+    <div class="wall-composer" id="wall-composer">
+      <div class="wall-composer-row">
+        <img class="wall-composer-avatar" id="wall-composer-avatar" src="" alt=""/>
+        <textarea class="wall-composer-input" id="wall-composer-input"
+          placeholder="¿Qué estás pensando?" rows="1"
+          oninput="autoResizeWallInput(this)"></textarea>
+      </div>
+      <div class="wall-composer-actions">
+        <button class="wall-post-btn" id="wall-post-btn" onclick="submitWallPost()">Publicar</button>
+      </div>
+    </div>
+
+    <!-- Feed -->
+    <div id="wall-feed"></div>
+  </div>
 </div>
 
 <!-- MAIN APP -->
@@ -843,7 +1155,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, doc, setDoc, getDoc, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, doc, setDoc, getDoc, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, getDocs, updateDoc, arrayUnion, arrayRemove, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // ══════════════════════════════════════════════
 // 🔥 CONFIGURACIÓN FIREBASE
@@ -1530,6 +1842,7 @@ function extractYouTubeId(url) {
 // ── USER POPUP ──
 function showUserPopup(event, msgData) {
   const popup = document.getElementById('user-popup');
+  window._lastPopupData = msgData;
 
   document.getElementById('popup-avatar').src = msgData.avatar || '';
   document.getElementById('popup-name').textContent = msgData.name || 'Anónimo';
@@ -1541,7 +1854,7 @@ function showUserPopup(event, msgData) {
 
   // Positioning
   const x = Math.min(event.clientX, window.innerWidth - 240);
-  const y = Math.min(event.clientY - 10, window.innerHeight - 180);
+  const y = Math.min(event.clientY - 10, window.innerHeight - 220);
   popup.style.left = x + 'px';
   popup.style.top = y + 'px';
   popup.classList.add('visible');
@@ -1550,6 +1863,278 @@ function showUserPopup(event, msgData) {
     document.addEventListener('click', () => popup.classList.remove('visible'), { once: true });
   }, 100);
 }
+
+// ── PROFILE WALL ──
+let _wallTargetUid = null;
+let _wallUnsubscribe = null;
+
+function openProfileWall(userData) {
+  if (!userData) return;
+  document.getElementById('user-popup').classList.remove('visible');
+  _wallTargetUid = userData.uid;
+
+  // Fill header
+  document.getElementById('wall-avatar').src = userData.avatar || '';
+  document.getElementById('wall-name').textContent = userData.name || 'Anónimo';
+  document.getElementById('wall-handle').textContent = '@' + (userData.name || 'usuario').toLowerCase().replace(/\s+/g,'');
+
+  // Meta chips
+  let metaHtml = '';
+  if (userData.city || userData.country) metaHtml += `<span class="wall-meta-chip">📍 ${[userData.city, userData.country].filter(Boolean).join(', ')}</span>`;
+  if (userData.age) metaHtml += `<span class="wall-meta-chip">🎂 ${userData.age} años</span>`;
+  document.getElementById('wall-meta-row').innerHTML = metaHtml;
+
+  // Stats (placeholders, actualizados luego)
+  document.getElementById('wall-stats-row').innerHTML = `
+    <div class="wall-stat"><div class="wall-stat-num" id="wall-stat-posts">—</div><div class="wall-stat-label">Posts</div></div>
+    <div class="wall-stat"><div class="wall-stat-num" id="wall-stat-likes">—</div><div class="wall-stat-label">Likes</div></div>
+    <div class="wall-stat"><div class="wall-stat-num" id="wall-stat-comments">—</div><div class="wall-stat-label">Comentarios</div></div>
+  `;
+
+  // Show composer only if it's the logged user's own profile
+  const currentUser = window._getCurrentUser ? window._getCurrentUser() : null;
+  const isOwn = currentUser && currentUser.uid === userData.uid;
+  const composer = document.getElementById('wall-composer');
+  if (isOwn && currentUser) {
+    const currentProfile = window._getCurrentProfile ? window._getCurrentProfile() : null;
+    document.getElementById('wall-composer-avatar').src = currentProfile?.avatar || userData.avatar || '';
+    composer.classList.add('visible');
+  } else {
+    composer.classList.remove('visible');
+  }
+
+  document.getElementById('profile-wall-modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+
+  // Load posts
+  loadWallPosts(userData.uid);
+}
+
+function closeProfileWall() {
+  document.getElementById('profile-wall-modal').classList.add('hidden');
+  document.body.style.overflow = '';
+  if (_wallUnsubscribe) { _wallUnsubscribe(); _wallUnsubscribe = null; }
+  _wallTargetUid = null;
+}
+
+function autoResizeWallInput(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+async function submitWallPost() {
+  const input = document.getElementById('wall-composer-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const currentUser = window._getCurrentUser ? window._getCurrentUser() : null;
+  const currentProfile = window._getCurrentProfile ? window._getCurrentProfile() : null;
+  if (!currentUser || !_wallTargetUid) return;
+
+  const btn = document.getElementById('wall-post-btn');
+  btn.disabled = true; btn.textContent = 'Publicando...';
+
+  try {
+    const { addDoc, collection, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const db = window._db;
+    await addDoc(collection(db, 'walls', _wallTargetUid, 'posts'), {
+      text,
+      uid: currentUser.uid,
+      name: currentProfile?.name || 'Anónimo',
+      avatar: currentProfile?.avatar || '',
+      ts: serverTimestamp(),
+      likes: [],
+      commentCount: 0
+    });
+    input.value = '';
+    input.style.height = 'auto';
+  } catch(e) {
+    showToast('❌ Error al publicar');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Publicar';
+  }
+}
+
+function loadWallPosts(uid) {
+  const feed = document.getElementById('wall-feed');
+  feed.innerHTML = '<div class="wall-empty"><div class="wall-empty-icon">⏳</div>Cargando...</div>';
+
+  import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js").then(({ collection, query, orderBy, onSnapshot }) => {
+    const db = window._db;
+    const q = query(collection(db, 'walls', uid, 'posts'), orderBy('ts', 'desc'));
+    if (_wallUnsubscribe) _wallUnsubscribe();
+    _wallUnsubscribe = onSnapshot(q, snap => {
+      const posts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderWallPosts(posts, uid);
+    });
+  });
+}
+
+function renderWallPosts(posts, wallOwnerUid) {
+  const feed = document.getElementById('wall-feed');
+  const currentUser = window._getCurrentUser ? window._getCurrentUser() : null;
+
+  // Update stats
+  const totalLikes = posts.reduce((sum, p) => sum + (p.likes?.length || 0), 0);
+  const totalComments = posts.reduce((sum, p) => sum + (p.commentCount || 0), 0);
+  const statPosts = document.getElementById('wall-stat-posts');
+  const statLikes = document.getElementById('wall-stat-likes');
+  const statComments = document.getElementById('wall-stat-comments');
+  if (statPosts) statPosts.textContent = posts.length;
+  if (statLikes) statLikes.textContent = totalLikes;
+  if (statComments) statComments.textContent = totalComments;
+
+  if (posts.length === 0) {
+    feed.innerHTML = '<div class="wall-empty"><div class="wall-empty-icon">📭</div>Todavía no hay posts. ¡Sé el primero!</div>';
+    return;
+  }
+
+  feed.innerHTML = '';
+  posts.forEach(post => {
+    const ts = post.ts?.toDate ? post.ts.toDate() : (post.ts ? new Date(post.ts) : null);
+    const timeStr = ts ? ts.toLocaleDateString('es-AR', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
+    const likeCount = post.likes?.length || 0;
+    const isLiked = currentUser && post.likes?.includes(currentUser.uid);
+    const commentCount = post.commentCount || 0;
+
+    const div = document.createElement('div');
+    div.className = 'wall-post';
+    div.setAttribute('data-post-id', post.id);
+    div.innerHTML = `
+      <div class="wall-post-header">
+        <img class="wall-post-avatar" src="${post.avatar || ''}" alt=""/>
+        <div class="wall-post-meta">
+          <div class="wall-post-author">${post.name || 'Anónimo'}</div>
+          <div class="wall-post-time">🕐 ${timeStr}</div>
+        </div>
+      </div>
+      <div class="wall-post-body">${escapeHtml(post.text)}</div>
+      <div class="wall-post-actions">
+        <button class="wall-action-btn${isLiked ? ' liked' : ''}" onclick="toggleWallLike('${wallOwnerUid}','${post.id}', this)">
+          <span class="action-icon">${isLiked ? '❤️' : '🤍'}</span>
+          <span class="like-label">${likeCount > 0 ? likeCount + ' Me gusta' : 'Me gusta'}</span>
+        </button>
+        <button class="wall-action-btn" onclick="toggleWallComments('${post.id}', '${wallOwnerUid}', this)">
+          <span class="action-icon">💬</span>
+          ${commentCount > 0 ? commentCount + ' Comentarios' : 'Comentar'}
+        </button>
+      </div>
+      <div class="wall-comments" id="comments-${post.id}">
+        <div id="comments-list-${post.id}"></div>
+        <div class="wall-comment-input-row">
+          <img class="wall-comment-avatar" src="${window._getCurrentProfile?.()?.avatar || ''}" alt=""/>
+          <input class="wall-comment-input" id="comment-input-${post.id}" placeholder="Escribí un comentario..."
+            onkeydown="if(event.key==='Enter'){submitWallComment('${wallOwnerUid}','${post.id}');event.preventDefault();}"/>
+          <button class="wall-comment-send" onclick="submitWallComment('${wallOwnerUid}','${post.id}')">
+            <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+          </button>
+        </div>
+      </div>
+    `;
+    feed.appendChild(div);
+  });
+}
+
+async function toggleWallLike(wallOwnerUid, postId, btn) {
+  const currentUser = window._getCurrentUser ? window._getCurrentUser() : null;
+  if (!currentUser) return;
+
+  const { doc, getDoc, updateDoc, arrayUnion, arrayRemove } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+  const db = window._db;
+  const postRef = doc(db, 'walls', wallOwnerUid, 'posts', postId);
+  const snap = await getDoc(postRef);
+  if (!snap.exists()) return;
+
+  const likes = snap.data().likes || [];
+  const isLiked = likes.includes(currentUser.uid);
+
+  if (isLiked) {
+    await updateDoc(postRef, { likes: arrayRemove(currentUser.uid) });
+    btn.classList.remove('liked');
+    btn.querySelector('.action-icon').textContent = '🤍';
+    const newCount = likes.length - 1;
+    btn.querySelector('.like-label').textContent = newCount > 0 ? newCount + ' Me gusta' : 'Me gusta';
+  } else {
+    await updateDoc(postRef, { likes: arrayUnion(currentUser.uid) });
+    btn.classList.add('liked');
+    btn.querySelector('.action-icon').textContent = '❤️';
+    const newCount = likes.length + 1;
+    btn.querySelector('.like-label').textContent = newCount + ' Me gusta';
+  }
+}
+
+async function toggleWallComments(postId, wallOwnerUid, btn) {
+  const commentsEl = document.getElementById(`comments-${postId}`);
+  if (!commentsEl) return;
+
+  const isVisible = commentsEl.classList.contains('visible');
+  if (isVisible) {
+    commentsEl.classList.remove('visible');
+    return;
+  }
+
+  commentsEl.classList.add('visible');
+  loadWallComments(wallOwnerUid, postId);
+}
+
+async function loadWallComments(wallOwnerUid, postId) {
+  const listEl = document.getElementById(`comments-list-${postId}`);
+  if (!listEl) return;
+  listEl.innerHTML = '<div style="font-size:.8rem;color:var(--text-muted);padding:4px 0">Cargando...</div>';
+
+  const { collection, query, orderBy, getDocs } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+  const db = window._db;
+  const q = query(collection(db, 'walls', wallOwnerUid, 'posts', postId, 'comments'), orderBy('ts', 'asc'));
+  const snap = await getDocs(q);
+  const comments = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+  listEl.innerHTML = '';
+  comments.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'wall-comment';
+    div.innerHTML = `
+      <img class="wall-comment-avatar" src="${c.avatar || ''}" alt=""/>
+      <div class="wall-comment-bubble">
+        <div class="wall-comment-author">${c.name || 'Anónimo'}</div>
+        ${escapeHtml(c.text)}
+      </div>`;
+    listEl.appendChild(div);
+  });
+
+  if (comments.length === 0) {
+    listEl.innerHTML = '<div style="font-size:.8rem;color:var(--text-muted);padding:4px 0">Sé el primero en comentar.</div>';
+  }
+}
+
+async function submitWallComment(wallOwnerUid, postId) {
+  const input = document.getElementById(`comment-input-${postId}`);
+  const text = input?.value?.trim();
+  if (!text) return;
+
+  const currentUser = window._getCurrentUser ? window._getCurrentUser() : null;
+  const currentProfile = window._getCurrentProfile ? window._getCurrentProfile() : null;
+  if (!currentUser) return;
+
+  input.value = '';
+  const { addDoc, collection, doc, updateDoc, increment, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+  const db = window._db;
+
+  await addDoc(collection(db, 'walls', wallOwnerUid, 'posts', postId, 'comments'), {
+    text,
+    uid: currentUser.uid,
+    name: currentProfile?.name || 'Anónimo',
+    avatar: currentProfile?.avatar || '',
+    ts: serverTimestamp()
+  });
+
+  await updateDoc(doc(db, 'walls', wallOwnerUid, 'posts', postId), { commentCount: increment(1) });
+  loadWallComments(wallOwnerUid, postId);
+}
+
+// Close wall clicking outside
+document.getElementById('profile-wall-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeProfileWall();
+});
 
 // Close profile modal clicking outside
 document.getElementById('profile-modal').addEventListener('click', function(e) {
