@@ -171,6 +171,9 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
   position:absolute;right:12px;bottom:80px;
   display:flex;flex-direction:column;align-items:center;gap:18px;
 }
+@media(min-width:600px){
+  .video-actions{ right:calc(50% - 150px); }
+}
 .v-action{
   display:flex;flex-direction:column;align-items:center;gap:3px;
   cursor:pointer;
@@ -1203,7 +1206,7 @@ function buildVideoSlide(id, data) {
   const avatar = data.avatar || avatarFallback(data.uid||'u');
   div.innerHTML = `
     ${isVideo
-      ? `<video class="video-el" data-src="${escHtml(data.mediaUrl||'')}" loop playsinline preload="none" muted></video>`
+      ? `<video class="video-el" data-src="${escHtml(data.mediaUrl||'')}" loop playsinline preload="none"></video>`
       : `<img class="video-el" data-src="${escHtml(data.mediaUrl||'')}" style="object-fit:cover"/>`
     }
     <div class="video-overlay"></div>
@@ -1220,6 +1223,7 @@ function buildVideoSlide(id, data) {
       ${data.tags ? `<div class="video-tags">${escHtml(data.tags)}</div>` : ''}
       <div class="video-music">🎵 Clipuy original</div>
     </div>
+    <button id="mute-${id}" onclick="toggleMute('${id}')" style="position:absolute;top:60px;right:12px;background:rgba(0,0,0,.5);border:none;border-radius:50%;width:38px;height:38px;font-size:1.1rem;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;z-index:10;">🔇</button>
     <div class="video-actions">
       <div class="v-action ${isLiked?'liked':''}" id="like-${id}" onclick="toggleLike('${id}',this)">
         <div class="v-action-icon">${isLiked?'❤️':'🤍'}</div>
@@ -1306,6 +1310,16 @@ function showFloatHeart(x, y) {
   document.body.appendChild(h);
   setTimeout(() => h.remove(), 1000);
 }
+
+window.toggleMute = (id) => {
+  const slide = document.querySelector(`.video-slide[data-id="${id}"]`);
+  if(!slide) return;
+  const vid = slide.querySelector('video');
+  const btn = document.getElementById('mute-'+id);
+  if(!vid) return;
+  vid.muted = !vid.muted;
+  if(btn) btn.textContent = vid.muted ? '🔇' : '🔊';
+};
 
 window.shareClip = (id, desc) => {
   const url = window.location.href.split('?')[0] + '?clip=' + id;
