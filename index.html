@@ -948,24 +948,45 @@ import {
   query, orderBy, limit, onSnapshot, serverTimestamp, where, arrayUnion, arrayRemove,
   increment, deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import {
-  getStorage, ref as storageRef, uploadBytes, getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+// ── SERVIDOR LOCAL (ngrok) ──
+// ⚠️ Cambiá esta URL cada vez que reiniciás ngrok
+const UPLOAD_SERVER = "https://davon-employable-rosanna.ngrok-free.dev";
 
-// 🔥 REEMPLAZÁ ESTO CON TU CONFIG DE FIREBASE
+async function uploadToServer(file) {
+  const formData = new FormData();
+  formData.append('archivo', file);
+  const res = await fetch(UPLOAD_SERVER + '/upload', {
+    method: 'POST',
+    body: formData,
+    headers: { 'ngrok-skip-browser-warning': 'true' }
+  });
+  if (!res.ok) throw new Error('Error subiendo archivo');
+  const data = await res.json();
+  return UPLOAD_SERVER + '/files/' + data.tipo + '/' + data.fecha + '/' + data.archivo;
+}
+
+async function fetchMedia(url) {
+  try {
+    const res = await fetch(url, { headers: { 'ngrok-skip-browser-warning': 'true' } });
+    const blob = await res.blob();
+    return URL.createObjectURL(blob);
+  } catch { return url; }
+}
+
+// 🔥 Firebase config
 const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "TU_PROYECTO.firebaseapp.com",
-  projectId: "TU_PROYECTO",
-  storageBucket: "TU_PROYECTO.appspot.com",
-  messagingSenderId: "TU_SENDER_ID",
-  appId: "TU_APP_ID"
+  apiKey: "AIzaSyA9oat9dd0S9vlxkg1osH4dW3XhRDGiOiw",
+  authDomain: "charlasrf4.firebaseapp.com",
+  databaseURL: "https://charlasrf4-default-rtdb.firebaseio.com",
+  projectId: "charlasrf4",
+  storageBucket: "charlasrf4.firebasestorage.app",
+  messagingSenderId: "345019626508",
+  appId: "1:345019626508:web:d099ca499acb29eac12a29"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const storage = getStorage(app);
 const googleProvider = new GoogleAuthProvider();
 
 // ── STATE ──
@@ -1077,6 +1098,22 @@ async function createUserProfile(user, name) {
   });
 }
 
+
+// Load all data-src elements via fetch with ngrok header
+async function loadNgrokMedia(root) {
+  const els = (root || document).querySelectorAll('[data-src]');
+  els.forEach(async (el) => {
+    const url = el.getAttribute('data-src');
+    if (!url) return;
+    el.removeAttribute('data-src');
+    try {
+      const res = await fetch(url, { headers: { 'ngrok-skip-browser-warning': 'true' } });
+      const blob = await res.blob();
+      el.src = URL.createObjectURL(blob);
+    } catch(e) { el.src = url; }
+  });
+}
+
 onAuthStateChanged(auth, async (user) => {
   document.getElementById('global-loading').classList.add('hidden');
   if (user) {
@@ -1133,6 +1170,7 @@ async function loadFeed() {
     }
     snap.forEach(d => container.appendChild(buildVideoSlide(d.id, d.data())));
     setupVideoObserver();
+    loadNgrokMedia(container);
   } catch(e) {
     container.innerHTML = `<div style="height:100vh;display:flex;align-items:center;justify-content:center;color:var(--text-muted)">Error cargando feed</div>`;
   }
@@ -1147,8 +1185,8 @@ function buildVideoSlide(id, data) {
   const avatar = data.avatar || avatarFallback(data.uid||'u');
   div.innerHTML = `
     ${isVideo
-      ? `<video class="video-el" src="${escHtml(data.mediaUrl||'')}" loop playsinline preload="none" muted></video>`
-      : `<img class="video-el" src="${escHtml(data.mediaUrl||'')}" style="object-fit:cover"/>`
+      ? `<video class="video-el" data-src="${escHtml(data.mediaUrl||'')}" loop playsinline preload="none" muted></video>`
+      : `<img class="video-el" data-src="${escHtml(data.mediaUrl||'')}" style="object-fit:cover"/>`
     }
     <div class="video-overlay"></div>
     <div class="play-indicator" id="pi-${id}">
@@ -1314,11 +1352,7 @@ window.publishClip = async () => {
   showToast('📤 Subiendo clip...');
   document.getElementById('caption-modal').style.display = 'none';
   try {
-    const ext = _pendingUploadFile.name.split('.').pop();
-    const path = `clips/${currentUser.uid}/${Date.now()}.${ext}`;
-    const sRef = storageRef(storage, path);
-    await uploadBytes(sRef, _pendingUploadFile);
-    const mediaUrl = await getDownloadURL(sRef);
+    const mediaUrl = await uploadToServer(_pendingUploadFile);
     const isVideo = _pendingUploadFile.type.startsWith('video');
     await addDoc(collection(db,'clips'), {
       uid: currentUser.uid,
@@ -1421,9 +1455,12 @@ function renderStoryViewer() {
   // Media
   const media = document.getElementById('sv-media');
   if(s.mediaUrl) {
-    media.innerHTML = s.mediaType==='video'
-      ? `<video src="${escHtml(s.mediaUrl)}" autoplay loop style="width:100%;height:100%;object-fit:cover"></video>`
-      : `<img src="${escHtml(s.mediaUrl)}" style="width:100%;height:100%;object-fit:cover"/>`;
+    if(s.mediaType==='video') {
+    media.innerHTML = `<video id="sv-vid" data-src="${escHtml(s.mediaUrl)}" autoplay loop style="width:100%;height:100%;object-fit:cover"></video>`;
+  } else {
+    media.innerHTML = `<img id="sv-img" data-src="${escHtml(s.mediaUrl)}" style="width:100%;height:100%;object-fit:cover"/>`;
+  }
+  loadNgrokMedia(media);
   } else {
     media.innerHTML = `<div style="width:100%;height:100%;background:linear-gradient(135deg,rgba(254,44,85,.3),rgba(37,244,238,.2));"></div>`;
   }
@@ -1488,11 +1525,7 @@ window.publishStory = async () => {
   try {
     let mediaUrl = null, mediaType = null;
     if(file) {
-      const ext = file.name.split('.').pop();
-      const path = `stories/${currentUser.uid}/${Date.now()}.${ext}`;
-      const sRef = storageRef(storage, path);
-      await uploadBytes(sRef, file);
-      mediaUrl = await getDownloadURL(sRef);
+      mediaUrl = await uploadToServer(file);
       mediaType = file.type.startsWith('video') ? 'video' : 'imagen';
     }
     await addDoc(collection(db,'stories'), {
@@ -1544,13 +1577,14 @@ async function loadProfileClips() {
       div.onclick = () => {};
       div.innerHTML = `
         ${data.mediaType==='imagen'
-          ? `<img src="${escHtml(data.mediaUrl||'')}" loading="lazy"/>`
-          : `<video src="${escHtml(data.mediaUrl||'')}" preload="none" style="width:100%;height:100%;object-fit:cover"></video>`
+          ? `<img data-src="${escHtml(data.mediaUrl||'')}" loading="lazy"/>`
+          : `<video data-src="${escHtml(data.mediaUrl||'')}" preload="none" style="width:100%;height:100%;object-fit:cover"></video>`
         }
         <div class="profile-clip-views">▶ ${fmtNum(data.likesCount||0)}</div>
       `;
       grid.appendChild(div);
     });
+    loadNgrokMedia(grid);
   } catch(e) {}
 }
 
@@ -1591,9 +1625,7 @@ window.saveProfile = async () => {
     const inp = document.getElementById('ep-avatar-inp');
     if(inp.files[0]) {
       const file = inp.files[0];
-      const sRef = storageRef(storage, `avatars/${currentUser.uid}`);
-      await uploadBytes(sRef, file);
-      avatar = await getDownloadURL(sRef);
+      avatar = await uploadToServer(file);
     }
     await updateDoc(doc(db,'users',currentUser.uid), { name, handle, bio, avatar });
     await updateProfile(currentUser, { displayName: name, photoURL: avatar });
@@ -1725,13 +1757,14 @@ function renderPcMessages(msgs) {
       <div>
         <div class="pc-bubble">
           ${m.text ? escHtml(m.text) : ''}
-          ${m.mediaUrl ? `<img class="pc-bubble-img" src="${escHtml(m.mediaUrl)}" onclick="window.open('${escHtml(m.mediaUrl)}','_blank')"/>` : ''}
+          ${m.mediaUrl ? `<img class="pc-bubble-img" data-src="${escHtml(m.mediaUrl)}" onclick="window.open('${escHtml(m.mediaUrl)}','_blank')"/>` : ''}
         </div>
         <div class="pc-time">${timeAgo(m.ts)}</div>
       </div>
     `;
     container.appendChild(div);
   });
+  loadNgrokMedia(container);
   container.scrollTop = container.scrollHeight;
 }
 
@@ -1758,9 +1791,7 @@ window.sendPcMedia = async (inp) => {
   if(!file || !currentUser || !window._currentChatId) return;
   showToast('📤 Enviando...');
   try {
-    const sRef = storageRef(storage, `chat_media/${window._currentChatId}/${Date.now()}_${file.name}`);
-    await uploadBytes(sRef, file);
-    const mediaUrl = await getDownloadURL(sRef);
+    const mediaUrl = await uploadToServer(file);
     await addDoc(collection(db,'chats',window._currentChatId,'messages'), {
       uid: currentUser.uid,
       name: myProfile.name || 'Usuario',
