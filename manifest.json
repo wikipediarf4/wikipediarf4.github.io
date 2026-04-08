@@ -1,44 +1,24 @@
 {
-  "name": "WikiPediaRF4 - Red Social",
-  "short_name": "WikiRF4",
-  "description": "La red social de Russian Fishing 4 en Latinoamérica",
-  "start_url": "/",
+  "name": "VibeChat",
+  "short_name": "VibeChat",
+  "description": "Tu app de chat y shorts",
+  "start_url": "./index.html",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#0d1117",
-  "theme_color": "#0d1117",
-  "lang": "es",
-  "scope": "/",
-  "categories": ["games", "social"],
+  "background_color": "#0a0a0f",
+  "theme_color": "#7c6aff",
+  "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icon-512.png",
+      "src": "icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
-    }
-  ],
-  "screenshots": [],
-  "shortcuts": [
-    {
-      "name": "Publicar Trofeo",
-      "short_name": "Trofeo",
-      "description": "Publicar un nuevo trofeo",
-      "url": "/?page=publicar",
-      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Ver Feed",
-      "short_name": "Feed",
-      "description": "Ver el feed de la comunidad",
-      "url": "/?page=feed",
-      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
     }
   ]
 }

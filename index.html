@@ -3,6 +3,12 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#7c6aff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="VibeChat" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
 <title>VibeChat</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet"/>
 <style>
@@ -3930,6 +3936,27 @@ async function sendSCPReply(commentId) {
     toggleSCPReplyInput(commentId);
   } catch(e) { showToast('❌ Error al responder: ' + e.message); }
 }
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => {
+          console.log('[PWA] Service Worker registrado:', reg.scope);
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                if (typeof showToast === 'function') {
+                  showToast('🔄 Nueva versión disponible — recargá la app');
+                }
+              }
+            });
+          });
+        })
+        .catch(err => console.warn('[PWA] Error registrando SW:', err));
+    });
+  }
 </script>
 </body>
 </html>
