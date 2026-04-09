@@ -885,6 +885,13 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
   aspect-ratio:9/16;background:var(--surface2);
   position:relative;overflow:hidden;cursor:pointer;
 }
+.search-clip-cell::before{
+  content:'';position:absolute;inset:0;z-index:0;
+  background:linear-gradient(90deg,var(--surface2) 25%,rgba(255,255,255,.06) 50%,var(--surface2) 75%);
+  background-size:200% 100%;
+  animation:shimmer 1.4s infinite;
+}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 .sc-thumb{
   position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
   display:block;z-index:1;transition:opacity .2s;
@@ -3458,21 +3465,20 @@ window.doSearch = async (val) => {
         overlay.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> ${fmtNum(c.likesCount||0)}`;
         cell.appendChild(overlay);
 
-        // Thumbnail
+        // Thumbnail img — always visible by default
         const thumb = document.createElement('img');
         thumb.className = 'sc-thumb';
-        thumb.loading = 'lazy';
         cell.insertBefore(thumb, overlay);
 
-        // Video (only for video clips)
+        // Video element for hover playback
         let vid = null;
         if(isVideo) {
           vid = document.createElement('video');
           vid.className = 'sc-video';
-          vid.muted = false;
           vid.loop = true;
           vid.playsInline = true;
           vid.preload = 'none';
+          vid.muted = true;
           cell.insertBefore(vid, overlay);
         }
 
@@ -3492,6 +3498,7 @@ window.doSearch = async (val) => {
         cell.addEventListener('mouseleave', () => {
           if(vid) {
             vid.pause();
+            vid.currentTime = 0;
             vid.style.opacity = '0';
             thumb.style.opacity = '1';
           }
@@ -3499,21 +3506,51 @@ window.doSearch = async (val) => {
 
         grid.appendChild(cell);
 
-        // Load media async
+        // Load media
         (async () => {
-          try {
-            const res = await fetch(c.mediaUrl||'', { headers:{'ngrok-skip-browser-warning':'true'} });
-            const blob = await res.blob();
-            const blobUrl = URL.createObjectURL(blob);
-            if(isVideo) {
-              thumb.src = blobUrl; // use first frame as thumb fallback
-              if(vid) vid.src = blobUrl;
-            } else {
-              thumb.src = blobUrl;
-            }
-          } catch(e) {
-            thumb.src = c.mediaUrl || '';
-            if(vid) vid.src = c.mediaUrl || '';
+          const url = c.mediaUrl || '';
+          if(!isVideo) {
+            // Images: load directly, no blob needed
+            try {
+              const res = await fetch(url, { headers:{'ngrok-skip-browser-warning':'true'} });
+              const blob = await res.blob();
+              thumb.src = URL.createObjectURL(blob);
+            } catch(e) { thumb.src = url; }
+          } else {
+            // Videos: fetch blob, set on video, then capture first frame as thumb
+            let blobUrl = url;
+            try {
+              const res = await fetch(url, { headers:{'ngrok-skip-browser-warning':'true'} });
+              const blob = await res.blob();
+              blobUrl = URL.createObjectURL(blob);
+            } catch(e) {}
+
+            if(vid) vid.src = blobUrl;
+
+            // Capture first frame using canvas
+            await new Promise(resolve => {
+              const tmpVid = document.createElement('video');
+              tmpVid.src = blobUrl;
+              tmpVid.muted = true;
+              tmpVid.playsInline = true;
+              tmpVid.crossOrigin = 'anonymous';
+              tmpVid.currentTime = 0.5;
+              tmpVid.addEventListener('seeked', () => {
+                try {
+                  const canvas = document.createElement('canvas');
+                  canvas.width = tmpVid.videoWidth || 180;
+                  canvas.height = tmpVid.videoHeight || 320;
+                  canvas.getContext('2d').drawImage(tmpVid, 0, 0, canvas.width, canvas.height);
+                  thumb.src = canvas.toDataURL('image/jpeg', 0.7);
+                } catch(e) { thumb.src = blobUrl; }
+                tmpVid.src = '';
+                resolve();
+              }, { once: true });
+              tmpVid.addEventListener('error', () => { thumb.src = blobUrl; resolve(); }, { once: true });
+              // Timeout fallback
+              setTimeout(() => { if(!thumb.src) thumb.src = blobUrl; resolve(); }, 4000);
+              tmpVid.load();
+            });
           }
         })();
       });
