@@ -892,21 +892,6 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
 .btn-duet-publish:hover{opacity:.85;}
 .btn-duet-publish:disabled{opacity:.35;cursor:not-allowed;}
 
-/* ── HASHTAG CHIPS ── */
-.htag-chip{
-  background:var(--surface2);border:1px solid var(--border);
-  border-radius:99px;padding:5px 12px;
-  font-size:.8rem;font-weight:600;color:var(--accent2);
-  cursor:pointer;transition:all .15s;
-  font-family:'Space Grotesk',sans-serif;
-}
-.htag-chip:hover{border-color:var(--accent2);background:rgba(37,244,238,.08);}
-.htag-chip.selected{
-  background:rgba(37,244,238,.15);
-  border-color:var(--accent2);
-  color:#fff;
-}
-
 /* Watched overlay badge */
 .clip-watched-badge{
   position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
@@ -1443,6 +1428,136 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
   animation:loadBar 1.5s ease-in-out forwards;
 }
 @keyframes loadBar{to{width:100%;}}
+
+/* ── FLOATING CHAT BUBBLE (Facebook style) ── */
+#float-chat-bubble {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9000;
+  display: none;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  pointer-events: none;
+}
+#float-chat-bubble.visible { display: flex; }
+
+.float-bubble-btn {
+  width: 58px; height: 58px;
+  border-radius: 50%;
+  border: 3px solid #000;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,.7), 0 0 0 2px var(--accent);
+  transition: transform .2s, box-shadow .2s;
+  pointer-events: all;
+  position: relative;
+  background: var(--surface2);
+  flex-shrink: 0;
+}
+.float-bubble-btn:hover { transform: scale(1.08); box-shadow: 0 6px 28px rgba(0,0,0,.8), 0 0 0 3px var(--accent); }
+.float-bubble-btn img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.float-bubble-unread {
+  position: absolute; top: -2px; right: -2px;
+  background: var(--accent); color: #fff;
+  border-radius: 50%; width: 18px; height: 18px;
+  font-size: .65rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid #000;
+}
+.float-bubble-name {
+  background: rgba(0,0,0,.85);
+  backdrop-filter: blur(8px);
+  color: #fff; font-size: .78rem; font-weight: 600;
+  padding: 4px 10px; border-radius: 99px;
+  border: 1px solid rgba(255,255,255,.1);
+  white-space: nowrap;
+  pointer-events: none;
+  animation: fadeInBubble .2s ease;
+}
+@keyframes fadeInBubble { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+
+/* ── FLOATING MINI CHAT WINDOW ── */
+#float-chat-window {
+  position: fixed;
+  bottom: 94px;
+  right: 24px;
+  width: 320px;
+  height: 420px;
+  background: #111;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 16px;
+  box-shadow: 0 16px 60px rgba(0,0,0,.8);
+  z-index: 8999;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  animation: popUpChat .2s cubic-bezier(.34,1.56,.64,1);
+}
+#float-chat-window.open { display: flex; }
+@keyframes popUpChat {
+  from { opacity:0; transform:scale(.85) translateY(20px); }
+  to   { opacity:1; transform:scale(1) translateY(0); }
+}
+.fcw-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px;
+  background: #000;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.fcw-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.fcw-name { flex: 1; font-weight: 700; font-size: .9rem; }
+.fcw-actions { display: flex; gap: 4px; }
+.fcw-btn {
+  background: none; border: none; color: var(--text-muted);
+  cursor: pointer; font-size: 1rem; padding: 4px 6px;
+  border-radius: 6px; transition: color .15s, background .15s;
+  line-height: 1;
+}
+.fcw-btn:hover { color: #fff; background: rgba(255,255,255,.08); }
+.fcw-messages {
+  flex: 1; overflow-y: auto; padding: 10px 14px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.fcw-msg { display: flex; gap: 6px; align-items: flex-end; max-width: 80%; }
+.fcw-msg.own { align-self: flex-end; flex-direction: row-reverse; margin-left: auto; }
+.fcw-msg:not(.own) { align-self: flex-start; margin-right: auto; }
+.fcw-bubble {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 16px 16px 16px 4px;
+  padding: 7px 11px; font-size: .85rem; line-height: 1.45;
+}
+.fcw-msg.own .fcw-bubble {
+  background: linear-gradient(135deg,rgba(254,44,85,.4),rgba(37,244,238,.25));
+  border-color: rgba(254,44,85,.4);
+  border-radius: 16px 16px 4px 16px;
+}
+.fcw-time { font-size: .6rem; color: var(--text-dim); margin-top: 2px; }
+.fcw-input-bar {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 12px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  background: #000;
+  flex-shrink: 0;
+}
+.fcw-inp {
+  flex: 1; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 99px; padding: 8px 14px; color: #fff;
+  font-family: 'Space Grotesk', sans-serif; font-size: .85rem; outline: none;
+}
+.fcw-inp:focus { border-color: rgba(255,255,255,.25); }
+.fcw-inp::placeholder { color: var(--text-dim); }
+.fcw-send {
+  background: var(--accent); border: none; border-radius: 50%;
+  width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0; transition: opacity .2s;
+}
+.fcw-send:hover { opacity: .85; }
+
 </style>
 </head>
 <body>
@@ -2017,29 +2132,7 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
   <div style="padding:20px 16px;overflow-y:auto;flex:1;">
     <div id="caption-preview" style="margin-bottom:16px;text-align:center;"></div>
     <div class="ep-label">Descripción</div>
-    <textarea class="ep-inp" id="caption-text" rows="3" placeholder="Describí tu clip..." style="margin-bottom:6px;"></textarea>
-    <!-- Tags obligatorios fijos -->
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;background:rgba(254,44,85,.08);border:1px solid rgba(254,44,85,.25);border-radius:8px;padding:7px 12px;">
-      <span style="font-size:.75rem;color:var(--text-muted);">Siempre incluido:</span>
-      <span style="font-size:.82rem;color:var(--accent);font-weight:700;">@Clipuy #Clipuy</span>
-      <span style="font-size:.7rem;color:var(--text-dim);margin-left:auto;">🔒 obligatorio</span>
-    </div>
-    <!-- Hashtags sugeridos -->
-    <div class="ep-label" style="margin-bottom:6px;">Agregá hashtags rápidos</div>
-    <div id="hashtag-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;">
-      <button type="button" class="htag-chip" onclick="toggleHashtag(this,'#viral')">#viral</button>
-      <button type="button" class="htag-chip" onclick="toggleHashtag(this,'#fry')">#fry</button>
-      <button type="button" class="htag-chip" onclick="toggleHashtag(this,'#belleza')">#belleza</button>
-      <button type="button" class="htag-chip" onclick="toggleHashtag(this,'#humor')">#humor</button>
-      <button type="button" class="htag-chip" onclick="toggleHashtag(this,'#musica')">#musica</button>
-      <button type="button" class="htag-chip" onclick="toggleHashtag(this,'#modelo')">#modelo</button>
-      <button type="button" class="htag-chip" onclick="toggleHashtag(this,'#bella')">#bella</button>
-      <button type="button" class="htag-chip" onclick="toggleHashtag(this,'#baile')">#baile</button>
-      <button type="button" class="htag-chip" onclick="toggleHashtag(this,'#moda')">#moda</button>
-      <button type="button" class="htag-chip" onclick="toggleHashtag(this,'#fitness')">#fitness</button>
-      <button type="button" class="htag-chip" onclick="toggleHashtag(this,'#comida')">#comida</button>
-      <button type="button" class="htag-chip" onclick="toggleHashtag(this,'#viajes')">#viajes</button>
-    </div>
+    <textarea class="ep-inp" id="caption-text" rows="3" placeholder="Describí tu clip... #hashtags" style="margin-bottom:14px;"></textarea>
     <div class="ep-label">¿A quién le aparece?</div>
     <select class="ep-inp" id="caption-privacy">
       <option value="public">🌍 Todos</option>
@@ -2523,6 +2616,16 @@ window.goTo = (screen) => {
     if(_lastChatUid && _lastChatId) {
       setTimeout(() => openPrivateChat(_lastChatUid, _lastChatName, _lastChatAvatar, _lastChatId), 80);
     }
+    // Hide float bubble when on chat screen
+    setTimeout(() => {
+      const bubble = document.getElementById('float-chat-bubble');
+      if(bubble) bubble.classList.remove('visible');
+      const win = document.getElementById('float-chat-window');
+      if(win) win.classList.remove('open');
+    }, 50);
+  } else {
+    // Show float bubble when leaving chat screen (if there's an active chat)
+    setTimeout(() => { if(typeof updateBubbleVisibility !== 'undefined') updateBubbleVisibility(); }, 100);
   }
   if(screen==='explore') loadExplore();
   if(screen==='friends') loadFriends();
@@ -3265,9 +3368,6 @@ window.handleVideoUpload = (inp) => {
     ? `<video src="${url}" style="max-height:180px;border-radius:12px;max-width:100%" muted playsinline controls></video>`
     : `<img src="${url}" style="max-height:180px;border-radius:12px;max-width:100%"/>`;
   cm.style.display = 'flex';
-  // Reset hashtag chips
-  document.querySelectorAll('.htag-chip').forEach(c => c.classList.remove('selected'));
-  document.getElementById('caption-text').value = '';
   document.getElementById('caption-text').focus();
 };
 
@@ -3284,28 +3384,9 @@ window.closeCaptionModal = () => {
   switchMusicTab('deezer');
 };
 
-// ── Hashtag chip toggle ──
-window.toggleHashtag = (btn, tag) => {
-  const inp = document.getElementById('caption-text');
-  if(btn.classList.contains('selected')) {
-    btn.classList.remove('selected');
-    // Remove tag from textarea
-    inp.value = inp.value.replace(new RegExp('\\s*' + tag.replace('#','\\#') + '\\b', 'g'), '').trim();
-  } else {
-    btn.classList.add('selected');
-    // Add tag to textarea
-    const cur = inp.value.trim();
-    inp.value = cur ? cur + ' ' + tag : tag;
-  }
-};
-
 window.publishClip = async () => {
   if(!currentUser || !_pendingUploadFile) return;
-  let desc = document.getElementById('caption-text').value.trim();
-  // Siempre forzar @Clipuy #Clipuy
-  const FORCED_TAGS = '@Clipuy #Clipuy';
-  if(!desc.includes('@Clipuy')) desc = desc ? desc + ' ' + FORCED_TAGS : FORCED_TAGS;
-  else if(!desc.includes('#Clipuy')) desc += ' #Clipuy';
+  const desc     = document.getElementById('caption-text').value.trim();
   const memeText = document.getElementById('caption-meme-text')?.value.trim() || '';
   const memoPosEl = document.querySelector('input[name="meme-pos"]:checked');
   const memePos  = memoPosEl ? memoPosEl.value : 'bottom';
@@ -4404,6 +4485,10 @@ window.openPrivateChat = async (uid, name, avatar, chatId) => {
   }
   _lastChatId = chatId;
   window._currentChatId = chatId;
+  // Activate float bubble for this chat
+  if(typeof activateFloatBubble !== 'undefined') {
+    activateFloatBubble(uid, name, avatar || '', chatId);
+  }
   // Subscribe to messages
   if(_chatUnsubscribe) _chatUnsubscribe();
   const msgsRef = collection(db,'chats',chatId,'messages');
@@ -5907,6 +5992,176 @@ window.publishDuet = async () => {
 };
 </script>
 
+
+<script>
+// ══════════════════════════════════════════════
+//  FLOATING CHAT BUBBLE — Facebook style
+// ══════════════════════════════════════════════
+let _floatChatUid    = null;
+let _floatChatName   = '';
+let _floatChatAvatar = '';
+let _floatChatId     = null;
+let _floatUnsubscribe = null;
+
+// Called when user opens a private chat — store data and show bubble
+function activateFloatBubble(uid, name, avatar, chatId) {
+  _floatChatUid    = uid;
+  _floatChatName   = name;
+  _floatChatAvatar = avatar;
+  _floatChatId     = chatId;
+
+  const bubble = document.getElementById('float-chat-bubble');
+  const btn    = document.getElementById('float-bubble-btn');
+  const img    = document.getElementById('float-bubble-avatar');
+  const nameEl = document.getElementById('float-bubble-name');
+
+  img.src = avatar || '';
+  img.onerror = () => { img.src = ''; };
+  nameEl.textContent = name || '';
+
+  // Show bubble only when NOT on chat screen
+  updateBubbleVisibility();
+}
+
+function updateBubbleVisibility() {
+  const bubble = document.getElementById('float-chat-bubble');
+  if(!_floatChatUid) { bubble.classList.remove('visible'); return; }
+  // Show if current screen is NOT chat
+  if(typeof _currentScreen !== 'undefined' && _currentScreen === 'chat') {
+    bubble.classList.remove('visible');
+  } else {
+    bubble.classList.add('visible');
+  }
+}
+
+window.toggleFloatChat = () => {
+  const win = document.getElementById('float-chat-window');
+  const nameEl = document.getElementById('float-bubble-name');
+  if(win.classList.contains('open')) {
+    win.classList.remove('open');
+    nameEl.style.display = 'none';
+  } else {
+    openFloatWindow();
+    nameEl.style.display = 'block';
+    setTimeout(() => { nameEl.style.display = 'none'; }, 2500);
+  }
+};
+
+window.minimizeFloatChat = () => {
+  document.getElementById('float-chat-window').classList.remove('open');
+};
+
+window.closeFloatChat = () => {
+  document.getElementById('float-chat-window').classList.remove('open');
+  document.getElementById('float-chat-bubble').classList.remove('visible');
+  if(_floatUnsubscribe) { _floatUnsubscribe(); _floatUnsubscribe = null; }
+  _floatChatUid = null;
+  // Also clear lastChat so the main chat doesn't reopen it
+  if(typeof _lastChatUid !== 'undefined') { _lastChatUid = null; _lastChatId = null; }
+};
+
+window.openFloatChatFull = () => {
+  if(!_floatChatUid) return;
+  document.getElementById('float-chat-window').classList.remove('open');
+  if(typeof goTo !== 'undefined') {
+    goTo('chat');
+    setTimeout(() => {
+      if(typeof openPrivateChat !== 'undefined') {
+        openPrivateChat(_floatChatUid, _floatChatName, _floatChatAvatar, _floatChatId);
+      }
+    }, 150);
+  }
+};
+
+function openFloatWindow() {
+  const win = document.getElementById('float-chat-window');
+  document.getElementById('fcw-avatar').src = _floatChatAvatar || '';
+  document.getElementById('fcw-name').textContent = _floatChatName || '';
+  win.classList.add('open');
+  loadFloatMessages();
+  document.getElementById('fcw-inp').focus();
+  // Clear unread badge
+  const badge = document.getElementById('float-bubble-unread');
+  if(badge) badge.style.display = 'none';
+}
+
+function loadFloatMessages() {
+  if(!_floatChatId) return;
+  if(_floatUnsubscribe) { _floatUnsubscribe(); _floatUnsubscribe = null; }
+  // We need Firebase — access via module scope (already loaded)
+  // Use a polling approach since we're outside the module
+  renderFloatMessages();
+}
+
+function renderFloatMessages() {
+  // Re-use the main chat's message rendering by reading from DOM if available
+  const mainMsgs = document.getElementById('pc-messages');
+  const fcwMsgs  = document.getElementById('fcw-messages');
+  if(!fcwMsgs) return;
+
+  if(mainMsgs && mainMsgs.children.length > 0) {
+    // Clone from main chat messages
+    fcwMsgs.innerHTML = '';
+    Array.from(mainMsgs.children).forEach(child => {
+      const clone = child.cloneNode(true);
+      // Restyle for float window
+      if(clone.classList.contains('pc-msg')) {
+        clone.className = clone.className.replace('pc-msg','fcw-msg');
+        const bubble = clone.querySelector('.pc-bubble');
+        if(bubble) bubble.className = bubble.className.replace('pc-bubble','fcw-bubble');
+        const timeEl = clone.querySelector('.pc-time');
+        if(timeEl) timeEl.className = 'fcw-time';
+      }
+      fcwMsgs.appendChild(clone);
+    });
+    fcwMsgs.scrollTop = fcwMsgs.scrollHeight;
+  }
+}
+
+window.sendFloatMsg = async () => {
+  const inp = document.getElementById('fcw-inp');
+  const text = inp?.value.trim();
+  if(!text) return;
+  inp.value = '';
+  // Forward to main sendPcMsg by temporarily setting the input
+  const mainInp = document.getElementById('pc-inp');
+  if(mainInp && typeof sendPcMsg !== 'undefined') {
+    const prev = mainInp.value;
+    mainInp.value = text;
+    await sendPcMsg();
+    mainInp.value = '';
+    // Refresh float messages after short delay
+    setTimeout(renderFloatMessages, 600);
+  }
+};
+
+// Hook into the main private chat opening to activate the bubble
+// We patch this after the module loads
+document.addEventListener('DOMContentLoaded', () => {
+  // Observe pc-messages for changes to sync to float window
+  const observer = new MutationObserver(() => {
+    const win = document.getElementById('float-chat-window');
+    if(win && win.classList.contains('open')) renderFloatMessages();
+    // Show unread badge if window is closed
+    if(win && !win.classList.contains('open') && _floatChatUid) {
+      const badge = document.getElementById('float-bubble-unread');
+      if(badge) { badge.style.display = 'flex'; badge.textContent = '●'; }
+    }
+  });
+  const pcMsgs = document.getElementById('pc-messages');
+  if(pcMsgs) observer.observe(pcMsgs, { childList: true, subtree: true });
+
+  // Watch screen changes to show/hide bubble
+  const origGoTo = window.goTo;
+  if(typeof origGoTo === 'function') {
+    window.goTo = function(screen) {
+      origGoTo(screen);
+      setTimeout(updateBubbleVisibility, 50);
+    };
+  }
+});
+</script>
+
 <!-- ── PWA Install Banner ── -->
 <div id="pwa-install-banner" style="
   position:fixed;bottom:0;left:72px;right:0;z-index:9999;
@@ -5933,6 +6188,36 @@ window.publishDuet = async () => {
     background:none;border:none;color:#555;font-size:1.2rem;cursor:pointer;
     padding:4px;flex-shrink:0;
   ">✕</button>
+</div>
+
+
+<!-- ── FLOATING CHAT BUBBLE ── -->
+<div id="float-chat-bubble">
+  <div class="float-bubble-name" id="float-bubble-name" style="display:none"></div>
+  <div class="float-bubble-btn" id="float-bubble-btn" onclick="toggleFloatChat()" title="Abrir chat">
+    <img id="float-bubble-avatar" src="" alt=""/>
+    <div class="float-bubble-unread" id="float-bubble-unread" style="display:none">1</div>
+  </div>
+</div>
+
+<!-- ── FLOATING CHAT WINDOW ── -->
+<div id="float-chat-window">
+  <div class="fcw-header" onclick="openFloatChatFull()">
+    <img class="fcw-avatar" id="fcw-avatar" src=""/>
+    <div class="fcw-name" id="fcw-name"></div>
+    <div class="fcw-actions" onclick="event.stopPropagation()">
+      <button class="fcw-btn" onclick="minimizeFloatChat()" title="Minimizar">_</button>
+      <button class="fcw-btn" onclick="openFloatChatFull()" title="Abrir completo">⤢</button>
+      <button class="fcw-btn" onclick="closeFloatChat()" title="Cerrar">✕</button>
+    </div>
+  </div>
+  <div class="fcw-messages" id="fcw-messages"></div>
+  <div class="fcw-input-bar">
+    <input class="fcw-inp" id="fcw-inp" placeholder="Mensaje..." onkeydown="if(event.key==='Enter'){event.preventDefault();sendFloatMsg();}"/>
+    <button class="fcw-send" onclick="sendFloatMsg()">
+      <svg width="14" height="14" fill="white" viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+    </button>
+  </div>
 </div>
 
 </body>
