@@ -788,6 +788,36 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
 .search-user-handle{font-size:.78rem;color:var(--text-muted);}
 .search-user-followers{font-size:.75rem;color:var(--text-dim);}
 
+/* ── SEARCH CLIP GRID (hashtag results) ── */
+.search-clip-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:2px;
+  padding:0 0 80px;
+}
+@media(min-width:600px){  .search-clip-grid{ grid-template-columns:repeat(4,1fr); } }
+@media(min-width:900px){  .search-clip-grid{ grid-template-columns:repeat(5,1fr); } }
+@media(min-width:1200px){ .search-clip-grid{ grid-template-columns:repeat(6,1fr); } }
+.search-clip-cell{
+  aspect-ratio:9/16;background:var(--surface2);
+  position:relative;overflow:hidden;cursor:pointer;
+}
+.sc-thumb{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  display:block;z-index:1;transition:opacity .2s;
+}
+.sc-video{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  display:block;z-index:2;opacity:0;transition:opacity .25s;
+}
+.search-clip-overlay{
+  position:absolute;bottom:0;left:0;right:0;z-index:4;
+  padding:18px 6px 5px;
+  background:linear-gradient(to top,rgba(0,0,0,.75),transparent);
+  font-size:.65rem;color:#fff;font-weight:700;
+  display:flex;align-items:center;gap:4px;pointer-events:none;
+}
+
 /* ── ACTIVITY SCREEN ── */
 #activity-screen{background:#000;display:none;flex-direction:column;}
 #activity-screen.active{display:flex;}
@@ -3174,7 +3204,7 @@ window.doSearch = async (val) => {
       clipResults = cSnap.docs
         .map(d => ({id:d.id,...d.data()}))
         .filter(c => c.tags && c.tags.toLowerCase().includes(val.toLowerCase()))
-        .slice(0,10);
+        .slice(0,40);
     }
 
     let html = '';
@@ -3191,21 +3221,90 @@ window.doSearch = async (val) => {
         </div>
       `).join('');
     }
+
     if(clipResults.length) {
-      html += `<div style="font-size:.72rem;color:var(--text-muted);padding:8px 12px 4px;text-transform:uppercase;letter-spacing:.5px">Clips con ${escHtml(val)}</div>`;
-      html += `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:0 12px 12px">`;
-      html += clipResults.map(c => `
-        <div onclick="closeSearch()" style="aspect-ratio:9/16;background:var(--surface2);border-radius:6px;overflow:hidden;cursor:pointer;position:relative">
-          ${c.mediaType==='video'
-            ? `<video src="${escHtml(c.mediaUrl||'')}" style="width:100%;height:100%;object-fit:cover" preload="none"></video>`
-            : `<img src="${escHtml(c.mediaUrl||'')}" style="width:100%;height:100%;object-fit:cover"/>`}
-          <div style="position:absolute;bottom:0;left:0;right:0;padding:4px;background:linear-gradient(to top,rgba(0,0,0,.7),transparent);font-size:.65rem;color:rgba(255,255,255,.8)">❤️ ${c.likesCount||0}</div>
-        </div>
-      `).join('');
-      html += `</div>`;
+      html += `<div style="font-size:.72rem;color:var(--text-muted);padding:12px 0 8px;text-transform:uppercase;letter-spacing:.5px">Clips con ${escHtml(val)}</div>`;
+      html += `<div class="search-clip-grid" id="search-clip-grid"></div>`;
     }
+
     if(!html) html = `<div style="text-align:center;padding:30px;color:var(--text-muted)">Sin resultados</div>`;
     results.innerHTML = html;
+
+    // Render clip grid with hover video
+    if(clipResults.length) {
+      const grid = document.getElementById('search-clip-grid');
+      window._searchClips = clipResults;
+      clipResults.forEach((c, ci) => {
+        const isVideo = c.mediaType === 'video';
+        const cell = document.createElement('div');
+        cell.className = 'search-clip-cell';
+
+        const overlay = document.createElement('div');
+        overlay.className = 'search-clip-overlay';
+        overlay.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> ${fmtNum(c.likesCount||0)}`;
+        cell.appendChild(overlay);
+
+        // Thumbnail
+        const thumb = document.createElement('img');
+        thumb.className = 'sc-thumb';
+        thumb.loading = 'lazy';
+        cell.insertBefore(thumb, overlay);
+
+        // Video (only for video clips)
+        let vid = null;
+        if(isVideo) {
+          vid = document.createElement('video');
+          vid.className = 'sc-video';
+          vid.muted = false;
+          vid.loop = true;
+          vid.playsInline = true;
+          vid.preload = 'none';
+          cell.insertBefore(vid, overlay);
+        }
+
+        cell.addEventListener('click', () => {
+          closeSearch();
+          setTimeout(() => openClipViewer(window._searchClips, ci, cell), 100);
+        });
+
+        cell.addEventListener('mouseenter', () => {
+          if(vid && vid.src) {
+            vid.style.opacity = '1';
+            thumb.style.opacity = '0';
+            vid.muted = false;
+            vid.play().catch(() => { vid.muted = true; vid.play().catch(()=>{}); });
+          }
+        });
+        cell.addEventListener('mouseleave', () => {
+          if(vid) {
+            vid.pause();
+            vid.style.opacity = '0';
+            thumb.style.opacity = '1';
+          }
+        });
+
+        grid.appendChild(cell);
+
+        // Load media async
+        (async () => {
+          try {
+            const res = await fetch(c.mediaUrl||'', { headers:{'ngrok-skip-browser-warning':'true'} });
+            const blob = await res.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            if(isVideo) {
+              thumb.src = blobUrl; // use first frame as thumb fallback
+              if(vid) vid.src = blobUrl;
+            } else {
+              thumb.src = blobUrl;
+            }
+          } catch(e) {
+            thumb.src = c.mediaUrl || '';
+            if(vid) vid.src = c.mediaUrl || '';
+          }
+        })();
+      });
+    }
+
   } catch(e) {}
 };
 
