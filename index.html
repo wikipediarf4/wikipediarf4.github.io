@@ -4,6 +4,17 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 <title>Clipuy</title>
+
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json"/>
+<meta name="theme-color" content="#000000"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Clipuy"/>
+<link rel="apple-touch-icon" href="/icon-192.png"/>
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png"/>
+
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Clash+Display:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
 :root {
@@ -4982,6 +4993,118 @@ function selectClipuyAudio(audio, itemEl) {
     <div id="admin-sec-clips" class="admin-section"><div id="admin-clips-list"></div></div>
     <div id="admin-sec-users" class="admin-section" style="display:none"><div id="admin-users-list"></div></div>
   </div>
+</div>
+
+
+<script>
+// ══════════════════════════════════════════
+//  CLIPUY PWA — Service Worker + Install
+// ══════════════════════════════════════════
+
+// ── Registrar Service Worker ──
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then((reg) => {
+        console.log('[Clipuy SW] Registrado:', reg.scope);
+
+        // Notificar cuando hay nueva versión disponible
+        reg.addEventListener('updatefound', () => {
+          const newSW = reg.installing;
+          newSW.addEventListener('statechange', () => {
+            if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+              showToast('🔄 Nueva versión disponible — recargá para actualizar');
+            }
+          });
+        });
+      })
+      .catch((err) => console.warn('[Clipuy SW] Error al registrar:', err));
+  });
+}
+
+// ── Banner de instalación (A2HS) ──
+let _pwaInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  _pwaInstallPrompt = e;
+  // Mostrar banner tras 3 segundos si no está instalada
+  setTimeout(showPWABanner, 3000);
+});
+
+window.addEventListener('appinstalled', () => {
+  _pwaInstallPrompt = null;
+  hidePWABanner();
+  showToast('✅ ¡Clipuy instalada! Buscala en tu pantalla de inicio');
+});
+
+function showPWABanner() {
+  if (!_pwaInstallPrompt) return;
+  // No mostrar si ya está en modo standalone
+  if (window.matchMedia('(display-mode: standalone)').matches) return;
+  const banner = document.getElementById('pwa-install-banner');
+  if (banner) banner.style.transform = 'translateY(0)';
+}
+
+function hidePWABanner() {
+  const banner = document.getElementById('pwa-install-banner');
+  if (banner) banner.style.transform = 'translateY(120%)';
+}
+
+window.triggerPWAInstall = async () => {
+  if (!_pwaInstallPrompt) return;
+  _pwaInstallPrompt.prompt();
+  const { outcome } = await _pwaInstallPrompt.userChoice;
+  if (outcome === 'accepted') {
+    showToast('📲 Instalando Clipuy...');
+  }
+  _pwaInstallPrompt = null;
+  hidePWABanner();
+};
+
+// ── Detector de estado de red ──
+function onOnline() {
+  showToast('✅ Conexión restaurada');
+  // Disparar background sync si hay acciones pendientes
+  if ('serviceWorker' in navigator && 'SyncManager' in window) {
+    navigator.serviceWorker.ready.then((reg) => {
+      reg.sync.register('clipuy-pending-actions').catch(() => {});
+    });
+  }
+}
+function onOffline() {
+  showToast('📵 Sin conexión — mostrando contenido guardado');
+}
+window.addEventListener('online', onOnline);
+window.addEventListener('offline', onOffline);
+</script>
+
+<!-- ── PWA Install Banner ── -->
+<div id="pwa-install-banner" style="
+  position:fixed;bottom:0;left:72px;right:0;z-index:9999;
+  background:linear-gradient(135deg,#111,#1a1a1a);
+  border-top:1px solid rgba(255,255,255,.1);
+  padding:14px 16px;
+  display:flex;align-items:center;gap:12px;
+  transform:translateY(120%);
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 -8px 32px rgba(0,0,0,.6);
+">
+  <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#25f4ee,#fe2c55);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;">📱</div>
+  <div style="flex:1;min-width:0;">
+    <div style="font-weight:700;font-size:.9rem;color:#fff;">Instalá Clipuy</div>
+    <div style="font-size:.75rem;color:#888;margin-top:1px;">Accedé directo desde tu pantalla de inicio</div>
+  </div>
+  <button onclick="triggerPWAInstall()" style="
+    background:linear-gradient(135deg,#25f4ee,#fe2c55);
+    border:none;border-radius:8px;padding:8px 16px;
+    color:#fff;font-family:'Space Grotesk',sans-serif;
+    font-size:.82rem;font-weight:700;cursor:pointer;flex-shrink:0;
+  ">Instalar</button>
+  <button onclick="hidePWABanner()" style="
+    background:none;border:none;color:#555;font-size:1.2rem;cursor:pointer;
+    padding:4px;flex-shrink:0;
+  ">✕</button>
 </div>
 
 </body>
