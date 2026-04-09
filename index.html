@@ -1315,10 +1315,8 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
 <!-- ══════════════════ AUTH SCREEN ══════════════════ -->
 <div class="screen" id="auth-screen">
   <div class="auth-box">
-    <!-- Banner imagen reemplaza logo y tagline -->
-    <div style="margin-bottom:24px;border-radius:14px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.6);">
-      <img src="baneer.png" alt="ClipUY" style="width:100%;display:block;border-radius:14px;"/>
-    </div>
+    <div class="auth-logo">Clipuy</div>
+    <div class="auth-tagline">Tu mundo en clips 🎬</div>
     <div class="auth-tabs">
       <button class="auth-tab active" onclick="switchAuthTab('login')">Iniciar sesión</button>
       <button class="auth-tab" onclick="switchAuthTab('register')">Registrarse</button>
@@ -1348,23 +1346,6 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
       </button>
       <div class="auth-err" id="reg-err"></div>
     </div>
-
-    <!-- Footer legal -->
-    <div style="margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08);text-align:center;">
-      <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:10px;">
-        <button onclick="openTermsFromLogin()" style="background:none;border:none;color:rgba(255,255,255,.45);font-family:'Space Grotesk',sans-serif;font-size:.75rem;cursor:pointer;transition:color .2s;padding:0;" onmouseover="this.style.color='rgba(255,255,255,.85)'" onmouseout="this.style.color='rgba(255,255,255,.45)'">
-          📄 Términos y Condiciones
-        </button>
-        <span style="color:rgba(255,255,255,.15);font-size:.7rem;">|</span>
-        <button onclick="openTermsFromLogin()" style="background:none;border:none;color:rgba(255,255,255,.45);font-family:'Space Grotesk',sans-serif;font-size:.75rem;cursor:pointer;transition:color .2s;padding:0;" onmouseover="this.style.color='rgba(255,255,255,.85)'" onmouseout="this.style.color='rgba(255,255,255,.45)'">
-          👤 Responsabilidad del Usuario
-        </button>
-      </div>
-      <div style="font-size:.7rem;color:rgba(255,255,255,.25);letter-spacing:.3px;">
-        © ClipUY 2026 · Todos los derechos reservados
-      </div>
-    </div>
-
   </div>
 </div>
 
@@ -2054,16 +2035,6 @@ window.acceptTerms = () => {
   if(_termsCallback) { _termsCallback(); _termsCallback = null; }
 };
 
-window.openTermsFromLogin = () => {
-  showTermsModal();
-  if(hasAcceptedTerms()) {
-    const btn = document.getElementById('btn-terms-accept');
-    const check = document.getElementById('terms-check');
-    if(check) check.checked = true;
-    if(btn) { btn.disabled = false; btn.textContent = 'Cerrar'; btn.onclick = () => document.getElementById('terms-modal').classList.remove('open'); }
-  }
-};
-
 function requireTerms(callback) {
   if(hasAcceptedTerms()) { callback(); return; }
   _termsCallback = callback;
@@ -2242,12 +2213,16 @@ window.goTo = (screen) => {
   if(screen==='profile') {
     renderProfile();
     // Actualizar URL con el handle del usuario actual
-    const rawHandle = (myProfile && myProfile.handle) ? myProfile.handle.replace(/^@+/,'').trim().toLowerCase() : '';
-    const isValidHandle = rawHandle && rawHandle !== 'usuario' && /^[a-z0-9_]{2,}$/.test(rawHandle);
+    const rawHandle = (myProfile && myProfile.handle)
+      ? myProfile.handle.replace(/^@+/,'').trim().toLowerCase().replace(/[^a-z0-9_\-\.]/g,'')
+      : '';
+    const isValidHandle = rawHandle && rawHandle.length >= 2 && rawHandle !== 'usuario';
     if(isValidHandle) {
       history.pushState({screen:'profile', uid: currentUser ? currentUser.uid : ''}, '', '/@' + rawHandle);
+    } else if(currentUser) {
+      history.pushState({screen:'profile', uid: currentUser.uid}, '', '/@' + currentUser.uid.slice(0,8));
     } else {
-      history.pushState({screen:'profile', uid: currentUser ? currentUser.uid : ''}, '', '/');
+      history.pushState({screen:'profile'}, '', '/perfil');
     }
   } else {
     history.pushState({screen}, '', '/');
@@ -3553,12 +3528,12 @@ window.openUserProfile = async (uid) => {
     document.body.appendChild(overlay);
 
     // Actualizar URL con el handle del usuario visitado
-    const rawPHandle = (p.handle || '').replace(/^@+/,'').trim().toLowerCase();
-    const isValidPHandle = rawPHandle && rawPHandle !== 'usuario' && /^[a-z0-9_]{2,}$/.test(rawPHandle);
+    const rawPHandle = (p.handle || '').replace(/^@+/,'').trim().toLowerCase().replace(/[^a-z0-9_\-\.]/g,'');
+    const isValidPHandle = rawPHandle && rawPHandle.length >= 2 && rawPHandle !== 'usuario';
     if(isValidPHandle) {
       history.pushState({screen:'userProfile', uid}, '', '/@' + rawPHandle);
     } else {
-      history.pushState({screen:'userProfile', uid}, '', '/');
+      history.pushState({screen:'userProfile', uid}, '', '/@' + uid.slice(0,8));
     }
 
     // Al cerrar el overlay, volver a la URL anterior
