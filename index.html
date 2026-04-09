@@ -3319,10 +3319,92 @@ window.deleteProfileClip = async (clipId, btn) => {
 window.switchProfileTab = (tab) => {
   document.querySelectorAll('.profile-tab').forEach((b,i) => b.classList.toggle('active', (i===0&&tab==='clips')||(i===1&&tab==='liked')));
   if(tab==='clips') loadProfileClips();
-  else {
-    document.getElementById('profile-clips-grid').innerHTML = `<div style="grid-column:span 3;text-align:center;padding:30px;color:var(--text-muted)">Los clips que likeaste aparecen acá ❤️</div>`;
-  }
+  else loadLikedClips();
 };
+
+async function loadLikedClips() {
+  if(!currentUser) return;
+  const grid = document.getElementById('profile-clips-grid');
+  grid.innerHTML = `<div style="grid-column:span 6;text-align:center;padding:30px;color:var(--text-muted)">⏳ Cargando...</div>`;
+  try {
+    const q = query(collection(db,'clips'), where('likes','array-contains',currentUser.uid), orderBy('ts','desc'));
+    const snap = await getDocs(q);
+    grid.innerHTML = '';
+    if(snap.empty) {
+      grid.innerHTML = `<div style="grid-column:span 6;text-align:center;padding:40px;color:var(--text-muted)">Todavía no likeaste ningún clip ❤️</div>`;
+      return;
+    }
+    const watchedSet = JSON.parse(localStorage.getItem('watchedClips')||'{}');
+    const clipsData = snap.docs.map(d => ({id:d.id,...d.data()}));
+
+    clipsData.forEach((data, idx) => {
+      const div = document.createElement('div');
+      div.className = 'profile-clip';
+      const watched = watchedSet[data.id];
+      const isVideo = data.mediaType !== 'imagen' && data.mediaType !== 'image';
+
+      if(watched) {
+        const wb = document.createElement('div');
+        wb.className = 'profile-clip-watched';
+        wb.textContent = 'Visto';
+        div.appendChild(wb);
+      }
+      const views = document.createElement('div');
+      views.className = 'profile-clip-views';
+      views.innerHTML = `❤️ ${fmtNum(data.likesCount||0)}`;
+      div.appendChild(views);
+
+      const overlay = document.createElement('div');
+      overlay.className = 'profile-clip-overlay';
+      overlay.innerHTML = `<svg width="22" height="22" fill="white" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
+      div.appendChild(overlay);
+
+      div.addEventListener('click', () => openClipViewer(clipsData, idx, div));
+      grid.appendChild(div);
+
+      (async () => {
+        if(!isVideo) {
+          const img = document.createElement('img');
+          img.className = 'pc-thumb';
+          div.insertBefore(img, div.firstChild);
+          try {
+            const res = await fetch(data.mediaUrl||'', { headers:{'ngrok-skip-browser-warning':'true'} });
+            img.src = URL.createObjectURL(await res.blob());
+          } catch(e) { img.src = data.mediaUrl||''; }
+          return;
+        }
+        let blobUrl = data.mediaUrl||'';
+        try {
+          const res = await fetch(data.mediaUrl||'', { headers:{'ngrok-skip-browser-warning':'true'} });
+          blobUrl = URL.createObjectURL(await res.blob());
+        } catch(e) {}
+        div.dataset.videoUrl = blobUrl;
+
+        const thumb = await captureVideoThumbnail(blobUrl);
+        const thumbImg = document.createElement('img');
+        thumbImg.className = 'pc-thumb';
+        thumbImg.src = thumb || '';
+        thumbImg.style.background = '#111';
+        div.insertBefore(thumbImg, div.firstChild);
+
+        const vid = document.createElement('video');
+        vid.className = 'pc-video';
+        vid.src = blobUrl;
+        vid.muted = false;
+        vid.loop = true;
+        vid.playsInline = true;
+        vid.preload = 'none';
+        vid.volume = 0.8;
+        div.insertBefore(vid, div.firstChild);
+
+        div.addEventListener('mouseenter', () => { vid.currentTime=0; vid.play().catch(()=>{}); });
+        div.addEventListener('mouseleave', () => { vid.pause(); vid.currentTime=0; });
+      })();
+    });
+  } catch(e) {
+    grid.innerHTML = `<div style="grid-column:span 6;text-align:center;padding:30px;color:#ff5555">❌ Error: ${e.message}</div>`;
+  }
+}
 
 // ── EDIT PROFILE ──
 window.openEditProfile = () => {
