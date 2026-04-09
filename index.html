@@ -2404,6 +2404,7 @@ function buildVideoSlide(id, data) {
   const isVideo = data.mediaType === 'video';
   const isLiked = data.likes && currentUser && data.likes.includes(currentUser.uid);
   const avatar = data.avatar || avatarFallback(data.uid||'u');
+  const isFollowingUser = currentUser && (myProfile.followingList||[]).includes(data.uid);
   div.innerHTML = `
     <div class="video-wrap">
       ${isVideo
@@ -2418,7 +2419,7 @@ function buildVideoSlide(id, data) {
         <div class="video-user" onclick="openUserProfile('${data.uid}')">
           <img class="video-avatar" src="${avatar}" onerror="this.src='${avatarFallback(data.uid||'u')}'"/>
           <span class="video-username">${escHtml(data.name||'Usuario')}</span>
-          ${currentUser && data.uid !== currentUser.uid ? `<button class="follow-btn-inline" id="ffb-${data.uid}" onclick="event.stopPropagation();toggleFollow('${data.uid}',this)">Seguir</button>` : ''}
+          ${currentUser && data.uid !== currentUser.uid ? `<button class="follow-btn-inline" id="ffb-${data.uid}" onclick="event.stopPropagation();toggleFollow('${data.uid}',this)" style="${isFollowingUser?'background:rgba(255,255,255,.15);color:#fff;':''}"> ${isFollowingUser?'✅ Siguiendo':'Seguir'}</button>` : ''}
         </div>
         <div class="video-desc">${escHtml((data.description||'').replace(/(#[\w\u00C0-\u017E]+|@[\w\u00C0-\u017E]+)/g,'').trim())}</div>
         ${data.tags ? `<div class="video-tags" style="cursor:pointer">${data.tags.split(' ').map(t=>`<span onclick="searchByTag('${t}')" style="margin-right:6px;cursor:pointer">${escHtml(t)}</span>`).join('')}</div>` : ''}
@@ -2500,6 +2501,13 @@ async function updateFeedFollowButtons() {
       if(following.includes(uid)) {
         btn.textContent = '✅ Siguiendo';
         btn.style.background = 'rgba(255,255,255,.15)';
+        btn.style.border = '1px solid rgba(255,255,255,.3)';
+        btn.style.color = '#fff';
+      } else {
+        btn.textContent = 'Seguir';
+        btn.style.background = 'var(--accent)';
+        btn.style.border = 'none';
+        btn.style.color = '#fff';
       }
     });
   } catch(e) {}
@@ -2795,29 +2803,33 @@ window.toggleFollow = async (uid, btn, forceState) => {
       } catch(e) {}
     }
     showToast(isFollowing ? 'Dejaste de seguir' : '✅ Siguiendo');
-    if(btn) {
-      if(isFollowing) {
-        btn.textContent = 'Seguir';
-        btn.style.background = 'var(--accent)';
-        btn.style.border = 'none';
-        btn.style.color = '#fff';
-      } else {
-        btn.textContent = '✅ Siguiendo';
-        btn.style.background = 'var(--surface)';
-        btn.style.border = '1px solid var(--border)';
-        btn.style.color = '#fff';
-      }
-    }
-    // update inline follow buttons in feed
-    document.querySelectorAll(`[onclick*="toggleFollow('${uid}')"]`).forEach(b => {
-      b.textContent = isFollowing ? 'Seguir' : '✅ Siguiendo';
-    });
-    // update myProfile cache
+    // update myProfile cache primero
     if(isFollowing) {
       myProfile.followingList = (myProfile.followingList||[]).filter(id=>id!==uid);
     } else {
       myProfile.followingList = [...(myProfile.followingList||[]), uid];
     }
+    const nowFollowing = !isFollowing;
+    // Actualizar TODOS los botones con ese uid (feed, overlay, etc.)
+    const allBtns = [btn, document.getElementById('ffb-'+uid), document.getElementById('follow-btn-'+uid)].filter(Boolean);
+    // también selector por onclick
+    document.querySelectorAll(`button[id="ffb-${uid}"], button[id="follow-btn-${uid}"]`).forEach(b => {
+      if(!allBtns.includes(b)) allBtns.push(b);
+    });
+    allBtns.forEach(b => {
+      if(!b) return;
+      if(nowFollowing) {
+        b.textContent = '✅ Siguiendo';
+        b.style.background = 'rgba(255,255,255,.15)';
+        b.style.border = '1px solid rgba(255,255,255,.3)';
+        b.style.color = '#fff';
+      } else {
+        b.textContent = 'Seguir';
+        b.style.background = 'var(--accent)';
+        b.style.border = 'none';
+        b.style.color = '#fff';
+      }
+    });
   } catch(e) { showToast('❌ Error'); }
 };
 
