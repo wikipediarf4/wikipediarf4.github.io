@@ -476,16 +476,25 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
   border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;
 }
 .profile-tab.active{color:#fff;border-bottom-color:var(--accent);}
-/* TikTok-style grid: ~5-6 columnas, miniaturas pequeñas */
+/* TikTok-style grid: 3 columnas en móvil, más en escritorio */
 .profile-grid{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
-  gap:3px;
-  padding:3px;
+  grid-template-columns:repeat(3,1fr);
+  gap:2px;
+  padding:0;
+}
+@media(min-width:480px){
+  .profile-grid{ grid-template-columns:repeat(3,1fr); }
+}
+@media(min-width:768px){
+  .profile-grid{ grid-template-columns:repeat(4,1fr); }
+}
+@media(min-width:1100px){
+  .profile-grid{ grid-template-columns:repeat(5,1fr); }
 }
 .profile-clip{
   aspect-ratio:9/16;background:var(--surface2);position:relative;overflow:hidden;cursor:pointer;
-  border-radius:2px;
+  border-radius:0;
 }
 .profile-clip:hover .profile-clip-overlay{opacity:1;}
 .profile-clip-overlay{
@@ -493,7 +502,9 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
   display:flex;align-items:center;justify-content:center;
   opacity:0;transition:opacity .2s;
 }
-.profile-clip img,.profile-clip video{width:100%;height:100%;object-fit:cover;}
+.profile-clip img,.profile-clip video{width:100%;height:100%;object-fit:cover;display:block;}
+/* Canvas thumbnail para preview de video */
+.profile-clip canvas{width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0;}
 .profile-clip-views{
   position:absolute;bottom:5px;left:6px;font-size:.72rem;font-weight:700;
   display:flex;align-items:center;gap:3px;
@@ -1569,6 +1580,35 @@ async function createUserProfile(user, name) {
 }
 
 
+// Captura el primer frame visible de un video y lo muestra como thumbnail en canvas
+async function captureVideoThumbnail(videoEl, blobUrl) {
+  return new Promise((resolve) => {
+    const vid = document.createElement('video');
+    vid.src = blobUrl;
+    vid.muted = true;
+    vid.playsInline = true;
+    vid.preload = 'metadata';
+    vid.crossOrigin = 'anonymous';
+    const cleanup = () => { try { vid.src = ''; } catch(e){} };
+    vid.addEventListener('loadeddata', () => {
+      vid.currentTime = 0.5;
+    });
+    vid.addEventListener('seeked', () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = vid.videoWidth || 360;
+        canvas.height = vid.videoHeight || 640;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
+        cleanup();
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      } catch(e) { cleanup(); resolve(null); }
+    });
+    vid.addEventListener('error', () => { cleanup(); resolve(null); });
+    setTimeout(() => { cleanup(); resolve(null); }, 8000);
+  });
+}
+
 // Load all data-src elements via fetch with ngrok header
 async function loadNgrokMedia(root) {
   const els = (root || document).querySelectorAll('[data-src]');
@@ -1579,7 +1619,28 @@ async function loadNgrokMedia(root) {
     try {
       const res = await fetch(url, { headers: { 'ngrok-skip-browser-warning': 'true' } });
       const blob = await res.blob();
-      el.src = URL.createObjectURL(blob);
+      const blobUrl = URL.createObjectURL(blob);
+
+      // Si es video dentro de .profile-clip → mostrar thumbnail como canvas + imagen
+      if (el.tagName === 'VIDEO' && el.closest('.profile-clip')) {
+        const thumb = await captureVideoThumbnail(el, blobUrl);
+        if (thumb) {
+          // Reemplazar el <video> por <img> con el frame capturado
+          const img = document.createElement('img');
+          img.src = thumb;
+          img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0;';
+          // Guardar blobUrl para el viewer al hacer click
+          el.closest('.profile-clip').dataset.videoUrl = blobUrl;
+          el.parentNode.replaceChild(img, el);
+        } else {
+          // Fallback: usar video con src seteado y currentTime
+          el.src = blobUrl;
+          el.preload = 'metadata';
+          el.addEventListener('loadedmetadata', () => { el.currentTime = 0.5; });
+        }
+      } else {
+        el.src = blobUrl;
+      }
     } catch(e) { el.src = url; }
   });
 }
@@ -2239,12 +2300,12 @@ async function loadProfileClips() {
     clipsData.forEach((data, idx) => {
       const div = document.createElement('div');
       div.className = 'profile-clip';
-      div.onclick = () => openClipViewer(clipsData, idx);
+      div.onclick = () => openClipViewer(clipsData, idx, div);
       const watched = watchedSet[data.id];
       div.innerHTML = `
         ${data.mediaType==='imagen'||data.mediaType==='image'
-          ? `<img data-src="${escHtml(data.mediaUrl||'')}" loading="lazy" style="width:100%;height:100%;object-fit:cover"/>`
-          : `<video data-src="${escHtml(data.mediaUrl||'')}" preload="none" style="width:100%;height:100%;object-fit:cover"></video>`
+          ? `<img data-src="${escHtml(data.mediaUrl||'')}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0;"/>`
+          : `<video data-src="${escHtml(data.mediaUrl||'')}" preload="none" muted playsinline style="width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0;"></video>`
         }
         ${watched ? `<div class="profile-clip-watched">Visto</div>` : ''}
         <div class="profile-clip-views">▶ ${fmtNum(data.viewsCount||data.likesCount||0)}</div>
@@ -2261,10 +2322,12 @@ async function loadProfileClips() {
 let _clipViewerClips = [];
 let _clipViewerIdx = 0;
 let _clipViewerVideo = null;
+let _clipViewerSourceDiv = null;
 
-window.openClipViewer = (clips, idx) => {
+window.openClipViewer = (clips, idx, divEl) => {
   _clipViewerClips = clips;
   _clipViewerIdx = idx;
+  _clipViewerSourceDiv = divEl || null;
   document.getElementById('clip-viewer-modal').classList.add('open');
   renderClipViewer();
 };
@@ -2286,7 +2349,9 @@ function renderClipViewer() {
 
   if(isVideo) {
     const v = document.createElement('video');
-    v.src = clip.mediaUrl || '';
+    // Use pre-loaded blob URL if available (from profile grid thumbnail capture)
+    const blobUrl = _clipViewerSourceDiv && _clipViewerSourceDiv.dataset.videoUrl;
+    v.src = blobUrl || clip.mediaUrl || '';
     v.style.cssText = 'width:100%;height:100%;object-fit:contain;';
     v.autoplay = true;
     v.controls = true;
