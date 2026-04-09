@@ -661,6 +661,85 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
   padding:2px 5px;font-weight:600;letter-spacing:.3px;
 }
 
+/* ── DUETO MODAL ── */
+#duet-modal{
+  position:fixed;inset:0;left:72px;z-index:400;background:#000;
+  display:none;flex-direction:column;
+}
+#duet-modal.open{display:flex;}
+.duet-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.duet-title{font-family:'Clash Display',sans-serif;font-size:1.1rem;font-weight:700;}
+.duet-body{
+  flex:1;display:flex;overflow:hidden;
+}
+/* Split screen: original izquierda, grabación derecha */
+.duet-side{
+  flex:1;position:relative;background:#111;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+}
+.duet-side + .duet-side{border-left:2px solid var(--accent);}
+.duet-side-label{
+  position:absolute;top:10px;left:0;right:0;text-align:center;z-index:5;
+  font-size:.68rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+  color:rgba(255,255,255,.7);pointer-events:none;
+}
+.duet-original-video{
+  width:100%;height:100%;object-fit:cover;
+}
+#duet-camera-preview{
+  width:100%;height:100%;object-fit:cover;
+  transform:scaleX(-1);
+}
+#duet-camera-placeholder{
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  color:var(--text-muted);text-align:center;padding:20px;
+}
+.duet-footer{
+  padding:14px 16px;border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;flex-shrink:0;
+  background:#000;
+}
+.duet-rec-btn{
+  width:60px;height:60px;border-radius:50%;border:4px solid #fff;
+  background:var(--accent);cursor:pointer;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .15s,background .2s;margin:0 auto;
+}
+.duet-rec-btn.recording{background:#fff;}
+.duet-rec-btn:active{transform:scale(.92);}
+.duet-rec-indicator{
+  position:absolute;top:12px;right:12px;z-index:10;
+  background:var(--accent);border-radius:99px;
+  padding:4px 10px;font-size:.72rem;font-weight:700;
+  display:none;align-items:center;gap:5px;
+}
+.duet-rec-indicator.show{display:flex;}
+.duet-rec-dot{
+  width:8px;height:8px;border-radius:50%;background:#fff;
+  animation:blink .8s ease-in-out infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.duet-timer{font-size:.85rem;font-weight:700;min-width:36px;color:var(--text-muted);}
+.duet-caption-inp{
+  flex:1;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:10px 14px;color:#fff;
+  font-family:'Space Grotesk',sans-serif;font-size:.9rem;outline:none;
+}
+.duet-caption-inp:focus{border-color:var(--accent2);}
+.duet-caption-inp::placeholder{color:var(--text-dim);}
+.btn-duet-publish{
+  padding:11px 18px;border:none;border-radius:var(--radius-sm);
+  background:linear-gradient(135deg,var(--accent2),var(--accent));
+  color:#fff;font-family:'Space Grotesk',sans-serif;
+  font-size:.88rem;font-weight:700;cursor:pointer;
+  transition:opacity .2s;flex-shrink:0;
+}
+.btn-duet-publish:hover{opacity:.85;}
+.btn-duet-publish:disabled{opacity:.35;cursor:not-allowed;}
+
 /* ── CLIP VIEWER MODAL ── */
 #clip-viewer-modal{
   position:fixed;inset:0;left:72px;z-index:450;background:rgba(0,0,0,.92);
@@ -2495,6 +2574,14 @@ function buildVideoSlide(id, data) {
         </div>
         <span>Compartir</span>
       </div>
+      <!-- Dueto -->
+      ${data.mediaType === 'video' ? `
+      <div class="v-action" onclick="openDuet('${id}','${escHtml(data.mediaUrl||'')}','${escHtml(data.name||'Usuario')}','${data.uid}','${escHtml(data.description||'')}')">
+        <div class="v-action-icon">
+          <svg viewBox="0 0 24 24" style="fill:white;width:26px;height:26px;"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+        </div>
+        <span>Dueto</span>
+      </div>` : ''}
     </div>
   `;
   // Double tap to like
@@ -4495,6 +4582,7 @@ function renderActivityList(notifs) {
       if(n.type === 'comment') { iconClass = 'comment'; iconEmoji = '💬'; }
       if(n.type === 'mention') { iconClass = 'mention'; iconEmoji = '@'; }
       if(n.type === 'reaction') { iconClass = 'comment'; iconEmoji = '😍'; }
+      if(n.type === 'duet') { iconClass = 'follow'; iconEmoji = '🎭'; }
 
       let bodyText = '';
       if(n.type === 'like') bodyText = `<strong>${escHtml(n.fromName)}</strong> le dio me gusta a tu clip.`;
@@ -4502,6 +4590,7 @@ function renderActivityList(notifs) {
       else if(n.type === 'comment') bodyText = `<strong>${escHtml(n.fromName)}</strong> comentó: ${escHtml(n.text||'')}`;
       else if(n.type === 'mention') bodyText = `<strong>${escHtml(n.fromName)}</strong> te mencionó.`;
       else if(n.type === 'reaction') bodyText = `<strong>${escHtml(n.fromName)}</strong> reaccionó a tu mensaje: ${escHtml(n.text||'')}`;
+      else if(n.type === 'duet') bodyText = `<strong>${escHtml(n.fromName)}</strong> hizo un dueto con tu clip 🎭`;
 
       // Thumbnail del clip
       let mediaHtml = '';
@@ -5077,6 +5166,245 @@ function onOffline() {
 }
 window.addEventListener('online', onOnline);
 window.addEventListener('offline', onOffline);
+</script>
+
+<!-- ══════════════════ DUETO MODAL ══════════════════ -->
+<div id="duet-modal">
+  <div class="duet-header">
+    <div class="duet-title">🎭 Dueto</div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span class="duet-timer" id="duet-timer-display">0:00</span>
+      <button onclick="closeDuet()" style="background:none;border:none;color:var(--text-muted);font-size:1.3rem;cursor:pointer;">✕</button>
+    </div>
+  </div>
+  <div class="duet-body">
+    <!-- Original clip izquierda -->
+    <div class="duet-side">
+      <div class="duet-side-label">Original</div>
+      <video id="duet-original-video" class="duet-original-video" loop playsinline muted></video>
+    </div>
+    <!-- Cámara usuario derecha -->
+    <div class="duet-side">
+      <div class="duet-side-label">Vos</div>
+      <div class="duet-rec-indicator" id="duet-rec-indicator">
+        <div class="duet-rec-dot"></div> REC
+      </div>
+      <video id="duet-camera-preview" autoplay muted playsinline></video>
+      <div id="duet-camera-placeholder">
+        <div style="font-size:2.5rem;">📷</div>
+        <div style="font-size:.85rem;">Iniciando cámara...</div>
+      </div>
+    </div>
+  </div>
+  <!-- Footer: grabar o publicar -->
+  <div class="duet-footer" id="duet-footer-record">
+    <div style="flex:1;text-align:center;">
+      <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:6px;" id="duet-rec-hint">Tocá para grabar</div>
+      <button class="duet-rec-btn" id="duet-rec-btn" onclick="toggleDuetRecording()"></button>
+    </div>
+  </div>
+  <!-- Footer publicar (aparece después de grabar) -->
+  <div class="duet-footer" id="duet-footer-publish" style="display:none;">
+    <input class="duet-caption-inp" id="duet-caption" placeholder="Descripción del dueto..." />
+    <button class="btn-duet-publish" id="duet-publish-btn" onclick="publishDuet()">Publicar</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  DUETO
+// ══════════════════════════════════════════════
+let _duetClipId = null;
+let _duetOriginalUid = null;
+let _duetOriginalName = null;
+let _duetOriginalDesc = null;
+let _duetStream = null;
+let _duetRecorder = null;
+let _duetChunks = [];
+let _duetBlob = null;
+let _duetRecording = false;
+let _duetTimerInterval = null;
+let _duetSeconds = 0;
+
+window.openDuet = async (clipId, mediaUrl, authorName, authorUid, desc) => {
+  if(!currentUser) { showToast('⚠️ Iniciá sesión para hacer un dueto'); return; }
+  _duetClipId = clipId;
+  _duetOriginalUid = authorUid;
+  _duetOriginalName = authorName;
+  _duetOriginalDesc = desc;
+  _duetBlob = null;
+  _duetChunks = [];
+  _duetSeconds = 0;
+
+  // Reset UI
+  document.getElementById('duet-footer-record').style.display = 'flex';
+  document.getElementById('duet-footer-publish').style.display = 'none';
+  document.getElementById('duet-rec-btn').classList.remove('recording');
+  document.getElementById('duet-rec-hint').textContent = 'Tocá para grabar';
+  document.getElementById('duet-rec-indicator').classList.remove('show');
+  document.getElementById('duet-timer-display').textContent = '0:00';
+  document.getElementById('duet-caption').value = '';
+
+  // Load original video
+  const orig = document.getElementById('duet-original-video');
+  orig.src = mediaUrl;
+  orig.muted = true;
+  orig.play().catch(()=>{});
+
+  // Open modal
+  document.getElementById('duet-modal').classList.add('open');
+
+  // Start camera
+  try {
+    _duetStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode:'user' }, audio: true });
+    const preview = document.getElementById('duet-camera-preview');
+    const placeholder = document.getElementById('duet-camera-placeholder');
+    preview.srcObject = _duetStream;
+    preview.style.display = 'block';
+    if(placeholder) placeholder.style.display = 'none';
+  } catch(e) {
+    showToast('❌ No se pudo acceder a la cámara: ' + e.message);
+  }
+};
+
+window.closeDuet = () => {
+  stopDuetRecording(true);
+  if(_duetStream) { _duetStream.getTracks().forEach(t => t.stop()); _duetStream = null; }
+  const orig = document.getElementById('duet-original-video');
+  orig.pause(); orig.src = '';
+  const preview = document.getElementById('duet-camera-preview');
+  preview.srcObject = null;
+  document.getElementById('duet-camera-placeholder').style.display = 'flex';
+  document.getElementById('duet-modal').classList.remove('open');
+};
+
+window.toggleDuetRecording = () => {
+  if(_duetRecording) {
+    stopDuetRecording(false);
+  } else {
+    startDuetRecording();
+  }
+};
+
+function startDuetRecording() {
+  if(!_duetStream) { showToast('❌ Cámara no disponible'); return; }
+  _duetChunks = [];
+  _duetSeconds = 0;
+
+  // Combinar audio del stream de cámara con audio del video original
+  const origVid = document.getElementById('duet-original-video');
+  origVid.muted = false;
+
+  const supportedType = ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm','video/mp4']
+    .find(t => MediaRecorder.isTypeSupported(t)) || '';
+
+  _duetRecorder = new MediaRecorder(_duetStream, supportedType ? { mimeType: supportedType } : {});
+  _duetRecorder.ondataavailable = e => { if(e.data.size > 0) _duetChunks.push(e.data); };
+  _duetRecorder.onstop = () => {
+    _duetBlob = new Blob(_duetChunks, { type: _duetRecorder.mimeType || 'video/webm' });
+    showDuetPublishUI();
+  };
+  _duetRecorder.start(200);
+  _duetRecording = true;
+
+  // UI
+  document.getElementById('duet-rec-btn').classList.add('recording');
+  document.getElementById('duet-rec-indicator').classList.add('show');
+  document.getElementById('duet-rec-hint').textContent = 'Tocá para detener';
+
+  // Timer
+  _duetTimerInterval = setInterval(() => {
+    _duetSeconds++;
+    const m = Math.floor(_duetSeconds / 60);
+    const s = _duetSeconds % 60;
+    document.getElementById('duet-timer-display').textContent = m + ':' + String(s).padStart(2,'0');
+    if(_duetSeconds >= 60) stopDuetRecording(false); // max 60s
+  }, 1000);
+}
+
+function stopDuetRecording(cancel) {
+  if(!_duetRecording && !cancel) return;
+  _duetRecording = false;
+  clearInterval(_duetTimerInterval);
+  document.getElementById('duet-rec-btn').classList.remove('recording');
+  document.getElementById('duet-rec-indicator').classList.remove('show');
+  const origVid = document.getElementById('duet-original-video');
+  origVid.muted = true;
+  if(_duetRecorder && _duetRecorder.state !== 'inactive') {
+    if(cancel) { _duetRecorder.ondataavailable = null; _duetRecorder.onstop = null; }
+    _duetRecorder.stop();
+  }
+}
+
+function showDuetPublishUI() {
+  document.getElementById('duet-footer-record').style.display = 'none';
+  document.getElementById('duet-footer-publish').style.display = 'flex';
+  showToast('✅ Grabación lista — escribí una descripción y publicá');
+}
+
+window.publishDuet = async () => {
+  if(!currentUser || !_duetBlob) return;
+  const caption = document.getElementById('duet-caption').value.trim();
+  const btn = document.getElementById('duet-publish-btn');
+  btn.disabled = true;
+  btn.textContent = 'Subiendo...';
+
+  try {
+    const ext = _duetBlob.type.includes('mp4') ? 'mp4' : 'webm';
+    const filename = `dueto_${currentUser.uid}_${Date.now()}.${ext}`;
+    const file = new File([_duetBlob], filename, { type: _duetBlob.type });
+
+    showToast('📤 Subiendo dueto...');
+    const handle = (myProfile.handle || myProfile.name || currentUser.displayName || 'Clipuy').replace('@','');
+    const mediaUrl = await uploadToServer(file, '@' + handle, caption || 'Dueto');
+
+    const desc = `🎭 Dueto con @${_duetOriginalName}${caption ? ' — ' + caption : ''}`;
+    const clipData = {
+      uid: currentUser.uid,
+      name: myProfile.name || currentUser.displayName || 'Usuario',
+      avatar: myProfile.avatar || avatarFallback(currentUser.uid),
+      description: desc,
+      tags: '#dueto',
+      mediaUrl,
+      mediaType: 'video',
+      isDuet: true,
+      duetOriginalClipId: _duetClipId,
+      duetOriginalUid: _duetOriginalUid,
+      duetOriginalName: _duetOriginalName,
+      likesCount: 0,
+      likes: [],
+      commentsCount: 0,
+      ts: serverTimestamp()
+    };
+
+    await addDoc(collection(db,'clips'), clipData);
+
+    // Notificar al creador original
+    if(_duetOriginalUid && _duetOriginalUid !== currentUser.uid) {
+      try {
+        await addDoc(collection(db,'notifications'), {
+          toUid: _duetOriginalUid,
+          fromUid: currentUser.uid,
+          fromName: myProfile.name || currentUser.displayName || 'Alguien',
+          fromAvatar: myProfile.avatar || currentUser.photoURL || '',
+          type: 'duet',
+          clipId: _duetClipId,
+          read: false,
+          createdAt: serverTimestamp()
+        });
+      } catch(e) {}
+    }
+
+    showToast('🎭 ¡Dueto publicado!');
+    closeDuet();
+    loadFeed();
+    goTo('home');
+  } catch(e) {
+    showToast('❌ Error: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = 'Publicar';
+  }
+};
 </script>
 
 <!-- ── PWA Install Banner ── -->
