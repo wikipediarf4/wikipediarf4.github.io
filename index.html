@@ -417,10 +417,31 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
 
 /* ── STORY VIEWER ── */
 #story-viewer{
-  position:fixed;inset:0;left:72px;z-index:300;background:#000;
-  display:none;flex-direction:column;
+  position:fixed;inset:0;left:72px;z-index:300;
+  background:rgba(0,0,0,.88);backdrop-filter:blur(6px);
+  display:none;align-items:center;justify-content:center;
 }
 #story-viewer.open{display:flex;}
+/* Inner card — vertical 9:16, max height */
+.sv-card{
+  position:relative;
+  width:100%;max-width:380px;
+  height:calc(100vh - 40px);max-height:720px;
+  border-radius:16px;overflow:hidden;
+  background:#111;
+  box-shadow:0 24px 80px rgba(0,0,0,.9);
+  flex-shrink:0;
+}
+/* Nav arrows for desktop */
+.sv-nav-arrow{
+  background:rgba(255,255,255,.12);border:none;border-radius:50%;
+  width:44px;height:44px;color:#fff;font-size:1.3rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:background .15s;margin:0 16px;
+}
+.sv-nav-arrow:hover{background:rgba(255,255,255,.25);}
+.sv-nav-arrow:disabled{opacity:.25;cursor:default;}
+@media(max-width:600px){.sv-nav-arrow{display:none;} .sv-card{border-radius:0;max-height:100vh;height:100vh;}}
 .sv-progress-bar{
   display:flex;gap:3px;padding:10px 12px 6px;
   position:absolute;top:0;left:0;right:0;z-index:10;
@@ -443,7 +464,7 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
   position:absolute;inset:0;
   background:linear-gradient(to top,rgba(0,0,0,.6) 0%,transparent 40%);
 }
-.sv-content{position:absolute;bottom:40px;left:16px;right:16px;z-index:10;}
+.sv-content{position:absolute;bottom:16px;left:16px;right:16px;z-index:10;}
 .sv-text{font-size:1rem;line-height:1.5;margin-bottom:12px;}
 .sv-reply-row{display:flex;gap:8px;}
 .sv-reply-inp{
@@ -1581,29 +1602,36 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
 
 <!-- STORY VIEWER -->
 <div id="story-viewer">
-  <div class="sv-progress-bar" id="sv-progress-bar"></div>
-  <div class="sv-header">
-    <img class="sv-avatar" id="sv-avatar" src=""/>
-    <div>
-      <div class="sv-name" id="sv-name"></div>
-      <div class="sv-time" id="sv-time"></div>
+  <!-- Prev arrow (desktop) -->
+  <button class="sv-nav-arrow" id="sv-arrow-prev" onclick="svPrev()" title="Anterior">&#8249;</button>
+  <!-- Card -->
+  <div class="sv-card">
+    <div class="sv-progress-bar" id="sv-progress-bar"></div>
+    <div class="sv-header">
+      <img class="sv-avatar" id="sv-avatar" src=""/>
+      <div>
+        <div class="sv-name" id="sv-name"></div>
+        <div class="sv-time" id="sv-time"></div>
+      </div>
+      <button class="sv-close" onclick="closeStoryViewer()">✕</button>
     </div>
-    <button class="sv-close" onclick="closeStoryViewer()">✕</button>
-  </div>
-  <div class="sv-media" id="sv-media"></div>
-  <div class="sv-overlay"></div>
-  <div class="sv-tap-left" onclick="svPrev()"></div>
-  <div class="sv-tap-right" onclick="svNext()"></div>
-  <div class="sv-content">
-    <div class="sv-text" id="sv-text"></div>
-    <div class="sv-reply-row" style="align-items:center;">
-      <button class="sv-heart-btn" id="sv-heart-btn" onclick="toggleStoryViewerLike()">🤍</button>
-      <input class="sv-reply-inp" id="sv-reply-inp" placeholder="Responder a la historia..."/>
-      <button class="sv-send-btn" onclick="sendStoryReply()">
-        <svg width="16" height="16" fill="white" viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
-      </button>
+    <div class="sv-media" id="sv-media"></div>
+    <div class="sv-overlay"></div>
+    <div class="sv-tap-left" onclick="svPrev()"></div>
+    <div class="sv-tap-right" onclick="svNext()"></div>
+    <div class="sv-content">
+      <div class="sv-text" id="sv-text"></div>
+      <div class="sv-reply-row" style="align-items:center;">
+        <button class="sv-heart-btn" id="sv-heart-btn" onclick="toggleStoryViewerLike()">🤍</button>
+        <input class="sv-reply-inp" id="sv-reply-inp" placeholder="Responder a la historia..."/>
+        <button class="sv-send-btn" onclick="sendStoryReply()">
+          <svg width="16" height="16" fill="white" viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+        </button>
+      </div>
     </div>
   </div>
+  <!-- Next arrow (desktop) -->
+  <button class="sv-nav-arrow" id="sv-arrow-next" onclick="svNext()" title="Siguiente">&#8250;</button>
 </div>
 
 <!-- CREATE STORY -->
@@ -2940,6 +2968,11 @@ function renderStoryViewer() {
     heartBtn.textContent = liked ? '❤️' : '🤍';
     heartBtn.classList.toggle('liked', liked);
   }
+  // Arrow states
+  const prevArrow = document.getElementById('sv-arrow-prev');
+  const nextArrow = document.getElementById('sv-arrow-next');
+  if(prevArrow) prevArrow.disabled = _svIndex === 0;
+  if(nextArrow) nextArrow.disabled = _svIndex === _svUserStories.length - 1;
 }
 
 window.svNext = () => {
