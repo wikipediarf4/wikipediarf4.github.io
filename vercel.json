@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/clip/:id", "destination": "/api/clip/:id" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
