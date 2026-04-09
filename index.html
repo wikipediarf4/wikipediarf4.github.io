@@ -3331,7 +3331,8 @@ async function loadLikedClips() {
   const grid = document.getElementById('profile-clips-grid');
   grid.innerHTML = `<div style="grid-column:span 6;text-align:center;padding:30px;color:var(--text-muted)">⏳ Cargando...</div>`;
   try {
-    const q = query(collection(db,'clips'), where('likes','array-contains',currentUser.uid), orderBy('ts','desc'));
+    // Sin orderBy para evitar índice compuesto — ordenamos en el cliente
+    const q = query(collection(db,'clips'), where('likes','array-contains',currentUser.uid));
     const snap = await getDocs(q);
     grid.innerHTML = '';
     if(snap.empty) {
@@ -3339,7 +3340,13 @@ async function loadLikedClips() {
       return;
     }
     const watchedSet = JSON.parse(localStorage.getItem('watchedClips')||'{}');
-    const clipsData = snap.docs.map(d => ({id:d.id,...d.data()}));
+    // Ordenar por fecha descendente en el cliente
+    const clipsData = snap.docs.map(d => ({id:d.id,...d.data()}))
+      .sort((a,b) => {
+        const ta = a.ts?.toMillis ? a.ts.toMillis() : (a.ts ? new Date(a.ts).getTime() : 0);
+        const tb = b.ts?.toMillis ? b.ts.toMillis() : (b.ts ? new Date(b.ts).getTime() : 0);
+        return tb - ta;
+      });
 
     clipsData.forEach((data, idx) => {
       const div = document.createElement('div');
