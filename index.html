@@ -391,6 +391,29 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
 .story-card-time{font-size:.75rem;color:var(--text-muted);}
 .story-card-img{width:100%;border-radius:var(--radius-sm);max-height:200px;object-fit:cover;}
 .story-card-text{font-size:.9rem;color:rgba(255,255,255,.85);line-height:1.5;}
+.story-card-images{display:flex;gap:6px;margin-top:10px;overflow-x:auto;scrollbar-width:none;}
+.story-card-images::-webkit-scrollbar{display:none;}
+.story-card-thumb{width:90px;height:120px;border-radius:10px;object-fit:cover;flex-shrink:0;}
+.story-card-actions{display:flex;align-items:center;gap:16px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+.story-action-btn{background:none;border:none;color:var(--text-muted);font-family:'Space Grotesk',sans-serif;font-size:.82rem;cursor:pointer;display:flex;align-items:center;gap:5px;transition:color .15s;}
+.story-action-btn:hover{color:#fff;}
+.story-action-btn.liked{color:var(--accent);}
+.story-action-btn svg{width:18px;height:18px;}
+/* Comments panel inside story card */
+.story-comments{margin-top:10px;display:none;}
+.story-comments.open{display:block;}
+.story-comment-list{max-height:120px;overflow-y:auto;margin-bottom:8px;scrollbar-width:none;}
+.story-comment-list::-webkit-scrollbar{display:none;}
+.story-comment-item{font-size:.8rem;color:rgba(255,255,255,.75);margin-bottom:5px;line-height:1.4;}
+.story-comment-item strong{color:#fff;}
+.story-comment-inp-row{display:flex;gap:6px;}
+.story-comment-inp{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:7px 12px;color:#fff;font-family:'Space Grotesk',sans-serif;font-size:.82rem;outline:none;}
+.story-comment-inp:focus{border-color:var(--accent2);}
+.story-comment-send{background:var(--accent);border:none;border-radius:50%;width:30px;height:30px;color:#fff;font-size:.9rem;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+/* Story viewer heart btn */
+.sv-heart-btn{background:none;border:none;color:#fff;font-size:1.6rem;cursor:pointer;transition:transform .15s;padding:0 4px;}
+.sv-heart-btn:active{transform:scale(1.3);}
+.sv-heart-btn.liked{color:var(--accent);}
 
 /* ── STORY VIEWER ── */
 #story-viewer{
@@ -1573,7 +1596,8 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
   <div class="sv-tap-right" onclick="svNext()"></div>
   <div class="sv-content">
     <div class="sv-text" id="sv-text"></div>
-    <div class="sv-reply-row">
+    <div class="sv-reply-row" style="align-items:center;">
+      <button class="sv-heart-btn" id="sv-heart-btn" onclick="toggleStoryViewerLike()">🤍</button>
       <input class="sv-reply-inp" id="sv-reply-inp" placeholder="Responder a la historia..."/>
       <button class="sv-send-btn" onclick="sendStoryReply()">
         <svg width="16" height="16" fill="white" viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
@@ -2743,23 +2767,130 @@ function renderStoriesList() {
     container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted)">No hay historias todavía 🌙<br><br><button class="btn-main" style="width:auto;padding:10px 20px" onclick="openCreateStory()">Crear la primera</button></div>`;
     return;
   }
-  _stories.forEach((s, idx) => {
+  // Group by user (same as bubbles)
+  const byUser = {};
+  const userOrder = [];
+  _stories.forEach(s => {
+    if(!byUser[s.uid]) { byUser[s.uid] = []; userOrder.push(s.uid); }
+    byUser[s.uid].push(s);
+  });
+  userOrder.forEach(uid => {
+    const stories = byUser[uid];
+    const latest = stories[0];
+    const cardId = 'sc-' + uid;
     const card = document.createElement('div');
     card.className = 'story-card';
-    card.onclick = () => openStoryViewer([s], 0);
+    card.id = cardId;
+    // Thumbnails row (if there are images)
+    const images = stories.filter(s => s.mediaUrl && s.mediaType === 'imagen');
+    const thumbsHtml = images.length
+      ? `<div class="story-card-images">${images.map(s=>`<img class="story-card-thumb" src="${escHtml(s.mediaUrl)}" loading="lazy" onclick="event.stopPropagation();openStoryViewerUser('${escHtml(uid)}',${stories.indexOf(s)})" />`).join('')}</div>`
+      : '';
+    const textHtml = latest.text ? `<div class="story-card-text" style="margin-top:${thumbsHtml?'8px':'0'}">${escHtml(latest.text)}</div>` : '';
     card.innerHTML = `
-      <div class="story-card-header">
-        <img class="story-card-avatar" src="${escHtml(s.avatar||avatarFallback(s.uid||'u'))}" onerror="this.src='${avatarFallback(s.uid||'u')}'"/>
-        <div>
-          <div class="story-card-name">${escHtml(s.name||'Usuario')}</div>
-          <div class="story-card-time">${timeAgo(s.ts)}</div>
+      <div class="story-card-header" style="cursor:pointer" onclick="openStoryViewerUser('${escHtml(uid)}',0)">
+        <img class="story-card-avatar" src="${escHtml(latest.avatar||avatarFallback(uid))}" onerror="this.src='${avatarFallback(uid)}'"/>
+        <div style="flex:1">
+          <div class="story-card-name">${escHtml(latest.name||'Usuario')}</div>
+          <div class="story-card-time">${timeAgo(latest.ts)} · ${stories.length} historia${stories.length>1?'s':''}</div>
         </div>
       </div>
-      ${s.mediaUrl && s.mediaType==='imagen' ? `<img class="story-card-img" src="${escHtml(s.mediaUrl)}" loading="lazy"/>` : ''}
-      ${s.text ? `<div class="story-card-text" style="margin-top:${s.mediaUrl?'8px':'0'}">${escHtml(s.text)}</div>` : ''}
+      ${thumbsHtml}
+      ${textHtml}
+      <div class="story-card-actions">
+        <button class="story-action-btn" id="like-btn-${escHtml(uid)}" onclick="event.stopPropagation();toggleStoryLike('${escHtml(uid)}','${cardId}')">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <span id="like-count-${escHtml(uid)}">0</span>
+        </button>
+        <button class="story-action-btn" onclick="event.stopPropagation();toggleStoryComments('${cardId}')">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span>Comentar</span>
+        </button>
+        <button class="story-action-btn" style="margin-left:auto" onclick="event.stopPropagation();openStoryViewerUser('${escHtml(uid)}',0)">
+          Ver todo →
+        </button>
+      </div>
+      <div class="story-comments" id="comments-${cardId}">
+        <div class="story-comment-list" id="comment-list-${cardId}"></div>
+        <div class="story-comment-inp-row">
+          <input class="story-comment-inp" id="comment-inp-${cardId}" placeholder="Escribí un comentario..." onclick="event.stopPropagation()"/>
+          <button class="story-comment-send" onclick="event.stopPropagation();sendStoryComment('${escHtml(uid)}','${cardId}')">
+            <svg width="14" height="14" fill="white" viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+          </button>
+        </div>
+      </div>
     `;
     container.appendChild(card);
+    // Load likes/comments from localStorage (simple local state)
+    loadStoryCardState(uid, cardId);
   });
+}
+
+window.openStoryViewerUser = (uid, startIdx) => {
+  const byUser = {};
+  _stories.forEach(s => { if(!byUser[s.uid]) byUser[s.uid] = []; byUser[s.uid].push(s); });
+  const stories = byUser[uid] || [];
+  if(stories.length) openStoryViewer(stories, startIdx);
+};
+
+window.toggleStoryLike = (uid, cardId) => {
+  const key = 'story_like_' + uid;
+  const liked = localStorage.getItem(key) === '1';
+  const newLiked = !liked;
+  localStorage.setItem(key, newLiked ? '1' : '0');
+  const countKey = 'story_like_count_' + uid;
+  let count = parseInt(localStorage.getItem(countKey) || '0');
+  count = newLiked ? count + 1 : Math.max(0, count - 1);
+  localStorage.setItem(countKey, count);
+  const btn = document.getElementById('like-btn-' + uid);
+  const countEl = document.getElementById('like-count-' + uid);
+  if(btn) {
+    btn.classList.toggle('liked', newLiked);
+    // fill heart
+    const svgPath = btn.querySelector('path');
+    if(svgPath) svgPath.setAttribute('fill', newLiked ? 'var(--accent)' : 'none');
+    const svgEl = btn.querySelector('svg');
+    if(svgEl) svgEl.setAttribute('stroke', newLiked ? 'var(--accent)' : 'currentColor');
+  }
+  if(countEl) countEl.textContent = count;
+};
+
+window.toggleStoryComments = (cardId) => {
+  const panel = document.getElementById('comments-' + cardId);
+  if(panel) panel.classList.toggle('open');
+};
+
+window.sendStoryComment = (uid, cardId) => {
+  if(!currentUser) { showToast('⚠️ Iniciá sesión para comentar'); return; }
+  const inp = document.getElementById('comment-inp-' + cardId);
+  if(!inp || !inp.value.trim()) return;
+  const text = inp.value.trim();
+  inp.value = '';
+  const list = document.getElementById('comment-list-' + cardId);
+  if(list) {
+    const item = document.createElement('div');
+    item.className = 'story-comment-item';
+    item.innerHTML = `<strong>${escHtml(myProfile.name||'Tú')}</strong> ${escHtml(text)}`;
+    list.appendChild(item);
+    list.scrollTop = list.scrollHeight;
+  }
+  showToast('💬 Comentario enviado');
+};
+
+function loadStoryCardState(uid, cardId) {
+  // Restore like state
+  const liked = localStorage.getItem('story_like_' + uid) === '1';
+  const count = parseInt(localStorage.getItem('story_like_count_' + uid) || '0');
+  const btn = document.getElementById('like-btn-' + uid);
+  const countEl = document.getElementById('like-count-' + uid);
+  if(btn && liked) {
+    btn.classList.add('liked');
+    const svgPath = btn.querySelector('path');
+    if(svgPath) svgPath.setAttribute('fill', 'var(--accent)');
+    const svgEl = btn.querySelector('svg');
+    if(svgEl) svgEl.setAttribute('stroke', 'var(--accent)');
+  }
+  if(countEl) countEl.textContent = count;
 }
 
 // ── STORY VIEWER ──
@@ -2802,6 +2933,13 @@ function renderStoryViewer() {
     requestAnimationFrame(() => { fill.style.width = '100%'; });
     _svTimer = setTimeout(svNext, 5000);
   }
+  // Sync heart state
+  const heartBtn = document.getElementById('sv-heart-btn');
+  if(heartBtn && s) {
+    const liked = localStorage.getItem('story_like_' + s.uid) === '1';
+    heartBtn.textContent = liked ? '❤️' : '🤍';
+    heartBtn.classList.toggle('liked', liked);
+  }
 }
 
 window.svNext = () => {
@@ -2823,6 +2961,37 @@ window.sendStoryReply = () => {
   if(!inp.value.trim()) return;
   showToast('💬 Respuesta enviada');
   inp.value = '';
+};
+
+window.toggleStoryViewerLike = () => {
+  const s = _svUserStories && _svUserStories[0];
+  if(!s) return;
+  const uid = s.uid;
+  const key = 'story_like_' + uid;
+  const liked = localStorage.getItem(key) === '1';
+  const newLiked = !liked;
+  localStorage.setItem(key, newLiked ? '1' : '0');
+  const countKey = 'story_like_count_' + uid;
+  let count = parseInt(localStorage.getItem(countKey) || '0');
+  count = newLiked ? count + 1 : Math.max(0, count - 1);
+  localStorage.setItem(countKey, count);
+  const btn = document.getElementById('sv-heart-btn');
+  if(btn) {
+    btn.textContent = newLiked ? '❤️' : '🤍';
+    btn.classList.toggle('liked', newLiked);
+  }
+  showToast(newLiked ? '❤️ Te gustó esta historia' : 'Ya no te gusta');
+  // Sync card if visible
+  const cardBtn = document.getElementById('like-btn-' + uid);
+  const cardCount = document.getElementById('like-count-' + uid);
+  if(cardBtn) {
+    cardBtn.classList.toggle('liked', newLiked);
+    const svgPath = cardBtn.querySelector('path');
+    if(svgPath) svgPath.setAttribute('fill', newLiked ? 'var(--accent)' : 'none');
+    const svgEl = cardBtn.querySelector('svg');
+    if(svgEl) svgEl.setAttribute('stroke', newLiked ? 'var(--accent)' : 'currentColor');
+  }
+  if(cardCount) cardCount.textContent = count;
 };
 
 // ── CREATE STORY ──
