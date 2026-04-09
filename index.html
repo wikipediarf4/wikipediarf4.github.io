@@ -2496,7 +2496,7 @@ window.toggleMute = (id) => {
 };
 
 window.shareClip = (id, desc) => {
-  const url = window.location.href.split('?')[0] + '?clip=' + id;
+  const url = 'https://clipuy-og.synxyes.workers.dev/clip/' + id;
   if(navigator.share) navigator.share({ title:'Clipuy', text:desc, url });
   else { navigator.clipboard.writeText(url); showToast('🔗 Link copiado'); }
 };
