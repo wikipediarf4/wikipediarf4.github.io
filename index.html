@@ -472,18 +472,73 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
   border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;
 }
 .profile-tab.active{color:#fff;border-bottom-color:var(--accent);}
-.profile-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;}
+/* TikTok-style grid: ~5-6 columnas, miniaturas pequeñas */
+.profile-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:3px;
+  padding:3px;
+}
 .profile-clip{
   aspect-ratio:9/16;background:var(--surface2);position:relative;overflow:hidden;cursor:pointer;
+  border-radius:2px;
 }
-.profile-clip img{width:100%;height:100%;object-fit:cover;}
+.profile-clip:hover .profile-clip-overlay{opacity:1;}
+.profile-clip-overlay{
+  position:absolute;inset:0;background:rgba(0,0,0,.3);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .2s;
+}
+.profile-clip img,.profile-clip video{width:100%;height:100%;object-fit:cover;}
 .profile-clip-views{
-  position:absolute;bottom:4px;left:4px;font-size:.72rem;font-weight:700;
+  position:absolute;bottom:5px;left:6px;font-size:.72rem;font-weight:700;
   display:flex;align-items:center;gap:3px;
-  text-shadow:0 1px 4px rgba(0,0,0,.8);
+  text-shadow:0 1px 4px rgba(0,0,0,.9);color:#fff;
+}
+/* "Visto" badge */
+.profile-clip-watched{
+  position:absolute;top:5px;left:6px;
+  background:rgba(0,0,0,.55);border-radius:4px;
+  font-size:.6rem;color:rgba(255,255,255,.75);
+  padding:2px 5px;font-weight:600;letter-spacing:.3px;
 }
 
-/* ── CHAT LIST ── */
+/* ── CLIP VIEWER MODAL ── */
+#clip-viewer-modal{
+  position:fixed;inset:0;left:72px;z-index:450;background:rgba(0,0,0,.92);
+  display:none;align-items:center;justify-content:center;
+  backdrop-filter:blur(8px);
+}
+#clip-viewer-modal.open{display:flex;}
+.clip-viewer-wrap{
+  position:relative;height:90vh;aspect-ratio:9/16;
+  background:#000;border-radius:12px;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+.clip-viewer-wrap video,.clip-viewer-wrap img{
+  width:100%;height:100%;object-fit:contain;
+}
+.clip-viewer-close{
+  position:absolute;top:12px;right:12px;
+  background:rgba(0,0,0,.6);border:none;color:#fff;
+  border-radius:50%;width:36px;height:36px;font-size:1.1rem;
+  cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;
+}
+.clip-viewer-info{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:20px 16px 16px;
+  background:linear-gradient(to top,rgba(0,0,0,.85),transparent);
+}
+.clip-viewer-desc{font-size:.9rem;color:#fff;line-height:1.5;margin-bottom:4px;}
+.clip-viewer-stats{font-size:.8rem;color:rgba(255,255,255,.7);display:flex;gap:14px;}
+/* Watched overlay badge */
+.clip-watched-badge{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:rgba(0,0,0,.65);border-radius:10px;padding:8px 16px;
+  font-size:.85rem;color:rgba(255,255,255,.85);font-weight:600;
+  pointer-events:none;opacity:0;transition:opacity .4s;
+}
+.clip-watched-badge.show{opacity:1;}
 #chat-screen{background:#000;flex-direction:row!important;}
 .chat-panel-left{
   width:380px;flex-shrink:0;
@@ -1952,27 +2007,103 @@ async function loadProfileClips() {
     const q = query(collection(db,'clips'), where('uid','==',currentUser.uid), orderBy('ts','desc'));
     const snap = await getDocs(q);
     if(snap.empty) {
-      grid.innerHTML = `<div style="grid-column:span 3;text-align:center;padding:30px;color:var(--text-muted)">Subí tu primer clip 🎬</div>`;
+      grid.innerHTML = `<div style="grid-column:span 5;text-align:center;padding:40px;color:var(--text-muted)">Subí tu primer clip 🎬</div>`;
       return;
     }
+    // Load watched set from localStorage
+    const watchedSet = JSON.parse(localStorage.getItem('watchedClips')||'{}');
+    const clipsData = [];
     snap.forEach(d => {
-      const data = d.data();
+      clipsData.push({id:d.id,...d.data()});
+    });
+    clipsData.forEach((data, idx) => {
       const div = document.createElement('div');
       div.className = 'profile-clip';
-      div.onclick = () => {};
-      const clipDocId = d.id;
+      div.onclick = () => openClipViewer(clipsData, idx);
+      const watched = watchedSet[data.id];
       div.innerHTML = `
-        ${data.mediaType==='imagen'
-          ? `<img data-src="${escHtml(data.mediaUrl||'')}" loading="lazy"/>`
+        ${data.mediaType==='imagen'||data.mediaType==='image'
+          ? `<img data-src="${escHtml(data.mediaUrl||'')}" loading="lazy" style="width:100%;height:100%;object-fit:cover"/>`
           : `<video data-src="${escHtml(data.mediaUrl||'')}" preload="none" style="width:100%;height:100%;object-fit:cover"></video>`
         }
-        <div class="profile-clip-views">▶ ${fmtNum(data.likesCount||0)}</div>
-        <button onclick="event.stopPropagation();deleteProfileClip('${d.id}',this)" style="position:absolute;top:4px;right:4px;background:rgba(254,44,85,.8);border:none;border-radius:50%;width:28px;height:28px;font-size:.8rem;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;z-index:5;">🗑️</button>
+        ${watched ? `<div class="profile-clip-watched">Visto</div>` : ''}
+        <div class="profile-clip-views">▶ ${fmtNum(data.viewsCount||data.likesCount||0)}</div>
+        <div class="profile-clip-overlay"><svg width="28" height="28" fill="white" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+        <button onclick="event.stopPropagation();deleteProfileClip('${data.id}',this)" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.55);border:none;border-radius:50%;width:26px;height:26px;font-size:.75rem;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;z-index:5;">🗑️</button>
       `;
       grid.appendChild(div);
     });
     loadNgrokMedia(grid);
   } catch(e) {}
+}
+
+// ── Clip Viewer ──
+let _clipViewerClips = [];
+let _clipViewerIdx = 0;
+let _clipViewerVideo = null;
+
+window.openClipViewer = (clips, idx) => {
+  _clipViewerClips = clips;
+  _clipViewerIdx = idx;
+  document.getElementById('clip-viewer-modal').classList.add('open');
+  renderClipViewer();
+};
+
+window.closeClipViewer = () => {
+  if(_clipViewerVideo) { _clipViewerVideo.pause(); _clipViewerVideo = null; }
+  document.getElementById('clip-viewer-modal').classList.remove('open');
+  document.getElementById('clip-viewer-media').innerHTML = '';
+  // Refresh grid to update watched badges
+  loadProfileClips();
+};
+
+function renderClipViewer() {
+  if(_clipViewerVideo) { _clipViewerVideo.pause(); _clipViewerVideo = null; }
+  const clip = _clipViewerClips[_clipViewerIdx];
+  if(!clip) return;
+  const mediaEl = document.getElementById('clip-viewer-media');
+  const isVideo = clip.mediaType !== 'imagen' && clip.mediaType !== 'image';
+
+  if(isVideo) {
+    const v = document.createElement('video');
+    v.src = clip.mediaUrl || '';
+    v.style.cssText = 'width:100%;height:100%;object-fit:contain;';
+    v.autoplay = true;
+    v.controls = true;
+    v.loop = false;
+    v.setAttribute('playsinline','');
+    // Mark as watched when video ends or after 5s
+    const markWatched = () => {
+      const w = JSON.parse(localStorage.getItem('watchedClips')||'{}');
+      if(!w[clip.id]) {
+        w[clip.id] = true;
+        localStorage.setItem('watchedClips', JSON.stringify(w));
+        // Show badge
+        const badge = document.getElementById('clip-watched-badge');
+        badge.classList.add('show');
+        setTimeout(() => badge.classList.remove('show'), 2500);
+      }
+    };
+    v.addEventListener('ended', markWatched);
+    v.addEventListener('timeupdate', () => { if(v.currentTime >= 5) markWatched(); });
+    mediaEl.innerHTML = '';
+    mediaEl.appendChild(v);
+    _clipViewerVideo = v;
+  } else {
+    mediaEl.innerHTML = `<img src="${escHtml(clip.mediaUrl||'')}" style="width:100%;height:100%;object-fit:contain"/>`;
+  }
+
+  document.getElementById('clip-viewer-desc').textContent = clip.caption || clip.desc || '';
+  document.getElementById('clip-viewer-stats').innerHTML =
+    `<span>❤️ ${fmtNum(clip.likesCount||0)}</span><span>▶ ${fmtNum(clip.viewsCount||0)}</span>`;
+
+  // keyboard nav
+  document.onkeydown = (e) => {
+    if(!document.getElementById('clip-viewer-modal').classList.contains('open')) return;
+    if(e.key==='Escape') closeClipViewer();
+    if(e.key==='ArrowRight'&&_clipViewerIdx<_clipViewerClips.length-1){_clipViewerIdx++;renderClipViewer();}
+    if(e.key==='ArrowLeft'&&_clipViewerIdx>0){_clipViewerIdx--;renderClipViewer();}
+  };
 }
 
 
@@ -2055,6 +2186,10 @@ window.openUserProfile = async (uid) => {
     const overlay = document.createElement('div');
     overlay.id = 'user-profile-overlay';
     overlay.style.cssText = 'position:fixed;inset:0;left:72px;z-index:400;background:#000;display:flex;flex-direction:column;overflow-y:auto;animation:fadeIn .2s';
+    // Store clips globally for viewer access
+    window['_pubClips_' + uid] = clips;
+    const safeUid = uid.replace(/[^a-z0-9]/gi,'_');
+
     overlay.innerHTML = `
       <div style="position:sticky;top:0;z-index:10;display:flex;align-items:center;padding:14px 16px;background:rgba(0,0,0,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)">
         <button onclick="document.getElementById('user-profile-overlay').remove()" style="background:none;border:none;color:#fff;font-size:1.3rem;cursor:pointer;margin-right:12px">←</button>
@@ -2091,15 +2226,19 @@ window.openUserProfile = async (uid) => {
       <div style="padding:2px 0 80px">
         ${clips.length === 0
           ? `<div style="text-align:center;padding:40px;color:var(--text-muted)">Este usuario no ha subido clips todavía</div>`
-          : `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px">
-              ${clips.map(c => `
-                <div style="aspect-ratio:9/16;background:var(--surface2);overflow:hidden;position:relative">
-                  ${c.mediaType==='video'
+          : `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:3px;padding:3px">
+              ${clips.map((c,ci) => {
+                const isVideo = c.mediaType !== 'imagen' && c.mediaType !== 'image';
+                const wSet = JSON.parse(localStorage.getItem('watchedClips')||'{}');
+                const watched = wSet[c.id];
+                return `<div onclick="openClipViewer(window['_pubClips_${uid}'],${ci})" style="aspect-ratio:9/16;background:var(--surface2);border-radius:2px;overflow:hidden;position:relative;cursor:pointer">
+                  ${isVideo
                     ? `<video src="${escHtml(c.mediaUrl||'')}" style="width:100%;height:100%;object-fit:cover" preload="none"></video>`
                     : `<img src="${escHtml(c.mediaUrl||'')}" style="width:100%;height:100%;object-fit:cover"/>`}
-                  <div style="position:absolute;bottom:0;left:0;right:0;padding:4px 6px;background:linear-gradient(to top,rgba(0,0,0,.7),transparent);font-size:.65rem;color:rgba(255,255,255,.9)">❤️ ${fmtNum(c.likesCount||0)}</div>
-                </div>
-              `).join('')}
+                  ${watched ? `<div style="position:absolute;top:5px;left:6px;background:rgba(0,0,0,.55);border-radius:4px;font-size:.6rem;color:rgba(255,255,255,.75);padding:2px 5px;font-weight:600">Visto</div>` : ''}
+                  <div style="position:absolute;bottom:0;left:0;right:0;padding:5px 6px;background:linear-gradient(to top,rgba(0,0,0,.7),transparent);font-size:.7rem;color:#fff;font-weight:700">▶ ${fmtNum(c.viewsCount||c.likesCount||0)}</div>
+                </div>`;
+              }).join('')}
             </div>`
         }
       </div>
@@ -2596,6 +2735,19 @@ window.clipClearMusic = () => {
 };
 
 </script>
+
+<!-- ══════════════════ CLIP VIEWER MODAL ══════════════════ -->
+<div id="clip-viewer-modal">
+  <div class="clip-viewer-wrap" id="clip-viewer-wrap">
+    <div id="clip-viewer-media"></div>
+    <button class="clip-viewer-close" onclick="closeClipViewer()">✕</button>
+    <div class="clip-watched-badge" id="clip-watched-badge">Visto ✓</div>
+    <div class="clip-viewer-info">
+      <div class="clip-viewer-desc" id="clip-viewer-desc"></div>
+      <div class="clip-viewer-stats" id="clip-viewer-stats"></div>
+    </div>
+  </div>
+</div>
 
 <!-- ══════════════════ ADMIN MODAL ══════════════════ -->
 <div id="admin-modal" style="position:fixed;inset:0;left:72px;z-index:500;background:#000;display:none;flex-direction:column;">
