@@ -189,17 +189,20 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
 /* Right actions */
 
 .v-action{
-  display:flex;flex-direction:column;align-items:center;gap:3px;
+  display:flex;flex-direction:column;align-items:center;gap:5px;
   cursor:pointer;
 }
 .v-action-icon{
-  width:44px;height:44px;display:flex;align-items:center;justify-content:center;
-  background:rgba(255,255,255,.1);border-radius:50%;
-  font-size:1.3rem;transition:transform .15s;
+  width:52px;height:52px;display:flex;align-items:center;justify-content:center;
+  background:rgba(30,30,30,.75);border-radius:50%;
+  font-size:1.5rem;transition:transform .15s;
+  box-shadow:0 2px 8px rgba(0,0,0,.4);
+  backdrop-filter:blur(4px);
 }
+.v-action-icon svg{width:26px;height:26px;fill:white;}
 .v-action-icon:active{transform:scale(.88);}
-.v-action span{font-size:.72rem;color:rgba(255,255,255,.9);font-weight:600;}
-.v-action.liked .v-action-icon{background:rgba(254,44,85,.3);}
+.v-action span{font-size:.78rem;color:#fff;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.8);}
+.v-action.liked .v-action-icon{background:rgba(254,44,85,.25);}
 /* Disc spin */
 .disc-spin{
   width:44px;height:44px;border-radius:50%;object-fit:cover;
@@ -1364,15 +1367,21 @@ function buildVideoSlide(id, data) {
     </div>
     <div class="video-actions">
       <div class="v-action ${isLiked?'liked':''}" id="like-${id}" onclick="toggleLike('${id}',this)">
-        <div class="v-action-icon">${isLiked?'❤️':'🤍'}</div>
+        <div class="v-action-icon" id="like-icon-${id}">
+          <svg viewBox="0 0 24 24" style="fill:${isLiked?'#fe2c55':'white'};width:28px;height:28px;"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        </div>
         <span id="lc-${id}">${fmtNum(data.likesCount||0)}</span>
       </div>
       <div class="v-action" onclick="openComments('${id}')">
-        <div class="v-action-icon">💬</div>
+        <div class="v-action-icon">
+          <svg viewBox="0 0 24 24" style="fill:white;width:28px;height:28px;"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+        </div>
         <span>${fmtNum(data.commentsCount||0)}</span>
       </div>
       <div class="v-action" onclick="shareClip('${id}','${escHtml(data.description||'')}')">
-        <div class="v-action-icon">↗️</div>
+        <div class="v-action-icon">
+          <svg viewBox="0 0 24 24" style="fill:white;width:28px;height:28px;"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>
+        </div>
         <span>Compartir</span>
       </div>
       <div class="v-action">
@@ -1456,7 +1465,8 @@ window.toggleLike = async (clipId, el) => {
   const icon = el.querySelector('.v-action-icon');
   const cnt = document.getElementById('lc-'+clipId);
   el.classList.toggle('liked');
-  icon.textContent = isLiked ? '🤍' : '❤️';
+  const svg = icon.querySelector('svg');
+  if(svg) svg.style.fill = isLiked ? 'white' : '#fe2c55';
   try {
     const ref = doc(db,'clips',clipId);
     await updateDoc(ref, {
@@ -1785,46 +1795,35 @@ function renderProfile() {
   loadProfileClips();
 }
 
-async function loadProfileClips(uid) {
-  const targetUid = uid || (currentUser && currentUser.uid);
-  if(!targetUid) return;
-  const isOwn = currentUser && targetUid === currentUser.uid;
+async function loadProfileClips() {
+  if(!currentUser) return;
   const grid = document.getElementById('profile-clips-grid');
-  if(!grid) return;
-  grid.innerHTML = '<div style="grid-column:span 3;text-align:center;padding:30px;color:var(--text-muted)">Cargando...</div>';
+  grid.innerHTML = '';
   try {
-    // Query without orderBy to avoid needing composite index
-    const q = query(collection(db,'clips'), where('uid','==',targetUid));
+    const q = query(collection(db,'clips'), where('uid','==',currentUser.uid), orderBy('ts','desc'));
     const snap = await getDocs(q);
     if(snap.empty) {
-      grid.innerHTML = `<div style="grid-column:span 3;text-align:center;padding:30px;color:var(--text-muted)">${isOwn ? 'Subí tu primer clip 🎬' : 'Este usuario no subió clips todavía'}</div>`;
+      grid.innerHTML = `<div style="grid-column:span 3;text-align:center;padding:30px;color:var(--text-muted)">Subí tu primer clip 🎬</div>`;
       return;
     }
-    // Sort by ts descending in JS
-    const docs = snap.docs.map(d => ({id:d.id,...d.data()}));
-    docs.sort((a,b) => {
-      const ta = a.ts?.toMillis ? a.ts.toMillis() : (a.ts || 0);
-      const tb = b.ts?.toMillis ? b.ts.toMillis() : (b.ts || 0);
-      return tb - ta;
-    });
-    grid.innerHTML = '';
-    docs.forEach(data => {
+    snap.forEach(d => {
+      const data = d.data();
       const div = document.createElement('div');
       div.className = 'profile-clip';
+      div.onclick = () => {};
+      const clipDocId = d.id;
       div.innerHTML = `
         ${data.mediaType==='imagen'
-          ? `<img data-src="${escHtml(data.mediaUrl||'')}" loading="lazy" style="width:100%;height:100%;object-fit:cover"/>`
+          ? `<img data-src="${escHtml(data.mediaUrl||'')}" loading="lazy"/>`
           : `<video data-src="${escHtml(data.mediaUrl||'')}" preload="none" style="width:100%;height:100%;object-fit:cover"></video>`
         }
         <div class="profile-clip-views">▶ ${fmtNum(data.likesCount||0)}</div>
-        ${isOwn ? `<button onclick="event.stopPropagation();deleteProfileClip('${data.id}',this)" style="position:absolute;top:4px;right:4px;background:rgba(254,44,85,.8);border:none;border-radius:50%;width:28px;height:28px;font-size:.8rem;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;z-index:5;">🗑️</button>` : ''}
+        <button onclick="event.stopPropagation();deleteProfileClip('${d.id}',this)" style="position:absolute;top:4px;right:4px;background:rgba(254,44,85,.8);border:none;border-radius:50%;width:28px;height:28px;font-size:.8rem;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;z-index:5;">🗑️</button>
       `;
       grid.appendChild(div);
     });
     loadNgrokMedia(grid);
-  } catch(e) { 
-    grid.innerHTML = `<div style="grid-column:span 3;text-align:center;padding:30px;color:var(--text-muted)">Error cargando clips: ${e.message}</div>`;
-  }
+  } catch(e) {}
 }
 
 
@@ -1900,13 +1899,9 @@ window.openUserProfile = async (uid) => {
     const handle = p.handle || '@usuario';
     const avatar = p.avatar || avatarFallback(uid);
 
-    // Load user clips (no orderBy to avoid composite index requirement, sort in JS)
-    const cSnap = await getDocs(query(collection(db,'clips'), where('uid','==',uid)));
-    const clips = cSnap.docs.map(d => ({id:d.id,...d.data()})).sort((a,b) => {
-      const ta = a.ts?.toMillis ? a.ts.toMillis() : (a.ts||0);
-      const tb = b.ts?.toMillis ? b.ts.toMillis() : (b.ts||0);
-      return tb - ta;
-    });
+    // Load user clips
+    const cSnap = await getDocs(query(collection(db,'clips'), where('uid','==',uid), orderBy('ts','desc')));
+    const clips = cSnap.docs.map(d => ({id:d.id,...d.data()}));
 
     const overlay = document.createElement('div');
     overlay.id = 'user-profile-overlay';
