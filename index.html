@@ -1995,24 +1995,37 @@ async function createUserProfile(user, name) {
 async function captureVideoThumbnail(blobUrl) {
   return new Promise((resolve) => {
     const vid = document.createElement('video');
-    vid.src = blobUrl;
     vid.muted = true;
     vid.playsInline = true;
-    vid.preload = 'metadata';
-    const done = (r) => { try{ vid.src=''; }catch(e){} resolve(r); };
-    const t = setTimeout(() => done(null), 7000);
-    vid.addEventListener('loadeddata', () => { vid.currentTime = 0.5; });
-    vid.addEventListener('seeked', () => {
+    vid.preload = 'auto';
+    vid.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;';
+    document.body.appendChild(vid);
+    let resolved = false;
+    const done = (r) => {
+      if(resolved) return; resolved = true;
       clearTimeout(t);
+      try { vid.pause(); vid.src = ''; document.body.removeChild(vid); } catch(e) {}
+      resolve(r);
+    };
+    const t = setTimeout(() => done(null), 8000);
+    const tryCapture = () => {
       try {
         const c = document.createElement('canvas');
-        c.width = vid.videoWidth || 360;
-        c.height = vid.videoHeight || 640;
+        c.width = vid.videoWidth || 360; c.height = vid.videoHeight || 640;
         c.getContext('2d').drawImage(vid, 0, 0, c.width, c.height);
         done(c.toDataURL('image/jpeg', 0.8));
       } catch(e) { done(null); }
-    });
-    vid.addEventListener('error', () => { clearTimeout(t); done(null); });
+    };
+    vid.addEventListener('seeked', tryCapture, { once: true });
+    vid.addEventListener('error', () => done(null), { once: true });
+    vid.addEventListener('loadedmetadata', () => {
+      vid.currentTime = Math.min(0.5, (vid.duration||1) * 0.1);
+    }, { once: true });
+    vid.addEventListener('canplay', () => {
+      if(!resolved && vid.currentTime === 0) vid.currentTime = Math.min(0.5, (vid.duration||1) * 0.1);
+    }, { once: true });
+    vid.src = blobUrl;
+    vid.load();
   });
 }
 
@@ -3542,9 +3555,9 @@ window.doSearch = async (val) => {
         });
 
         cell.addEventListener('mouseenter', () => {
-          if(vid && vid.src) {
+          if(vid && (vid.src || vid.currentSrc)) {
             vid.style.opacity = '1';
-            thumb.style.opacity = '0';
+            if(thumb.parentNode) thumb.style.opacity = '0';
             vid.muted = false;
             vid.play().catch(() => { vid.muted = true; vid.play().catch(()=>{}); });
           }
@@ -3553,65 +3566,97 @@ window.doSearch = async (val) => {
           if(vid) {
             vid.pause();
             vid.currentTime = 0;
-            vid.style.opacity = '0';
-            thumb.style.opacity = '1';
+            vid.style.opacity = cell.classList.contains('fallback-vid') ? '1' : '0';
+            if(thumb.parentNode) thumb.style.opacity = '1';
           }
         });
 
         grid.appendChild(cell);
 
-        // Load media
+        // Load media — enfoque robusto sin canvas CORS
         (async () => {
           const url = c.mediaUrl || '';
-          const markLoaded = (src) => {
-            thumb.src = src;
+
+          // Helper: marca la celda como cargada y muestra el thumb
+          const showThumb = (src) => {
             thumb.onload = () => { thumb.classList.add('ready'); cell.classList.add('loaded'); };
             thumb.onerror = () => { cell.classList.add('loaded'); };
+            thumb.src = src;
           };
+
+          // Helper: captura frame con canvas (puede fallar por CORS, lo manejamos)
+          const captureFrame = (videoEl) => new Promise(resolve => {
+            const onSeeked = () => {
+              try {
+                const cv = document.createElement('canvas');
+                cv.width = videoEl.videoWidth || 180;
+                cv.height = videoEl.videoHeight || 320;
+                cv.getContext('2d').drawImage(videoEl, 0, 0, cv.width, cv.height);
+                resolve(cv.toDataURL('image/jpeg', 0.75));
+              } catch(e) { resolve(null); }
+            };
+            if(videoEl.readyState >= 2) { onSeeked(); return; }
+            videoEl.addEventListener('seeked', onSeeked, { once: true });
+            videoEl.addEventListener('error', () => resolve(null), { once: true });
+            setTimeout(() => resolve(null), 3000);
+          });
+
           if(!isVideo) {
-            // Images: load directly, no blob needed
             try {
               const res = await fetch(url, { headers:{'ngrok-skip-browser-warning':'true'} });
-              const blob = await res.blob();
-              markLoaded(URL.createObjectURL(blob));
-            } catch(e) { markLoaded(url); }
+              showThumb(URL.createObjectURL(await res.blob()));
+            } catch(e) { showThumb(url); }
           } else {
-            // Videos: fetch blob, set on video, then capture first frame as thumb
+            // 1. Ponemos el video directamente — así el navegador carga lo que pueda
             let blobUrl = url;
             try {
               const res = await fetch(url, { headers:{'ngrok-skip-browser-warning':'true'} });
-              const blob = await res.blob();
-              blobUrl = URL.createObjectURL(blob);
+              blobUrl = URL.createObjectURL(await res.blob());
             } catch(e) {}
 
-            if(vid) vid.src = blobUrl;
+            // Asignar src al video de hover
+            if(vid) { vid.src = blobUrl; vid.load(); }
 
-            // Capture first frame using canvas
-            await new Promise(resolve => {
-              const tmpVid = document.createElement('video');
-              tmpVid.src = blobUrl;
-              tmpVid.muted = true;
-              tmpVid.playsInline = true;
-              tmpVid.crossOrigin = 'anonymous';
-              tmpVid.currentTime = 0.5;
-              tmpVid.addEventListener('seeked', () => {
-                try {
-                  const canvas = document.createElement('canvas');
-                  canvas.width = tmpVid.videoWidth || 180;
-                  canvas.height = tmpVid.videoHeight || 320;
-                  canvas.getContext('2d').drawImage(tmpVid, 0, 0, canvas.width, canvas.height);
-                  markLoaded(canvas.toDataURL('image/jpeg', 0.7));
-                } catch(e) { markLoaded(blobUrl); }
-                tmpVid.src = '';
-                resolve();
-              }, { once: true });
-              tmpVid.addEventListener('error', () => { markLoaded(blobUrl); resolve(); }, { once: true });
-              // Timeout fallback
-              setTimeout(() => { if(!thumb.src) markLoaded(blobUrl); resolve(); }, 4000);
+            // 2. Intentar capturar frame con un video temporal
+            const tmpVid = document.createElement('video');
+            tmpVid.src = blobUrl;
+            tmpVid.muted = true;
+            tmpVid.playsInline = true;
+            tmpVid.preload = 'metadata';
+            tmpVid.style.display = 'none';
+            document.body.appendChild(tmpVid);
+
+            // Esperar metadatos y luego hacer seek
+            await new Promise(res => {
+              const go = () => { tmpVid.currentTime = 0.1; };
+              tmpVid.addEventListener('loadedmetadata', go, { once: true });
+              tmpVid.addEventListener('error', res, { once: true });
+              setTimeout(res, 5000); // timeout de seguridad
               tmpVid.load();
             });
 
-            // Add meme text overlay if clip has memeText
+            const dataUrl = await captureFrame(tmpVid);
+            document.body.removeChild(tmpVid);
+            tmpVid.src = '';
+
+            if(dataUrl) {
+              showThumb(dataUrl);
+            } else {
+              // Fallback: mostrar el video congelado en el primer frame
+              thumb.remove();
+              cell.classList.add('loaded', 'fallback-vid');
+              if(vid) {
+                vid.style.opacity = '1';
+                vid.preload = 'auto';
+                vid.autoplay = false;
+                vid.load();
+                // Pausa en el primer frame disponible
+                const pauseFirst = () => { vid.pause(); vid.currentTime = 0; };
+                vid.addEventListener('canplay', pauseFirst, { once: true });
+              }
+            }
+
+            // Meme text
             if(c.memeText) {
               const meme = document.createElement('div');
               meme.className = `clip-meme-text pos-${c.memePos||'bottom'}`;
@@ -3619,7 +3664,8 @@ window.doSearch = async (val) => {
               cell.appendChild(meme);
             }
           }
-          // Add meme text for images too
+
+          // Meme text para imágenes
           if(!isVideo && c.memeText) {
             const meme = document.createElement('div');
             meme.className = `clip-meme-text pos-${c.memePos||'bottom'}`;
