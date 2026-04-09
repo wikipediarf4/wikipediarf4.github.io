@@ -2599,19 +2599,49 @@ window.closeCaptionModal = () => {
 
 window.publishClip = async () => {
   if(!currentUser || !_pendingUploadFile) return;
-  const desc = document.getElementById('caption-text').value.trim();
+  const desc     = document.getElementById('caption-text').value.trim();
   const memeText = document.getElementById('caption-meme-text')?.value.trim() || '';
-  const memePosEl = document.querySelector('input[name="meme-pos"]:checked');
-  const memePos = memePosEl ? memePosEl.value : 'bottom';
+  const memoPosEl = document.querySelector('input[name="meme-pos"]:checked');
+  const memePos  = memoPosEl ? memoPosEl.value : 'bottom';
+  const isVideo  = _pendingUploadFile.type.startsWith('video');
+  const handle   = (myProfile.handle || myProfile.name || currentUser.displayName || 'Clipuy').replace('@','');
+
   showToast('📤 Subiendo clip...');
   document.getElementById('caption-modal').style.display = 'none';
+
   try {
-    const handle = (myProfile.handle || myProfile.name || currentUser.displayName || 'Clipuy').replace('@','');
-    const mediaUrl = await uploadToServer(_pendingUploadFile, '@' + handle, desc || 'Sonido original');
-    const isVideo = _pendingUploadFile.type.startsWith('video');
-    // Extract hashtags and mentions from description
+    let mediaUrl;
+
+    // ── Si eligió un audio de Clipuy Y es un video → mezclar en el servidor ──
+    if(_clipuySelectedAudio && isVideo) {
+      showToast('🎵 Mezclando audio con tu video...');
+      const formData = new FormData();
+      formData.append('archivo', _pendingUploadFile);
+      formData.append('audio_id', _clipuySelectedAudio.id);
+      formData.append('usuario', handle);
+      formData.append('volumen_audio', '1.0');  // volumen del sonido elegido
+      formData.append('volumen_video', '0.0');  // silencia el audio original del video
+
+      const res = await fetch(UPLOAD_SERVER + '/audio/apply', {
+        method: 'POST',
+        body: formData,
+        headers: { 'ngrok-skip-browser-warning': 'true' }
+      });
+      if(!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Error al mezclar audio');
+      }
+      const data = await res.json();
+      mediaUrl = UPLOAD_SERVER + '/files/' + data.tipo + '/' + data.fecha + '/' + data.archivo;
+
+    } else {
+      // ── Sin audio Clipuy → subida normal ──
+      mediaUrl = await uploadToServer(_pendingUploadFile, '@' + handle, desc || 'Sonido original');
+    }
+
     const tagMatches = desc.match(/(#[\w\u00C0-\u017E]+|@[\w\u00C0-\u017E]+)/g) || [];
     const tags = [...new Set(tagMatches)].join(' ');
+
     const clipData = {
       uid: currentUser.uid,
       name: myProfile.name || currentUser.displayName || 'Usuario',
@@ -2625,25 +2655,29 @@ window.publishClip = async () => {
       commentsCount: 0,
       ts: serverTimestamp()
     };
+
     if(memeText) { clipData.memeText = memeText; clipData.memePos = memePos; }
+
     if(_clipSelectedMusic) {
-      clipData.musicName = _clipSelectedMusic.title;
+      clipData.musicName   = _clipSelectedMusic.title;
       clipData.musicArtist = _clipSelectedMusic.artist;
-      clipData.musicCover = _clipSelectedMusic.cover;
+      clipData.musicCover  = _clipSelectedMusic.cover;
       clipData.musicPreview = _clipSelectedMusic.preview;
     }
+
     if(_clipuySelectedAudio) {
-      clipData.musicName = _clipuySelectedAudio.titulo;
-      clipData.musicArtist = '@' + _clipuySelectedAudio.usuario;
-      clipData.musicCover = '';
+      clipData.musicName    = _clipuySelectedAudio.titulo;
+      clipData.musicArtist  = '@' + _clipuySelectedAudio.usuario;
+      clipData.musicCover   = '';
       clipData.musicPreview = UPLOAD_SERVER + '/audio/stream/' + _clipuySelectedAudio.id;
       clipData.clipuyAudioId = _clipuySelectedAudio.id;
     }
+
     await addDoc(collection(db,'clips'), clipData);
     showToast('✅ ¡Clip publicado!');
     loadFeed();
     goTo('home');
-  } catch(e) { showToast('❌ Error: '+e.message); }
+  } catch(e) { showToast('❌ Error: ' + e.message); }
   _pendingUploadFile = null;
 };
 
