@@ -815,7 +815,7 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
 
 /* ── DUETO MODAL ── */
 #duet-modal{
-  position:fixed;inset:0;left:72px;z-index:460;background:#000;
+  position:fixed;inset:0;left:0;z-index:460;background:#000;
   display:none;flex-direction:column;
 }
 #duet-modal.open{display:flex;}
@@ -2534,14 +2534,6 @@ async function loadNgrokMedia(root) {
       const blob = await res.blob();
       el.src = URL.createObjectURL(blob);
     } catch(e) { el.src = url; }
-    // Una vez con src, si es video visible en pantalla, reproducir (fix tablet)
-    if (el.tagName === 'VIDEO') {
-      el.muted = true;
-      el.load();
-      const rect = el.getBoundingClientRect();
-      const inView = rect.top < window.innerHeight && rect.bottom > 0;
-      if (inView) { el.play().catch(() => {}); }
-    }
   });
 }
 
@@ -2805,7 +2797,7 @@ function buildVideoSlide(id, data) {
   div.innerHTML = `
     <div class="video-wrap">
       ${isVideo
-        ? `<video class="video-el" data-src="${escHtml(data.mediaUrl||'')}" loop playsinline muted preload="none"></video>`
+        ? `<video class="video-el" data-src="${escHtml(data.mediaUrl||'')}" loop playsinline preload="none"></video>`
         : `<img class="video-el" data-src="${escHtml(data.mediaUrl||'')}" style="object-fit:contain"/>`
       }
       <div class="video-overlay"></div>
@@ -3027,21 +3019,6 @@ function updateFeedNavBtns() {
   });
 }
 
-function safePlayVideo(vid) {
-  if (!vid) return;
-  // Si el video todavía no tiene src (está cargando con loadNgrokMedia), esperar
-  if (!vid.src || vid.src === window.location.href) {
-    const onSrc = () => { vid.removeEventListener('loadedmetadata', onSrc); safePlayVideo(vid); };
-    vid.addEventListener('loadedmetadata', onSrc);
-    return;
-  }
-  vid.muted = true;
-  // En iOS/iPadOS necesitamos load() antes de play()
-  if (vid.readyState === 0) { vid.load(); }
-  const p = vid.play();
-  if (p && p.catch) p.catch(() => { vid.muted = true; vid.play().catch(() => {}); });
-}
-
 function setupVideoObserver() {
   if(_videoObserver) _videoObserver.disconnect();
   _videoObserver = new IntersectionObserver((entries) => {
@@ -3049,7 +3026,7 @@ function setupVideoObserver() {
       const vid = e.target.querySelector('video');
       const slideId = e.target.dataset.id;
       if(e.isIntersecting) {
-        if(vid) safePlayVideo(vid);
+        if(vid) vid.play().catch(()=>{});
         // Play music preview if this slide has music
         const musicUrl = e.target.dataset.musicPreview;
         if(musicUrl) {
@@ -3062,10 +3039,10 @@ function setupVideoObserver() {
           if(_currentMusicAudio) { _currentMusicAudio.pause(); _currentMusicAudio = null; }
         }
       } else {
-        if(vid) { vid.pause(); }
+        if(vid) vid.pause();
       }
     });
-  }, { threshold: 0.5 }); // Bajamos threshold de 0.7 a 0.5 para tablets
+  }, { threshold: 0.7 });
   document.querySelectorAll('.video-slide').forEach(s => _videoObserver.observe(s));
 }
 
@@ -3673,7 +3650,7 @@ function renderStoryViewer() {
   const media = document.getElementById('sv-media');
   if(s.mediaUrl) {
     if(s.mediaType==='video') {
-    media.innerHTML = `<video id="sv-vid" data-src="${escHtml(s.mediaUrl)}" autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover"></video>`;
+    media.innerHTML = `<video id="sv-vid" data-src="${escHtml(s.mediaUrl)}" autoplay loop style="width:100%;height:100%;object-fit:cover"></video>`;
   } else {
     media.innerHTML = `<img id="sv-img" data-src="${escHtml(s.mediaUrl)}" style="width:100%;height:100%;object-fit:cover"/>`;
   }
@@ -5892,7 +5869,11 @@ window.addEventListener('offline', onOffline);
     <!-- Original clip izquierda -->
     <div class="duet-side">
       <div class="duet-side-label">Original</div>
-      <video id="duet-original-video" class="duet-original-video" loop playsinline muted></video>
+      <video id="duet-original-video" class="duet-original-video" loop playsinline muted autoplay></video>
+      <div id="duet-play-hint" onclick="document.getElementById('duet-original-video').play();this.style.display='none';" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;background:rgba(0,0,0,.5);z-index:10;flex-direction:column;gap:8px;cursor:pointer;">
+        <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.6rem;">▶</div>
+        <div style="font-size:.78rem;color:rgba(255,255,255,.8);">Tocá para reproducir</div>
+      </div>
     </div>
     <!-- Cámara usuario derecha -->
     <div class="duet-side">
@@ -5956,25 +5937,59 @@ window.openDuet = async (clipId, mediaUrl, authorName, authorUid, desc) => {
   document.getElementById('duet-timer-display').textContent = '0:00';
   document.getElementById('duet-caption').value = '';
 
-  // Load original video
+  // Load original video — robusto para tablet/iOS
   const orig = document.getElementById('duet-original-video');
+  orig.src = '';
+  orig.muted = true;
+  orig.load();
   orig.src = mediaUrl;
   orig.muted = true;
-  orig.play().catch(()=>{});
+  orig.load();
+  const playOrig = () => {
+    orig.muted = true;
+    orig.play().catch(() => {
+      // En iOS necesitamos interacción del usuario — mostrar botón de play
+      document.getElementById('duet-play-hint').style.display = 'flex';
+    });
+  };
+  orig.addEventListener('loadedmetadata', playOrig, { once: true });
+  orig.addEventListener('canplay', () => { orig.play().catch(()=>{}); }, { once: true });
 
   // Open modal
   document.getElementById('duet-modal').classList.add('open');
 
-  // Start camera
+  // Start camera — con constraints más compatibles para tablets
   try {
-    _duetStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode:'user' }, audio: true });
+    const constraints = {
+      video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+      audio: true
+    };
+    _duetStream = await navigator.mediaDevices.getUserMedia(constraints);
     const preview = document.getElementById('duet-camera-preview');
     const placeholder = document.getElementById('duet-camera-placeholder');
     preview.srcObject = _duetStream;
+    preview.muted = true;
+    preview.setAttribute('playsinline', '');
+    preview.setAttribute('autoplay', '');
     preview.style.display = 'block';
+    // En algunos tablets hay que llamar play() manualmente
+    preview.play().catch(() => {});
     if(placeholder) placeholder.style.display = 'none';
   } catch(e) {
-    showToast('❌ No se pudo acceder a la cámara: ' + e.message);
+    // Intentar sin audio si falla
+    try {
+      _duetStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+      const preview = document.getElementById('duet-camera-preview');
+      const placeholder = document.getElementById('duet-camera-placeholder');
+      preview.srcObject = _duetStream;
+      preview.muted = true;
+      preview.play().catch(() => {});
+      preview.style.display = 'block';
+      if(placeholder) placeholder.style.display = 'none';
+      showToast('⚠️ Sin micrófono — el dueto se grabará sin audio');
+    } catch(e2) {
+      showToast('❌ No se pudo acceder a la cámara: ' + e2.message);
+    }
   }
 };
 
@@ -6002,14 +6017,23 @@ function startDuetRecording() {
   _duetChunks = [];
   _duetSeconds = 0;
 
-  // Combinar audio del stream de cámara con audio del video original
+  // Reproducir video original con sonido
   const origVid = document.getElementById('duet-original-video');
   origVid.muted = false;
+  origVid.play().catch(() => { origVid.muted = true; origVid.play().catch(()=>{}); });
 
-  const supportedType = ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm','video/mp4']
-    .find(t => MediaRecorder.isTypeSupported(t)) || '';
+  // Detectar tipo soportado — mp4 primero para Safari/iPad
+  const supportedType = ['video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm']
+    .find(t => { try { return MediaRecorder.isTypeSupported(t); } catch(e) { return false; } }) || '';
 
-  _duetRecorder = new MediaRecorder(_duetStream, supportedType ? { mimeType: supportedType } : {});
+  let recOptions = {};
+  if(supportedType) { try { recOptions = { mimeType: supportedType }; } catch(e) {} }
+
+  try {
+    _duetRecorder = new MediaRecorder(_duetStream, recOptions);
+  } catch(e) {
+    _duetRecorder = new MediaRecorder(_duetStream);
+  }
   _duetRecorder.ondataavailable = e => { if(e.data.size > 0) _duetChunks.push(e.data); };
   _duetRecorder.onstop = () => {
     _duetBlob = new Blob(_duetChunks, { type: _duetRecorder.mimeType || 'video/webm' });
