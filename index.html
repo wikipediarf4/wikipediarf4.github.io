@@ -5917,7 +5917,8 @@ let _duetTimerInterval = null;
 let _duetSeconds = 0;
 
 window.openDuet = async (clipId, mediaUrl, authorName, authorUid, desc) => {
-  if(!currentUser) { showToast('⚠️ Iniciá sesión para hacer un dueto'); return; }
+  const currentUser = window._getUser ? window._getUser() : null;
+  if(!currentUser) { window.showToast('⚠️ Iniciá sesión para hacer un dueto'); return; }
   _duetClipId = clipId;
   _duetOriginalUid = authorUid;
   _duetOriginalName = authorName;
@@ -5953,7 +5954,7 @@ window.openDuet = async (clipId, mediaUrl, authorName, authorUid, desc) => {
     preview.style.display = 'block';
     if(placeholder) placeholder.style.display = 'none';
   } catch(e) {
-    showToast('❌ No se pudo acceder a la cámara: ' + e.message);
+    window.showToast('❌ No se pudo acceder a la cámara: ' + e.message);
   }
 };
 
@@ -5977,7 +5978,7 @@ window.toggleDuetRecording = () => {
 };
 
 function startDuetRecording() {
-  if(!_duetStream) { showToast('❌ Cámara no disponible'); return; }
+  if(!_duetStream) { window.showToast('❌ Cámara no disponible'); return; }
   _duetChunks = [];
   _duetSeconds = 0;
 
@@ -6029,10 +6030,12 @@ function stopDuetRecording(cancel) {
 function showDuetPublishUI() {
   document.getElementById('duet-footer-record').style.display = 'none';
   document.getElementById('duet-footer-publish').style.display = 'flex';
-  showToast('✅ Grabación lista — escribí una descripción y publicá');
+  window.showToast('✅ Grabación lista — escribí una descripción y publicá');
 }
 
 window.publishDuet = async () => {
+  const currentUser = window._getUser ? window._getUser() : null;
+  const mp = window._getMyProfile ? window._getMyProfile() : {};
   if(!currentUser || !_duetBlob) return;
   const caption = document.getElementById('duet-caption').value.trim();
   const btn = document.getElementById('duet-publish-btn');
@@ -6044,15 +6047,15 @@ window.publishDuet = async () => {
     const filename = `dueto_${currentUser.uid}_${Date.now()}.${ext}`;
     const file = new File([_duetBlob], filename, { type: _duetBlob.type });
 
-    showToast('📤 Subiendo dueto...');
-    const handle = (myProfile.handle || myProfile.name || currentUser.displayName || 'Clipuy').replace('@','');
+    window.showToast('📤 Subiendo dueto...');
+    const handle = (mp.handle || mp.name || currentUser.displayName || 'Clipuy').replace('@','');
     const mediaUrl = await uploadToServer(file, '@' + handle, caption || 'Dueto');
 
     const desc = `🎭 Dueto con @${_duetOriginalName}${caption ? ' — ' + caption : ''}`;
     const clipData = {
       uid: currentUser.uid,
-      name: myProfile.name || currentUser.displayName || 'Usuario',
-      avatar: myProfile.avatar || avatarFallback(currentUser.uid),
+      name: mp.name || currentUser.displayName || 'Usuario',
+      avatar: mp.avatar || avatarFallback(currentUser.uid),
       description: desc,
       tags: '#dueto',
       mediaUrl,
@@ -6069,14 +6072,13 @@ window.publishDuet = async () => {
 
     await addDoc(collection(db,'clips'), clipData);
 
-    // Notificar al creador original
     if(_duetOriginalUid && _duetOriginalUid !== currentUser.uid) {
       try {
         await addDoc(collection(db,'notifications'), {
           toUid: _duetOriginalUid,
           fromUid: currentUser.uid,
-          fromName: myProfile.name || currentUser.displayName || 'Alguien',
-          fromAvatar: myProfile.avatar || currentUser.photoURL || '',
+          fromName: mp.name || currentUser.displayName || 'Alguien',
+          fromAvatar: mp.avatar || currentUser.photoURL || '',
           type: 'duet',
           clipId: _duetClipId,
           read: false,
@@ -6085,12 +6087,12 @@ window.publishDuet = async () => {
       } catch(e) {}
     }
 
-    showToast('🎭 ¡Dueto publicado!');
+    window.showToast('🎭 ¡Dueto publicado!');
     closeDuet();
     loadFeed();
-    goTo('home');
+    window.goTo('home');
   } catch(e) {
-    showToast('❌ Error: ' + e.message);
+    window.showToast('❌ Error: ' + e.message);
     btn.disabled = false;
     btn.textContent = 'Publicar';
   }
@@ -6156,168 +6158,6 @@ window.publishDuet = async () => {
     </button>
   </div>
 </div>
-
-<script>
-// ══════════════════════════════════════════════
-//  GRABAR CLIP
-// ══════════════════════════════════════════════
-let _recStream = null;
-let _recRecorder = null;
-let _recChunks = [];
-let _recBlob = null;
-let _recRecording = false;
-let _recTimerInterval = null;
-let _recSeconds = 0;
-let _recFacing = 'user';
-
-window.openCameraRecord = async () => {
-  const cu = window._getUser ? window._getUser() : null;
-  if(!cu) { window.showToast('⚠️ Iniciá sesión primero'); return; }
-  window.closeUpload && window.closeUpload();
-  _recBlob = null; _recChunks = []; _recSeconds = 0; _recRecording = false;
-  document.getElementById('record-modal').style.display = 'flex';
-  document.getElementById('record-footer-rec').style.display = 'flex';
-  document.getElementById('record-footer-pub').style.display = 'none';
-  document.getElementById('record-indicator').style.display = 'none';
-  document.getElementById('record-timer').textContent = '0:00';
-  document.getElementById('record-hint').textContent = 'Tocá para grabar (máx. 60s)';
-  document.getElementById('record-btn').style.background = 'var(--accent)';
-  document.getElementById('record-playback').src = '';
-  await startRecordCamera();
-};
-
-async function startRecordCamera() {
-  if(_recStream) { _recStream.getTracks().forEach(t => t.stop()); _recStream = null; }
-  try {
-    _recStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: _recFacing, width: { ideal: 720 }, height: { ideal: 1280 } },
-      audio: true
-    });
-    const preview = document.getElementById('record-preview');
-    preview.srcObject = _recStream;
-    preview.muted = true;
-    preview.play().catch(()=>{});
-    document.getElementById('record-placeholder').style.display = 'none';
-  } catch(e) {
-    window.showToast('❌ No se pudo acceder a la cámara: ' + e.message);
-  }
-}
-
-window.flipRecordCamera = async () => {
-  _recFacing = _recFacing === 'user' ? 'environment' : 'user';
-  if(_recRecording) return;
-  await startRecordCamera();
-};
-
-window.toggleRecording = () => {
-  if(_recRecording) stopRecord(false);
-  else startRecord();
-};
-
-function startRecord() {
-  if(!_recStream) { window.showToast('❌ Cámara no disponible'); return; }
-  _recChunks = []; _recSeconds = 0;
-  const supportedType = ['video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm']
-    .find(t => { try { return MediaRecorder.isTypeSupported(t); } catch(e) { return false; } }) || '';
-  try {
-    _recRecorder = new MediaRecorder(_recStream, supportedType ? { mimeType: supportedType } : {});
-  } catch(e) { _recRecorder = new MediaRecorder(_recStream); }
-
-  _recRecorder.ondataavailable = e => { if(e.data.size > 0) _recChunks.push(e.data); };
-  _recRecorder.onstop = () => {
-    _recBlob = new Blob(_recChunks, { type: _recRecorder.mimeType || 'video/webm' });
-    showRecordPublishUI();
-  };
-  _recRecorder.start(200);
-  _recRecording = true;
-  document.getElementById('record-indicator').style.display = 'flex';
-  document.getElementById('record-btn').style.background = '#fff';
-  document.getElementById('record-hint').textContent = 'Tocá para detener';
-  document.getElementById('record-flip-btn').style.opacity = '0.3';
-  _recTimerInterval = setInterval(() => {
-    _recSeconds++;
-    const m = Math.floor(_recSeconds / 60);
-    const s = _recSeconds % 60;
-    document.getElementById('record-timer').textContent = m + ':' + String(s).padStart(2,'0');
-    if(_recSeconds >= 60) stopRecord(false);
-  }, 1000);
-}
-
-function stopRecord(cancel) {
-  if(!_recRecording && !cancel) return;
-  _recRecording = false;
-  clearInterval(_recTimerInterval);
-  document.getElementById('record-indicator').style.display = 'none';
-  document.getElementById('record-btn').style.background = 'var(--accent)';
-  document.getElementById('record-flip-btn').style.opacity = '1';
-  if(_recRecorder && _recRecorder.state !== 'inactive') {
-    if(cancel) { _recRecorder.ondataavailable = null; _recRecorder.onstop = null; }
-    _recRecorder.stop();
-  }
-}
-
-function showRecordPublishUI() {
-  document.getElementById('record-footer-rec').style.display = 'none';
-  document.getElementById('record-footer-pub').style.display = 'flex';
-  if(_recBlob) {
-    document.getElementById('record-playback').src = URL.createObjectURL(_recBlob);
-  }
-}
-
-window.retakeRecord = async () => {
-  _recBlob = null; _recChunks = []; _recSeconds = 0;
-  document.getElementById('record-footer-rec').style.display = 'flex';
-  document.getElementById('record-footer-pub').style.display = 'none';
-  document.getElementById('record-timer').textContent = '0:00';
-  document.getElementById('record-hint').textContent = 'Tocá para grabar (máx. 60s)';
-  await startRecordCamera();
-};
-
-window.closeRecordModal = () => {
-  stopRecord(true);
-  if(_recStream) { _recStream.getTracks().forEach(t => t.stop()); _recStream = null; }
-  const preview = document.getElementById('record-preview');
-  if(preview) preview.srcObject = null;
-  document.getElementById('record-placeholder').style.display = 'flex';
-  document.getElementById('record-modal').style.display = 'none';
-};
-
-window.publishRecord = async () => {
-  const cu = window._getUser ? window._getUser() : null;
-  const mp = window._getMyProfile ? window._getMyProfile() : {};
-  if(!cu || !_recBlob) return;
-  const caption = document.getElementById('record-caption').value.trim();
-  const btn = document.getElementById('record-pub-btn');
-  btn.disabled = true; btn.textContent = 'Subiendo...';
-  try {
-    const ext = _recBlob.type.includes('mp4') ? 'mp4' : 'webm';
-    const file = new File([_recBlob], `clip_${cu.uid}_${Date.now()}.${ext}`, { type: _recBlob.type });
-    window.showToast('📤 Subiendo clip...');
-    const handle = (mp.handle || mp.name || cu.displayName || 'Clipuy').replace('@','');
-    const mediaUrl = await uploadToServer(file, '@' + handle, caption || 'Clip grabado');
-    await addDoc(collection(db,'clips'), {
-      uid: cu.uid,
-      name: mp.name || cu.displayName || 'Usuario',
-      avatar: mp.avatar || avatarFallback(cu.uid),
-      description: caption || '',
-      tags: '',
-      mediaUrl,
-      mediaType: 'video',
-      likesCount: 0,
-      likes: [],
-      commentsCount: 0,
-      ts: serverTimestamp()
-    });
-    window.showToast('🎉 ¡Clip publicado!');
-    window.closeRecordModal();
-    loadFeed();
-    window.goTo('home');
-  } catch(e) {
-    window.showToast('❌ Error: ' + e.message);
-    btn.disabled = false; btn.textContent = 'Publicar 🚀';
-  }
-};
-</script>
 
 </body>
 </html>
