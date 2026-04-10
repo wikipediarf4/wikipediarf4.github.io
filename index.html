@@ -1331,6 +1331,94 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
 .ep-inp::placeholder{color:var(--text-dim);}
 
 
+/* ── CLIP HERO ── */
+#profile-hero-wrap{
+  margin:0 0 2px;
+  position:relative;overflow:hidden;
+  background:#111;
+  display:none;
+}
+#profile-hero-wrap.has-hero{ display:block; }
+.hero-media-container{
+  width:100%;aspect-ratio:16/9;position:relative;overflow:hidden;
+  background:#000;cursor:pointer;
+}
+.hero-video-el,.hero-img-el{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  display:block;
+}
+.hero-gradient{
+  position:absolute;inset:0;
+  background:linear-gradient(
+    to top,
+    rgba(0,0,0,.85) 0%,
+    rgba(0,0,0,.3) 40%,
+    transparent 70%
+  );
+  z-index:2;pointer-events:none;
+}
+.hero-badge{
+  position:absolute;top:10px;left:10px;z-index:4;
+  display:flex;align-items:center;gap:5px;
+  padding:4px 10px;border-radius:20px;
+  background:linear-gradient(135deg,rgba(37,244,238,.22),rgba(254,44,85,.22));
+  backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.22);
+  font-size:.65rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+  color:#fff;
+}
+.hero-badge svg{width:11px;height:11px;}
+.hero-play-btn{
+  position:absolute;inset:0;z-index:3;
+  display:flex;align-items:center;justify-content:center;
+}
+.hero-play-circle{
+  width:52px;height:52px;border-radius:50%;
+  background:rgba(0,0,0,.45);border:2px solid rgba(255,255,255,.55);
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .18s,background .18s;backdrop-filter:blur(4px);
+}
+.hero-media-container:hover .hero-play-circle{
+  transform:scale(1.1);background:rgba(0,0,0,.65);
+}
+.hero-info{
+  position:absolute;bottom:0;left:0;right:0;z-index:4;
+  padding:10px 14px 12px;
+}
+.hero-title{
+  font-family:'Space Grotesk',sans-serif;font-size:.88rem;font-weight:600;
+  color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  margin-bottom:3px;
+}
+.hero-meta{
+  display:flex;align-items:center;gap:10px;
+  font-size:.72rem;color:rgba(255,255,255,.55);
+}
+.hero-meta span{ display:flex;align-items:center;gap:3px; }
+.hero-remove-btn{
+  position:absolute;top:10px;right:10px;z-index:5;
+  background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.2);
+  border-radius:50%;width:30px;height:30px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:rgba(255,255,255,.7);font-size:.75rem;
+  transition:background .15s;
+}
+.hero-remove-btn:hover{background:rgba(254,44,85,.5);}
+/* Pin button inside grid clips */
+.pc-pin-btn{
+  position:absolute;bottom:4px;right:4px;z-index:5;
+  background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);
+  border-radius:6px;padding:3px 6px;
+  font-size:.58rem;font-weight:700;color:rgba(255,255,255,.8);
+  cursor:pointer;display:none;letter-spacing:.3px;
+  transition:background .15s,color .15s;
+  font-family:'Space Grotesk',sans-serif;
+}
+.pc-pin-btn.is-hero{
+  background:rgba(254,44,85,.55);border-color:rgba(254,44,85,.7);color:#fff;
+}
+.profile-clip:hover .pc-pin-btn{ display:block; }
+
 /* ── MUSIC PICKER ── */
 .music-search-wrap { margin-top: 12px; }
 .music-search-wrap input {
@@ -2052,6 +2140,30 @@ input.exp-range::-webkit-slider-thumb{
         <button class="btn-icon-tt" onclick="openSettings()">⚙️</button>
         <button id="admin-nav-btn" class="btn-icon-tt" style="display:none;border-color:var(--accent);color:var(--accent)" onclick="openAdminPanel()">🛡️</button>
       </div>
+      <!-- ── CLIP HERO ── -->
+      <div id="profile-hero-wrap">
+        <div class="hero-media-container" id="hero-media-container">
+          <div class="hero-badge">
+            <svg viewBox="0 0 24 24" fill="white"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            CLIP DESTACADO
+          </div>
+          <div class="hero-play-btn" id="hero-play-btn">
+            <div class="hero-play-circle">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="hero-gradient"></div>
+          <div class="hero-info">
+            <div class="hero-title" id="hero-title"></div>
+            <div class="hero-meta">
+              <span>▶ <span id="hero-views">0</span></span>
+              <span>❤️ <span id="hero-likes">0</span></span>
+            </div>
+          </div>
+          <button class="hero-remove-btn" id="hero-remove-btn" onclick="removeHeroClip()" title="Quitar destacado">✕</button>
+        </div>
+      </div>
+
       <div class="profile-tabs">
         <button class="profile-tab active" onclick="switchProfileTab('clips')">🎬 Clips</button>
         <button class="profile-tab" onclick="switchProfileTab('liked')">❤️ Me gusta</button>
@@ -2529,7 +2641,7 @@ import {
 import {
   getFirestore, collection, addDoc, getDocs, doc, getDoc, setDoc, updateDoc,
   query, orderBy, limit, onSnapshot, serverTimestamp, where, arrayUnion, arrayRemove,
-  increment, deleteDoc
+  increment, deleteDoc, deleteField
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 // ── SERVIDOR LOCAL (Cloudflare Tunnel) ──
 const UPLOAD_SERVER = "https://uploads.wikipediarf4.uy";
@@ -4152,6 +4264,12 @@ async function loadProfileClips() {
     const watchedSet = JSON.parse(localStorage.getItem('watchedClips')||'{}');
     const clipsData = snap.docs.map(d => ({id:d.id,...d.data()}));
 
+    // Render hero clip if set
+    const heroData = myProfile.featuredClipId
+      ? clipsData.find(c => c.id === myProfile.featuredClipId)
+      : null;
+    renderHeroClip(heroData || null);
+
     clipsData.forEach((data, idx) => {
       const div = document.createElement('div');
       div.className = 'profile-clip';
@@ -4181,6 +4299,13 @@ async function loadProfileClips() {
       delBtn.textContent = '🗑️';
       delBtn.onclick = (e) => { e.stopPropagation(); deleteProfileClip(data.id, delBtn); };
       div.appendChild(delBtn);
+
+      // Pin como hero
+      const pinBtn = document.createElement('button');
+      pinBtn.className = 'pc-pin-btn' + (myProfile.featuredClipId === data.id ? ' is-hero' : '');
+      pinBtn.textContent = myProfile.featuredClipId === data.id ? '★ Destacado' : '☆ Destacar';
+      pinBtn.onclick = (e) => { e.stopPropagation(); setHeroClip(data); };
+      div.appendChild(pinBtn);
 
       div.addEventListener('click', () => openClipViewer(clipsData, idx, div));
       grid.appendChild(div);
@@ -4240,6 +4365,79 @@ async function loadProfileClips() {
 
   } catch(e) { console.error(e); }
 }
+
+// ── CLIP HERO ──
+function renderHeroClip(data) {
+  const wrap = document.getElementById('profile-hero-wrap');
+  const container = document.getElementById('hero-media-container');
+  if(!data) { wrap.classList.remove('has-hero'); return; }
+
+  wrap.classList.add('has-hero');
+  document.getElementById('hero-title').textContent = data.description || data.name || 'Clip destacado';
+  document.getElementById('hero-views').textContent = fmtNum(data.viewsCount || 0);
+  document.getElementById('hero-likes').textContent = fmtNum(data.likesCount || 0);
+
+  // Remove old media
+  container.querySelectorAll('.hero-video-el,.hero-img-el').forEach(el => el.remove());
+
+  const isVideo = data.mediaType !== 'imagen' && data.mediaType !== 'image';
+  if(isVideo) {
+    const vid = document.createElement('video');
+    vid.className = 'hero-video-el';
+    vid.src = data.mediaUrl || '';
+    vid.muted = true; vid.loop = true; vid.playsInline = true;
+    vid.autoplay = true;
+    container.insertBefore(vid, container.firstChild);
+    vid.play().catch(()=>{});
+  } else {
+    const img = document.createElement('img');
+    img.className = 'hero-img-el';
+    img.src = data.mediaUrl || '';
+    container.insertBefore(img, container.firstChild);
+  }
+
+  // Click abre el clip en el viewer
+  document.getElementById('hero-play-btn').onclick = () => {
+    const grid = document.getElementById('profile-clips-grid');
+    const allClips = [...grid.querySelectorAll('.profile-clip')];
+    const idx = allClips.findIndex(el => el.dataset.clipId === data.id);
+    // rebuild clipsData for viewer from DOM (fallback: just open with single item)
+    openClipViewerById(data.id);
+  };
+}
+
+window.openClipViewerById = async function(clipId) {
+  if(!currentUser) return;
+  try {
+    const snap = await getDocs(query(collection(db,'clips'), where('uid','==',currentUser.uid), orderBy('ts','desc')));
+    const clipsData = snap.docs.map(d => ({id:d.id,...d.data()}));
+    const idx = clipsData.findIndex(c => c.id === clipId);
+    openClipViewer(clipsData, Math.max(0, idx), null);
+  } catch(e) {}
+};
+
+window.setHeroClip = async function(data) {
+  if(!currentUser) return;
+  const isAlready = myProfile.featuredClipId === data.id;
+  const newId = isAlready ? null : data.id;
+  try {
+    await updateDoc(doc(db,'users',currentUser.uid), { featuredClipId: newId || deleteField() });
+    myProfile.featuredClipId = newId || undefined;
+    showToast(isAlready ? '✅ Destacado quitado' : '⭐ Clip puesto como destacado');
+    loadProfileClips();
+  } catch(e) { showToast('❌ Error: ' + e.message); }
+};
+
+window.removeHeroClip = async function() {
+  if(!currentUser) return;
+  try {
+    await updateDoc(doc(db,'users',currentUser.uid), { featuredClipId: deleteField() });
+    myProfile.featuredClipId = undefined;
+    document.getElementById('profile-hero-wrap').classList.remove('has-hero');
+    showToast('✅ Clip destacado quitado');
+    loadProfileClips();
+  } catch(e) { showToast('❌ Error: ' + e.message); }
+};
 
 // ── Clip Viewer ──
 let _clipViewerClips = [];
@@ -4452,8 +4650,14 @@ window.deleteProfileClip = async (clipId, btn) => {
 
 window.switchProfileTab = (tab) => {
   document.querySelectorAll('.profile-tab').forEach((b,i) => b.classList.toggle('active', (i===0&&tab==='clips')||(i===1&&tab==='liked')));
-  if(tab==='clips') loadProfileClips();
-  else loadLikedClips();
+  if(tab==='clips') {
+    loadProfileClips();
+  } else {
+    // Ocultar hero en tab liked
+    const hw = document.getElementById('profile-hero-wrap');
+    if(hw) hw.classList.remove('has-hero');
+    loadLikedClips();
+  }
 };
 
 async function loadLikedClips() {
