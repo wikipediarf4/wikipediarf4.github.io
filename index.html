@@ -7584,20 +7584,37 @@ window.expStartExport = async function() {
     // 1. Canvas stream (frames visuales)
     const canvasStream = rc.captureStream(30);
 
-    // 2. Capturar el stream de audio del video y pasarlo por AudioContext
-    //    Hacemos esto ANTES de play() para que el MediaRecorder capture desde el inicio
+    // 2. Un único AudioContext compartido para todo: audio del video + intro/end sounds
+    //    Así todo el audio se graba en el mismo destino del MediaRecorder
     let audioCtxLive = null;
     let audioDestNode = null;
     let audioSrcNode = null;
     try {
+      audioCtxLive = new AudioContext({ sampleRate: 44100 });
+      audioDestNode = audioCtxLive.createMediaStreamDestination();
+
+      // captureStream() en el video: en Chrome/Edge funciona aunque no haya play() aún
+      // porque el stream de audio se activa en cuanto hay tracks de audio en el elemento.
+      // NOTA: mozCaptureStream para Firefox.
       const vidStream = vid.captureStream
         ? vid.captureStream()
         : (vid.mozCaptureStream ? vid.mozCaptureStream() : null);
-      if (vidStream && vidStream.getAudioTracks().length > 0) {
-        audioCtxLive = new AudioContext({ sampleRate: 44100 });
-        audioDestNode = audioCtxLive.createMediaStreamDestination();
-        audioSrcNode = audioCtxLive.createMediaStreamSource(vidStream);
-        audioSrcNode.connect(audioDestNode);
+
+      if (vidStream) {
+        // Si ya hay audio tracks, conectar ahora
+        if (vidStream.getAudioTracks().length > 0) {
+          audioSrcNode = audioCtxLive.createMediaStreamSource(vidStream);
+          audioSrcNode.connect(audioDestNode);
+        } else {
+          // Algunos navegadores agregan el audio track después del primer play().
+          // Escuchar el evento y conectar cuando aparezca.
+          vidStream.onaddtrack = (ev) => {
+            if (ev.track.kind === 'audio' && !audioSrcNode) {
+              audioSrcNode = audioCtxLive.createMediaStreamSource(vidStream);
+              audioSrcNode.connect(audioDestNode);
+            }
+          };
+        }
       }
     } catch(e) { audioCtxLive = null; audioDestNode = null; }
 
@@ -7628,19 +7645,20 @@ window.expStartExport = async function() {
     rec.start(100);
     _expSetProg(18, 'Grabando...');
 
-    // Generar audio para intro y end-card
-    let introEndAudioCtx = null;
-    try {
-      introEndAudioCtx = new AudioContext({ sampleRate: 44100 });
-    } catch(e) {}
+    // Reusar el mismo AudioContext para intro/end-card sounds
+    // Así esos sonidos también se graban en el video exportado
+    const introEndAudioCtx = audioCtxLive;
 
     function _playIntroSound(actx) {
       if (!actx) return;
+      // Conectar al audioDestNode (grabador) en lugar de actx.destination (parlante)
+      // para que el sonido quede grabado en el video exportado
+      const dest = audioDestNode || actx.destination;
       try {
         // Swoosh ascendente suave
         const osc = actx.createOscillator();
         const gain = actx.createGain();
-        osc.connect(gain); gain.connect(actx.destination);
+        osc.connect(gain); gain.connect(dest);
         osc.type = 'sine';
         osc.frequency.setValueAtTime(200, actx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(800, actx.currentTime + 0.4);
@@ -7651,7 +7669,7 @@ window.expStartExport = async function() {
         // Ding brillante
         const osc2 = actx.createOscillator();
         const gain2 = actx.createGain();
-        osc2.connect(gain2); gain2.connect(actx.destination);
+        osc2.connect(gain2); gain2.connect(dest);
         osc2.type = 'triangle';
         osc2.frequency.setValueAtTime(1100, actx.currentTime + 0.35);
         gain2.gain.setValueAtTime(0, actx.currentTime + 0.35);
@@ -7663,12 +7681,13 @@ window.expStartExport = async function() {
 
     function _playEndCardSound(actx) {
       if (!actx) return;
+      const dest = audioDestNode || actx.destination;
       try {
         // Dos dings descendentes + reverb sintético
         [0, 0.22].forEach((delay, i) => {
           const osc = actx.createOscillator();
           const gain = actx.createGain();
-          osc.connect(gain); gain.connect(actx.destination);
+          osc.connect(gain); gain.connect(dest);
           osc.type = 'sine';
           osc.frequency.setValueAtTime(i === 0 ? 880 : 660, actx.currentTime + delay);
           gain.gain.setValueAtTime(0, actx.currentTime + delay);
@@ -7680,7 +7699,7 @@ window.expStartExport = async function() {
         // Sub-bass suave
         const sub = actx.createOscillator();
         const subGain = actx.createGain();
-        sub.connect(subGain); subGain.connect(actx.destination);
+        sub.connect(subGain); subGain.connect(dest);
         sub.type = 'sine';
         sub.frequency.setValueAtTime(80, actx.currentTime);
         subGain.gain.setValueAtTime(0.12, actx.currentTime);
@@ -7747,8 +7766,9 @@ window.expStartExport = async function() {
 
     rec.onstop = async () => {
       cancelAnimationFrame(raf2);
-      if (audioCtxLive) { try { audioCtxLive.close(); } catch(e){} }
-      if (introEndAudioCtx) { setTimeout(() => { try { introEndAudioCtx.close(); } catch(e){} }, 1500); }
+      // introEndAudioCtx === audioCtxLive ahora, cerrar una sola vez con delay
+      // para que los sonidos del end-card terminen antes de cerrar el contexto
+      setTimeout(() => { if (audioCtxLive) { try { audioCtxLive.close(); } catch(e){} } }, 1500);
       // Restaurar el video al estado de preview
       vid.muted = true; vid.volume = 1;
       _expSetProg(98, 'Finalizando...');
