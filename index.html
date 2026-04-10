@@ -1340,7 +1340,7 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
 }
 #profile-hero-wrap.has-hero{ display:block; }
 .hero-media-container{
-  width:100%;aspect-ratio:16/9;position:relative;overflow:hidden;
+  width:100%;aspect-ratio:16/7;position:relative;overflow:hidden;
   background:#000;cursor:pointer;
 }
 .hero-video-el,.hero-img-el{
@@ -1359,15 +1359,15 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
 }
 .hero-badge{
   position:absolute;top:10px;left:10px;z-index:4;
-  display:flex;align-items:center;gap:5px;
-  padding:4px 10px;border-radius:20px;
-  background:linear-gradient(135deg,rgba(37,244,238,.22),rgba(254,44,85,.22));
-  backdrop-filter:blur(10px);
-  border:1px solid rgba(255,255,255,.22);
-  font-size:.65rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
-  color:#fff;
+  display:flex;align-items:center;gap:6px;
+  padding:5px 12px 5px 9px;border-radius:6px;
+  background:#5865F2;
+  box-shadow:0 2px 12px rgba(88,101,242,.6), 0 0 0 1px rgba(255,255,255,.12);
+  font-size:.68rem;font-weight:800;letter-spacing:.9px;text-transform:uppercase;
+  color:#fff;font-family:'Space Grotesk',sans-serif;
+  backdrop-filter:blur(8px);
 }
-.hero-badge svg{width:11px;height:11px;}
+.hero-badge svg{width:13px;height:13px;flex-shrink:0;}
 .hero-play-btn{
   position:absolute;inset:0;z-index:3;
   display:flex;align-items:center;justify-content:center;
@@ -1406,16 +1406,23 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
 .hero-remove-btn:hover{background:rgba(254,44,85,.5);}
 /* Pin button inside grid clips */
 .pc-pin-btn{
-  position:absolute;bottom:4px;right:4px;z-index:5;
-  background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);
-  border-radius:6px;padding:3px 6px;
-  font-size:.58rem;font-weight:700;color:rgba(255,255,255,.8);
-  cursor:pointer;display:none;letter-spacing:.3px;
-  transition:background .15s,color .15s;
+  position:absolute;bottom:5px;right:5px;z-index:5;
+  background:rgba(10,10,20,.72);border:1.5px solid rgba(88,101,242,.5);
+  border-radius:6px;padding:4px 8px;
+  font-size:.6rem;font-weight:800;color:rgba(255,255,255,.9);
+  cursor:pointer;display:none;letter-spacing:.4px;text-transform:uppercase;
+  transition:background .15s,color .15s,border-color .15s,box-shadow .15s;
   font-family:'Space Grotesk',sans-serif;
+  backdrop-filter:blur(6px);
+}
+.pc-pin-btn:hover{
+  background:#5865F2;border-color:#5865F2;color:#fff;
+  box-shadow:0 2px 10px rgba(88,101,242,.55);
 }
 .pc-pin-btn.is-hero{
-  background:rgba(254,44,85,.55);border-color:rgba(254,44,85,.7);color:#fff;
+  display:block!important;
+  background:#5865F2;border-color:#7289da;color:#fff;
+  box-shadow:0 2px 8px rgba(88,101,242,.5);
 }
 .profile-clip:hover .pc-pin-btn{ display:block; }
 
@@ -2144,7 +2151,7 @@ input.exp-range::-webkit-slider-thumb{
       <div id="profile-hero-wrap">
         <div class="hero-media-container" id="hero-media-container">
           <div class="hero-badge">
-            <svg viewBox="0 0 24 24" fill="white"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/></svg>
             CLIP DESTACADO
           </div>
           <div class="hero-play-btn" id="hero-play-btn">
@@ -4303,7 +4310,7 @@ async function loadProfileClips() {
       // Pin como hero
       const pinBtn = document.createElement('button');
       pinBtn.className = 'pc-pin-btn' + (myProfile.featuredClipId === data.id ? ' is-hero' : '');
-      pinBtn.textContent = myProfile.featuredClipId === data.id ? '★ Destacado' : '☆ Destacar';
+      pinBtn.textContent = myProfile.featuredClipId === data.id ? '📌 Destacado' : '📌 Destacar';
       pinBtn.onclick = (e) => { e.stopPropagation(); setHeroClip(data); };
       div.appendChild(pinBtn);
 
@@ -7309,9 +7316,13 @@ window.clipuyOpenExport = function(mediaUrl, mediaType) {
   _EXP.mediaUrl  = mediaUrl  || null;
   _EXP.mediaType = mediaType || 'video';
   // Prefill username from myProfile if available
-  const uname = (typeof myProfile!=='undefined' && myProfile?.username) ||
-                (typeof myProfile!=='undefined' && myProfile?.handle?.replace('@','')) ||
-                (typeof currentUser!=='undefined' && currentUser?.displayName) || 'clipuy';
+  const uname = (typeof myProfile!=='undefined' && myProfile?.handle)
+                  ? myProfile.handle.replace(/^@+/,'').trim()
+                  : (typeof myProfile!=='undefined' && myProfile?.name)
+                    ? myProfile.name.replace(/\s+/g,'').toLowerCase()
+                    : (typeof currentUser!=='undefined' && currentUser?.displayName)
+                      ? currentUser.displayName.replace(/\s+/g,'').toLowerCase()
+                      : 'clipuy';
   document.getElementById('exp-wm-user').textContent = '@' + uname;
   document.getElementById('exp-progress').classList.remove('show');
   document.getElementById('exp-go-btn').disabled = !_EXP.mediaUrl;
@@ -7512,7 +7523,20 @@ window.expStartExport = async function() {
   const rc=document.getElementById('clipuy-render-canvas');
   rc.width=RW; rc.height=RH;
   const rctx=rc.getContext('2d');
-  const uname=document.getElementById('exp-wm-user')?.textContent||'@clipuy';
+  // Obtener username real desde el perfil, no solo del DOM
+  let uname = document.getElementById('exp-wm-user')?.textContent || '';
+  if(!uname || uname === '@clipuy') {
+    const h = (typeof myProfile!=='undefined' && myProfile?.handle)
+      ? myProfile.handle.replace(/^@+/,'').trim()
+      : (typeof myProfile!=='undefined' && myProfile?.name)
+        ? myProfile.name.replace(/\s+/g,'').toLowerCase()
+        : (typeof currentUser!=='undefined' && currentUser?.displayName)
+          ? currentUser.displayName.replace(/\s+/g,'').toLowerCase()
+          : 'clipuy';
+    uname = '@' + h;
+    const wmEl = document.getElementById('exp-wm-user');
+    if(wmEl) wmEl.textContent = uname;
+  }
   const sc=RW/180;
 
   if(_EXP.mediaType==='image'||!_EXP.mediaEl||_EXP.mediaEl.tagName!=='VIDEO'){
@@ -7534,10 +7558,22 @@ window.expStartExport = async function() {
     _expSetProg(10,'Iniciando grabación...');
     vid.currentTime=0;
     await vid.play().catch(()=>{});
-    // Capturar solo video (sin audio) del canvas
-    const canvasStream=rc.captureStream(30);
-    const videoOnlyStream=new MediaStream(canvasStream.getVideoTracks());
-    const stream=videoOnlyStream;
+    // Capturar video del canvas + audio del video original
+    const canvasStream = rc.captureStream(30);
+    let stream;
+    try {
+      // Intentar capturar audio del elemento de video
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const src = audioCtx.createMediaElementSource(vid);
+      const dest = audioCtx.createMediaStreamDestination();
+      src.connect(dest);
+      src.connect(audioCtx.destination); // mantener audio en speakers
+      const audioTrack = dest.stream.getAudioTracks()[0];
+      stream = new MediaStream([...canvasStream.getVideoTracks(), ...(audioTrack ? [audioTrack] : [])]);
+    } catch(e) {
+      // fallback sin audio si falla
+      stream = new MediaStream(canvasStream.getVideoTracks());
+    }
     const rec=new MediaRecorder(stream,{mimeType:_expGetMime(),videoBitsPerSecond:_EXP.quality==='1080'?8000000:4000000});
     const chunks=[];
     rec.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
