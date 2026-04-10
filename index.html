@@ -1022,7 +1022,7 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
   border-radius:2px;margin:0 auto 20px;
 }
 .upload-sheet h3{font-family:'Clash Display',sans-serif;font-size:1.1rem;font-weight:700;margin-bottom:16px;}
-.upload-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.upload-options{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;}
 .upload-opt{
   background:var(--surface2);border:1px solid var(--border);
   border-radius:var(--radius-sm);padding:16px;cursor:pointer;
@@ -2016,6 +2016,11 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
         <div class="upload-opt-label">Imagen</div>
         <div class="upload-opt-sub">JPG, PNG, etc.</div>
       </div>
+      <div class="upload-opt" onclick="openCameraRecord()" style="border-color:var(--accent);background:rgba(254,44,85,.08);">
+        <div class="upload-opt-icon">📷</div>
+        <div class="upload-opt-label" style="color:var(--accent)">Grabar</div>
+        <div class="upload-opt-sub">Usar cámara</div>
+      </div>
     </div>
     <button class="btn-outline" style="margin-top:8px" onclick="document.getElementById('upload-file-any').click()">
       📁 Elegir cualquier archivo
@@ -2318,7 +2323,6 @@ const googleProvider = new GoogleAuthProvider();
 
 // ── STATE ──
 let currentUser = null;
-window._getUser = () => currentUser;
 let myProfile = {};
 let _currentScreen = 'home';
 let _stories = [];
@@ -5916,8 +5920,7 @@ let _duetTimerInterval = null;
 let _duetSeconds = 0;
 
 window.openDuet = async (clipId, mediaUrl, authorName, authorUid, desc) => {
-  const currentUser = window._getUser ? window._getUser() : null;
-  if(!currentUser) { alert('⚠️ Iniciá sesión para hacer un dueto'); return; }
+  if(!currentUser) { showToast('⚠️ Iniciá sesión para hacer un dueto'); return; }
   _duetClipId = clipId;
   _duetOriginalUid = authorUid;
   _duetOriginalName = authorName;
@@ -6033,7 +6036,6 @@ function showDuetPublishUI() {
 }
 
 window.publishDuet = async () => {
-  const currentUser = window._getUser ? window._getUser() : null;
   if(!currentUser || !_duetBlob) return;
   const caption = document.getElementById('duet-caption').value.trim();
   const btn = document.getElementById('duet-publish-btn');
@@ -6098,6 +6100,46 @@ window.publishDuet = async () => {
 };
 </script>
 
+<!-- ══ MODAL GRABAR ══ -->
+<div id="record-modal" style="display:none;position:fixed;inset:0;left:0;z-index:9995;background:#000;flex-direction:column;">
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;">
+    <button onclick="closeRecordModal()" style="background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer;">✕</button>
+    <div style="font-family:'Clash Display',sans-serif;font-size:1rem;font-weight:700;">📷 Grabar clip</div>
+    <div style="width:32px;"></div>
+  </div>
+  <!-- Preview cámara -->
+  <div style="flex:1;position:relative;background:#111;overflow:hidden;">
+    <video id="record-preview" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover;transform:scaleX(-1);"></video>
+    <div id="record-placeholder" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--text-muted);">
+      <div style="font-size:3rem;">📷</div>
+      <div style="font-size:.9rem;">Iniciando cámara...</div>
+    </div>
+    <!-- Indicador REC -->
+    <div id="record-indicator" style="display:none;position:absolute;top:14px;right:14px;background:var(--accent);border-radius:99px;padding:4px 12px;font-size:.75rem;font-weight:700;align-items:center;gap:6px;">
+      <div style="width:8px;height:8px;border-radius:50%;background:#fff;animation:blink .8s infinite;"></div> REC
+    </div>
+    <!-- Timer -->
+    <div id="record-timer" style="position:absolute;top:14px;left:14px;background:rgba(0,0,0,.6);border-radius:8px;padding:4px 10px;font-size:.85rem;font-weight:700;">0:00</div>
+    <!-- Cambiar cámara -->
+    <button id="record-flip-btn" onclick="flipRecordCamera()" style="position:absolute;bottom:14px;right:14px;background:rgba(0,0,0,.6);border:none;border-radius:50%;width:44px;height:44px;font-size:1.3rem;cursor:pointer;color:#fff;">🔄</button>
+  </div>
+  <!-- Footer grabar -->
+  <div id="record-footer-rec" style="padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0;background:#000;border-top:1px solid var(--border);">
+    <div style="font-size:.75rem;color:var(--text-muted);" id="record-hint">Tocá para grabar (máx. 60s)</div>
+    <button id="record-btn" onclick="toggleRecording()" style="width:68px;height:68px;border-radius:50%;border:4px solid #fff;background:var(--accent);cursor:pointer;transition:transform .15s,background .2s;"></button>
+  </div>
+  <!-- Footer publicar -->
+  <div id="record-footer-pub" style="display:none;padding:14px 16px;gap:10px;flex-direction:column;flex-shrink:0;background:#000;border-top:1px solid var(--border);">
+    <video id="record-playback" controls muted playsinline style="width:100%;max-height:180px;border-radius:12px;object-fit:cover;background:#111;"></video>
+    <input id="record-caption" placeholder="Descripción del clip..." style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;color:#fff;font-family:'Space Grotesk',sans-serif;font-size:.9rem;outline:none;"/>
+    <div style="display:flex;gap:10px;">
+      <button onclick="retakeRecord()" style="flex:1;padding:11px;border:1px solid var(--border);border-radius:var(--radius-sm);background:none;color:#fff;font-family:'Space Grotesk',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;">🔄 Regrabar</button>
+      <button id="record-pub-btn" onclick="publishRecord()" style="flex:2;padding:11px;border:none;border-radius:var(--radius-sm);background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;font-family:'Space Grotesk',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;">Publicar 🚀</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── PWA Install Banner ── -->
 <div id="pwa-install-banner" style="
   position:fixed;bottom:0;left:72px;right:0;z-index:9999;
@@ -6157,6 +6199,177 @@ window.publishDuet = async () => {
     </button>
   </div>
 </div>
+
+<script>
+// ══════════════════════════════════════════════
+//  GRABAR CLIP
+// ══════════════════════════════════════════════
+let _recStream = null;
+let _recRecorder = null;
+let _recChunks = [];
+let _recBlob = null;
+let _recRecording = false;
+let _recTimerInterval = null;
+let _recSeconds = 0;
+let _recFacing = 'user';
+
+window.openCameraRecord = async () => {
+  const currentUser = window._getUser ? window._getUser() : null;
+  if(!currentUser) { showToast('⚠️ Iniciá sesión primero'); return; }
+  closeUpload();
+  _recBlob = null; _recChunks = []; _recSeconds = 0; _recRecording = false;
+  // Reset UI
+  document.getElementById('record-modal').style.display = 'flex';
+  document.getElementById('record-footer-rec').style.display = 'flex';
+  document.getElementById('record-footer-pub').style.display = 'none';
+  document.getElementById('record-indicator').style.display = 'none';
+  document.getElementById('record-timer').textContent = '0:00';
+  document.getElementById('record-hint').textContent = 'Tocá para grabar (máx. 60s)';
+  document.getElementById('record-btn').style.background = 'var(--accent)';
+  document.getElementById('record-playback').src = '';
+  await startRecordCamera();
+};
+
+async function startRecordCamera() {
+  if(_recStream) { _recStream.getTracks().forEach(t => t.stop()); _recStream = null; }
+  try {
+    _recStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: _recFacing, width: { ideal: 720 }, height: { ideal: 1280 } },
+      audio: true
+    });
+    const preview = document.getElementById('record-preview');
+    preview.srcObject = _recStream;
+    preview.muted = true;
+    preview.play().catch(()=>{});
+    document.getElementById('record-placeholder').style.display = 'none';
+  } catch(e) {
+    showToast('❌ No se pudo acceder a la cámara: ' + e.message);
+  }
+}
+
+window.flipRecordCamera = async () => {
+  _recFacing = _recFacing === 'user' ? 'environment' : 'user';
+  if(_recRecording) return; // No flipear mientras graba
+  await startRecordCamera();
+};
+
+window.toggleRecording = () => {
+  if(_recRecording) stopRecord(false);
+  else startRecord();
+};
+
+function startRecord() {
+  if(!_recStream) { showToast('❌ Cámara no disponible'); return; }
+  _recChunks = []; _recSeconds = 0;
+
+  const supportedType = ['video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm']
+    .find(t => { try { return MediaRecorder.isTypeSupported(t); } catch(e) { return false; } }) || '';
+
+  try {
+    _recRecorder = new MediaRecorder(_recStream, supportedType ? { mimeType: supportedType } : {});
+  } catch(e) {
+    _recRecorder = new MediaRecorder(_recStream);
+  }
+
+  _recRecorder.ondataavailable = e => { if(e.data.size > 0) _recChunks.push(e.data); };
+  _recRecorder.onstop = () => {
+    _recBlob = new Blob(_recChunks, { type: _recRecorder.mimeType || 'video/webm' });
+    showRecordPublishUI();
+  };
+  _recRecorder.start(200);
+  _recRecording = true;
+
+  // UI
+  document.getElementById('record-indicator').style.display = 'flex';
+  document.getElementById('record-btn').style.background = '#fff';
+  document.getElementById('record-hint').textContent = 'Tocá para detener';
+  document.getElementById('record-flip-btn').style.opacity = '0.3';
+
+  _recTimerInterval = setInterval(() => {
+    _recSeconds++;
+    const m = Math.floor(_recSeconds / 60);
+    const s = _recSeconds % 60;
+    document.getElementById('record-timer').textContent = m + ':' + String(s).padStart(2,'0');
+    if(_recSeconds >= 60) stopRecord(false);
+  }, 1000);
+}
+
+function stopRecord(cancel) {
+  if(!_recRecording && !cancel) return;
+  _recRecording = false;
+  clearInterval(_recTimerInterval);
+  document.getElementById('record-indicator').style.display = 'none';
+  document.getElementById('record-btn').style.background = 'var(--accent)';
+  document.getElementById('record-flip-btn').style.opacity = '1';
+  if(_recRecorder && _recRecorder.state !== 'inactive') {
+    if(cancel) { _recRecorder.ondataavailable = null; _recRecorder.onstop = null; }
+    _recRecorder.stop();
+  }
+}
+
+function showRecordPublishUI() {
+  document.getElementById('record-footer-rec').style.display = 'none';
+  document.getElementById('record-footer-pub').style.display = 'flex';
+  if(_recBlob) {
+    const url = URL.createObjectURL(_recBlob);
+    document.getElementById('record-playback').src = url;
+  }
+}
+
+window.retakeRecord = async () => {
+  _recBlob = null; _recChunks = []; _recSeconds = 0;
+  document.getElementById('record-footer-rec').style.display = 'flex';
+  document.getElementById('record-footer-pub').style.display = 'none';
+  document.getElementById('record-timer').textContent = '0:00';
+  document.getElementById('record-hint').textContent = 'Tocá para grabar (máx. 60s)';
+  await startRecordCamera();
+};
+
+window.closeRecordModal = () => {
+  stopRecord(true);
+  if(_recStream) { _recStream.getTracks().forEach(t => t.stop()); _recStream = null; }
+  document.getElementById('record-preview').srcObject = null;
+  document.getElementById('record-placeholder').style.display = 'flex';
+  document.getElementById('record-modal').style.display = 'none';
+};
+
+window.publishRecord = async () => {
+  const currentUser = window._getUser ? window._getUser() : null;
+  if(!currentUser || !_recBlob) return;
+  const caption = document.getElementById('record-caption').value.trim();
+  const btn = document.getElementById('record-pub-btn');
+  btn.disabled = true; btn.textContent = 'Subiendo...';
+  try {
+    const ext = _recBlob.type.includes('mp4') ? 'mp4' : 'webm';
+    const filename = `clip_${currentUser.uid}_${Date.now()}.${ext}`;
+    const file = new File([_recBlob], filename, { type: _recBlob.type });
+    showToast('📤 Subiendo clip...');
+    const handle = (myProfile.handle || myProfile.name || currentUser.displayName || 'Clipuy').replace('@','');
+    const mediaUrl = await uploadToServer(file, '@' + handle, caption || 'Clip grabado');
+    const clipData = {
+      uid: currentUser.uid,
+      name: myProfile.name || currentUser.displayName || 'Usuario',
+      avatar: myProfile.avatar || avatarFallback(currentUser.uid),
+      description: caption || '',
+      tags: '',
+      mediaUrl,
+      mediaType: 'video',
+      likesCount: 0,
+      likes: [],
+      commentsCount: 0,
+      ts: serverTimestamp()
+    };
+    await addDoc(collection(db,'clips'), clipData);
+    showToast('🎉 ¡Clip publicado!');
+    closeRecordModal();
+    loadFeed();
+    goTo('home');
+  } catch(e) {
+    showToast('❌ Error: ' + e.message);
+    btn.disabled = false; btn.textContent = 'Publicar 🚀';
+  }
+};
+</script>
 
 </body>
 </html>
