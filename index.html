@@ -7574,36 +7574,77 @@ window.expStartExport = async function() {
     const vid = _EXP.mediaEl;
     _expSetProg(8, 'Cargando audio original...');
 
-    // 1. Descargar el blob del video original para extraer audio
+    // 1. Intentar capturar audio directamente del elemento <video> (sin fetch/CORS)
     let originalAudioBuffer = null;
+    let audioCtxLive = null;
+    let audioDestNode = null;
+    let audioSourceNode = null;
+    let useVideoStream = false; // true = usamos captureStream() del video
+
+    // Método A: captureStream() del elemento de video (no requiere fetch, sin CORS)
+    let vidAudioTracks = [];
     try {
-      const resp = await fetch(_EXP.mediaUrl, { cache: 'force-cache' });
-      const arrayBuf = await resp.arrayBuffer();
-      const offlineCtx = new OfflineAudioContext(2, 44100 * 120, 44100);
-      originalAudioBuffer = await offlineCtx.decodeAudioData(arrayBuf);
-    } catch(e) {
-      // sin audio si falla decode
-      originalAudioBuffer = null;
+      vid.muted = false;
+      vid.volume = 1;
+      const vidStream = vid.captureStream ? vid.captureStream() : (vid.mozCaptureStream ? vid.mozCaptureStream() : null);
+      if (vidStream) {
+        vidAudioTracks = vidStream.getAudioTracks();
+      }
+    } catch(e) { vidAudioTracks = []; }
+
+    // Método B (fallback): fetch + decodeAudioData
+    if (vidAudioTracks.length === 0) {
+      try {
+        const resp = await fetch(_EXP.mediaUrl, { cache: 'force-cache' });
+        const arrayBuf = await resp.arrayBuffer();
+        const offlineCtx = new OfflineAudioContext(2, 44100 * 120, 44100);
+        originalAudioBuffer = await offlineCtx.decodeAudioData(arrayBuf);
+      } catch(e) {
+        originalAudioBuffer = null;
+      }
     }
 
     _expSetProg(15, 'Iniciando grabación...');
     vid.currentTime = 0;
-    vid.muted = true;
     // No arrancar el video todavía — se arranca después de la intro
 
     // 2. Canvas stream para los frames de video
     const canvasStream = rc.captureStream(30);
 
-    // 3. Si tenemos audio, crear AudioContext y conectar al stream
-    let audioCtxLive = null;
-    let audioDestNode = null;
-    let audioSourceNode = null;
-    if (originalAudioBuffer) {
+    // 3. Construir AudioContext para combinar audio del video + sonidos de intro/end
+    if (vidAudioTracks.length > 0) {
+      // Método A: mezclar audio del video con AudioContext
       try {
         audioCtxLive = new AudioContext({ sampleRate: 44100 });
         audioDestNode = audioCtxLive.createMediaStreamDestination();
-        // Se arrancará sincronizado con el video (ver más abajo)
+        // Crear un stream temporal solo con las pistas de audio del video
+        const vidAudioStream = new MediaStream(vidAudioTracks);
+        const vidAudioSrc = audioCtxLive.createMediaStreamSource(vidAudioStream);
+        // audioSourceNode aquí es el nodo del video — se conecta cuando arranca el video
+        audioSourceNode = vidAudioSrc;
+        useVideoStream = true;
+        vid.muted = true; // silenciar reproducción local (el audio va por audioCtxLive)
+      } catch(e) {
+        audioCtxLive = null;
+        audioDestNode = null;
+        audioSourceNode = null;
+        useVideoStream = false;
+        vid.muted = true;
+      }
+    } else if (originalAudioBuffer) {
+      // Método B: buffer decodificado por fetch
+      try {
+        audioCtxLive = new AudioContext({ sampleRate: 44100 });
+        audioDestNode = audioCtxLive.createMediaStreamDestination();
       } catch(e) { audioCtxLive = null; }
+      vid.muted = true;
+    } else {
+      vid.muted = true;
+    }
+
+    // Conectar audio del video al destino (Método A)
+    if (useVideoStream && audioCtxLive && audioDestNode && audioSourceNode) {
+      audioSourceNode.connect(audioDestNode);
     }
 
     // 4. Construir el MediaStream final
@@ -7633,8 +7674,8 @@ window.expStartExport = async function() {
     rec.start(100);
     _expSetProg(18, 'Grabando...');
 
-    // Arrancar audio sincronizado (con delay para esperar la intro)
-    if (audioCtxLive && audioDestNode && originalAudioBuffer) {
+    // Arrancar audio del buffer (Método B, fallback fetch) sincronizado con el video
+    if (!useVideoStream && audioCtxLive && audioDestNode && originalAudioBuffer) {
       audioSourceNode = audioCtxLive.createBufferSource();
       audioSourceNode.buffer = originalAudioBuffer;
       audioSourceNode.connect(audioDestNode);
@@ -7738,7 +7779,12 @@ window.expStartExport = async function() {
         if (!endCardStarted) {
           endCardStarted = true;
           vid.pause();
-          if (audioSourceNode) { try { audioSourceNode.stop(); } catch(e){} }
+          // solo BufferSourceNode tiene .stop(); MediaStreamSourceNode no lo tiene
+          if (audioSourceNode && typeof audioSourceNode.stop === 'function') {
+            try { audioSourceNode.stop(); } catch(e){}
+          } else if (audioSourceNode) {
+            try { audioSourceNode.disconnect(); } catch(e){}
+          }
         }
         if (!endSoundPlayed) {
           endSoundPlayed = true;
