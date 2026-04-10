@@ -2264,7 +2264,7 @@ async function uploadToServer(file, usuario, titulo) {
   try {
     const formData = new FormData();
     formData.append("archivo", file);
-    if(usuario && file.type && file.type.startsWith("video")) formData.append("usuario", usuario);
+    if(usuario) formData.append("subido_por", usuario);
     if(titulo) formData.append("titulo", titulo);
 
     const controller = new AbortController();
