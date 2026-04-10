@@ -40,54 +40,49 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
 ::-webkit-scrollbar-thumb{background:var(--surface3);}
 
 /* ── SCREEN SYSTEM ── */
-.screen{position:fixed;inset:0;left:72px;display:none;flex-direction:column;background:#000;}
+.screen{position:fixed;inset:0;left:245px;display:none;flex-direction:column;background:#000;}
 .screen.active{display:flex;}
 
-/* ── LEFT SIDEBAR NAV ── */
+/* ── LEFT SIDEBAR NAV — Instagram style ── */
 #bottom-nav{
   position:fixed;top:0;left:0;bottom:0;
-  width:72px;z-index:100;
-  background:rgba(0,0,0,.92);
-  backdrop-filter:blur(12px);
+  width:245px;z-index:100;
+  background:#000;
   border-right:1px solid var(--border);
   display:flex;flex-direction:column;align-items:stretch;
-  padding:16px 0 24px;
+  padding:12px 0 20px;
   gap:0;
-}
-/* Logo at top */
-#bottom-nav::before{
-  display:none;
 }
 #nav-logo-img{
   display:block;
-  width:52px;height:52px;object-fit:contain;
-  margin:0 auto 8px;
-  padding-bottom:8px;
-  border-bottom:1px solid var(--border);
-  padding:4px 4px 8px;
+  width:36px;height:36px;object-fit:contain;
+  margin:0 0 20px 22px;
+  padding-bottom:0;
+  border-bottom:none;
 }
 .nav-btn{
-  display:flex;flex-direction:column;align-items:center;gap:3px;
-  background:none;border:none;color:var(--text-muted);
-  font-family:'Space Grotesk',sans-serif;font-size:.55rem;font-weight:500;
-  cursor:pointer;transition:color .2s,background .2s;
-  padding:10px 0;width:100%;
-  letter-spacing:.3px;text-transform:uppercase;
-  border-radius:0;
+  display:flex;flex-direction:row;align-items:center;gap:14px;
+  background:none;border:none;color:#fff;
+  font-family:'Space Grotesk',sans-serif;font-size:.97rem;font-weight:500;
+  cursor:pointer;transition:background .15s;
+  padding:10px 14px 10px 18px;width:100%;
+  letter-spacing:0;text-transform:none;
+  border-radius:10px;
+  margin:1px 0;
 }
-.nav-btn:hover{color:#fff;background:rgba(255,255,255,.06);}
-.nav-btn.active{color:#fff;}
-.nav-btn.active svg{stroke:var(--accent);fill:none;}
-.nav-btn svg{width:24px;height:24px;}
+.nav-btn:hover{background:rgba(255,255,255,.1);}
+.nav-btn.active{font-weight:700;}
+.nav-btn.active svg{stroke:#fff;}
+.nav-btn svg{width:26px;height:26px;flex-shrink:0;}
 .nav-btn.upload-btn{
   background:none;border:none;
-  color:var(--text-muted);
-  font-size:.55rem;font-weight:700;
-  margin-top:4px;
+  color:#fff;
+  font-size:.97rem;font-weight:500;
+  margin-top:0;
 }
 .nav-btn.upload-btn svg{
-  background:linear-gradient(135deg,var(--accent2),var(--accent));
-  border-radius:8px;padding:5px;width:36px;height:36px;stroke:#fff;
+  background:none;
+  border-radius:0;padding:0;width:26px;height:26px;stroke:#fff;
 }
 /* Push profile to bottom */
 #nav-profile{margin-top:auto;}
@@ -225,7 +220,7 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
 /* ── FEED (HOME) ── */
 #home-screen{background:#000;}
 .feed-header{
-  position:fixed;top:0;left:72px;right:0;z-index:50;
+  position:fixed;top:0;left:245px;right:0;z-index:50;
   display:flex;align-items:center;justify-content:space-between;
   padding:12px 16px 8px;
   background:linear-gradient(to bottom,rgba(0,0,0,.8),transparent);
@@ -478,7 +473,7 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
 
 /* ── STORY VIEWER ── */
 #story-viewer{
-  position:fixed;inset:0;left:72px;z-index:300;
+  position:fixed;inset:0;left:245px;z-index:300;
   background:rgba(0,0,0,.88);backdrop-filter:blur(6px);
   display:none;align-items:center;justify-content:center;
 }
@@ -545,7 +540,7 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
 
 /* ── CREATE STORY ── */
 #create-story-modal{
-  position:fixed;inset:0;left:72px;z-index:250;background:#000;
+  position:fixed;inset:0;left:245px;z-index:250;background:#000;
   display:none;flex-direction:column;
 }
 #create-story-modal.open{display:flex;}
@@ -713,56 +708,64 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
   text-transform:uppercase;
   border:1px solid rgba(255,255,255,.15);
 }
-/* ── CLIP VIEWER — TikTok-style side nav ── */
+/* ── CLIP VIEWER — TikTok desktop layout ── */
 #clip-viewer-modal{
-  position:fixed;inset:0;left:72px;z-index:450;
-  background:rgba(0,0,0,.94);
+  position:fixed;inset:0;left:245px;z-index:450;
+  background:rgba(0,0,0,.96);
   display:none;align-items:center;justify-content:center;
-  backdrop-filter:blur(10px);
-  gap:16px;
+  backdrop-filter:blur(14px);
 }
 #clip-viewer-modal.open{display:flex;}
 
-/* Re-override to use flex row layout */
+/* Outer container: nav arrow + video + panel */
+.cv-outer{
+  display:flex;align-items:center;gap:0;
+  height:100vh;width:100%;max-width:1100px;
+  margin:0 auto;padding:0 16px;
+}
+
+/* Nav arrow buttons (left / right of the video) */
+.cv-arrow{
+  width:48px;height:48px;border-radius:50%;border:none;cursor:pointer;
+  background:rgba(255,255,255,.12);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:background .15s,transform .1s;
+  backdrop-filter:blur(6px);
+}
+.cv-arrow:hover:not(:disabled){background:rgba(255,255,255,.25);transform:scale(1.08);}
+.cv-arrow:disabled{opacity:.2;cursor:default;}
+.cv-arrow svg{width:24px;height:24px;fill:#fff;}
+
+/* Video column */
 .clip-viewer-wrap{
   position:relative;
   height:90vh;aspect-ratio:9/16;
   background:#000;border-radius:16px;overflow:hidden;
   display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;
+  flex-shrink:0;margin:0 12px;
 }
 .clip-viewer-wrap video,.clip-viewer-wrap img{
   width:100%;height:100%;object-fit:contain;
 }
 
-/* Right-side column: up/down nav buttons */
-.cv-side-nav{
-  display:flex;flex-direction:column;align-items:center;gap:14px;
-  flex-shrink:0;
+/* Close button */
+.clip-viewer-close{
+  position:absolute;top:12px;left:12px;
+  background:rgba(0,0,0,.55);border:none;color:#fff;
+  border-radius:50%;width:36px;height:36px;font-size:1rem;
+  cursor:pointer;z-index:20;display:flex;align-items:center;justify-content:center;
+  backdrop-filter:blur(4px);transition:background .15s;
 }
-.cv-side-btn{
-  width:48px;height:48px;border-radius:50%;border:none;cursor:pointer;
-  background:rgba(40,40,40,.9);color:#fff;
-  display:flex;align-items:center;justify-content:center;
-  font-size:1.3rem;transition:background .15s,transform .1s;
-  box-shadow:0 2px 12px rgba(0,0,0,.5);
-  backdrop-filter:blur(6px);
-}
-.cv-side-btn:hover:not(:disabled){background:rgba(80,80,80,.95);transform:scale(1.08);}
-.cv-side-btn:disabled{opacity:.3;cursor:default;}
-.cv-side-btn svg{width:22px;height:22px;fill:#fff;}
+.clip-viewer-close:hover{background:rgba(0,0,0,.8);}
 
-/* Counter pill */
-.cv-counter{
-  background:rgba(0,0,0,.6);border-radius:99px;
-  padding:3px 10px;font-size:.72rem;color:rgba(255,255,255,.9);
-  font-weight:700;text-align:center;letter-spacing:.5px;
-  min-width:44px;
-}
+/* Info overlay (mobile only) */
+.clip-viewer-info{ display:none; }
+.clip-viewer-desc{font-size:.88rem;color:#fff;line-height:1.5;margin-bottom:4px;}
+.clip-viewer-stats{font-size:.78rem;color:rgba(255,255,255,.65);display:flex;gap:12px;}
 
 /* Progress / scrub bar */
 .cv-progress-wrap{
-  position:absolute;bottom:56px;left:12px;right:12px;z-index:15;
+  position:absolute;bottom:10px;left:12px;right:12px;z-index:15;
   display:flex;flex-direction:column;gap:4px;
 }
 .cv-time-row{
@@ -788,34 +791,103 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
 }
 .cv-scrub:hover .cv-scrub-thumb{ opacity:1; }
 
-/* Close button */
-.clip-viewer-close{
-  position:absolute;top:12px;left:12px;
-  background:rgba(0,0,0,.55);border:none;color:#fff;
-  border-radius:50%;width:36px;height:36px;font-size:1rem;
-  cursor:pointer;z-index:20;display:flex;align-items:center;justify-content:center;
-  backdrop-filter:blur(4px);transition:background .15s;
+/* Right panel */
+.cv-panel{
+  width:340px;flex-shrink:0;
+  height:90vh;background:#111;border-radius:16px;
+  display:flex;flex-direction:column;overflow:hidden;
+  border:1px solid rgba(255,255,255,.08);
 }
-.clip-viewer-close:hover{background:rgba(0,0,0,.8);}
-
-/* Info overlay */
-.clip-viewer-info{
-  position:absolute;bottom:0;left:0;right:0;
-  padding:80px 14px 14px;
-  background:linear-gradient(to top,rgba(0,0,0,.88) 0%,transparent 100%);
-  pointer-events:none;
+.cv-panel-header{
+  padding:16px 16px 12px;border-bottom:1px solid rgba(255,255,255,.07);
+  flex-shrink:0;
 }
-.clip-viewer-desc{font-size:.88rem;color:#fff;line-height:1.5;margin-bottom:4px;}
-.clip-viewer-stats{font-size:.78rem;color:rgba(255,255,255,.65);display:flex;gap:12px;}
+.cv-panel-user{
+  display:flex;align-items:center;gap:10px;margin-bottom:10px;
+}
+.cv-panel-avatar{
+  width:44px;height:44px;border-radius:50%;object-fit:cover;
+  border:2px solid rgba(255,255,255,.2);flex-shrink:0;cursor:pointer;
+}
+.cv-panel-name{font-weight:700;font-size:.95rem;cursor:pointer;}
+.cv-panel-handle{font-size:.75rem;color:var(--text-muted);}
+.cv-panel-follow{
+  margin-left:auto;padding:6px 14px;border:none;border-radius:6px;
+  background:var(--accent);color:#fff;font-family:'Space Grotesk',sans-serif;
+  font-size:.78rem;font-weight:700;cursor:pointer;transition:opacity .2s;white-space:nowrap;
+}
+.cv-panel-follow:hover{opacity:.82;}
+.cv-panel-desc{
+  font-size:.85rem;color:rgba(255,255,255,.85);line-height:1.5;
+  margin-bottom:6px;
+}
+.cv-panel-tags{ font-size:.8rem;color:var(--accent2);font-weight:600; }
+.cv-panel-stats{
+  display:flex;gap:14px;margin-top:10px;
+  font-size:.82rem;color:rgba(255,255,255,.7);
+}
+.cv-panel-stat{display:flex;align-items:center;gap:5px;cursor:pointer;transition:color .15s;}
+.cv-panel-stat:hover{color:#fff;}
+.cv-panel-stat svg{width:18px;height:18px;}
+.cv-panel-counter{
+  text-align:center;font-size:.72rem;color:var(--text-dim);
+  padding:6px 0 0;letter-spacing:.3px;
+}
 
+/* Comments inside panel */
+.cv-comments{
+  flex:1;overflow-y:auto;padding:10px 14px;
+  display:flex;flex-direction:column;gap:10px;
+  scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.1) transparent;
+}
+.cv-comments::-webkit-scrollbar{width:3px;}
+.cv-comments::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:2px;}
+.cv-comment-item{display:flex;gap:8px;align-items:flex-start;}
+.cv-comment-avatar{width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;}
+.cv-comment-body{flex:1;min-width:0;}
+.cv-comment-name{font-weight:700;font-size:.78rem;color:#fff;margin-bottom:1px;}
+.cv-comment-text{font-size:.82rem;color:rgba(255,255,255,.8);line-height:1.4;}
+.cv-comment-time{font-size:.65rem;color:var(--text-dim);margin-top:2px;}
+
+/* Comment input */
+.cv-comment-bar{
+  display:flex;gap:8px;padding:10px 12px;
+  border-top:1px solid rgba(255,255,255,.07);flex-shrink:0;
+  background:#111;
+}
+.cv-comment-inp{
+  flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  border-radius:99px;padding:8px 14px;color:#fff;
+  font-family:'Space Grotesk',sans-serif;font-size:.85rem;outline:none;
+}
+.cv-comment-inp:focus{border-color:var(--accent2);}
+.cv-comment-inp::placeholder{color:rgba(255,255,255,.35);}
+.cv-comment-send{
+  background:var(--accent);border:none;border-radius:50%;
+  width:34px;height:34px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;flex-shrink:0;transition:opacity .2s;
+}
+.cv-comment-send:hover{opacity:.82;}
+
+/* Hidden old side nav */
+.cv-side-nav{ display:none!important; }
+
+@media(max-width:900px){
+  .cv-panel{ display:none; }
+  .cv-outer{ padding:0; justify-content:center; }
+  .clip-viewer-wrap{ height:100vh;border-radius:0;aspect-ratio:unset;width:100%;margin:0; }
+  .clip-viewer-info{ display:block;position:absolute;bottom:0;left:0;right:0;padding:60px 14px 14px;background:linear-gradient(to top,rgba(0,0,0,.88),transparent);pointer-events:none; }
+  .cv-arrow{ position:fixed;top:50%;z-index:460;transform:translateY(-50%); }
+  #cv-arrow-prev{ left:82px; }
+  #cv-arrow-next{ right:10px; }
+}
 @media(max-width:600px){
-  .clip-viewer-wrap{ height:100vh;border-radius:0;aspect-ratio:unset;width:100%; }
-  .cv-side-nav{ position:fixed;right:10px;top:50%;transform:translateY(-50%);z-index:460; }
+  .cv-arrow{ display:none; }
 }
 
 /* ── DUETO MODAL ── */
 #duet-modal{
-  position:fixed;inset:0;left:72px;z-index:460;background:#000;
+  position:fixed;inset:0;left:245px;z-index:460;background:#000;
   display:none;flex-direction:column;
 }
 #duet-modal.open{display:flex;}
@@ -1010,7 +1082,7 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
 
 /* ── UPLOAD VIDEO MODAL ── */
 #upload-modal{
-  position:fixed;inset:0;left:72px;z-index:250;background:rgba(0,0,0,.9);
+  position:fixed;inset:0;left:245px;z-index:250;background:rgba(0,0,0,.9);
   backdrop-filter:blur(10px);display:none;flex-direction:column;
   align-items:center;justify-content:flex-end;
 }
@@ -1103,7 +1175,7 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
 
 /* ── SEARCH ── */
 #search-modal{
-  position:fixed;inset:0;left:72px;z-index:200;background:#000;
+  position:fixed;inset:0;left:245px;z-index:200;background:#000;
   display:none;flex-direction:column;
 }
 #search-modal.open{display:flex;}
@@ -1280,7 +1352,7 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
 
 /* ── SETTINGS ── */
 #settings-modal{
-  position:fixed;inset:0;left:72px;z-index:200;background:#000;
+  position:fixed;inset:0;left:245px;z-index:200;background:#000;
   display:none;flex-direction:column;
 }
 #settings-modal.open{display:flex;}
@@ -1307,7 +1379,7 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
 
 /* ── EDIT PROFILE ── */
 #edit-profile-modal{
-  position:fixed;inset:0;left:72px;z-index:250;background:#000;
+  position:fixed;inset:0;left:245px;z-index:250;background:#000;
   display:none;flex-direction:column;
 }
 #edit-profile-modal.open{display:flex;}
@@ -2522,7 +2594,7 @@ input.exp-range::-webkit-slider-thumb{
 </div>
 
 <!-- UPLOAD CAPTION MODAL -->
-<div id="caption-modal" style="position:fixed;inset:0;left:72px;z-index:260;background:rgba(0,0,0,.95);display:none;flex-direction:column;">
+<div id="caption-modal" style="position:fixed;inset:0;left:245px;z-index:260;background:rgba(0,0,0,.95);display:none;flex-direction:column;">
   <div style="display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid var(--border);">
     <button onclick="closeCaptionModal()" style="background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer">✕</button>
     <div style="font-family:'Clash Display',sans-serif;font-size:1rem;font-weight:700">Detalles del clip</div>
@@ -3241,10 +3313,6 @@ function buildVideoSlide(id, data) {
         : `<img class="video-el" data-src="${escHtml(data.mediaUrl||'')}" style="object-fit:contain"/>`
       }
       <div class="video-overlay"></div>
-      ${data.handle ? `<div style="position:absolute;top:14px;left:12px;z-index:12;display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:4px 10px 4px 6px;pointer-events:none;">
-        <img src="${data.avatar||avatarFallback(data.uid||'u')}" onerror="this.src='${avatarFallback(data.uid||'u')}'" style="width:20px;height:20px;border-radius:50%;object-fit:cover;flex-shrink:0;"/>
-        <span style="font-size:.68rem;font-weight:600;color:rgba(255,255,255,.9);font-family:'Space Grotesk',sans-serif;white-space:nowrap;">${escHtml(data.handle.startsWith('@')?data.handle:'@'+data.handle)}</span>
-      </div>` : ''}
       <div class="play-indicator" id="pi-${id}">
         <div class="play-indicator-circle">▶</div>
       </div>
@@ -3599,7 +3667,7 @@ window.openComments = (clipId) => {
   if(!modal) {
     modal = document.createElement('div');
     modal.id = 'comments-modal';
-    modal.style.cssText = 'position:fixed;inset:0;left:72px;z-index:480;background:rgba(0,0,0,.85);backdrop-filter:blur(6px);display:flex;align-items:flex-end;';
+    modal.style.cssText = 'position:fixed;inset:0;left:245px;z-index:480;background:rgba(0,0,0,.85);backdrop-filter:blur(6px);display:flex;align-items:flex-end;';
     modal.innerHTML = `
       <div style="width:100%;max-height:70vh;background:#111;border-radius:20px 20px 0 0;display:flex;flex-direction:column;overflow:hidden;border-top:1px solid rgba(255,255,255,.1);">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px 10px;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0;">
@@ -3878,7 +3946,6 @@ window.publishClip = async () => {
     const clipData = {
       uid: currentUser.uid,
       name: myProfile.name || currentUser.displayName || 'Usuario',
-      handle: myProfile.handle || ('@' + handle),
       avatar: myProfile.avatar || avatarFallback(currentUser.uid),
       description: desc,
       tags,
@@ -4612,9 +4679,20 @@ function renderClipViewer() {
     }, 2000);
   }
 
-  document.getElementById('clip-viewer-desc').textContent = clip.description || clip.caption || clip.desc || '';
-  document.getElementById('clip-viewer-stats').innerHTML =
-    `<span>❤️ ${fmtNum(clip.likesCount||0)}</span><span>▶ ${fmtNum(clip.viewsCount||0)}</span>`;
+  // ── Mobile info overlay ──
+  const mDesc = document.getElementById('clip-viewer-desc-mobile');
+  const mStats = document.getElementById('clip-viewer-stats-mobile');
+  if(mDesc) mDesc.textContent = clip.description || clip.caption || clip.desc || '';
+  if(mStats) mStats.innerHTML = '<span>❤️ ' + fmtNum(clip.likesCount||0) + '</span>';
+
+  // ── Arrow buttons ──
+  const arrowPrev = document.getElementById('cv-arrow-prev');
+  const arrowNext = document.getElementById('cv-arrow-next');
+  if(arrowPrev) arrowPrev.disabled = _clipViewerIdx <= 0;
+  if(arrowNext) arrowNext.disabled = _clipViewerIdx >= _clipViewerClips.length - 1;
+
+  // ── Right panel ──
+  _cvUpdatePanel(clip);
 
   // ── Keyboard nav ──
   document.onkeydown = (e) => {
@@ -4642,10 +4720,94 @@ window.clipViewerNav = (dir) => {
   if(newIdx < 0 || newIdx >= _clipViewerClips.length) return;
   _clipViewerIdx = newIdx;
   _clipViewerSourceDiv = null;
-  // Remove scrub listeners
   if(window._cvScrubMove) { document.removeEventListener('mousemove',window._cvScrubMove); document.removeEventListener('touchmove',window._cvScrubMove); }
   if(window._cvScrubUp)   { document.removeEventListener('mouseup',window._cvScrubUp);   document.removeEventListener('touchend',window._cvScrubUp); }
+  if(_cvPanelCommentsUnsub) { _cvPanelCommentsUnsub(); _cvPanelCommentsUnsub = null; }
   renderClipViewer();
+};
+
+// ── Panel derecho: actualizar info + comentarios ──
+let _cvPanelCommentsUnsub = null;
+let _cvCurrentClipId = null;
+
+function _cvUpdatePanel(clip) {
+  _cvCurrentClipId = clip.id;
+  const avatar = clip.avatar || avatarFallback(clip.uid||'u');
+  const avEl = document.getElementById('cv-panel-avatar');
+  const nameEl = document.getElementById('cv-panel-name');
+  const handleEl = document.getElementById('cv-panel-handle');
+  if(avEl) { avEl.src = avatar; avEl.onerror = () => { avEl.src = avatarFallback(clip.uid||'u'); }; avEl.onclick = () => { closeClipViewer(); openUserProfile(clip.uid); }; }
+  if(nameEl) { nameEl.textContent = clip.name || 'Usuario'; nameEl.onclick = () => { closeClipViewer(); openUserProfile(clip.uid); }; }
+  if(handleEl) handleEl.textContent = clip.handle || '';
+  const followBtn = document.getElementById('cv-panel-follow-btn');
+  if(followBtn) {
+    if(!currentUser || clip.uid === currentUser.uid) { followBtn.style.display = 'none'; }
+    else {
+      followBtn.style.display = '';
+      const isFollowing = (myProfile.followingList||[]).includes(clip.uid);
+      followBtn.textContent = isFollowing ? '✅ Siguiendo' : 'Seguir';
+      followBtn.style.background = isFollowing ? 'rgba(255,255,255,.15)' : 'var(--accent)';
+      followBtn.onclick = async () => { await toggleFollow(clip.uid, followBtn); };
+    }
+  }
+  const descEl = document.getElementById('cv-panel-desc');
+  const tagsEl = document.getElementById('cv-panel-tags');
+  if(descEl) descEl.textContent = (clip.description||'').replace(/(#[\w\u00C0-\u017E]+|@[\w\u00C0-\u017E]+)/g,'').trim();
+  if(tagsEl) {
+    tagsEl.innerHTML = (clip.tags||'').split(' ').filter(Boolean).map(t=>'<span onclick="closeClipViewer();setTimeout(()=>searchByTag(\'' + t + '\'),200)" style="cursor:pointer;margin-right:5px">' + escHtml(t) + '</span>').join('');
+  }
+  const likesEl = document.getElementById('cv-panel-likes');
+  const commEl = document.getElementById('cv-panel-comments-count');
+  if(likesEl) likesEl.textContent = fmtNum(clip.likesCount||0);
+  if(commEl) commEl.textContent = fmtNum(clip.commentsCount||0);
+  const likeBtn = document.getElementById('cv-panel-like-btn');
+  if(likeBtn && currentUser) {
+    const isLiked = clip.likes && clip.likes.includes(currentUser.uid);
+    likeBtn.style.color = isLiked ? 'var(--accent)' : '';
+    const svg = likeBtn.querySelector('svg');
+    if(svg) svg.style.fill = isLiked ? 'var(--accent)' : 'rgba(255,255,255,.7)';
+    likeBtn.onclick = () => { toggleLike(clip.id, null); };
+  }
+  const counterEl = document.getElementById('cv-panel-counter');
+  if(counterEl) counterEl.textContent = (_clipViewerIdx+1) + ' / ' + _clipViewerClips.length;
+  _cvLoadComments(clip.id);
+}
+
+function _cvLoadComments(clipId) {
+  const list = document.getElementById('cv-comments-list');
+  if(!list) return;
+  if(_cvPanelCommentsUnsub) { _cvPanelCommentsUnsub(); _cvPanelCommentsUnsub = null; }
+  list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:.8rem;">\u23f3 Cargando...</div>';
+  const q = query(collection(db,'clips',clipId,'comments'), orderBy('ts','asc'), limit(60));
+  _cvPanelCommentsUnsub = onSnapshot(q, snap => {
+    list.innerHTML = '';
+    if(snap.empty) { list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:.8rem;">Sin comentarios. \u00a1S\u00e9 el primero! \ud83d\udcac</div>'; return; }
+    snap.docs.forEach(d => {
+      const c = d.data();
+      const item = document.createElement('div');
+      item.className = 'cv-comment-item';
+      item.innerHTML = '<img class="cv-comment-avatar" src="' + escHtml(c.avatar||avatarFallback(c.uid||'u')) + '" onerror="this.src=\'' + avatarFallback('u') + '\'"/><div class="cv-comment-body"><div class="cv-comment-name">' + escHtml(c.name||'Usuario') + '</div><div class="cv-comment-text">' + escHtml(c.text||'') + '</div><div class="cv-comment-time">' + timeAgo(c.ts) + '</div></div>';
+      list.appendChild(item);
+    });
+    list.scrollTop = list.scrollHeight;
+  }, ()=>{});
+}
+
+window.cvSendComment = async () => {
+  const inp = document.getElementById('cv-comment-inp');
+  const text = inp && inp.value.trim();
+  if(!text || !currentUser || !_cvCurrentClipId) return;
+  inp.value = '';
+  try {
+    await addDoc(collection(db,'clips',_cvCurrentClipId,'comments'), {
+      uid: currentUser.uid,
+      name: myProfile.name || currentUser.displayName || 'Usuario',
+      avatar: myProfile.avatar || avatarFallback(currentUser.uid),
+      text,
+      ts: serverTimestamp()
+    });
+    await updateDoc(doc(db,'clips',_cvCurrentClipId), { commentsCount: increment(1) });
+  } catch(e) { showToast('\u274c Error al comentar'); inp.value = text; }
 };
 
 
@@ -4833,7 +4995,7 @@ window.openUserProfile = async (uid) => {
 
     const overlay = document.createElement('div');
     overlay.id = 'user-profile-overlay';
-    overlay.style.cssText = 'position:fixed;inset:0;left:72px;z-index:400;background:#000;display:flex;flex-direction:column;overflow-y:auto;animation:fadeIn .2s';
+    overlay.style.cssText = 'position:fixed;inset:0;left:245px;z-index:400;background:#000;display:flex;flex-direction:column;overflow-y:auto;animation:fadeIn .2s';
     // Store clips globally for viewer access
     window['_pubClips_' + uid] = clips;
     const safeUid = uid.replace(/[^a-z0-9]/gi,'_');
@@ -6298,44 +6460,92 @@ function selectClipuyAudio(audio, itemEl) {
 
 <!-- ══════════════════ CLIP VIEWER MODAL ══════════════════ -->
 <div id="clip-viewer-modal">
-  <!-- Video wrap -->
-  <div class="clip-viewer-wrap" id="clip-viewer-wrap">
-    <div id="clip-viewer-media"></div>
-    <!-- Close -->
-    <button class="clip-viewer-close" onclick="closeClipViewer()">✕</button>
-    <!-- Watched badge -->
-    <div class="clip-watched-badge" id="clip-watched-badge">VISTO ✓</div>
-    <!-- Info overlay -->
-    <div class="clip-viewer-info">
-      <div class="clip-viewer-desc" id="clip-viewer-desc"></div>
-      <div class="clip-viewer-stats" id="clip-viewer-stats"></div>
-    </div>
-    <!-- Scrub bar -->
-    <div class="cv-progress-wrap" id="cv-progress-wrap" style="display:none">
-      <div class="cv-time-row">
-        <span id="cv-time-cur">0:00</span>
-        <span id="cv-time-dur">0:00</span>
+  <div class="cv-outer">
+    <!-- Arrow PREV -->
+    <button class="cv-arrow" id="cv-arrow-prev" onclick="clipViewerNav(-1)" title="Anterior">
+      <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+    </button>
+
+    <!-- Video column -->
+    <div class="clip-viewer-wrap" id="clip-viewer-wrap">
+      <div id="clip-viewer-media"></div>
+      <!-- Close -->
+      <button class="clip-viewer-close" onclick="closeClipViewer()">✕</button>
+      <!-- Watched badge -->
+      <div class="clip-watched-badge" id="clip-watched-badge">VISTO ✓</div>
+      <!-- Info overlay (mobile fallback) -->
+      <div class="clip-viewer-info">
+        <div class="clip-viewer-desc" id="clip-viewer-desc-mobile"></div>
+        <div class="clip-viewer-stats" id="clip-viewer-stats-mobile"></div>
       </div>
-      <div class="cv-scrub" id="cv-scrub">
-        <div class="cv-scrub-fill" id="cv-scrub-fill" style="width:0%"></div>
-        <div class="cv-scrub-thumb" id="cv-scrub-thumb" style="left:0%"></div>
+      <!-- Scrub bar -->
+      <div class="cv-progress-wrap" id="cv-progress-wrap" style="display:none">
+        <div class="cv-time-row">
+          <span id="cv-time-cur">0:00</span>
+          <span id="cv-time-dur">0:00</span>
+        </div>
+        <div class="cv-scrub" id="cv-scrub">
+          <div class="cv-scrub-fill" id="cv-scrub-fill" style="width:0%"></div>
+          <div class="cv-scrub-thumb" id="cv-scrub-thumb" style="left:0%"></div>
+        </div>
       </div>
     </div>
+
+    <!-- Right panel -->
+    <div class="cv-panel" id="cv-panel">
+      <!-- User info header -->
+      <div class="cv-panel-header">
+        <div class="cv-panel-user">
+          <img class="cv-panel-avatar" id="cv-panel-avatar" src="" onclick=""/>
+          <div>
+            <div class="cv-panel-name" id="cv-panel-name"></div>
+            <div class="cv-panel-handle" id="cv-panel-handle"></div>
+          </div>
+          <button class="cv-panel-follow" id="cv-panel-follow-btn">Seguir</button>
+        </div>
+        <div class="cv-panel-desc" id="cv-panel-desc"></div>
+        <div class="cv-panel-tags" id="cv-panel-tags"></div>
+        <div class="cv-panel-stats">
+          <div class="cv-panel-stat" id="cv-panel-like-btn">
+            <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            <span id="cv-panel-likes">0</span>
+          </div>
+          <div class="cv-panel-stat">
+            <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+            <span id="cv-panel-comments-count">0</span>
+          </div>
+        </div>
+        <div class="cv-panel-counter" id="cv-panel-counter">1 / 1</div>
+      </div>
+      <!-- Comments list -->
+      <div class="cv-comments" id="cv-comments-list">
+        <div style="text-align:center;padding:20px;color:var(--text-muted);font-size:.82rem;">⏳ Cargando comentarios...</div>
+      </div>
+      <!-- Comment input -->
+      <div class="cv-comment-bar">
+        <input class="cv-comment-inp" id="cv-comment-inp" placeholder="Agregá un comentario..." onkeydown="if(event.key==='Enter')cvSendComment()"/>
+        <button class="cv-comment-send" onclick="cvSendComment()">
+          <svg width="15" height="15" fill="white" viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Arrow NEXT -->
+    <button class="cv-arrow" id="cv-arrow-next" onclick="clipViewerNav(1)" title="Siguiente">
+      <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+    </button>
   </div>
-  <!-- Right-side nav: up / counter / down -->
-  <div class="cv-side-nav">
-    <button class="cv-side-btn" id="cv-btn-prev" onclick="clipViewerNav(-1)" title="Anterior">
-      <svg viewBox="0 0 24 24"><path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/></svg>
-    </button>
+
+  <!-- Hidden old side nav (kept for compat) -->
+  <div class="cv-side-nav" style="display:none!important">
+    <button class="cv-side-btn" id="cv-btn-prev" onclick="clipViewerNav(-1)"></button>
     <div class="cv-counter" id="cv-counter">1/1</div>
-    <button class="cv-side-btn" id="cv-btn-next" onclick="clipViewerNav(1)" title="Siguiente">
-      <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/></svg>
-    </button>
+    <button class="cv-side-btn" id="cv-btn-next" onclick="clipViewerNav(1)"></button>
   </div>
 </div>
 
 <!-- ══════════════════ ADMIN MODAL ══════════════════ -->
-<div id="admin-modal" style="position:fixed;inset:0;left:72px;z-index:500;background:#000;display:none;flex-direction:column;">
+<div id="admin-modal" style="position:fixed;inset:0;left:245px;z-index:500;background:#000;display:none;flex-direction:column;">
   <div style="display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid var(--border);flex-shrink:0">
     <div style="font-family:'Clash Display',sans-serif;font-size:1.2rem;font-weight:700">🛡️ Panel Admin</div>
     <button onclick="closeAdminPanel()" style="background:none;border:none;color:var(--text-muted);font-size:1.3rem;cursor:pointer">✕</button>
@@ -6677,7 +6887,7 @@ window.publishDuet = async () => {
 
 <!-- ── PWA Install Banner ── -->
 <div id="pwa-install-banner" style="
-  position:fixed;bottom:0;left:72px;right:0;z-index:9999;
+  position:fixed;bottom:0;left:245px;right:0;z-index:9999;
   background:linear-gradient(135deg,#111,#1a1a1a);
   border-top:1px solid rgba(255,255,255,.1);
   padding:14px 16px;
