@@ -4896,57 +4896,74 @@ let _chatListUnsubscribe = null;
 async function loadChatList() {
   if(!currentUser) return;
   const container = document.getElementById('chat-list-container');
-  container.innerHTML = '';
-
-  // Unsubscribe previous listener
+  container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted);font-size:.85rem;">Cargando...</div>';
   if(_chatListUnsubscribe) { _chatListUnsubscribe(); _chatListUnsubscribe = null; }
 
-  try {
-    let q;
-    try {
-      q = query(collection(db,'chats'), where('participants','array-contains',currentUser.uid), orderBy('lastTs','desc'));
-    } catch(e) {
-      q = query(collection(db,'chats'), where('participants','array-contains',currentUser.uid));
+  async function renderSnap(snap) {
+    if(snap.empty) {
+      container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted)">No tenes chats todavia<br><br><button class="btn-outline" style="margin-top:12px;padding:10px 20px" onclick="openSearch('users')">Buscar usuarios</button></div>`;
+      return;
     }
-
-    _chatListUnsubscribe = onSnapshot(q, async (snap) => {
-      if(snap.empty) {
-        container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted)">No tenés chats todavía 💬<br><br><button class="btn-outline" style="margin-top:12px;padding:10px 20px" onclick="openSearch('users')">Buscar usuarios</button></div>`;
-        return;
-      }
-      // Build all items first, then render at once
-      const items = [];
-      for(const d of snap.docs) {
-        const data = d.data();
-        const otherUid = data.participants.find(u => u !== currentUser.uid);
-        if(!otherUid) continue;
-        const otherSnap = await getDoc(doc(db,'users',otherUid));
-        const other = otherSnap.exists() ? otherSnap.data() : { name:'Usuario', avatar:avatarFallback(otherUid) };
-        items.push({ data, otherUid, other, chatId: d.id });
-      }
-      container.innerHTML = '';
-      items.forEach(({ data, otherUid, other, chatId }) => {
-        const item = document.createElement('div');
-        item.className = 'chat-item';
-        item.dataset.uid = otherUid;
-        item.onclick = () => openPrivateChat(otherUid, other.name, other.avatar, chatId);
-        item.innerHTML = `
-          <div style="position:relative">
-            <img class="chat-item-avatar" src="${escHtml(other.avatar||avatarFallback(otherUid))}" onerror="this.src='${avatarFallback(otherUid)}'"/>
-            <div class="online-dot"></div>
-          </div>
-          <div class="chat-item-info">
-            <div class="chat-item-name">${escHtml(other.name||'Usuario')}</div>
-            <div class="chat-item-preview">${escHtml(data.lastMsg||'')}</div>
-          </div>
-          <div class="chat-item-right">
-            <div class="chat-item-time">${timeAgo(data.lastTs)}</div>
-            ${data.unread && data.unread[currentUser.uid] ? `<div class="chat-unread">${data.unread[currentUser.uid]}</div>` : ''}
-          </div>`;
-        container.appendChild(item);
-      });
+    const docs = snap.docs.slice().sort((a,b) => {
+      const ta = a.data().lastTs && a.data().lastTs.seconds ? a.data().lastTs.seconds : 0;
+      const tb = b.data().lastTs && b.data().lastTs.seconds ? b.data().lastTs.seconds : 0;
+      return tb - ta;
     });
-  } catch(e) { console.error('loadChatList error:',e); }
+    const items = [];
+    for(const d of docs) {
+      const data = d.data();
+      const otherUid = data.participants && data.participants.find ? data.participants.find(u => u !== currentUser.uid) : null;
+      if(!otherUid) continue;
+      let other = { name:'Usuario', avatar:'' };
+      try {
+        const otherSnap = await getDoc(doc(db,'users',otherUid));
+        if(otherSnap.exists()) other = otherSnap.data();
+      } catch(err) {}
+      items.push({ data, otherUid, other, chatId: d.id });
+    }
+    container.innerHTML = '';
+    if(!items.length) {
+      container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted)">No tenes chats todavia</div>`;
+      return;
+    }
+    items.forEach(({ data, otherUid, other, chatId }) => {
+      const item = document.createElement('div');
+      item.className = 'chat-item';
+      item.dataset.uid = otherUid;
+      item.onclick = () => openPrivateChat(otherUid, other.name||'Usuario', other.avatar||'', chatId);
+      const unreadCount = data.unread && data.unread[currentUser.uid] ? data.unread[currentUser.uid] : 0;
+      item.innerHTML = `
+        <div style="position:relative">
+          <img class="chat-item-avatar" src="${escHtml(other.avatar||avatarFallback(otherUid))}" onerror="this.src='${avatarFallback(otherUid)}'"/>
+          <div class="online-dot"></div>
+        </div>
+        <div class="chat-item-info">
+          <div class="chat-item-name">${escHtml(other.name||'Usuario')}</div>
+          <div class="chat-item-preview">${escHtml(data.lastMsg||'Sin mensajes')}</div>
+        </div>
+        <div class="chat-item-right">
+          <div class="chat-item-time">${timeAgo(data.lastTs)}</div>
+          ${unreadCount > 0 ? '<div class="chat-unread">'+unreadCount+'</div>' : ''}
+        </div>`;
+      container.appendChild(item);
+    });
+  }
+
+  function subscribe(withOrder) {
+    const q = withOrder
+      ? query(collection(db,'chats'), where('participants','array-contains',currentUser.uid), orderBy('lastTs','desc'))
+      : query(collection(db,'chats'), where('participants','array-contains',currentUser.uid));
+    _chatListUnsubscribe = onSnapshot(q, renderSnap, (err) => {
+      console.warn('loadChatList error:', err.code, err.message);
+      if(withOrder && (err.code === 'failed-precondition' || err.code === 'unimplemented' || (err.message && err.message.includes('index')))) {
+        if(_chatListUnsubscribe) { _chatListUnsubscribe(); _chatListUnsubscribe = null; }
+        subscribe(false);
+      } else {
+        container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted)">Error al cargar chats</div>`;
+      }
+    });
+  }
+  subscribe(true);
 }
 
 // ══════════════════════════════════════════════
@@ -5344,25 +5361,37 @@ function updateBadge(count) {
 
 function startActivityListener() {
   if(!currentUser) return;
-  if(_activityUnsub) _activityUnsub();
+  if(_activityUnsub) { _activityUnsub(); _activityUnsub = null; }
 
-  const q = query(
-    collection(db, 'notifications'),
-    where('toUid', '==', currentUser.uid),
-    orderBy('createdAt', 'desc'),
-    limit(60)
-  );
-
-  _activityUnsub = onSnapshot(q, snap => {
-    _allNotifications = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  function handleSnap(snap) {
+    _allNotifications = snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .sort((a,b) => {
+        const ta = a.createdAt && a.createdAt.seconds ? a.createdAt.seconds : 0;
+        const tb = b.createdAt && b.createdAt.seconds ? b.createdAt.seconds : 0;
+        return tb - ta;
+      });
     const unreadCount = _allNotifications.filter(n => !n.read).length;
     updateBadge(unreadCount);
-    // Re-render if activity screen is open
     if(_currentScreen === 'activity') {
       const filtered = _activityFilter === 'all' ? _allNotifications : _allNotifications.filter(n => n.type === _activityFilter);
       renderActivityList(filtered);
     }
-  }, err => {});
+  }
+
+  function subscribeActivity(withOrder) {
+    const q = withOrder
+      ? query(collection(db,'notifications'), where('toUid','==',currentUser.uid), orderBy('createdAt','desc'), limit(60))
+      : query(collection(db,'notifications'), where('toUid','==',currentUser.uid), limit(60));
+    _activityUnsub = onSnapshot(q, handleSnap, (err) => {
+      console.warn('activityListener error:', err.code, err.message);
+      if(withOrder && (err.code === 'failed-precondition' || err.code === 'unimplemented' || (err.message && err.message.includes('index')))) {
+        if(_activityUnsub) { _activityUnsub(); _activityUnsub = null; }
+        subscribeActivity(false);
+      }
+    });
+  }
+  subscribeActivity(true);
 }
 
 // ── CHAT UNREAD BADGE (tiempo real) ──
@@ -5372,30 +5401,30 @@ function startChatBadgeListener() {
   if(!currentUser) return;
   if(_chatBadgeUnsub) { _chatBadgeUnsub(); _chatBadgeUnsub = null; }
 
-  let qChat;
-  try {
-    qChat = query(collection(db,'chats'), where('participants','array-contains',currentUser.uid), orderBy('lastTs','desc'));
-  } catch(e) {
-    qChat = query(collection(db,'chats'), where('participants','array-contains',currentUser.uid));
-  }
-
-  _chatBadgeUnsub = onSnapshot(qChat, (snap) => {
+  function handleBadge(snap) {
     let totalUnread = 0;
     snap.docs.forEach(d => {
       const data = d.data();
-      if(data.unread && data.unread[currentUser.uid]) {
-        totalUnread += data.unread[currentUser.uid];
-      }
+      if(data.unread && data.unread[currentUser.uid]) totalUnread += data.unread[currentUser.uid];
     });
     const badge = document.getElementById('chat-badge');
     if(!badge) return;
-    if(totalUnread > 0) {
-      badge.style.display = 'flex';
-      badge.textContent = totalUnread > 99 ? '99+' : totalUnread;
-    } else {
-      badge.style.display = 'none';
-    }
-  }, () => {});
+    if(totalUnread > 0) { badge.style.display = 'flex'; badge.textContent = totalUnread > 99 ? '99+' : totalUnread; }
+    else { badge.style.display = 'none'; }
+  }
+
+  function subscribeBadge(withOrder) {
+    const q = withOrder
+      ? query(collection(db,'chats'), where('participants','array-contains',currentUser.uid), orderBy('lastTs','desc'))
+      : query(collection(db,'chats'), where('participants','array-contains',currentUser.uid));
+    _chatBadgeUnsub = onSnapshot(q, handleBadge, (err) => {
+      if(withOrder && (err.code === 'failed-precondition' || err.code === 'unimplemented' || (err.message && err.message.includes('index')))) {
+        if(_chatBadgeUnsub) { _chatBadgeUnsub(); _chatBadgeUnsub = null; }
+        subscribeBadge(false);
+      }
+    });
+  }
+  subscribeBadge(true);
 }
 
 function loadActivity() {
