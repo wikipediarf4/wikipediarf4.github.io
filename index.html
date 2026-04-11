@@ -139,6 +139,21 @@ img { display:block; }
 }
 .btn-google:hover { border-color:rgba(255,255,255,.28); }
 .auth-err { color:#ff6b7a; font-size:.76rem; margin-top:8px; min-height:16px; }
+.auth-footer { margin-top:22px; text-align:center; }
+.auth-footer-terms {
+  font-size:.74rem; color:var(--muted); cursor:pointer;
+  text-decoration:underline; text-underline-offset:3px;
+  transition:color .2s;
+}
+.auth-footer-terms:hover { color:var(--accent2); }
+.auth-footer-copy {
+  margin-top:8px; font-size:.68rem; color:var(--dim); letter-spacing:.3px;
+}
+.auth-footer-copy span {
+  background:linear-gradient(90deg, var(--accent2), var(--accent));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  font-weight:700;
+}
 
 /* ───── APP SHELL ───── */
 #app { display:none; }
@@ -1127,6 +1142,15 @@ img { display:block; }
       <div class="auth-err" id="reg-err"></div>
     </div>
     </div>
+    <div class="auth-footer">
+      <div class="auth-footer-terms" onclick="document.getElementById('terms-modal').classList.add('show')">
+        📄 Términos y Condiciones de Trendlify
+      </div>
+      <div class="auth-footer-copy">
+        <span>Trendlify</span> 2026 · Todos los derechos reservados
+      </div>
+    </div>
+    </div>
   </div>
 </div>
 
@@ -1825,7 +1849,14 @@ const fmtN = n => { n=parseInt(n)||0; if(n>=1e6)return(n/1e6).toFixed(1)+'M'; if
 const relT = d => { if(!d)return''; const s=(Date.now()-d.getTime())/1000; if(s<60)return'ahora'; if(s<3600)return Math.floor(s/60)+'m'; if(s<86400)return Math.floor(s/3600)+'h'; return Math.floor(s/86400)+'d'; };
 
 // ── TERMS ──
-window.acceptTerms = () => { localStorage.setItem('trendlify_terms_v1','1'); document.getElementById('terms-modal').classList.remove('show'); };
+window.acceptTerms = () => {
+  localStorage.setItem('trendlify_terms_v1','1');
+  document.getElementById('terms-modal').classList.remove('show');
+  if(_pendingGoogleLogin) {
+    _pendingGoogleLogin = false;
+    _execGoogleLogin();
+  }
+};
 const checkTerms   = () => { if(!localStorage.getItem('trendlify_terms_v1')) document.getElementById('terms-modal').classList.add('show'); };
 
 // ── AUTH TABS ──
@@ -1859,7 +1890,20 @@ window.doRegister = async () => {
     });
   }catch(e){ err.textContent=authErr(e.code); }
 };
-window.doGoogle = async () => {
+// Callback guardado para continuar con Google después de aceptar términos
+let _pendingGoogleLogin = false;
+
+window.doGoogle = () => {
+  if(!localStorage.getItem('trendlify_terms_v1')) {
+    // Mostrar términos primero; al aceptar se ejecutará _pendingGoogleLogin
+    _pendingGoogleLogin = true;
+    document.getElementById('terms-modal').classList.add('show');
+  } else {
+    _execGoogleLogin();
+  }
+};
+
+async function _execGoogleLogin() {
   try{
     const cred=await signInWithPopup(auth,gp);
     const u=cred.user;
@@ -1873,7 +1917,7 @@ window.doGoogle = async () => {
       });
     }
   }catch(e){ showToast('Error con Google'); }
-};
+}
 window.doLogout = async () => { closeSettings(); await signOut(auth); };
 const authErr  = code => ({'auth/invalid-email':'Correo inválido.','auth/user-not-found':'Usuario no encontrado.','auth/wrong-password':'Contraseña incorrecta.','auth/email-already-in-use':'Correo ya registrado.','auth/weak-password':'Contraseña muy corta.','auth/invalid-credential':'Credenciales inválidas.'}[code]||'Error: '+code);
 
@@ -1881,7 +1925,6 @@ const authErr  = code => ({'auth/invalid-email':'Correo inválido.','auth/user-n
 onAuthStateChanged(auth, async user => {
   CU = user;
   if(user){
-    checkTerms();
     document.getElementById('auth-screen').classList.remove('show');
     document.getElementById('app').classList.add('show');
     await syncUI(user);
