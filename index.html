@@ -327,6 +327,7 @@ html,body{height:100%;background:#000;color:#fff;font-family:'Space Grotesk',san
   animation:spin 4s linear infinite;
 }
 @keyframes spin{to{transform:rotate(360deg);}}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
 /* Floating heart */
 .float-heart{
   position:fixed;font-size:2rem;pointer-events:none;z-index:200;
@@ -2885,8 +2886,96 @@ function _applyDiscImg(clipId, src) {
   if (d2) d2.src = src;
 }
 
+// _uamCurrentClip stores the clip data for the currently open audio modal
+let _uamCurrentClip = null;
+
 window.openMusicDisc = function(clipId) {
-  // Futuro: abrir modal con info de la canción
+  // Find clip data - look for data stored on the slide element
+  const slide = document.querySelector(`.video-slide[data-id="${clipId}"]`) ||
+                document.querySelector(`[data-clip-id="${clipId}"]`);
+  // Fallback: read from DOM elements already rendered in the slide
+  const musicName   = slide?.dataset.musicName   || '';
+  const musicArtist = slide?.dataset.musicArtist || '';
+  const musicPreview= slide?.dataset.musicPreview|| '';
+  const musicCover  = slide?.dataset.musicCover  || '';
+  const avatar      = slide?.dataset.avatar      || '';
+  const clipUid     = slide?.dataset.uid         || '';
+
+  _uamCurrentClip = { clipId, musicName, musicArtist, musicPreview, musicCover, avatar, clipUid };
+
+  // Populate modal
+  const coverEl = document.getElementById('uam-cover');
+  coverEl.src = musicCover || avatar || avatarFallback(clipUid || 'u');
+  coverEl.onerror = () => { coverEl.src = avatar || avatarFallback(clipUid || 'u'); };
+
+  document.getElementById('uam-name').textContent   = musicName   || 'Sonido original';
+  document.getElementById('uam-artist').textContent = musicArtist || '';
+  document.getElementById('uam-uses').textContent   = musicName ? '🎵 Toca para escuchar' : '🎤 Audio original del clip';
+
+  // Reset audio
+  const audio = document.getElementById('uam-audio');
+  audio.pause();
+  audio.src = musicPreview || '';
+  document.getElementById('uam-play-btn').textContent = '▶';
+  document.getElementById('uam-prog').style.width = '0%';
+  document.getElementById('uam-time').textContent = '0:00';
+
+  audio.ontimeupdate = () => {
+    const pct = audio.duration ? (audio.currentTime / audio.duration * 100) : 0;
+    document.getElementById('uam-prog').style.width = pct + '%';
+    const s = Math.floor(audio.currentTime);
+    document.getElementById('uam-time').textContent = Math.floor(s/60)+':'+ String(s%60).padStart(2,'0');
+  };
+  audio.onended = () => { document.getElementById('uam-play-btn').textContent = '▶'; };
+
+  document.getElementById('use-audio-modal').style.display = 'flex';
+};
+
+window.uamTogglePlay = function() {
+  const audio = document.getElementById('uam-audio');
+  const btn   = document.getElementById('uam-play-btn');
+  if (!audio.src) return;
+  if (audio.paused) { audio.play().catch(()=>{}); btn.textContent = '⏸'; }
+  else { audio.pause(); btn.textContent = '▶'; }
+};
+
+window.uamSeek = function(e, bar) {
+  const audio = document.getElementById('uam-audio');
+  if (!audio.duration) return;
+  const rect = bar.getBoundingClientRect();
+  const pct  = (e.clientX - rect.left) / rect.width;
+  audio.currentTime = pct * audio.duration;
+};
+
+window.uamClose = function() {
+  document.getElementById('uam-audio').pause();
+  document.getElementById('use-audio-modal').style.display = 'none';
+  _uamCurrentClip = null;
+};
+
+window.uamUseAudio = function() {
+  if (!_uamCurrentClip) return;
+  const { musicName, musicArtist, musicPreview, musicCover } = _uamCurrentClip;
+
+  // Pre-select the music in the caption modal
+  if (musicName && musicPreview) {
+    const track = {
+      title:   musicName,
+      artist:  musicArtist || '',
+      preview: musicPreview,
+      cover:   musicCover  || ''
+    };
+    // Use existing clipSelectMusic to pre-fill
+    window.clipSelectMusic(track);
+  } else {
+    // Original audio / no music metadata — clear selection
+    window.clipClearMusic && window.clipClearMusic();
+  }
+
+  uamClose();
+
+  // Open upload modal so user picks their video
+  window.openUpload();
 };
 
 window.initMusicDisc = function(clipId, musicName, musicArtist, fallbackAvatar) {
@@ -3373,6 +3462,13 @@ function buildVideoSlide(id, data) {
   div.className = 'video-slide';
   div.dataset.id = id;
   if(data.musicPreview) div.dataset.musicPreview = data.musicPreview;
+  // Store all clip music/user data for openMusicDisc
+  div.dataset.clipId      = id;
+  div.dataset.uid         = data.uid || '';
+  div.dataset.avatar      = data.avatar || '';
+  div.dataset.musicName   = data.musicName   || '';
+  div.dataset.musicArtist = data.musicArtist || '';
+  div.dataset.musicCover  = data.musicCover  || '';
   const isVideo = data.mediaType === 'video';
   const isLiked = data.likes && currentUser && data.likes.includes(currentUser.uid);
   const avatar = data.avatar || avatarFallback(data.uid||'u');
@@ -8570,6 +8666,62 @@ function _expFinish(){
 // Init preview on modal open
 _expDrawPreview();
 </script>
+
+<!-- MODAL: Usar audio del feed -->
+<div id="use-audio-modal" style="
+  position:fixed;inset:0;z-index:500;
+  background:rgba(0,0,0,.82);backdrop-filter:blur(14px);
+  display:none;align-items:flex-end;justify-content:center;
+  left:245px;">
+  <div style="
+    width:100%;max-width:480px;
+    background:#111;border-radius:24px 24px 0 0;
+    border:1px solid rgba(255,255,255,.1);
+    padding:20px 20px 32px;
+    animation:slideUp .25s ease;">
+    <!-- Handle -->
+    <div style="width:40px;height:4px;background:rgba(255,255,255,.2);border-radius:2px;margin:0 auto 18px;"></div>
+    <!-- Cover + info -->
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;">
+      <img id="uam-cover" src="" style="
+        width:64px;height:64px;border-radius:12px;object-fit:cover;
+        border:2px solid rgba(255,255,255,.15);
+        animation:spin 5s linear infinite;flex-shrink:0;" />
+      <div style="flex:1;min-width:0;">
+        <div id="uam-name" style="font-weight:700;font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+        <div id="uam-artist" style="font-size:.85rem;color:#aaa;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+        <div id="uam-uses" style="font-size:.75rem;color:var(--accent2);margin-top:4px;"></div>
+      </div>
+    </div>
+    <!-- Preview bar -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+      <button id="uam-play-btn" onclick="uamTogglePlay()" style="
+        background:rgba(255,255,255,.1);border:none;border-radius:50%;
+        width:36px;height:36px;color:#fff;font-size:1rem;cursor:pointer;
+        display:flex;align-items:center;justify-content:center;flex-shrink:0;">▶</button>
+      <div style="flex:1;height:3px;background:rgba(255,255,255,.15);border-radius:99px;position:relative;cursor:pointer;" onclick="uamSeek(event,this)">
+        <div id="uam-prog" style="height:100%;background:var(--accent2);border-radius:99px;width:0%;pointer-events:none;"></div>
+      </div>
+      <span id="uam-time" style="font-size:.72rem;color:#888;flex-shrink:0;">0:00</span>
+    </div>
+    <!-- Buttons -->
+    <button onclick="uamUseAudio()" style="
+      width:100%;padding:14px;border:none;border-radius:14px;
+      background:linear-gradient(135deg,var(--accent2),var(--accent));
+      color:#fff;font-family:'Space Grotesk',sans-serif;
+      font-size:.95rem;font-weight:700;cursor:pointer;
+      margin-bottom:10px;letter-spacing:.3px;">
+      🎵 Usar este audio
+    </button>
+    <button onclick="uamClose()" style="
+      width:100%;padding:12px;border:1px solid rgba(255,255,255,.12);border-radius:14px;
+      background:none;color:#aaa;font-family:'Space Grotesk',sans-serif;
+      font-size:.9rem;cursor:pointer;">
+      Cancelar
+    </button>
+  </div>
+</div>
+<audio id="uam-audio" style="display:none;"></audio>
 
 </body>
 </html>
