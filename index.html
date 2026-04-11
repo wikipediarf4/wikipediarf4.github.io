@@ -1599,7 +1599,15 @@ window.openStory = (stories) => {
     .story-new-badge{position:absolute;top:-4px;right:-4px;background:var(--accent);color:#fff;font-size:.5rem;font-weight:800;padding:2px 4px;border-radius:4px;letter-spacing:.5px;border:1.5px solid var(--bg);}
     .story-count-badge{position:absolute;bottom:-4px;right:-4px;background:var(--accent2);color:#000;font-size:.55rem;font-weight:800;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--bg);}
     #story-comment-inp::placeholder{color:rgba(255,255,255,.5);}
-    #story-mute-btn{background:rgba(0,0,0,.45);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}`;
+    #story-mute-btn{background:rgba(0,0,0,.45);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .story-music-bar{display:flex;align-items:center;gap:10px;padding:0 14px 6px;pointer-events:none;}
+    .story-disc-wrap{position:relative;width:40px;height:40px;flex-shrink:0;}
+    .story-disc{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.35);animation:story-disc-spin 4s linear infinite;box-shadow:0 0 12px rgba(0,0,0,.6);}
+    .story-disc-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:11px;height:11px;border-radius:50%;background:#111;border:1.5px solid rgba(255,255,255,.4);}
+    .story-music-info{flex:1;min-width:0;}
+    .story-music-title{display:block;font-size:.8rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 4px rgba(0,0,0,.7);}
+    .story-music-artist{display:block;font-size:.71rem;color:rgba(255,255,255,.7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    @keyframes story-disc-spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}`;
     document.head.appendChild(st);
   }
 
@@ -1615,6 +1623,7 @@ window.openStory = (stories) => {
 
   const closeOverlay = () => {
     clearTimeout(state.timer);
+    if(window._storyAudio){ window._storyAudio.pause(); window._storyAudio=null; }
     overlay.remove();
     document.removeEventListener('keydown', onKey);
   };
@@ -1666,13 +1675,22 @@ window.openStory = (stories) => {
       const vid = document.createElement('video');
       vid.id = 'story-vid';
       vid.src = s.mediaUrl;
-      vid.autoplay = true;
       vid.loop = true;
       vid.playsInline = true;
-      vid.muted = state.muted; // respeta estado actual
+      vid.muted = state.muted;
       vid.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
-      // Si el browser fuerza muted para autoplay, intentar unmute tras interacción
-      vid.addEventListener('canplay', ()=>{ if(!state.muted){ vid.muted=false; vid.play().catch(()=>{}); } });
+      // Intentar play con audio; si el browser lo bloquea, mostrar toast para que el usuario toque
+      vid.addEventListener('canplay', ()=>{
+        vid.muted = state.muted;
+        const p = vid.play();
+        if(p) p.catch(()=>{
+          // Autoplay bloqueado: play silencioso primero, luego unmute al primer toque
+          vid.muted = true;
+          vid.play().catch(()=>{});
+          const unlock = ()=>{ vid.muted=state.muted; overlay.removeEventListener('click',unlock); };
+          overlay.addEventListener('click', unlock, {once:true});
+        });
+      });
       mediaWrap.appendChild(vid);
     } else {
       const img = document.createElement('img');
@@ -1691,18 +1709,56 @@ window.openStory = (stories) => {
     mediaWrap.appendChild(tapRight);
     inner.appendChild(mediaWrap);
 
-    // — Barra inferior: caption + comentario —
+    // — Barra inferior: música + caption + comentario —
     const btm = document.createElement('div');
-    btm.style.cssText = 'position:absolute;bottom:0;left:0;right:0;z-index:10;background:linear-gradient(transparent,rgba(0,0,0,.82) 35%);padding:56px 14px 14px;';
+    btm.style.cssText = 'position:absolute;bottom:0;left:0;right:0;z-index:10;background:linear-gradient(transparent,rgba(0,0,0,.82) 35%);padding:56px 0 14px;';
+
+    // Disco giratorio si tiene música
+    if(s.deezerTrack){
+      const musicBar = document.createElement('div');
+      musicBar.className = 'story-music-bar';
+      const discWrap = document.createElement('div');
+      discWrap.className = 'story-disc-wrap';
+      const disc = document.createElement('img');
+      disc.className = 'story-disc';
+      disc.src = s.deezerTrack.cover || '';
+      disc.onerror = ()=>{ disc.src=`https://ui-avatars.com/api/?name=♫&background=333&color=fff&size=80`; };
+      const discCenter = document.createElement('div');
+      discCenter.className = 'story-disc-center';
+      discWrap.appendChild(disc);
+      discWrap.appendChild(discCenter);
+      const musicInfo = document.createElement('div');
+      musicInfo.className = 'story-music-info';
+      musicInfo.innerHTML = `<span class="story-music-title">🎵 ${esc(s.deezerTrack.title||'')}</span><span class="story-music-artist">${esc(s.deezerTrack.artist||'')}</span>`;
+      musicBar.appendChild(discWrap);
+      musicBar.appendChild(musicInfo);
+      btm.appendChild(musicBar);
+
+      // Reproducir audio de preview si hay URL
+      if(s.deezerTrack.preview){
+        // Parar audio anterior si existe
+        if(window._storyAudio){ window._storyAudio.pause(); window._storyAudio=null; }
+        const audio = new Audio(s.deezerTrack.preview);
+        audio.loop = true; audio.volume = 0.7;
+        audio.play().catch(()=>{});
+        window._storyAudio = audio;
+        // Parar al cerrar overlay
+        const origClose = closeOverlay;
+      }
+    } else {
+      // Si no hay música, parar audio anterior
+      if(window._storyAudio){ window._storyAudio.pause(); window._storyAudio=null; }
+    }
+
     if(s.caption){
       const cap=document.createElement('div');
-      cap.style.cssText='font-size:.84rem;color:rgba(255,255,255,.92);margin-bottom:10px;text-shadow:0 1px 3px rgba(0,0,0,.5);';
+      cap.style.cssText='font-size:.84rem;color:rgba(255,255,255,.92);margin-bottom:10px;text-shadow:0 1px 3px rgba(0,0,0,.5);padding:0 14px;';
       cap.textContent=s.caption;
       btm.appendChild(cap);
     }
     if(CU){
       const row=document.createElement('div');
-      row.style.cssText='display:flex;align-items:center;gap:8px;';
+      row.style.cssText='display:flex;align-items:center;gap:8px;padding:0 14px;';
       const myAvImg=document.createElement('img');
       myAvImg.src=myAv; myAvImg.style.cssText='width:28px;height:28px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(255,255,255,.3);flex-shrink:0;';
       myAvImg.onerror=()=>{myAvImg.src='https://ui-avatars.com/api/?name=U&background=222&color=fff';};
@@ -1790,7 +1846,7 @@ function buildPost(post){
     <div class="post-media ${isVid?'video':'portrait'}" style="position:relative;">
       ${isVid
         ?`<div class="vid-player paused" id="vp-${post.id}">
-            <video src="${post.mediaUrl}" muted loop playsinline preload="metadata"></video>
+            <video src="${post.mediaUrl}" loop playsinline preload="metadata"></video>
             <div class="vid-controls">
               <div class="vid-progress-wrap" id="vp-prog-${post.id}">
                 <div class="vid-progress-bg">
@@ -1853,8 +1909,8 @@ function buildPost(post){
 // ── CUSTOM VIDEO PLAYER ──
 function fmt(s){ s=Math.floor(s)||0; return Math.floor(s/60)+':'+(s%60<10?'0':'')+(s%60); }
 
-// ── GLOBAL MUTE STATE (empieza muted para permitir autoplay) ──
-let _globalMuted = true;
+// ── GLOBAL MUTE STATE (arranca con sonido) ──
+let _globalMuted = false;
 const _allVids = new Set();
 
 function applyGlobalMute(muted){
@@ -1869,14 +1925,7 @@ window.globalUnmute = () => {
   showToast('🔊 Audio activado');
 };
 
-function ensureUnmuteBtn(){
-  if(document.getElementById('global-unmute-btn')) return;
-  const btn = document.createElement('button');
-  btn.id = 'global-unmute-btn';
-  btn.onclick = globalUnmute;
-  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg> Toca para escuchar`;
-  document.body.appendChild(btn);
-}
+function ensureUnmuteBtn(){ /* videos arrancan con sonido, no se necesita */ }
 
 function initVideoPlayer(postId, card){
   const wrap   = card.querySelector(`#vp-${postId}`);
@@ -1953,11 +2002,18 @@ function initVideoPlayer(postId, card){
     applyGlobalMute(newMuted);
   });
 
-  // IntersectionObserver autoplay
+  // IntersectionObserver autoplay — sin mute
   new IntersectionObserver(entries=>{
     entries.forEach(e=>{
-      if(e.isIntersecting) vid.play().catch(()=>{});
-      else vid.pause();
+      if(e.isIntersecting){
+        vid.muted = _globalMuted;
+        const p = vid.play();
+        if(p) p.catch(()=>{
+          vid.muted = true;
+          vid.play().catch(()=>{});
+          wrap.addEventListener('click', ()=>{ vid.muted=_globalMuted; }, {once:true});
+        });
+      } else vid.pause();
     });
   },{threshold:.5}).observe(vid);
 
@@ -2571,19 +2627,25 @@ async function loadReels(){
       muteBtn.addEventListener('click',e=>{ e.stopPropagation(); vid.muted=!vid.muted; volSlider.value=vid.muted?0:vid.volume; muteBtn.innerHTML=vid.muted?SVG_MUTE:SVG_VOL; });
       volSlider.addEventListener('input',e=>{ e.stopPropagation(); vid.volume=parseFloat(volSlider.value); vid.muted=vid.volume===0; muteBtn.innerHTML=vid.muted?SVG_MUTE:SVG_VOL; });
 
-      // Autoplay on scroll + trackear vista
+      // Autoplay on scroll + trackear vista — arranca con sonido
       const _viewedReels = window._viewedReels || (window._viewedReels = new Set());
       new IntersectionObserver(entries=>{
         entries.forEach(e=>{
           if(e.isIntersecting){
-            vid.play().catch(()=>{});
+            vid.muted = false;
+            const playP = vid.play();
+            if(playP) playP.catch(()=>{
+              // Autoplay policy: play muted, unmute al primer toque
+              vid.muted = true;
+              vid.play().catch(()=>{});
+              const unlock = ()=>{ vid.muted=false; };
+              el.addEventListener('click', unlock, {once:true});
+            });
             // Contar vista una sola vez por sesión por reel
             if(!_viewedReels.has(p.id)){
               _viewedReels.add(p.id);
-              // Incrementar views en Firestore con debounce de 2s (esperar que realmente lo vean)
               setTimeout(()=>{
                 updateDoc(doc(db,'posts',p.id),{views:increment(1)}).catch(()=>{});
-                // Actualizar contador en UI
                 const vl=document.getElementById(`views-label-${p.id}`);
                 if(vl) vl.textContent=fmtN((p.views||0)+1);
               },2000);
