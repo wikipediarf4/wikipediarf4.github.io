@@ -2151,6 +2151,14 @@ window.toggleFollow = async (uid,btn) => {
 window.openComments = async (postId,count) => {
   currentPostId=postId;
   window._csPostId=postId;
+
+  // Pausar el reel que estaba reproduciéndose (si aplica)
+  const activeReel = document.querySelector('#reels-container .reel-video:not([paused])');
+  window._pausedReelOnComment = null;
+  document.querySelectorAll('#reels-container .reel-video').forEach(v=>{
+    if(!v.paused){ v.pause(); window._pausedReelOnComment = v; }
+  });
+
   document.getElementById('comments-overlay').classList.add('show');
   document.getElementById('cs-inp').value='';
   document.querySelector('.cs-send').disabled=true;
@@ -2213,6 +2221,11 @@ window.closeComments = () => {
   if(v){ v.pause(); v.src=''; }
   if(commentsUnsub){commentsUnsub();commentsUnsub=null;}
   currentPostId=null; window._csPostId=null;
+  // Reanudar el reel que estaba reproduciendo antes de abrir comentarios
+  if(window._pausedReelOnComment){
+    window._pausedReelOnComment.play().catch(()=>{});
+    window._pausedReelOnComment=null;
+  }
 };
 // Cerrar con ESC
 document.addEventListener('keydown', e=>{ if(e.key==='Escape' && document.getElementById('comments-overlay').classList.contains('show')) closeComments(); });
@@ -2513,10 +2526,9 @@ async function loadReels(){
       if(!seen.has(d.id)){ seen.add(d.id); allDocs.push(d); }
     });
 
-    // Filtrar solo videos/reels
+    // Filtrar solo videos (todos: reels, posts con video, etc.)
     const reelDocs = allDocs
-      .filter(d=>{ const p=d.data(); return p.mediaType==='video'||p.mediaUrl?.match(/\.(mp4|mov|webm|ogg)/i); })
-      .filter(d=>{ const ct=d.data().contentType; return ct==='reel'||!ct; });
+      .filter(d=>{ const p=d.data(); return p.mediaType==='video'||p.mediaUrl?.match(/\.(mp4|mov|webm|ogg)/i); });
 
     // Ordenar por score: likes*3 + commentsCount*2 + views*1
     reelDocs.sort((a,b)=>{
