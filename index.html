@@ -4080,56 +4080,201 @@ window.searchDMUser=v=>{
 
 // ── PROFILE ──
 // ── helper: render thumbnails into a grid ──
-function renderThumbGrid(grid, docs, emptyMsg){
+// ── PROFILE THUMB GRID ──
+function renderThumbGrid(grid, docs, emptyMsg, onClickFn){
   grid.innerHTML='';
   if(!docs.length){
     grid.innerHTML=`<div style="grid-column:1/-1;padding:48px;text-align:center;color:var(--muted);font-size:.85rem;">${emptyMsg}</div>`;
     return;
   }
-  docs.forEach(({data:p, id})=>{
+  docs.forEach(({data:p, id}, idx)=>{
     const isVid=p.mediaUrl?.match(/\.(mp4|mov|webm|ogg)/i)||p.mediaType==='video';
     const el=document.createElement('div');
     el.className='media-thumb';
+    el.style.position='relative';
+
     if(isVid){
+      // Thumbnail: primer frame via video oculto o poster
       const vid=document.createElement('video');
-      vid.src=p.mediaUrl; vid.muted=true; vid.preload='none';
-      vid.style.cssText='width:100%;height:100%;object-fit:cover;';
+      vid.src=p.mediaUrl; vid.muted=true; vid.preload='metadata';
+      vid.style.cssText='width:100%;height:100%;object-fit:cover;pointer-events:none;';
+      // Badge ▶
       const badge=document.createElement('div');
-      badge.className='media-thumb-badge'; badge.textContent='▶';
+      badge.className='media-thumb-badge';
+      badge.innerHTML='<svg viewBox="0 0 24 24" fill="#fff" width="18" height="18"><polygon points="5,3 19,12 5,21"/></svg>';
+      badge.style.cssText='position:absolute;top:6px;right:6px;z-index:2;filter:drop-shadow(0 1px 3px rgba(0,0,0,.8));';
       el.appendChild(vid); el.appendChild(badge);
-      el.addEventListener('mouseenter',()=>vid.play().catch(()=>{}));
-      el.addEventListener('mouseleave',()=>{vid.pause();vid.currentTime=0;});
+      el.addEventListener('mouseenter',()=>{ vid.play().catch(()=>{}); });
+      el.addEventListener('mouseleave',()=>{ vid.pause(); vid.currentTime=0; });
     } else if(p.mediaUrl){
       const img=document.createElement('img');
       img.src=p.mediaUrl; img.loading='lazy';
-      img.style.cssText='width:100%;height:100%;object-fit:cover;';
+      img.style.cssText='width:100%;height:100%;object-fit:cover;display:block;';
       el.appendChild(img);
     } else {
-      // Post de solo texto
-      el.style.cssText='background:var(--surface2);display:flex;align-items:center;justify-content:center;padding:10px;';
+      // Solo texto
+      el.style.background='var(--surface2)';
+      el.style.display='flex'; el.style.alignItems='center'; el.style.justifyContent='center'; el.style.padding='10px';
       el.innerHTML=`<span style="font-size:.75rem;color:var(--muted);text-align:center;overflow:hidden;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;">${esc(p.caption||'')}</span>`;
     }
+
+    // Overlay hover con likes
+    const hov=document.createElement('div');
+    hov.style.cssText='position:absolute;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;gap:14px;opacity:0;transition:opacity .18s;z-index:3;pointer-events:none;';
+    hov.innerHTML=`<span style="color:#fff;font-size:.9rem;font-weight:700;display:flex;align-items:center;gap:4px;"><svg viewBox="0 0 24 24" fill="#fff" width="16" height="16"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>${fmtN(p.likes||0)}</span>`;
+    el.appendChild(hov);
+    el.addEventListener('mouseenter',()=>hov.style.opacity='1');
+    el.addEventListener('mouseleave',()=>hov.style.opacity='0');
+
+    // Click → abrir viewer
+    el.style.cursor='pointer';
+    el.addEventListener('click', ()=> onClickFn && onClickFn(idx, docs));
+
     grid.appendChild(el);
   });
+}
+
+// ── PROFILE POST VIEWER (fullscreen al hacer click en thumb) ──
+function openProfileViewer(startIdx, docs){
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;z-index:7000;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;';
+
+  const box=document.createElement('div');
+  box.style.cssText='position:relative;width:100%;max-width:520px;max-height:95vh;background:var(--surface);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;';
+
+  let curIdx=startIdx;
+
+  const closeViewer=()=>{
+    const v=box.querySelector('video');
+    if(v){v.pause();v.src='';}
+    overlay.remove();
+    document.removeEventListener('keydown',onKey);
+  };
+
+  const render=()=>{
+    box.innerHTML='';
+    const {data:p,id}=docs[curIdx];
+    const isVid=p.mediaUrl?.match(/\.(mp4|mov|webm|ogg)/i)||p.mediaType==='video';
+    const av=p.avatarUrl||`https://ui-avatars.com/api/?name=${encodeURIComponent(p.username||'U')}&background=222&color=fff&size=128`;
+
+    // Header
+    const hdr=document.createElement('div');
+    hdr.style.cssText='display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);flex-shrink:0;';
+    hdr.innerHTML=`<img src="${av}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;" onerror="this.src='https://ui-avatars.com/api/?name=U&background=222&color=fff'"/><div><div style="font-weight:700;font-size:.88rem;">@${esc(p.username||'usuario')}</div><div style="font-size:.72rem;color:var(--muted);">${relT(p.createdAt?.toDate?.())}</div></div><button id="pv-close" style="margin-left:auto;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:4px 8px;">✕</button>`;
+    box.appendChild(hdr);
+
+    // Media
+    if(p.mediaUrl){
+      const mediaWrap=document.createElement('div');
+      mediaWrap.style.cssText='flex:1;background:#000;max-height:60vh;display:flex;align-items:center;justify-content:center;overflow:hidden;';
+      if(isVid){
+        const vid=document.createElement('video');
+        vid.src=p.mediaUrl; vid.controls=true; vid.autoplay=true; vid.playsInline=true;
+        vid.style.cssText='width:100%;max-height:60vh;object-fit:contain;';
+        mediaWrap.appendChild(vid);
+      } else {
+        const img=document.createElement('img');
+        img.src=p.mediaUrl;
+        img.style.cssText='width:100%;max-height:60vh;object-fit:contain;display:block;';
+        mediaWrap.appendChild(img);
+      }
+      box.appendChild(mediaWrap);
+    }
+
+    // Caption
+    if(p.caption){
+      const cap=document.createElement('div');
+      cap.style.cssText='padding:10px 14px;font-size:.85rem;line-height:1.5;color:var(--text);border-top:1px solid var(--border);';
+      cap.innerHTML=`<span style="font-weight:700;">@${esc(p.username||'usuario')}</span> ${esc(p.caption)}`;
+      box.appendChild(cap);
+    }
+
+    // Acciones
+    const acts=document.createElement('div');
+    acts.style.cssText='display:flex;align-items:center;gap:4px;padding:8px 14px;border-top:1px solid var(--border);flex-shrink:0;';
+    acts.innerHTML=`
+      <button id="pv-like" style="background:none;border:none;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:5px;padding:6px 8px;border-radius:8px;font-size:.82rem;font-weight:600;transition:background .12s;" onmouseenter="this.style.background='rgba(255,255,255,.06)'" onmouseleave="this.style.background='none'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+        <span id="pv-likes-n">${fmtN(p.likes||0)}</span>
+      </button>
+      <button style="background:none;border:none;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:5px;padding:6px 8px;border-radius:8px;font-size:.82rem;font-weight:600;transition:background .12s;" onmouseenter="this.style.background='rgba(255,255,255,.06)'" onmouseleave="this.style.background='none'" onclick="openComments('${id}','${fmtN(p.commentsCount||0)}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        <span>${fmtN(p.commentsCount||0)}</span>
+      </button>
+      <button style="background:none;border:none;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:5px;padding:6px 8px;border-radius:8px;font-size:.82rem;font-weight:600;transition:background .12s;" onmouseenter="this.style.background='rgba(255,255,255,.06)'" onmouseleave="this.style.background='none'" onclick="sharePost('${id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+      ${docs.length>1?`
+      <div style="margin-left:auto;display:flex;gap:6px;">
+        <button id="pv-prev" style="background:var(--surface2);border:none;color:var(--text);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;" ${curIdx===0?'disabled style="opacity:.3;pointer-events:none;"':''}>‹</button>
+        <span style="font-size:.78rem;color:var(--muted);display:flex;align-items:center;">${curIdx+1}/${docs.length}</span>
+        <button id="pv-next" style="background:var(--surface2);border:none;color:var(--text);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;" ${curIdx===docs.length-1?'disabled style="opacity:.3;pointer-events:none;"':''}>›</button>
+      </div>`:''}`;
+    box.appendChild(acts);
+
+    // Bind events after DOM insert
+    requestAnimationFrame(()=>{
+      const likeBtn=document.getElementById('pv-like');
+      if(likeBtn) likeBtn.addEventListener('click', async()=>{
+        await toggleLike(id, likeBtn);
+      });
+      const closeBtn=document.getElementById('pv-close');
+      if(closeBtn) closeBtn.addEventListener('click', closeViewer);
+      const prevBtn=document.getElementById('pv-prev');
+      if(prevBtn) prevBtn.addEventListener('click',()=>{ if(curIdx>0){const v=box.querySelector('video');if(v){v.pause();v.src='';}curIdx--;render();} });
+      const nextBtn=document.getElementById('pv-next');
+      if(nextBtn) nextBtn.addEventListener('click',()=>{ if(curIdx<docs.length-1){const v=box.querySelector('video');if(v){v.pause();v.src='';}curIdx++;render();} });
+      // Like state
+      if(CU && likeBtn){
+        getDoc(doc(db,'likes',`${CU.uid}_${id}`)).then(snap=>{
+          if(snap.exists()) likeBtn.classList.add('liked');
+        }).catch(()=>{});
+      }
+    });
+  };
+
+  overlay.appendChild(box);
+  overlay.addEventListener('click',e=>{ if(e.target===overlay) closeViewer(); });
+  document.body.appendChild(overlay);
+  render();
+
+  const onKey=e=>{
+    if(e.key==='Escape') closeViewer();
+    if(e.key==='ArrowRight'&&curIdx<docs.length-1){const v=box.querySelector('video');if(v){v.pause();v.src='';}curIdx++;render();}
+    if(e.key==='ArrowLeft'&&curIdx>0){const v=box.querySelector('video');if(v){v.pause();v.src='';}curIdx--;render();}
+  };
+  document.addEventListener('keydown', onKey);
 }
 
 async function loadMyProfile(){
   if(!CU) return;
   await syncUI(CU);
-  // Cargar todas las publicaciones del usuario
+
+  // Cargar TODOS los posts del usuario
   const allSnap=await getDocs(query(collection(db,'posts'),where('uid','==',CU.uid),orderBy('createdAt','desc')));
   const allDocs=allSnap.docs.map(d=>({id:d.id,data:d.data()}));
-  // Posts = imágenes + texto (no videos puros)
-  const postDocs=allDocs.filter(({data:p})=>!(p.mediaType==='video'||p.mediaUrl?.match(/\.(mp4|mov|webm|ogg)/i)));
-  // Reels = solo videos
+
+  // Posts tab = TODOS (fotos, texto y videos)
+  const postDocs=allDocs; // sin filtrar
+
+  // Reels tab = solo videos
   const reelDocs=allDocs.filter(({data:p})=>p.mediaType==='video'||p.mediaUrl?.match(/\.(mp4|mov|webm|ogg)/i));
 
   document.getElementById('stat-posts').textContent=allDocs.length;
 
-  renderThumbGrid(document.getElementById('prof-grid-posts'), postDocs, 'Sin publicaciones todavía. ¡Compartí algo!');
-  renderThumbGrid(document.getElementById('prof-grid-reels'), reelDocs, 'Sin reels todavía. ¡Subí tu primer video!');
+  renderThumbGrid(
+    document.getElementById('prof-grid-posts'),
+    postDocs,
+    'Sin publicaciones todavía. ¡Compartí algo!',
+    (idx,docs)=>openProfileViewer(idx,docs)
+  );
+  renderThumbGrid(
+    document.getElementById('prof-grid-reels'),
+    reelDocs,
+    'Sin reels todavía. ¡Subí tu primer video!',
+    (idx,docs)=>openProfileViewer(idx,docs)
+  );
 
-  // Cargar Me gusta
   await loadProfLiked();
 }
 
@@ -4138,13 +4283,16 @@ async function loadProfLiked(){
   const grid=document.getElementById('prof-grid-liked');
   grid.innerHTML='<div style="grid-column:1/-1;padding:24px;text-align:center;color:var(--muted);font-size:.82rem;">Cargando...</div>';
   try{
-    // Obtener todos los likes del usuario
     const likesSnap=await getDocs(query(collection(db,'likes'),where('uid','==',CU.uid),limit(60)));
-    if(likesSnap.empty){ grid.innerHTML='<div style="grid-column:1/-1;padding:48px;text-align:center;color:var(--muted);font-size:.85rem;">Todavía no le diste Me gusta a ninguna publicación.</div>'; return; }
-    // Obtener los posts correspondientes
+    if(likesSnap.empty){
+      grid.innerHTML='<div style="grid-column:1/-1;padding:48px;text-align:center;color:var(--muted);font-size:.85rem;">Todavía no le diste Me gusta a ninguna publicación.</div>';
+      return;
+    }
     const postIds=likesSnap.docs.map(d=>d.data().postId).filter(Boolean);
-    if(!postIds.length){ grid.innerHTML='<div style="grid-column:1/-1;padding:48px;text-align:center;color:var(--muted);font-size:.85rem;">Sin publicaciones likeadas.</div>'; return; }
-    // Firestore 'in' soporta hasta 30 elementos por query; paginar si hace falta
+    if(!postIds.length){
+      grid.innerHTML='<div style="grid-column:1/-1;padding:48px;text-align:center;color:var(--muted);font-size:.85rem;">Sin publicaciones likeadas.</div>';
+      return;
+    }
     const chunks=[];
     for(let i=0;i<postIds.length;i+=30) chunks.push(postIds.slice(i,i+30));
     let likedDocs=[];
@@ -4152,8 +4300,16 @@ async function loadProfLiked(){
       const snap=await getDocs(query(collection(db,'posts'),where('__name__','in',chunk)));
       snap.docs.forEach(d=>likedDocs.push({id:d.id,data:d.data()}));
     }
-    renderThumbGrid(grid, likedDocs, 'Sin publicaciones likeadas todavía.');
-  }catch(e){ console.error(e); grid.innerHTML='<div style="grid-column:1/-1;padding:48px;text-align:center;color:var(--muted);">Error al cargar.</div>'; }
+    renderThumbGrid(
+      grid,
+      likedDocs,
+      'Sin publicaciones likeadas todavía.',
+      (idx,docs)=>openProfileViewer(idx,docs)
+    );
+  }catch(e){
+    console.error(e);
+    grid.innerHTML='<div style="grid-column:1/-1;padding:48px;text-align:center;color:var(--muted);">Error al cargar.</div>';
+  }
 }
 
 window.switchProfTab = tab => {
