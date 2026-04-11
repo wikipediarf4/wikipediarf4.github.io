@@ -527,14 +527,41 @@ img { display:block; }
 .st-danger { padding:16px 22px; cursor:pointer; color:var(--accent); font-size:.9rem; font-weight:600; transition:background .15s; }
 .st-danger:hover { background:rgba(255,45,85,.06); }
 
-/* ───── EDIT PROFILE MODAL ───── */
+/* ───── EDIT PROFILE MODAL — Instagram style ───── */
 #edit-modal { position:fixed; inset:0; z-index:810; background:rgba(0,0,0,.88); backdrop-filter:blur(12px); display:none; align-items:center; justify-content:center; padding:16px; }
 #edit-modal.show { display:flex; }
-.edit-box { width:100%; max-width:420px; background:var(--surface); border:1px solid var(--border2); border-radius:22px; overflow:hidden; animation:fadeUp .25s ease; }
-.edit-hd { display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1px solid var(--border); }
+.edit-box { width:100%; max-width:480px; background:var(--surface); border:1px solid var(--border2); border-radius:22px; overflow:hidden; max-height:92vh; display:flex; flex-direction:column; animation:fadeUp .25s ease; }
+.edit-hd { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid var(--border); flex-shrink:0; }
 .edit-hd h3 { font-size:.95rem; font-weight:700; font-family:var(--font-display); }
-.edit-close { background:none; border:none; color:var(--muted); cursor:pointer; font-size:1.2rem; }
-.edit-body { padding:22px; }
+.edit-close { background:none; border:none; color:var(--muted); cursor:pointer; font-size:1.1rem; }
+.edit-body { flex:1; overflow-y:auto; padding:0 0 24px; }
+.ep-avatar-row { display:flex; align-items:center; gap:16px; padding:20px 20px 18px; border-bottom:1px solid var(--border); }
+.ep-av-img { width:62px; height:62px; border-radius:50%; object-fit:cover; border:2px solid var(--border2); cursor:pointer; flex-shrink:0; transition:opacity .2s; }
+.ep-av-img:hover { opacity:.8; }
+.ep-change-photo { background:none; border:none; color:var(--accent2); font-size:.88rem; font-weight:700; cursor:pointer; padding:0; display:block; }
+.ep-section-title { font-size:.8rem; font-weight:700; color:var(--muted); padding:18px 20px 8px; letter-spacing:.2px; }
+.ep-inp { width:100%; background:var(--surface2); border:none; border-bottom:1px solid var(--border2); padding:10px 20px; color:#fff; font-size:.9rem; outline:none; transition:border-color .2s; }
+.ep-inp:focus { border-bottom-color:var(--accent2); }
+.ep-inp::placeholder { color:var(--dim); }
+.ep-ta { width:100%; background:var(--surface2); border:none; border-bottom:1px solid var(--border2); padding:10px 20px; color:#fff; font-size:.9rem; outline:none; resize:none; min-height:72px; line-height:1.5; display:block; transition:border-color .2s; }
+.ep-ta:focus { border-bottom-color:var(--accent2); }
+.ep-ta::placeholder { color:var(--dim); }
+.ep-char-count { font-size:.72rem; color:var(--muted); text-align:right; padding:4px 20px 0; }
+.ep-hint { font-size:.76rem; color:var(--muted); line-height:1.5; padding:6px 20px 0; }
+.ep-toggle-row { display:flex; align-items:center; justify-content:space-between; padding:10px 20px; background:var(--surface2); border-top:1px solid var(--border); border-bottom:1px solid var(--border); gap:12px; font-size:.86rem; }
+.ep-toggle-row-tall { align-items:flex-start; padding:14px 20px; }
+.ep-toggle { position:relative; display:inline-block; width:46px; height:26px; flex-shrink:0; }
+.ep-toggle input { opacity:0; width:0; height:0; }
+.ep-toggle-slider { position:absolute; cursor:pointer; inset:0; background:var(--surface3); border-radius:99px; transition:.25s; }
+.ep-toggle-slider::before { content:''; position:absolute; width:20px; height:20px; border-radius:50%; left:3px; bottom:3px; background:#fff; transition:.25s; }
+.ep-toggle input:checked + .ep-toggle-slider { background:var(--accent2); }
+.ep-toggle input:checked + .ep-toggle-slider::before { transform:translateX(20px); }
+.ep-select-wrap { position:relative; padding:0 20px; }
+.ep-select { width:100%; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--r-sm); padding:11px 36px 11px 14px; color:#fff; font-size:.9rem; outline:none; appearance:none; cursor:pointer; transition:border-color .2s; }
+.ep-select:focus { border-color:var(--accent2); }
+.ep-select option { background:var(--surface2); }
+.ep-footer-note { font-size:.76rem; color:var(--muted); line-height:1.55; padding:20px 20px 0; margin-top:4px; }
+
 
 /* ───── PAGE SECTIONS ───── */
 .page-header { padding:20px 0 14px; font-family:var(--font-display); font-size:1.1rem; font-weight:700; border-bottom:1px solid var(--border); margin-bottom:4px; }
@@ -964,15 +991,71 @@ img { display:block; }
 <!-- Edit Profile -->
 <div id="edit-modal" onclick="if(event.target===this)closeEditProfile()">
   <div class="edit-box">
-    <div class="edit-hd"><h3>Editar perfil</h3><button class="edit-close" onclick="closeEditProfile()">✕</button></div>
+    <div class="edit-hd">
+      <button class="edit-close" onclick="closeEditProfile()" style="font-size:.9rem;color:var(--muted);">✕</button>
+      <h3>Editar perfil</h3>
+      <button onclick="saveProfile()" style="background:none;border:none;color:var(--accent2);font-size:.9rem;font-weight:700;cursor:pointer;">Enviar</button>
+    </div>
     <div class="edit-body">
-      <div class="up-field"><label class="up-label">Nombre de usuario</label><input class="up-inp" id="edit-user" placeholder="@usuario"/></div>
-      <div class="up-field"><label class="up-label">Nombre a mostrar</label><input class="up-inp" id="edit-name" placeholder="Tu nombre"/></div>
-      <div class="up-field"><label class="up-label">Bio</label><textarea class="up-ta" id="edit-bio" placeholder="Contá algo sobre vos..." style="min-height:60px;"></textarea></div>
-      <div style="display:flex;gap:10px;">
-        <button onclick="closeEditProfile()" class="btn-outline" style="flex:1;">Cancelar</button>
-        <button onclick="saveProfile()" class="btn-primary" style="flex:1;width:auto;">Guardar</button>
+
+      <!-- Avatar row -->
+      <div class="ep-avatar-row">
+        <img id="ep-av" class="ep-av-img" src="" onerror="this.src='https://ui-avatars.com/api/?name=U&background=222&color=fff&size=128'" onclick="document.getElementById('ep-avatar-file').click()"/>
+        <div>
+          <div id="ep-uname-display" style="font-weight:700;font-size:.95rem;margin-bottom:4px;">@usuario</div>
+          <button class="ep-change-photo" onclick="document.getElementById('ep-avatar-file').click()">Cambiar foto</button>
+        </div>
+        <input type="file" id="ep-avatar-file" accept="image/*" style="display:none" onchange="uploadAvatar(this.files[0]);updateEpAvatar(this.files[0])"/>
       </div>
+
+      <!-- Website -->
+      <div class="ep-section-title">Sitio web</div>
+      <input class="ep-inp" id="edit-website" placeholder="Sitio web" type="url"/>
+      <div class="ep-hint">Solo podés editar tus enlaces en móviles. Visitá la aplicación y editá tu perfil para cambiar los sitios web en tu biografía.</div>
+
+      <!-- Bio -->
+      <div class="ep-section-title">Presentación</div>
+      <textarea class="ep-ta" id="edit-bio" placeholder="Presentación" maxlength="150"></textarea>
+      <div class="ep-char-count"><span id="ep-bio-count">0</span> / 150</div>
+
+      <!-- Threads badge -->
+      <div class="ep-section-title">Mostrar insignia de Threads</div>
+      <div class="ep-toggle-row">
+        <span>Mostrar insignia de Threads</span>
+        <label class="ep-toggle">
+          <input type="checkbox" id="edit-threads" checked/>
+          <span class="ep-toggle-slider"></span>
+        </label>
+      </div>
+
+      <!-- Gender -->
+      <div class="ep-section-title">Sexo</div>
+      <div class="ep-select-wrap">
+        <select class="ep-select" id="edit-gender">
+          <option value="">Prefiero no decirlo</option>
+          <option value="hombre">Hombre</option>
+          <option value="mujer">Mujer</option>
+          <option value="otro">Otro</option>
+        </select>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--muted);"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="ep-hint">Esto no formará parte de tu perfil público.</div>
+
+      <!-- Account suggestions -->
+      <div class="ep-section-title">Mostrar sugerencias de cuentas en los perfiles</div>
+      <div class="ep-toggle-row ep-toggle-row-tall">
+        <div style="flex:1;">
+          <div style="font-size:.86rem;font-weight:500;margin-bottom:3px;">Mostrar sugerencias de cuentas en los perfiles</div>
+          <div class="ep-hint" style="margin:0;">Elige si la gente puede ver sugerencias de cuentas similares en tu perfil, y si se puede sugerir tu cuenta en otros perfiles.</div>
+        </div>
+        <label class="ep-toggle" style="flex-shrink:0;margin-left:12px;">
+          <input type="checkbox" id="edit-suggestions" checked/>
+          <span class="ep-toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="ep-footer-note">Todos pueden ver determinada información del perfil, como tu nombre, presentación y enlaces. <span style="color:var(--accent2);cursor:pointer;">Consultá qué información de perfil está visible</span></div>
+
     </div>
   </div>
 </div>
@@ -1185,7 +1268,10 @@ window.setPage = name => {
 };
 
 // ── FEED ──
+const _feedUnsubs = [];
 async function loadFeed(){
+  // Unsub previous listeners
+  _feedUnsubs.forEach(u=>u()); _feedUnsubs.length=0;
   const list=document.getElementById('feed-list');
   try{
     const snap=await getDocs(query(collection(db,'posts'),orderBy('createdAt','desc'),limit(20)));
@@ -1194,7 +1280,23 @@ async function loadFeed(){
     const authors=new Map();
     snap.docs.forEach(d=>{ const p=d.data(); if(!authors.has(p.uid)) authors.set(p.uid,p); });
     buildStories(authors);
-    snap.docs.forEach(d=>list.appendChild(buildPost({id:d.id,...d.data()})));
+    snap.docs.forEach(d=>{
+      const postData={id:d.id,...d.data()};
+      const card=buildPost(postData);
+      list.appendChild(card);
+      // Real-time likes + commentsCount listener
+      const unsub=onSnapshot(doc(db,'posts',postData.id),snap2=>{
+        if(!snap2.exists()) return;
+        const updated=snap2.data();
+        // Update likes label
+        const ll=document.getElementById('likes-label-'+postData.id);
+        if(ll) ll.textContent=fmtN(updated.likes||0)+' Me gusta';
+        // Update comments count link
+        const cl=card.querySelector('.post-view-comments');
+        if(cl) cl.textContent='Ver los '+fmtN(updated.commentsCount||0)+' comentarios';
+      });
+      _feedUnsubs.push(unsub);
+    });
   }catch(e){ list.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted);">Error: '+esc(e.message)+'</div>'; }
 }
 
@@ -1328,6 +1430,8 @@ window.openComments = (postId,count) => {
   list.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted);">Cargando...</div>';
   if(commentsUnsub) commentsUnsub();
   commentsUnsub=onSnapshot(query(collection(db,'posts',postId,'comments'),orderBy('createdAt','asc'),limit(50)),snap=>{
+    // Update title with live count
+    document.getElementById('cs-title').textContent='Comentarios · '+snap.size;
     list.innerHTML='';
     if(snap.empty){ list.innerHTML='<div style="text-align:center;padding:32px;color:var(--muted);">¡Sé el primero en comentar!</div>'; return; }
     snap.docs.forEach(d=>{
@@ -1603,20 +1707,37 @@ window.uploadAvatar = async file => {
 window.openEditProfile = async () => {
   if(!CU) return;
   const d=(await getDoc(doc(db,'users',CU.uid))).data()||{};
-  document.getElementById('edit-user').value=d.username||'';
-  document.getElementById('edit-name').value=d.displayName||'';
+  // populate avatar in modal
+  const epAv=document.getElementById('ep-av');
+  if(epAv) epAv.src=d.avatarUrl||CU.photoURL||`https://ui-avatars.com/api/?name=${encodeURIComponent(d.username||'U')}&background=222&color=fff&size=128`;
+  const epUname=document.getElementById('ep-uname-display');
+  if(epUname) epUname.textContent='@'+(d.username||'usuario');
   document.getElementById('edit-bio').value=d.bio||'';
+  document.getElementById('ep-bio-count').textContent=(d.bio||'').length;
+  const ws=document.getElementById('edit-website'); if(ws) ws.value=d.website||'';
+  const gen=document.getElementById('edit-gender'); if(gen) gen.value=d.gender||'';
+  const thr=document.getElementById('edit-threads'); if(thr) thr.checked=d.showThreads!==false;
+  const sug=document.getElementById('edit-suggestions'); if(sug) sug.checked=d.showSuggestions!==false;
+  // bio char counter
+  document.getElementById('edit-bio').oninput=function(){ document.getElementById('ep-bio-count').textContent=this.value.length; };
   document.getElementById('edit-modal').classList.add('show');
+};
+window.updateEpAvatar = file => {
+  if(!file) return;
+  const url=URL.createObjectURL(file);
+  const epAv=document.getElementById('ep-av');
+  if(epAv) epAv.src=url;
 };
 window.closeEditProfile = () => document.getElementById('edit-modal').classList.remove('show');
 window.saveProfile = async () => {
   if(!CU) return;
-  const username=document.getElementById('edit-user').value.trim();
-  const displayName=document.getElementById('edit-name').value.trim();
   const bio=document.getElementById('edit-bio').value.trim();
+  const website=(document.getElementById('edit-website')?.value||'').trim();
+  const gender=document.getElementById('edit-gender')?.value||'';
+  const showThreads=document.getElementById('edit-threads')?.checked!==false;
+  const showSuggestions=document.getElementById('edit-suggestions')?.checked!==false;
   try{
-    await updateDoc(doc(db,'users',CU.uid),{username,displayName,bio});
-    await updateProfile(CU,{displayName});
+    await updateDoc(doc(db,'users',CU.uid),{bio,website,gender,showThreads,showSuggestions});
     closeEditProfile(); showToast('✅ Perfil actualizado'); syncUI(CU);
   }catch(e){ showToast('Error al guardar'); }
 };
