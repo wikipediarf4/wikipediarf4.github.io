@@ -4063,6 +4063,12 @@ window.handleVideoUpload = (inp) => {
   closeUpload();
   const cm = document.getElementById('caption-modal');
   const preview = document.getElementById('caption-preview');
+  // Limpiar preview anterior y revocar su blob URL
+  const oldVid = preview.querySelector('video');
+  const oldImg = preview.querySelector('img');
+  if (oldVid && oldVid.src) URL.revokeObjectURL(oldVid.src);
+  if (oldImg && oldImg.src && oldImg.src.startsWith('blob:')) URL.revokeObjectURL(oldImg.src);
+  preview.innerHTML = '';
   const isVideo = file.type.startsWith('video');
   const url = URL.createObjectURL(file);
   preview.innerHTML = isVideo
@@ -4074,6 +4080,15 @@ window.handleVideoUpload = (inp) => {
 
 window.closeCaptionModal = () => {
   document.getElementById('caption-modal').style.display = 'none';
+  // Limpiar preview y revocar blob URL para que no quede el video anterior
+  const preview = document.getElementById('caption-preview');
+  if (preview) {
+    const vid = preview.querySelector('video');
+    const img = preview.querySelector('img');
+    if (vid && vid.src) { URL.revokeObjectURL(vid.src); }
+    if (img && img.src && img.src.startsWith('blob:')) { URL.revokeObjectURL(img.src); }
+    preview.innerHTML = '';
+  }
   _pendingUploadFile = null;
   clipClearMusic();
   _clipuySelectedAudio = null;
@@ -4408,7 +4423,7 @@ window.publishClip = async () => {
     loadFeed();
     goTo('home');
   } catch(e) { showToast('❌ Error: ' + e.message); }
-  _pendingUploadFile = null;
+  finally { _pendingUploadFile = null; }
 };
 
 // ══════════════════════════════════════════════
