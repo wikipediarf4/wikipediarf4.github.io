@@ -207,23 +207,62 @@ img { display:block; }
 .rp-footer { margin-top:32px; font-size:.68rem; color:var(--dim); line-height:2; }
 .rp-footer a:hover { color:var(--muted); }
 
-/* ───── STORIES ───── */
+/* ───── STORIES — Facebook card style ───── */
 .stories-bar {
-  display:flex; gap:14px; padding:20px 0 16px;
+  display:flex; gap:10px; padding:16px 0 14px;
   overflow-x:auto; scrollbar-width:none;
-  border-bottom:1px solid var(--border);
 }
 .stories-bar::-webkit-scrollbar { display:none; }
 
-.story-item { display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer; flex-shrink:0; }
-.story-ring {
-  width:60px; height:60px; border-radius:50%; padding:2.5px;
-  background:conic-gradient(var(--accent) 0deg, #ff7b00 90deg, var(--accent3) 180deg, var(--accent2) 270deg, var(--accent) 360deg);
+.story-item {
+  position:relative; flex-shrink:0;
+  width:110px; height:190px;
+  border-radius:12px; overflow:hidden;
+  cursor:pointer;
+  background:var(--surface2);
+  box-shadow:0 2px 12px rgba(0,0,0,.45);
+  transition:transform .18s, box-shadow .18s;
 }
-.story-ring.mine { background:var(--surface2); border:2px solid var(--border2); padding:0; display:flex; align-items:center; justify-content:center; }
-.story-avatar { width:100%; height:100%; border-radius:50%; object-fit:cover; border:2.5px solid var(--bg); background:var(--surface3); }
-.story-add { width:52px; height:52px; border-radius:50%; background:var(--surface); border:2px solid var(--bg); display:flex; align-items:center; justify-content:center; font-size:1.5rem; color:var(--accent2); }
-.story-name { font-size:.65rem; color:var(--muted); max-width:62px; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.story-item:hover { transform:scale(1.03); box-shadow:0 6px 24px rgba(0,0,0,.6); }
+
+.story-bg {
+  position:absolute; inset:0;
+  width:100%; height:100%; object-fit:cover; display:block;
+}
+.story-item::after {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(to bottom, rgba(0,0,0,.1) 0%, transparent 35%, rgba(0,0,0,.75) 100%);
+  pointer-events:none; z-index:1;
+}
+.story-av-ring {
+  position:absolute; top:10px; left:10px; z-index:2;
+  width:38px; height:38px; border-radius:50%; padding:2.5px;
+  background:conic-gradient(var(--accent) 0deg,#ff7b00 90deg,var(--accent3) 180deg,var(--accent2) 270deg,var(--accent) 360deg);
+}
+.story-av-ring.mine { background:var(--accent2); display:flex; align-items:center; justify-content:center; }
+.story-av-inner {
+  width:100%; height:100%; border-radius:50%;
+  object-fit:cover; border:2px solid var(--bg); background:var(--surface3); display:block;
+}
+.story-name {
+  position:absolute; bottom:10px; left:0; right:0; z-index:2;
+  font-size:.72rem; font-weight:700; color:#fff;
+  text-align:center; padding:0 6px;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  text-shadow:0 1px 4px rgba(0,0,0,.9);
+}
+.story-item.create-story { background:var(--surface); border:1px solid var(--border2); }
+.story-create-top {
+  position:absolute; top:0; left:0; right:0; height:62%;
+  background:var(--surface3); overflow:hidden;
+}
+.story-create-top img { width:100%; height:100%; object-fit:cover; opacity:.75; }
+.story-create-plus {
+  position:absolute; top:calc(62% - 20px); left:50%; transform:translateX(-50%);
+  z-index:3; width:40px; height:40px; border-radius:50%;
+  background:var(--accent2); display:flex; align-items:center; justify-content:center;
+  border:4px solid var(--bg); font-size:1.4rem; color:#000; font-weight:900; line-height:1;
+}
 
 /* ───── POST CARD ───── */
 .post-card {
@@ -848,6 +887,115 @@ img { display:block; }
   #main-col { padding:0 10px; padding-bottom:72px; }
   #app.show { flex-direction:column; }
 }
+
+/* ───── COMPOSER ───── */
+.composer-card {
+  max-width:var(--feed-max);
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  margin:14px 0 0;
+  overflow:hidden;
+}
+.composer-top {
+  display:flex; align-items:center; gap:10px;
+  padding:12px 14px;
+}
+.composer-av {
+  width:42px; height:42px; border-radius:50%;
+  object-fit:cover; flex-shrink:0;
+  border:1.5px solid var(--border2); background:var(--surface3);
+}
+.composer-input-btn {
+  flex:1; background:var(--surface2); border:1px solid var(--border2);
+  border-radius:99px; padding:10px 18px;
+  color:var(--muted); font-size:.9rem; font-family:inherit;
+  text-align:left; cursor:pointer;
+  transition:background .15s, border-color .15s;
+}
+.composer-input-btn:hover { background:var(--surface3); border-color:rgba(255,255,255,.2); color:var(--text); }
+.composer-divider { height:1px; background:var(--border); }
+.composer-actions { display:flex; align-items:center; }
+.composer-act {
+  flex:1; display:flex; align-items:center; justify-content:center;
+  gap:7px; padding:10px 4px;
+  background:none; border:none; cursor:pointer;
+  color:var(--muted); font-size:.78rem; font-weight:600; font-family:inherit;
+  transition:background .15s, color .15s; border-radius:0;
+}
+.composer-act:hover { background:rgba(255,255,255,.05); color:var(--text); }
+
+/* ───── COMPOSE MODAL ───── */
+#compose-modal {
+  position:fixed; inset:0; z-index:820;
+  background:rgba(0,0,0,.88); backdrop-filter:blur(12px);
+  display:none; align-items:center; justify-content:center; padding:16px;
+}
+#compose-modal.show { display:flex; animation:fadeUp .2s ease both; }
+.compose-box {
+  width:100%; max-width:500px;
+  background:var(--surface); border:1px solid var(--border2);
+  border-radius:var(--r); overflow:hidden; display:flex; flex-direction:column;
+}
+.compose-hd {
+  display:flex; align-items:center; padding:14px 18px;
+  border-bottom:1px solid var(--border);
+  font-family:var(--font-display); font-size:.95rem; font-weight:700;
+}
+.compose-hd button {
+  margin-left:auto; background:none; border:none; color:var(--muted);
+  cursor:pointer; font-size:1.1rem; border-radius:50%; width:30px; height:30px;
+  display:flex; align-items:center; justify-content:center; transition:background .15s;
+}
+.compose-hd button:hover { background:rgba(255,255,255,.08); color:#fff; }
+.compose-body { padding:14px 16px; display:flex; gap:12px; align-items:flex-start; }
+.compose-body-av {
+  width:42px; height:42px; border-radius:50%; object-fit:cover;
+  flex-shrink:0; border:1.5px solid var(--border2); background:var(--surface3);
+}
+.compose-textarea {
+  flex:1; background:none; border:none; outline:none; resize:none;
+  color:#fff; font-size:.95rem; font-family:inherit; line-height:1.55;
+  min-height:90px; max-height:260px;
+}
+.compose-textarea::placeholder { color:var(--dim); font-size:.95rem; }
+.compose-media-preview {
+  margin:0 16px 10px; border-radius:var(--r-sm); overflow:hidden;
+  background:var(--surface2); display:none; position:relative;
+}
+.compose-media-preview img,
+.compose-media-preview video { width:100%; max-height:260px; object-fit:cover; display:block; }
+.compose-media-remove {
+  position:absolute; top:8px; right:8px;
+  background:rgba(0,0,0,.7); border:none; color:#fff; border-radius:50%;
+  width:28px; height:28px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:.85rem;
+}
+.compose-ft {
+  border-top:1px solid var(--border); padding:10px 14px;
+  display:flex; align-items:center; gap:4px;
+}
+.compose-ft-act {
+  background:none; border:none; color:var(--muted); cursor:pointer;
+  padding:8px 10px; border-radius:var(--r-sm); transition:background .15s, color .15s;
+  display:flex; align-items:center; gap:5px; font-size:.8rem; font-weight:600; font-family:inherit;
+}
+.compose-ft-act:hover { background:rgba(255,255,255,.07); color:var(--text); }
+.compose-submit {
+  margin-left:auto; padding:9px 22px;
+  background:linear-gradient(135deg,var(--accent2),var(--accent));
+  border:none; border-radius:99px; color:#fff;
+  font-size:.85rem; font-weight:700; cursor:pointer; font-family:inherit;
+  transition:opacity .2s;
+}
+.compose-submit:hover:not(:disabled) { opacity:.88; }
+.compose-submit:disabled { opacity:.35; cursor:not-allowed; background:var(--surface3); }
+
+.story-item.story-unseen::before {
+  content:''; position:absolute; inset:0; z-index:2;
+  border-radius:12px;
+  box-shadow:inset 0 0 0 2.5px var(--accent2);
+  pointer-events:none;
+}
 </style>
 </head>
 <body>
@@ -989,12 +1137,42 @@ img { display:block; }
 
     <!-- HOME / FEED -->
     <div id="page-home">
+
+      <!-- ── STORIES BAR — Facebook card style ── -->
       <div class="stories-bar" id="stories-bar">
-        <div class="story-item" onclick="openUploadStory()">
-          <div class="story-ring mine"><div class="story-add">+</div></div>
-          <span class="story-name">Tu historia</span>
+        <!-- Tarjeta "Crear historia" -->
+        <div class="story-item create-story" onclick="openUploadStory()">
+          <div class="story-create-top">
+            <img id="story-create-av-bg" src="https://ui-avatars.com/api/?name=U&background=333&color=fff&size=200" onerror="this.src='https://ui-avatars.com/api/?name=U&background=333&color=fff'"/>
+          </div>
+          <div class="story-create-plus">+</div>
+          <span class="story-name">Crear historia</span>
         </div>
       </div>
+
+      <!-- ── COMPOSER — Facebook style ── -->
+      <div class="composer-card">
+        <div class="composer-top">
+          <img id="composer-av" class="composer-av" src="https://ui-avatars.com/api/?name=U&background=222&color=fff&size=80" onerror="this.src='https://ui-avatars.com/api/?name=U&background=222&color=fff'"/>
+          <button class="composer-input-btn" onclick="openCompose()">¿Qué estás pensando?</button>
+        </div>
+        <div class="composer-divider"></div>
+        <div class="composer-actions">
+          <button class="composer-act" onclick="openCompose('video')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#e05555" stroke-width="2" width="20" height="20"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+            <span>Video en vivo</span>
+          </button>
+          <button class="composer-act" onclick="openCompose('photo')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#45bd62" stroke-width="2" width="20" height="20"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <span>Foto/video</span>
+          </button>
+          <button class="composer-act" onclick="openCompose('feeling')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#f7b928" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+            <span>Sentimiento</span>
+          </button>
+        </div>
+      </div>
+
       <div id="feed-list">
         <!-- Skeletons iniciales -->
         <div class="skel-post">
@@ -1519,7 +1697,7 @@ onAuthStateChanged(auth, async user => {
 async function syncUI(user){
   const defAv=`https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName||'U')}&background=222&color=fff&size=128`;
   const av=user.photoURL||defAv;
-  ['sidebar-av','rp-av','prof-av','cs-my-av'].forEach(id=>{const el=document.getElementById(id);if(el)el.src=av;});
+  ['sidebar-av','rp-av','prof-av','cs-my-av','composer-av','compose-av','story-create-av-bg'].forEach(id=>{const el=document.getElementById(id);if(el)el.src=av;});
   try{
     const snap=await getDoc(doc(db,'users',user.uid));
     if(snap.exists()){
@@ -1540,7 +1718,7 @@ async function syncUI(user){
       document.getElementById('stat-followers').textContent=fmtN(d.followers||0);
       document.getElementById('stat-following').textContent=fmtN(d.following||0);
       if(d.avatarUrl){
-        ['sidebar-av','rp-av','prof-av','cs-my-av'].forEach(id=>{const el=document.getElementById(id);if(el)el.src=d.avatarUrl;});
+        ['sidebar-av','rp-av','prof-av','cs-my-av','composer-av','compose-av','story-create-av-bg'].forEach(id=>{const el=document.getElementById(id);if(el)el.src=d.avatarUrl;});
       }
     }
   }catch(e){ console.warn(e); }
@@ -1598,21 +1776,29 @@ async function loadFeed(){
 // ── STORIES (colección real con expiración 24h) ──
 async function loadStories(){
   const bar=document.getElementById('stories-bar');
-  const addEl=bar.querySelector('.story-item');
-  bar.innerHTML=''; bar.appendChild(addEl);
+  // Preservar solo la tarjeta "Crear historia"
+  const createCard=bar.querySelector('.create-story');
+  bar.innerHTML='';
+  if(createCard) bar.appendChild(createCard);
+  // Actualizar foto del usuario en la tarjeta crear historia
+  if(CU){
+    const bgImg=document.getElementById('story-create-av-bg');
+    if(bgImg){
+      const ud=(await getDoc(doc(db,'users',CU.uid)).catch(()=>({data:()=>({})}))).data()||{};
+      bgImg.src=ud.avatarUrl||CU.photoURL||bgImg.src;
+    }
+  }
   try{
     const now=new Date();
     const snap=await getDocs(query(collection(db,'stories'),orderBy('createdAt','desc'),limit(60)));
-    // Agrupar por uid, solo historias no expiradas
     const byUid=new Map();
     snap.docs.forEach(d=>{
       const s={id:d.id,...d.data()};
       const exp=s.expiresAt?.toDate?.();
-      if(exp&&exp<now) return; // expirada
+      if(exp&&exp<now) return;
       if(!byUid.has(s.uid)) byUid.set(s.uid,[]);
       byUid.get(s.uid).push(s);
     });
-    // Ordenar: historias propias primero, luego por más reciente
     const entries=[...byUid.entries()].sort((a,b)=>{
       if(a[0]===CU?.uid) return -1;
       if(b[0]===CU?.uid) return 1;
@@ -1620,22 +1806,47 @@ async function loadStories(){
     });
     entries.forEach(([uid,stories])=>{
       const s=stories[0];
-      const av=s.avatarUrl||`https://ui-avatars.com/api/?name=${encodeURIComponent(s.username||'U')}&background=222&color=fff&size=128`;
+      const av=s.avatarUrl||`https://ui-avatars.com/api/?name=${encodeURIComponent(s.username||'U')}&background=222&color=fff&size=200`;
       const isNew=!s.viewers?.includes(CU?.uid);
       const isOwn=uid===CU?.uid;
+
+      // Tarjeta rectangular estilo Facebook
       const el=document.createElement('div');
-      el.className='story-item';
-      el.style.cursor='pointer';
+      el.className='story-item'+(isNew&&!isOwn?' story-unseen':'');
       el.onclick=()=>openStory(stories);
-      // Badge NEW para historias no vistas (no propias)
-      const newBadge=(!isOwn&&isNew)?`<div class="story-new-badge">NEW</div>`:'';
-      el.innerHTML=`
-        <div class="story-ring${isOwn?' mine':''}" style="position:relative;">
-          <img class="story-avatar" src="${av}" onerror="this.src='https://ui-avatars.com/api/?name=U&background=222&color=fff'"/>
-          ${newBadge}
-          ${stories.length>1?`<div class="story-count-badge">${stories.length}</div>`:''}
-        </div>
-        <span class="story-name">${isOwn?'Tu historia':'@'+esc(s.username||'u')}</span>`;
+
+      // Fondo: foto de la historia o avatar del usuario
+      const bgImg=document.createElement('img');
+      bgImg.className='story-bg';
+      bgImg.src=s.mediaUrl||av;
+      bgImg.onerror=()=>{ bgImg.src=av; };
+
+      // Avatar ring arriba izquierda
+      const ring=document.createElement('div');
+      ring.className='story-av-ring'+(isOwn?' mine':'');
+      const avImg=document.createElement('img');
+      avImg.className='story-av-inner';
+      avImg.src=av;
+      avImg.onerror=()=>{ avImg.src=`https://ui-avatars.com/api/?name=U&background=222&color=fff`; };
+      ring.appendChild(avImg);
+
+      // Badge "NEW" si no vista
+      if(isNew&&!isOwn){
+        const badge=document.createElement('div');
+        badge.style.cssText='position:absolute;top:-3px;right:-3px;background:var(--accent);color:#fff;font-size:.48rem;font-weight:800;padding:2px 4px;border-radius:4px;letter-spacing:.5px;border:1.5px solid var(--bg);z-index:3;';
+        badge.textContent='NEW';
+        ring.style.position='relative';
+        ring.appendChild(badge);
+      }
+
+      // Nombre abajo
+      const nameEl=document.createElement('span');
+      nameEl.className='story-name';
+      nameEl.textContent=isOwn?'Tu historia':'@'+esc(s.username||'usuario');
+
+      el.appendChild(bgImg);
+      el.appendChild(ring);
+      el.appendChild(nameEl);
       bar.appendChild(el);
     });
   }catch(e){ console.warn('Error cargando historias:',e); }
@@ -2844,18 +3055,6 @@ window.openNewDM=()=>{
 };
 window.closeNewDM=()=>{ document.getElementById('new-dm-overlay').style.display='none'; };
 
-// Cache de todos los usuarios para búsqueda instantánea
-let _allUsersCache=null, _allUsersCacheTs=0;
-async function getAllUsersForSearch(){
-  const now=Date.now();
-  // Refrescar caché cada 2 minutos
-  if(_allUsersCache && now-_allUsersCacheTs < 120000) return _allUsersCache;
-  const snap=await getDocs(collection(db,'users'));
-  _allUsersCache=snap.docs.map(d=>d.data()).filter(u=>u.uid&&u.username);
-  _allUsersCacheTs=now;
-  return _allUsersCache;
-}
-
 let _dmSearchTimer;
 window.searchDMUser=v=>{
   clearTimeout(_dmSearchTimer);
@@ -2865,32 +3064,21 @@ window.searchDMUser=v=>{
     if(!q){box.innerHTML='';return;}
     box.innerHTML='<div style="padding:12px;text-align:center;color:var(--muted);font-size:.8rem;">Buscando...</div>';
     try{
-      const allUsers=await getAllUsersForSearch();
-      const results=allUsers.filter(u=>
-        u.uid!==CU.uid &&
-        ((u.username||'').toLowerCase().includes(q) ||
-         (u.displayName||'').toLowerCase().includes(q))
-      );
+      const snap=await getDocs(query(collection(db,'users'),limit(20)));
+      const results=snap.docs.map(d=>d.data()).filter(u=>u.uid!==CU.uid&&((u.username||'').toLowerCase().includes(q)));
       box.innerHTML='';
-      if(!results.length){box.innerHTML='<div style="padding:12px;text-align:center;color:var(--muted);font-size:.8rem;">Sin resultados para "'+esc(q)+'"</div>';return;}
-      results.slice(0,10).forEach(u=>{
+      if(!results.length){box.innerHTML='<div style="padding:12px;text-align:center;color:var(--muted);font-size:.8rem;">Sin resultados</div>';return;}
+      results.slice(0,8).forEach(u=>{
         const av=u.avatarUrl||`https://ui-avatars.com/api/?name=${encodeURIComponent(u.username||'U')}&background=222&color=fff`;
         const el=document.createElement('div');
         el.style.cssText='display:flex;align-items:center;gap:10px;padding:10px 8px;border-radius:var(--r-sm);cursor:pointer;transition:background .12s;';
-        const img=document.createElement('img');
-        img.src=av;
-        img.onerror=()=>{ img.src=`https://ui-avatars.com/api/?name=${encodeURIComponent(u.username||'U')}&background=222&color=fff`; };
-        img.style.cssText='width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1.5px solid var(--border2);background:var(--surface3);';
-        const info=document.createElement('div');
-        info.innerHTML=`<div style="font-weight:700;font-size:.88rem;">@${esc(u.username||'usuario')}</div>${u.displayName&&u.displayName!==u.username?`<div style="font-size:.74rem;color:var(--muted);">${esc(u.displayName)}</div>`:''}`;
-        el.appendChild(img);
-        el.appendChild(info);
+        el.innerHTML=`<img src="${av}" onerror="this.src='https://ui-avatars.com/api/?name=U&background=222&color=fff'" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;"/><div style="font-weight:700;font-size:.88rem;">@${esc(u.username||'usuario')}</div>`;
         el.onmouseenter=()=>el.style.background='rgba(255,255,255,.06)';
         el.onmouseleave=()=>el.style.background='';
         el.onclick=()=>{ closeNewDM(); openDMChat(u.uid,u.username||'usuario',av,null); };
         box.appendChild(el);
       });
-    }catch(e){console.error(e);box.innerHTML='<div style="padding:12px;text-align:center;color:var(--muted);font-size:.8rem;">Error al buscar</div>';}
+    }catch(e){box.innerHTML='<div style="padding:12px;text-align:center;color:var(--muted);font-size:.8rem;">Error</div>';}
   },300);
 };
 
@@ -2926,7 +3114,7 @@ window.uploadAvatar = async file => {
     const url=await uploadToServer(file,CU.uid,'avatar');
     await updateDoc(doc(db,'users',CU.uid),{avatarUrl:url});
     await updateProfile(CU,{photoURL:url});
-    ['prof-av','sidebar-av','rp-av','cs-my-av'].forEach(id=>{const el=document.getElementById(id);if(el)el.src=url;});
+    ['prof-av','sidebar-av','rp-av','cs-my-av','composer-av','compose-av','story-create-av-bg'].forEach(id=>{const el=document.getElementById(id);if(el)el.src=url;});
     showToast('✅ Foto actualizada');
   }catch(e){ showToast('Error al subir foto'); }
 };
@@ -2998,61 +3186,130 @@ async function loadSuggestions(){
   if(!CU) return;
   try{
     const fl=(await getDoc(doc(db,'users',CU.uid))).data()?.followingList||[];
-    // Traer todos los usuarios para filtrar correctamente
-    const snap=await getDocs(collection(db,'users'));
+    const snap=await getDocs(query(collection(db,'users'),limit(8)));
     const list=document.getElementById('suggestions-list');
     list.innerHTML='';
-
-    // Filtrar: excluir yo mismo y ya seguidos
-    let candidates=snap.docs.map(d=>d.data()).filter(u=>u.uid&&u.uid!==CU.uid&&!fl.includes(u.uid));
-
-    // Priorizar usuarios con foto de perfil
-    candidates.sort((a,b)=>{
-      const aHasPhoto=!!(a.avatarUrl&&a.avatarUrl.length>4);
-      const bHasPhoto=!!(b.avatarUrl&&b.avatarUrl.length>4);
-      if(aHasPhoto&&!bHasPhoto) return -1;
-      if(!aHasPhoto&&bHasPhoto) return 1;
-      return 0;
-    });
-
-    if(!candidates.length){
-      list.innerHTML='<div style="font-size:.8rem;color:var(--muted);padding:4px 0;">Sin sugerencias por ahora</div>';
-      return;
-    }
-
-    candidates.slice(0,5).forEach(u=>{
-      const hasPhoto=!!(u.avatarUrl&&u.avatarUrl.length>4);
-      const fallbackAv=`https://ui-avatars.com/api/?name=${encodeURIComponent(u.username||'U')}&background=333&color=fff&size=80&bold=true`;
-      const av=hasPhoto?u.avatarUrl:fallbackAv;
-
+    let count=0;
+    snap.docs.forEach(d=>{
+      const u=d.data();
+      if(u.uid===CU.uid||fl.includes(u.uid)) return;
+      if(count>=5) return;
+      count++;
+      const av=u.avatarUrl||`https://ui-avatars.com/api/?name=${encodeURIComponent(u.username||'U')}&background=222&color=fff`;
       const el=document.createElement('div');
       el.className='sug-item';
-
-      // Construir imagen via DOM para control total
-      const img=document.createElement('img');
-      img.className='sug-av';
-      img.src=av;
-      img.alt=u.username||'usuario';
-      img.onerror=()=>{ img.onerror=null; img.src=fallbackAv; };
-
-      const info=document.createElement('div');
-      info.style.cssText='flex:1;min-width:0;';
-      info.innerHTML=`<div class="sug-name">@${esc(u.username||'usuario')}</div><div class="sug-sub">${u.followers?fmtN(u.followers)+' seguidores':'Sugerencia para ti'}</div>`;
-
-      const btn=document.createElement('button');
-      btn.className='sug-follow';
-      btn.dataset.uid=u.uid;
-      btn.textContent='Seguir';
-      btn.onclick=()=>toggleFollow(u.uid,btn);
-
-      el.appendChild(img);
-      el.appendChild(info);
-      el.appendChild(btn);
+      el.innerHTML=`<img class="sug-av" src="${av}" onerror="this.src='https://ui-avatars.com/api/?name=U&background=222&color=fff'"/><div><div class="sug-name">@${esc(u.username||'usuario')}</div><div class="sug-sub">Sugerencia para ti</div></div><button class="sug-follow" data-uid="${u.uid}" onclick="toggleFollow('${u.uid}',this)">Seguir</button>`;
       list.appendChild(el);
     });
+    if(!count) list.innerHTML='<div style="font-size:.8rem;color:var(--muted);padding:4px 0;">Sin sugerencias por ahora</div>';
   }catch(e){ console.warn(e); }
 }
 
+
+// ── COMPOSE (Facebook-style post creator) ──
+let _composeFile=null, _composeIsVideo=false;
+
+window.openCompose = (hint) => {
+  document.getElementById('compose-modal').classList.add('show');
+  const ta = document.getElementById('compose-text');
+  ta.value = '';
+  removeComposeMedia();
+  document.getElementById('compose-submit-btn').disabled = true;
+  setTimeout(()=>ta.focus(), 150);
+  if(hint==='photo'||hint==='video'){
+    setTimeout(()=>document.getElementById('compose-file').click(), 300);
+  }
+};
+window.closeCompose = () => {
+  document.getElementById('compose-modal').classList.remove('show');
+  removeComposeMedia();
+  document.getElementById('compose-text').value='';
+  document.getElementById('compose-submit-btn').disabled=true;
+};
+window.composeTextChange = () => {
+  const txt = document.getElementById('compose-text').value.trim();
+  document.getElementById('compose-submit-btn').disabled = !txt && !_composeFile;
+};
+window.onComposeFile = input => {
+  const file = input.files[0]; if(!file) return;
+  _composeFile = file;
+  _composeIsVideo = file.type.startsWith('video/');
+  const url = URL.createObjectURL(file);
+  const preview = document.getElementById('compose-preview');
+  const img = document.getElementById('compose-preview-img');
+  const vid = document.getElementById('compose-preview-vid');
+  preview.style.display = 'block';
+  if(_composeIsVideo){ vid.src=url; vid.style.display='block'; img.style.display='none'; }
+  else { img.src=url; img.style.display='block'; vid.style.display='none'; }
+  document.getElementById('compose-submit-btn').disabled = false;
+  input.value='';
+};
+window.removeComposeMedia = () => {
+  _composeFile=null; _composeIsVideo=false;
+  document.getElementById('compose-preview').style.display='none';
+  document.getElementById('compose-preview-img').src='';
+  document.getElementById('compose-preview-vid').src='';
+  composeTextChange();
+};
+window.doCompose = async () => {
+  if(!CU){ showToast('Iniciá sesión'); return; }
+  const caption = document.getElementById('compose-text').value.trim();
+  if(!caption && !_composeFile){ showToast('Escribí algo o agregá una foto'); return; }
+  const btn = document.getElementById('compose-submit-btn');
+  btn.disabled=true; btn.textContent='Publicando...';
+  try{
+    const ud=(await getDoc(doc(db,'users',CU.uid))).data()||{};
+    let mediaUrl='', mediaType='';
+    if(_composeFile){
+      mediaUrl = await uploadToServer(_composeFile, ud.username||CU.displayName, caption);
+      mediaType = _composeIsVideo ? 'video' : 'image';
+    }
+    const base={
+      uid:CU.uid, username:ud.username||CU.displayName||'usuario',
+      avatarUrl:ud.avatarUrl||CU.photoURL||'',
+      mediaUrl, mediaType, contentType:'post',
+      caption, tags:[], likes:0, commentsCount:0, createdAt:serverTimestamp()
+    };
+    await addDoc(collection(db,'posts'), base);
+    await updateDoc(doc(db,'users',CU.uid),{posts:increment(1)});
+    showToast('✅ ¡Publicado!');
+    closeCompose();
+    loadFeed();
+  }catch(e){ console.error(e); showToast('Error: '+e.message); }
+  finally{ btn.disabled=false; btn.textContent='Publicar'; }
+};
 </script>
+
+<!-- ════ COMPOSE MODAL ════ -->
+<div id="compose-modal">
+  <div class="compose-box">
+    <div class="compose-hd">
+      <span>Crear publicación</span>
+      <button onclick="closeCompose()">✕</button>
+    </div>
+    <div class="compose-body">
+      <img id="compose-av" class="compose-body-av" src="https://ui-avatars.com/api/?name=U&background=222&color=fff" onerror="this.src='https://ui-avatars.com/api/?name=U&background=222&color=fff'"/>
+      <textarea id="compose-text" class="compose-textarea" placeholder="¿Qué estás pensando?" oninput="composeTextChange()"></textarea>
+    </div>
+    <div class="compose-media-preview" id="compose-preview">
+      <img id="compose-preview-img" src="" style="display:none;"/>
+      <video id="compose-preview-vid" src="" style="display:none;" muted playsinline controls></video>
+      <button class="compose-media-remove" onclick="removeComposeMedia()">✕</button>
+    </div>
+    <input type="file" id="compose-file" accept="image/*,video/*" style="display:none" onchange="onComposeFile(this)"/>
+    <div class="compose-ft">
+      <button class="compose-ft-act" onclick="document.getElementById('compose-file').click()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#45bd62" stroke-width="2" width="20" height="20"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Foto/Video
+      </button>
+      <button class="compose-ft-act" style="margin-left:6px;" onclick="document.getElementById('compose-file').click()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#f7b928" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+        Sentimiento
+      </button>
+      <button class="compose-submit" id="compose-submit-btn" onclick="doCompose()" disabled>Publicar</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
