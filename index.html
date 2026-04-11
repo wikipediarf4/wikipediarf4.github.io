@@ -3634,6 +3634,8 @@ window.dzRemove = () => {
 window.doUpload = async () => {
   if(!_file||!CU){ showToast('Seleccioná un archivo'); return; }
   if(_uploadType==='reel'&&!_fileIsVideo){ showToast('Los reels son solo para videos'); return; }
+  // Historia con foto: asegurar que mediaType sea 'image' y no se trate como video
+  const finalMediaType = (_uploadType==='story' && !_fileIsVideo) ? 'image' : (_fileIsVideo ? 'video' : 'image');
   const btn=document.getElementById('up-submit');
   const pBar=document.getElementById('up-progress'); const pFill=document.getElementById('up-fill');
   btn.disabled=true; btn.textContent='Subiendo...';
@@ -3646,7 +3648,7 @@ window.doUpload = async () => {
     // Subir original sin re-encodear — preserva audio y duración. El outro se muestra como overlay en el player.
     const mediaUrl=await uploadToServer(_file,ud.username||CU.displayName,caption);
     pFill.style.width='80%';
-    const base={uid:CU.uid,username:ud.username||CU.displayName||'usuario',avatarUrl:ud.avatarUrl||CU.photoURL||'',mediaUrl,mediaType:_fileIsVideo?'video':'image',contentType:_uploadType,caption,tags,...(_deezerTrack?{deezerTrack:_deezerTrack}:{}),likes:0,commentsCount:0,createdAt:serverTimestamp()};
+    const base={uid:CU.uid,username:ud.username||CU.displayName||'usuario',avatarUrl:ud.avatarUrl||CU.photoURL||'',mediaUrl,mediaType:finalMediaType,contentType:_uploadType,caption,tags,...(_deezerTrack?{deezerTrack:_deezerTrack}:{}),likes:0,commentsCount:0,createdAt:serverTimestamp()};
     if(_uploadType==='story'){
       // Historias van a colección separada con expiración 24h
       const exp=new Date(Date.now()+24*60*60*1000);
@@ -4662,7 +4664,24 @@ window.saveProfile = async () => {
   const showThreads=document.getElementById('edit-threads')?.checked!==false;
   const showSuggestions=document.getElementById('edit-suggestions')?.checked!==false;
   try{
-    await updateDoc(doc(db,'users',CU.uid),{bio,website,gender,showThreads,showSuggestions});
+    const ud=(await getDoc(doc(db,'users',CU.uid))).data()||{};
+    // Límite de 2 ediciones por mes para @vero
+    if((ud.username||'').toLowerCase()==='vero'){
+      const now=new Date();
+      const monthKey=`${now.getFullYear()}-${now.getMonth()+1}`;
+      const edits=ud.profileEdits||{};
+      const thisMonth=edits[monthKey]||0;
+      if(thisMonth>=2){
+        showToast('⛔ @vero solo puede editar el perfil 2 veces por mes');
+        return;
+      }
+      await updateDoc(doc(db,'users',CU.uid),{
+        bio,website,gender,showThreads,showSuggestions,
+        profileEdits:{...edits,[monthKey]:thisMonth+1}
+      });
+    } else {
+      await updateDoc(doc(db,'users',CU.uid),{bio,website,gender,showThreads,showSuggestions});
+    }
     closeEditProfile(); showToast('✅ Perfil actualizado'); syncUI(CU);
   }catch(e){ showToast('Error al guardar'); }
 };
