@@ -3310,13 +3310,108 @@ window.deletePost = async postId => {
 window.sharePost = id => { const url=`${location.origin}/?p=${id}`; if(navigator.share)navigator.share({title:'Trendlify',url}).catch(()=>{}); else navigator.clipboard?.writeText(url).then(()=>showToast('¡Link copiado! 🔗')); };
 
 // ── DOWNLOAD VIDEO — llama al servidor para agregar outro y devuelve MP4 ──
+// ── WATERMARK HELPERS ──
+function _wm_drawOverlay(ctx, w, h, username) {
+  // Degradado inferior (estilo TikTok)
+  const grad = ctx.createLinearGradient(0, h * 0.55, 0, h);
+  grad.addColorStop(0, 'rgba(0,0,0,0)');
+  grad.addColorStop(1, 'rgba(0,0,0,0.72)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+
+  const pad = w * 0.045;
+
+  // Logo "Trendlify" — esquina superior izquierda
+  const logoSize = Math.max(18, w * 0.055);
+  ctx.font = `800 ${logoSize}px 'Syne', sans-serif`;
+  ctx.fillStyle = 'rgba(0,0,0,0.45)';
+  ctx.fillText('Trendlify', pad + 1, pad + logoSize + 1);
+  // Gradiente cyan→rojo igual que la marca
+  const lgGrad = ctx.createLinearGradient(pad, 0, pad + ctx.measureText('Trendlify').width, 0);
+  lgGrad.addColorStop(0, '#00ffff');
+  lgGrad.addColorStop(1, '#ff2d55');
+  ctx.fillStyle = lgGrad;
+  ctx.fillText('Trendlify', pad, pad + logoSize);
+
+  // Usuario — esquina inferior izquierda
+  const userSize = Math.max(14, w * 0.042);
+  ctx.font = `700 ${userSize}px 'DM Sans', sans-serif`;
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fillText('@' + username, pad + 1, h - pad - userSize * 0.3 + 1);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText('@' + username, pad, h - pad - userSize * 0.3);
+
+  // URL — esquina inferior derecha
+  const urlSize = Math.max(10, w * 0.03);
+  ctx.font = `400 ${urlSize}px 'DM Sans', sans-serif`;
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  const urlText = 'trendlify.app';
+  const urlW = ctx.measureText(urlText).width;
+  ctx.fillText(urlText, w - pad - urlW, h - pad - urlSize * 0.3);
+}
+
+async function _wm_addWatermarkToVideo(videoUrl, username) {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement('video');
+    video.crossOrigin = 'anonymous';
+    video.muted = true;
+    video.playsInline = true;
+    video.preload = 'auto';
+    video.src = videoUrl;
+
+    video.addEventListener('error', () => reject(new Error('No se pudo cargar el video')));
+
+    video.addEventListener('loadedmetadata', () => {
+      const W = video.videoWidth  || 720;
+      const H = video.videoHeight || 1280;
+      const fps = 30;
+
+      const canvas  = document.createElement('canvas');
+      canvas.width  = W; canvas.height = H;
+      const ctx = canvas.getContext('2d');
+
+      let stream, recorder, chunks = [];
+      try {
+        stream   = canvas.captureStream(fps);
+        recorder = new MediaRecorder(stream, {
+          mimeType: MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+                    ? 'video/webm;codecs=vp9'
+                    : 'video/webm'
+        });
+      } catch(e) { return reject(e); }
+
+      recorder.ondataavailable = e => { if(e.data.size > 0) chunks.push(e.data); };
+      recorder.onstop = () => resolve(new Blob(chunks, { type: 'video/webm' }));
+
+      recorder.start(200);
+
+      let raf;
+      const drawFrame = () => {
+        ctx.drawImage(video, 0, 0, W, H);
+        _wm_drawOverlay(ctx, W, H, username);
+        if (!video.ended && !video.paused) raf = requestAnimationFrame(drawFrame);
+      };
+
+      video.addEventListener('play', () => { raf = requestAnimationFrame(drawFrame); });
+      video.addEventListener('ended', () => {
+        cancelAnimationFrame(raf);
+        recorder.stop();
+        stream.getTracks().forEach(t => t.stop());
+      });
+
+      video.play().catch(reject);
+    });
+  });
+}
+
 window.downloadVideo = async (url, filename) => {
   if(!url) return;
-  const username    = (filename||'').split('_')[0] || 'trendlify';
+  const username     = (filename||'').split('_')[0] || 'trendlify';
   const safeFilename = `trendlify_${username}.mp4`;
 
   showToast('🎬 Generando video con marca... un momento');
 
+  // 1️⃣ Intentar servidor externo primero
   try {
     const fd = new FormData();
     fd.append('video_url', url);
@@ -3325,35 +3420,44 @@ window.downloadVideo = async (url, filename) => {
     const res = await fetch('https://uploads.wikipediarf4.uy/procesar-outro', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer APaYczEALjtr_w6GtSM58-qCc0SPDyVvUjmwHiB74pE' },
-      body: fd
+      body: fd,
+      signal: AbortSignal.timeout(15000)   // 15 s máximo
     });
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `HTTP ${res.status}`);
-    }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-    const blob   = await res.blob();
+    const blob    = await res.blob();
     const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = blobUrl; a.download = safeFilename; a.style.display = 'none';
     document.body.appendChild(a); a.click();
     setTimeout(() => { URL.revokeObjectURL(blobUrl); a.remove(); }, 8000);
-    showToast('✅ ¡Video MP4 con marca descargado!');
+    showToast('✅ ¡Video con marca descargado!');
+    return;
 
   } catch(e) {
-    console.warn('Servidor outro falló, descargando original:', e);
-    try {
-      const r = await fetch(url, { mode: 'cors', cache: 'no-store' });
-      const b = await r.blob();
-      const bu = URL.createObjectURL(b);
-      const a  = document.createElement('a');
-      a.href = bu; a.download = safeFilename; a.style.display = 'none';
-      document.body.appendChild(a); a.click();
-      setTimeout(() => { URL.revokeObjectURL(bu); a.remove(); }, 3000);
-      showToast('⬇️ Video descargado (sin marca — verificá el servidor)');
-    } catch(e2) { window.open(url, '_blank'); }
+    console.warn('Servidor externo no disponible, usando marca local:', e.message);
   }
+
+  // 2️⃣ Fallback: marca de agua en el navegador con Canvas + MediaRecorder
+  try {
+    showToast('🖌️ Aplicando marca en el dispositivo...');
+    const watermarkedBlob = await _wm_addWatermarkToVideo(url, username);
+    const blobUrl = URL.createObjectURL(watermarkedBlob);
+    const a = document.createElement('a');
+    a.href = blobUrl; a.download = safeFilename.replace('.mp4','.webm'); a.style.display = 'none';
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(blobUrl); a.remove(); }, 10000);
+    showToast('✅ ¡Video con marca de agua descargado!');
+    return;
+
+  } catch(e) {
+    console.warn('Canvas watermark falló:', e.message);
+  }
+
+  // 3️⃣ Último recurso: abrir en nueva pestaña
+  window.open(url, '_blank');
+  showToast('⬇️ Abriendo video en nueva pestaña');
 };
 
 window.shareProfile = () => { if(!CU)return; const url=`${location.origin}/?u=${CU.uid}`; if(navigator.share)navigator.share({title:'Mi perfil en Clipuy',url}).catch(()=>{}); else navigator.clipboard?.writeText(url).then(()=>showToast('¡Link copiado! 🔗')); };
