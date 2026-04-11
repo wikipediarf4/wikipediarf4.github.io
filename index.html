@@ -7819,21 +7819,56 @@ window.expStartExport = async function() {
     const vid = _EXP.mediaEl;
     _expSetProg(15, 'Iniciando grabación...');
 
-    // Sin audio en la exportación: el video se mantiene muteado
-    vid.muted = true;
+    // FIX AUDIO: desmutar ANTES de play() para que el navegador
+    // active los audio tracks en captureStream(). Si muted=false llega
+    // después del primer play/pause, el stream sale sin tracks de audio.
+    vid.muted = false;
     vid.volume = 1;
     vid.currentTime = 0;
+    // Reproducir 300ms con audio activo para que captureStream() encuentre los tracks.
+    try {
+      await vid.play();
+      await new Promise(r => setTimeout(r, 300));
+      vid.pause();
+      vid.currentTime = 0;
+    } catch(e) {}
 
     // 1. Canvas stream (frames visuales)
     const canvasStream = rc.captureStream(30);
 
-    // 2. AudioContext no usado en exportación (solo video, sin audio)
+    // 2. AudioContext único para video + intro/end sounds
     let audioCtxLive = null;
     let audioDestNode = null;
     let audioSrcNode = null;
+    try {
+      audioCtxLive = new AudioContext({ sampleRate: 44100 });
+      audioDestNode = audioCtxLive.createMediaStreamDestination();
 
-    // 3. Construir el MediaStream final — solo pistas de video, sin audio
-    const finalStream = new MediaStream(canvasStream.getVideoTracks());
+      const vidStream = vid.captureStream
+        ? vid.captureStream()
+        : (vid.mozCaptureStream ? vid.mozCaptureStream() : null);
+
+      if (vidStream && vidStream.getAudioTracks().length > 0) {
+        audioSrcNode = audioCtxLive.createMediaStreamSource(vidStream);
+        // GainNode en 0 para silenciar al usuario, pero la señal sigue al grabador
+        const silentGain = audioCtxLive.createGain();
+        silentGain.gain.value = 0;
+        audioSrcNode.connect(silentGain);
+        silentGain.connect(audioCtxLive.destination); // silencio al parlante
+        audioSrcNode.connect(audioDestNode);           // audio completo al grabador
+      }
+    } catch(e) { audioCtxLive = null; audioDestNode = null; }
+
+    // 3. Construir el MediaStream final
+    let finalStream;
+    if (audioCtxLive && audioDestNode) {
+      finalStream = new MediaStream([
+        ...canvasStream.getVideoTracks(),
+        ...audioDestNode.stream.getAudioTracks()
+      ]);
+    } else {
+      finalStream = new MediaStream(canvasStream.getVideoTracks());
+    }
 
     const mime = _expGetMime();
     const rec = new MediaRecorder(finalStream, {
