@@ -681,7 +681,7 @@ img { display:block; }
 
 /* Progress bar */
 .vid-progress-wrap {
-  position:relative; height:18px; display:flex; align-items:center; cursor:pointer;
+  position:relative; height:18px; display:flex; align-items:center; cursor:pointer; z-index:5;
 }
 .vid-progress-bg {
   width:100%; height:3px; background:rgba(255,255,255,.25); border-radius:99px;
@@ -692,7 +692,7 @@ img { display:block; }
   width:0%; pointer-events:none; transition:width .05s linear;
 }
 .vid-progress-thumb {
-  position:absolute; top:50%; right:0; transform:translate(50%,-50%);
+  position:absolute; top:50%; left:0; transform:translate(-50%,-50%);
   width:13px; height:13px; border-radius:50%; background:#fff;
   box-shadow:0 0 4px rgba(0,0,0,.5); pointer-events:none;
   opacity:0; transition:opacity .15s;
@@ -1716,8 +1716,10 @@ const TRENDLIFY_LOGO_SRC = "data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4g
 // como overlay canvas en el player al terminar cada reproducción.
 // El username se almacena en el nombre del archivo para que el player lo recupere.
 async function processVideoWithWatermark(videoFile, username) {
-  // Detectar mimeType compatible con MediaRecorder
-  const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
+  // Forzar MP4 para que el video descargado sea compatible y compartible
+  const mime = MediaRecorder.isTypeSupported('video/mp4')
+    ? 'video/mp4'
+    : MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
     ? 'video/webm;codecs=vp9,opus'
     : MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')
     ? 'video/webm;codecs=vp8,opus'
@@ -1788,7 +1790,7 @@ function _concatVideoWithOutro(originalFile, outroBlob, username, mime) {
         URL.revokeObjectURL(outroUrl);
         if(audioCtx) audioCtx.close();
         const finalBlob = new Blob(chunks, { type: mime });
-        resolve(new File([finalBlob], originalFile.name.replace(/\.[^.]+$/, '') + '_trendlify.' + (mime.includes('mp4') ? 'mp4' : 'webm'), { type: mime }));
+        resolve(new File([finalBlob], originalFile.name.replace(/\.[^.]+$/, '') + '_trendlify.mp4', { type: mime }));
       };
       recorder.start(100);
 
@@ -2954,6 +2956,7 @@ function initVideoPlayer(postId, card, username){
   vid.addEventListener('timeupdate',   updateProgress);
   vid.addEventListener('loadedmetadata', updateProgress);
   vid.addEventListener('durationchange', updateProgress);  // fires when duration becomes known
+  vid.addEventListener('canplay', updateProgress);
   vid.addEventListener('volumechange', setMuteIcon);
 
   // ── OUTRO OVERLAY: mostrar pantalla final al terminar el video ──
@@ -3310,9 +3313,8 @@ window.sharePost = id => { const url=`${location.origin}/?p=${id}`; if(navigator
 window.downloadVideo = async (url, filename) => {
   if(!url) return;
   showToast('⬇️ Preparando descarga...');
-  const ext = url.match(/\.(mp4|mov|webm|ogg)/i)?.[1] || 'mp4';
-  // Nombre del archivo: trendlify_@usuario_id.ext
-  const fname = 'trendlify_' + (filename || 'video') + '.' + ext;
+  // Siempre descargar como .mp4 para máxima compatibilidad
+  const fname = 'trendlify_' + (filename || 'video') + '.mp4';
   try {
     // Intentar fetch con blob para forzar descarga real del archivo con watermark
     const res = await fetch(url, { mode: 'cors', cache: 'no-store' });
