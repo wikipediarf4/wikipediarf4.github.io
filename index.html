@@ -3189,13 +3189,14 @@ window.sharePost = id => { const url=`${location.origin}/?p=${id}`; if(navigator
 // ── DOWNLOAD VIDEO ──
 window.downloadVideo = async (url, filename) => {
   if(!url) return;
-  showToast('⬇️ Descargando...');
+  showToast('⬇️ Preparando descarga...');
+  const ext = url.match(/\.(mp4|mov|webm|ogg)/i)?.[1] || 'mp4';
+  // Nombre del archivo: trendlify_@usuario_id.ext
+  const fname = 'trendlify_' + (filename || 'video') + '.' + ext;
   try {
-    const ext = url.match(/\.(mp4|mov|webm|ogg)/i)?.[1] || 'mp4';
-    const fname = (filename || 'trendlify_video') + '.' + ext;
-    // Fetch como blob para forzar descarga (evita que el browser lo abra en nueva tab)
-    const res = await fetch(url, { mode: 'cors' });
-    if (!res.ok) throw new Error('fetch failed');
+    // Intentar fetch con blob para forzar descarga real del archivo con watermark
+    const res = await fetch(url, { mode: 'cors', cache: 'no-store' });
+    if (!res.ok) throw new Error('fetch failed ' + res.status);
     const blob = await res.blob();
     const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -3204,19 +3205,24 @@ window.downloadVideo = async (url, filename) => {
     a.style.display = 'none';
     document.body.appendChild(a);
     a.click();
-    setTimeout(() => { URL.revokeObjectURL(blobUrl); a.remove(); }, 2000);
-    showToast('✅ ¡Video descargado!');
+    setTimeout(() => { URL.revokeObjectURL(blobUrl); a.remove(); }, 3000);
+    showToast('✅ ¡Video de Trendlify descargado!');
   } catch(e) {
-    // Fallback: abrir en nueva pestaña si CORS bloquea el fetch
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = (filename || 'trendlify_video') + '.mp4';
-    a.target = '_blank';
-    a.rel = 'noopener';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    showToast('⬇️ Abriendo video...');
+    // Fallback: crear elemento <a> con download apuntando directo a la URL
+    // El video en la URL ya tiene el watermark/logo de Trendlify + @usuario
+    try {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fname;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => a.remove(), 1000);
+      showToast('⬇️ Descargando video Trendlify...');
+    } catch(e2) {
+      window.open(url, '_blank');
+      showToast('⬇️ Abriendo video en nueva pestaña...');
+    }
   }
 };
 window.shareProfile = () => { if(!CU)return; const url=`${location.origin}/?u=${CU.uid}`; if(navigator.share)navigator.share({title:'Mi perfil en Clipuy',url}).catch(()=>{}); else navigator.clipboard?.writeText(url).then(()=>showToast('¡Link copiado! 🔗')); };
@@ -4290,30 +4296,49 @@ async function loadMyProfile(){
   if(!CU) return;
   await syncUI(CU);
 
-  // Cargar TODOS los posts del usuario
-  const allSnap=await getDocs(query(collection(db,'posts'),where('uid','==',CU.uid),orderBy('createdAt','desc')));
-  const allDocs=allSnap.docs.map(d=>({id:d.id,data:d.data()}));
+  // Mostrar skeletons en las 3 grids mientras carga
+  const skelHtml = Array(6).fill('<div class="skel" style="aspect-ratio:1;border-radius:4px;"></div>').join('');
+  ['prof-grid-posts','prof-grid-reels','prof-grid-liked'].forEach(id=>{
+    const g=document.getElementById(id);
+    if(g){ g.style.display='grid'; g.innerHTML=skelHtml; }
+  });
+  // Ocultar las que no son la tab activa
+  ['reels','liked'].forEach(t=>{
+    const g=document.getElementById('prof-grid-'+t);
+    if(g) g.style.display='none';
+  });
+  document.getElementById('prof-grid-posts').style.display='grid';
 
-  // Posts tab = TODOS (fotos, texto y videos)
-  const postDocs=allDocs; // sin filtrar
+  try{
+    // Cargar TODOS los posts del usuario
+    const allSnap=await getDocs(query(collection(db,'posts'),where('uid','==',CU.uid),orderBy('createdAt','desc')));
+    const allDocs=allSnap.docs.map(d=>({id:d.id,data:d.data()}));
 
-  // Reels tab = solo videos
-  const reelDocs=allDocs.filter(({data:p})=>p.mediaType==='video'||p.mediaUrl?.match(/\.(mp4|mov|webm|ogg)/i));
+    // Posts tab = TODOS (fotos, texto y videos)
+    const postDocs=allDocs; // sin filtrar
 
-  document.getElementById('stat-posts').textContent=allDocs.length;
+    // Reels tab = solo videos
+    const reelDocs=allDocs.filter(({data:p})=>p.mediaType==='video'||p.mediaUrl?.match(/\.(mp4|mov|webm|ogg)/i));
 
-  renderThumbGrid(
-    document.getElementById('prof-grid-posts'),
-    postDocs,
-    'Sin publicaciones todavía. ¡Compartí algo!',
-    (idx,docs)=>openProfileViewer(idx,docs)
-  );
-  renderThumbGrid(
-    document.getElementById('prof-grid-reels'),
-    reelDocs,
-    'Sin reels todavía. ¡Subí tu primer video!',
-    (idx,docs)=>openProfileViewer(idx,docs)
-  );
+    document.getElementById('stat-posts').textContent=allDocs.length;
+
+    renderThumbGrid(
+      document.getElementById('prof-grid-posts'),
+      postDocs,
+      'Sin publicaciones todavía. ¡Compartí algo!',
+      (idx,docs)=>openProfileViewer(idx,docs)
+    );
+    renderThumbGrid(
+      document.getElementById('prof-grid-reels'),
+      reelDocs,
+      'Sin reels todavía. ¡Subí tu primer video!',
+      (idx,docs)=>openProfileViewer(idx,docs)
+    );
+  }catch(e){
+    console.error('Error cargando posts del perfil:', e);
+    document.getElementById('prof-grid-posts').innerHTML='<div style="grid-column:1/-1;padding:48px;text-align:center;color:var(--muted);font-size:.85rem;">Error al cargar publicaciones.</div>';
+    document.getElementById('prof-grid-reels').innerHTML='<div style="grid-column:1/-1;padding:48px;text-align:center;color:var(--muted);font-size:.85rem;">Error al cargar reels.</div>';
+  }
 
   await loadProfLiked();
 }
@@ -4321,8 +4346,9 @@ async function loadMyProfile(){
 async function loadProfLiked(){
   if(!CU) return;
   const grid=document.getElementById('prof-grid-liked');
-  grid.innerHTML='<div style="grid-column:1/-1;padding:24px;text-align:center;color:var(--muted);font-size:.82rem;">Cargando...</div>';
+  grid.innerHTML='<div style="grid-column:1/-1;padding:24px;text-align:center;color:var(--muted);font-size:.82rem;">Cargando me gustas...</div>';
   try{
+    // Buscar likes del usuario — sin orderBy para evitar requerir índice compuesto
     const likesSnap=await getDocs(query(collection(db,'likes'),where('uid','==',CU.uid),limit(60)));
     if(likesSnap.empty){
       grid.innerHTML='<div style="grid-column:1/-1;padding:48px;text-align:center;color:var(--muted);font-size:.85rem;">Todavía no le diste Me gusta a ninguna publicación.</div>';
@@ -4333,12 +4359,15 @@ async function loadProfLiked(){
       grid.innerHTML='<div style="grid-column:1/-1;padding:48px;text-align:center;color:var(--muted);font-size:.85rem;">Sin publicaciones likeadas.</div>';
       return;
     }
+    // Firestore "in" acepta máx 30 elementos por chunk
     const chunks=[];
     for(let i=0;i<postIds.length;i+=30) chunks.push(postIds.slice(i,i+30));
     let likedDocs=[];
     for(const chunk of chunks){
-      const snap=await getDocs(query(collection(db,'posts'),where('__name__','in',chunk)));
-      snap.docs.forEach(d=>likedDocs.push({id:d.id,data:d.data()}));
+      try{
+        const snap=await getDocs(query(collection(db,'posts'),where('__name__','in',chunk)));
+        snap.docs.forEach(d=>likedDocs.push({id:d.id,data:d.data()}));
+      }catch(chunkErr){ console.warn('Error en chunk de likes:', chunkErr); }
     }
     renderThumbGrid(
       grid,
@@ -4347,8 +4376,8 @@ async function loadProfLiked(){
       (idx,docs)=>openProfileViewer(idx,docs)
     );
   }catch(e){
-    console.error(e);
-    grid.innerHTML='<div style="grid-column:1/-1;padding:48px;text-align:center;color:var(--muted);">Error al cargar.</div>';
+    console.error('Error cargando likes del perfil:', e);
+    grid.innerHTML='<div style="grid-column:1/-1;padding:48px;text-align:center;color:var(--muted);">Error al cargar me gustas.</div>';
   }
 }
 
