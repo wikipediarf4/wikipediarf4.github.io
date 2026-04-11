@@ -3530,16 +3530,8 @@ window.doUpload = async () => {
     const tags=document.getElementById('up-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
     const ud=(await getDoc(doc(db,'users',CU.uid))).data()||{};
     pFill.style.width='30%';
-    let fileToUpload = _file;
-    if(_fileIsVideo){
-      try{
-        btn.textContent='🎬 Generando outro...';
-        showToast('🎬 Agregando pantalla final Trendlify...');
-        fileToUpload = await processVideoWithWatermark(_file, ud.username||CU.displayName||'trendlify');
-        btn.textContent='Subiendo...';
-      }catch(wmErr){ console.warn('Outro falló, subiendo original:', wmErr); fileToUpload = _file; }
-    }
-    const mediaUrl=await uploadToServer(fileToUpload,ud.username||CU.displayName,caption);
+    // Subir original sin re-encodear — preserva audio y duración. El outro se muestra como overlay en el player.
+    const mediaUrl=await uploadToServer(_file,ud.username||CU.displayName,caption);
     pFill.style.width='80%';
     const base={uid:CU.uid,username:ud.username||CU.displayName||'usuario',avatarUrl:ud.avatarUrl||CU.photoURL||'',mediaUrl,mediaType:_fileIsVideo?'video':'image',contentType:_uploadType,caption,tags,...(_deezerTrack?{deezerTrack:_deezerTrack}:{}),likes:0,commentsCount:0,createdAt:serverTimestamp()};
     if(_uploadType==='story'){
@@ -4665,16 +4657,8 @@ window.doCompose = async () => {
     const ud=(await getDoc(doc(db,'users',CU.uid))).data()||{};
     let mediaUrl='', mediaType='';
     if(_composeFile){
-      let composeFileToUpload = _composeFile;
-      if(_composeIsVideo){
-        try{
-          btn.textContent='🎬 Generando outro...';
-          showToast('🎬 Agregando pantalla final Trendlify...');
-          composeFileToUpload = await processVideoWithWatermark(_composeFile, ud.username||CU.displayName||'trendlify');
-          btn.textContent='Publicando...';
-        }catch(wmErr){ console.warn('Outro falló:', wmErr); composeFileToUpload = _composeFile; }
-      }
-      mediaUrl = await uploadToServer(composeFileToUpload, ud.username||CU.displayName, caption);
+      // Subir original sin re-encodear — preserva audio y duración. El outro se muestra como overlay en el player.
+      mediaUrl = await uploadToServer(_composeFile, ud.username||CU.displayName, caption);
       mediaType = _composeIsVideo ? 'video' : 'image';
     }
     const base={
