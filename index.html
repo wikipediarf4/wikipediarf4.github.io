@@ -3309,61 +3309,279 @@ window.deletePost = async postId => {
 // ── SHARE ──
 window.sharePost = id => { const url=`${location.origin}/?p=${id}`; if(navigator.share)navigator.share({title:'Trendlify',url}).catch(()=>{}); else navigator.clipboard?.writeText(url).then(()=>showToast('¡Link copiado! 🔗')); };
 
-// ── DOWNLOAD VIDEO — con outro del servidor (logo + @usuario) ──
+// ── DOWNLOAD VIDEO — outro grabado en canvas (corazones + logo + @usuario + sonido) ──
 window.downloadVideo = async (url, filename) => {
   if(!url) return;
-
-  // username viene en filename con formato "username_postId"
   const username = (filename||'').split('_')[0] || 'trendlify';
   const safeFilename = 'trendlify_' + username + '.mp4';
-
-  showToast('🎬 Generando video con tu marca... un momento');
+  showToast('🎬 Preparando video con marca... un momento');
 
   try {
-    const fd = new FormData();
-    fd.append('video_url', url);
-    fd.append('username', username);
+    // 1. Cargar el video original en un elemento <video>
+    const srcVid = document.createElement('video');
+    srcVid.crossOrigin = 'anonymous';
+    srcVid.muted = true;
+    srcVid.playsInline = true;
+    srcVid.style.cssText = 'position:fixed;left:-9999px;top:-9999px;';
+    document.body.appendChild(srcVid);
 
-    const res = await fetch('https://uploads.wikipediarf4.uy/procesar-outro', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer APaYczEALjtr_w6GtSM58-qCc0SPDyVvUjmwHiB74pE' },
-      body: fd
+    await new Promise((res, rej) => {
+      srcVid.onloadedmetadata = res;
+      srcVid.onerror = rej;
+      srcVid.src = url;
     });
 
-    if (!res.ok) {
-      const err = await res.json().catch(()=>({}));
-      throw new Error(err.error || 'Error del servidor');
+    const VW = srcVid.videoWidth  || 720;
+    const VH = srcVid.videoHeight || 1280;
+    const FPS = 30;
+    const OUTRO_SECS = 4; // duración del outro en segundos
+
+    // 2. Canvas que capturamos
+    const canvas = document.createElement('canvas');
+    canvas.width  = VW;
+    canvas.height = VH;
+    const ctx = canvas.getContext('2d');
+
+    // 3. AudioContext para mezclar audio del video + tono de outro
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const dest     = audioCtx.createMediaStreamDestination();
+
+    // Audio del video original
+    const vidSrc = audioCtx.createMediaElementSource(srcVid);
+    vidSrc.connect(dest);
+    vidSrc.connect(audioCtx.destination); // monitoreo local
+
+    // 4. MediaRecorder: video de canvas + audio mezclado
+    const canvasStream = canvas.captureStream(FPS);
+    const combined = new MediaStream([
+      ...canvasStream.getVideoTracks(),
+      ...dest.stream.getAudioTracks()
+    ]);
+
+    const chunks = [];
+    const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
+      ? 'video/webm;codecs=vp9,opus'
+      : MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')
+        ? 'video/webm;codecs=vp8,opus'
+        : 'video/webm';
+
+    const recorder = new MediaRecorder(combined, { mimeType, videoBitsPerSecond: 4_000_000 });
+    recorder.ondataavailable = e => { if(e.data.size > 0) chunks.push(e.data); };
+
+    // 5. Estado de corazones flotantes para el outro
+    let hearts = [];
+    const HEART_EMOJIS = ['❤️','🩷','💖','💕','💗','💓','🤍'];
+    function spawnOutroHeart(W, H){
+      hearts.push({
+        x: W * 0.15 + Math.random() * W * 0.7,
+        y: H + 20,
+        vy: -(3 + Math.random() * 4),
+        vx: (Math.random() - 0.5) * 2,
+        size: 24 + Math.random() * 32,
+        emoji: HEART_EMOJIS[Math.floor(Math.random() * HEART_EMOJIS.length)],
+        alpha: 1,
+        rot: (Math.random() - 0.5) * 0.4
+      });
     }
 
-    const blob = await res.blob();
-    const blobUrl = URL.createObjectURL(blob);
+    // 6. Función principal de renderizado de un frame
+    function drawFrame(phase, t) {
+      // Dibujar frame del video
+      ctx.drawImage(srcVid, 0, 0, VW, VH);
+
+      if(phase === 'outro') {
+        const prog = Math.min(t / OUTRO_SECS, 1); // 0..1
+
+        // Fondo degradado oscuro semi-transparente
+        const grad = ctx.createLinearGradient(0, VH * 0.35, 0, VH);
+        grad.addColorStop(0, 'rgba(0,0,0,0)');
+        grad.addColorStop(0.4, 'rgba(5,5,6,0.82)');
+        grad.addColorStop(1,   'rgba(5,5,6,0.97)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, VW, VH);
+
+        // Actualizar y dibujar corazones
+        const scale = VW / 400;
+        hearts = hearts.filter(h => h.alpha > 0.05);
+        hearts.forEach(h => {
+          h.x   += h.vx;
+          h.y   += h.vy;
+          h.alpha -= 0.012;
+          ctx.globalAlpha = Math.max(0, h.alpha);
+          ctx.font = `${h.size * scale}px serif`;
+          ctx.textAlign = 'center';
+          ctx.save();
+          ctx.translate(h.x, h.y);
+          ctx.rotate(h.rot);
+          ctx.fillText(h.emoji, 0, 0);
+          ctx.restore();
+        });
+        ctx.globalAlpha = 1;
+
+        // Logo "Trendlify" (texto estilizado)
+        const logoSize = Math.round(52 * scale);
+        ctx.font = `900 ${logoSize}px 'Syne', sans-serif`;
+        ctx.textAlign = 'center';
+        // Gradiente de texto cyan → rosa
+        const tg = ctx.createLinearGradient(VW*0.2, 0, VW*0.8, 0);
+        tg.addColorStop(0,   '#ffffff');
+        tg.addColorStop(0.45,'#00ffff');
+        tg.addColorStop(1,   '#ff2d55');
+        ctx.fillStyle = tg;
+        const fadeIn = Math.min(prog * 3, 1);
+        ctx.globalAlpha = fadeIn;
+        ctx.fillText('Trendlify', VW / 2, VH * 0.58);
+
+        // Tagline
+        const tagSize = Math.round(22 * scale);
+        ctx.font = `300 ${tagSize}px 'DM Sans', sans-serif`;
+        ctx.fillStyle = 'rgba(255,255,255,0.65)';
+        ctx.fillText('tendencias que conectan', VW / 2, VH * 0.58 + logoSize * 1.15);
+
+        // Línea separadora
+        ctx.globalAlpha = fadeIn * 0.4;
+        ctx.strokeStyle = 'rgba(0,255,255,0.5)';
+        ctx.lineWidth = 1.5 * scale;
+        const lw = VW * 0.28;
+        ctx.beginPath();
+        ctx.moveTo(VW/2 - lw, VH * 0.67);
+        ctx.lineTo(VW/2 + lw, VH * 0.67);
+        ctx.stroke();
+
+        // @usuario
+        const userSize = Math.round(30 * scale);
+        ctx.globalAlpha = fadeIn;
+        ctx.font = `700 ${userSize}px 'DM Sans', sans-serif`;
+        ctx.fillStyle = '#00ffff';
+        ctx.fillText('@' + username, VW / 2, VH * 0.74);
+
+        // Etiqueta "publicado por"
+        const bySize = Math.round(17 * scale);
+        ctx.font = `400 ${bySize}px 'DM Sans', sans-serif`;
+        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        ctx.fillText('publicado por', VW / 2, VH * 0.74 - userSize * 1.4);
+
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    // 7. Generar tono musical del outro (acordes suaves)
+    function playOutroTone(actx, dur) {
+      const notes = [261.63, 329.63, 392, 523.25]; // Do-Mi-Sol-Do (acorde de Do mayor)
+      notes.forEach((freq, i) => {
+        const osc  = actx.createOscillator();
+        const gain = actx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0, actx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.12, actx.currentTime + 0.1 + i * 0.08);
+        gain.gain.linearRampToValueAtTime(0.08, actx.currentTime + dur * 0.6);
+        gain.gain.linearRampToValueAtTime(0,    actx.currentTime + dur);
+        osc.connect(gain);
+        gain.connect(dest);
+        osc.start(actx.currentTime + i * 0.06);
+        osc.stop(actx.currentTime + dur);
+      });
+      // Segundo acorde (La menor) a mitad del outro
+      const notes2 = [220, 261.63, 329.63, 440];
+      notes2.forEach((freq, i) => {
+        const osc  = actx.createOscillator();
+        const gain = actx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0, actx.currentTime + dur * 0.5);
+        gain.gain.linearRampToValueAtTime(0.1, actx.currentTime + dur * 0.5 + 0.1 + i * 0.06);
+        gain.gain.linearRampToValueAtTime(0, actx.currentTime + dur);
+        osc.connect(gain);
+        gain.connect(dest);
+        osc.start(actx.currentTime + dur * 0.5 + i * 0.05);
+        osc.stop(actx.currentTime + dur);
+      });
+    }
+
+    // 8. Bucle de grabación
+    recorder.start(100); // chunk cada 100ms
+    srcVid.muted = false;
+    srcVid.currentTime = 0;
+
+    // — Fase 1: grabar el video original frame a frame —
+    await new Promise(resolve => {
+      let animId;
+      const INTERVAL = 1000 / FPS;
+      let lastTime = null;
+
+      srcVid.onended = () => {
+        cancelAnimationFrame(animId);
+        resolve();
+      };
+
+      function loop(ts) {
+        if(lastTime === null || ts - lastTime >= INTERVAL) {
+          lastTime = ts;
+          drawFrame('video', 0);
+        }
+        animId = requestAnimationFrame(loop);
+      }
+
+      srcVid.play().catch(() => {});
+      animId = requestAnimationFrame(loop);
+    });
+
+    // — Fase 2: grabar el outro (4 segundos) —
+    srcVid.pause();
+    // Spawn corazones cada 120ms
+    let heartInterval = setInterval(() => {
+      for(let i = 0; i < 3; i++) spawnOutroHeart(VW, VH);
+    }, 120);
+    playOutroTone(audioCtx, OUTRO_SECS);
+
+    await new Promise(resolve => {
+      const start = performance.now();
+      function outroLoop() {
+        const elapsed = (performance.now() - start) / 1000;
+        if(elapsed >= OUTRO_SECS) { resolve(); return; }
+        drawFrame('outro', elapsed);
+        requestAnimationFrame(outroLoop);
+      }
+      requestAnimationFrame(outroLoop);
+    });
+    clearInterval(heartInterval);
+
+    // 9. Detener grabación y construir blob
+    recorder.stop();
+    srcVid.remove();
+
+    const finalBlob = await new Promise(res => {
+      recorder.onstop = () => res(new Blob(chunks, { type: mimeType }));
+    });
+
+    // Cerrar AudioContext
+    audioCtx.close().catch(() => {});
+
+    // 10. Descargar
+    const blobUrl = URL.createObjectURL(finalBlob);
     const a = document.createElement('a');
     a.href = blobUrl;
-    a.download = safeFilename;
+    a.download = safeFilename.replace('.mp4', '.webm');
     a.style.display = 'none';
     document.body.appendChild(a);
     a.click();
-    setTimeout(() => { URL.revokeObjectURL(blobUrl); a.remove(); }, 5000);
-    showToast('✅ ¡Video con tu marca descargado!');
+    setTimeout(() => { URL.revokeObjectURL(blobUrl); a.remove(); }, 8000);
+    showToast('✅ ¡Video con marca descargado!');
 
   } catch(e) {
-    console.warn('Outro server falló, descargando original:', e);
-    // Fallback: descargar video original sin outro
+    console.warn('Error generando outro en canvas:', e);
+    // Fallback: descarga directa sin outro
     try {
-      const res2 = await fetch(url, { mode: 'cors', cache: 'no-store' });
-      const blob2 = await res2.blob();
-      const blobUrl2 = URL.createObjectURL(blob2);
+      const r = await fetch(url, { mode: 'cors', cache: 'no-store' });
+      const b = await r.blob();
+      const bu = URL.createObjectURL(b);
       const a = document.createElement('a');
-      a.href = blobUrl2;
-      a.download = safeFilename;
-      a.style.display = 'none';
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => { URL.revokeObjectURL(blobUrl2); a.remove(); }, 3000);
-      showToast('⬇️ Descargado (instalá ffmpeg en el servidor para agregar tu marca)');
-    } catch(e2) {
-      window.open(url, '_blank');
-    }
+      a.href = bu; a.download = safeFilename; a.style.display = 'none';
+      document.body.appendChild(a); a.click();
+      setTimeout(() => { URL.revokeObjectURL(bu); a.remove(); }, 3000);
+      showToast('⬇️ Video descargado');
+    } catch(e2) { window.open(url, '_blank'); }
   }
 };
 window.shareProfile = () => { if(!CU)return; const url=`${location.origin}/?u=${CU.uid}`; if(navigator.share)navigator.share({title:'Mi perfil en Clipuy',url}).catch(()=>{}); else navigator.clipboard?.writeText(url).then(()=>showToast('¡Link copiado! 🔗')); };
