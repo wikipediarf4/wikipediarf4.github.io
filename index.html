@@ -1438,6 +1438,22 @@ img { display:block; }
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
         </button>
       </div>
+      <!-- Panel admin — solo visible para synxyes@gmail.com -->
+      <div id="admin-panel" style="display:none;margin-top:18px;background:rgba(255,45,85,.07);border:1px solid rgba(255,45,85,.25);border-radius:12px;padding:14px 16px;">
+        <div style="font-size:.7rem;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">⚡ Panel Admin</div>
+        <div style="font-size:.78rem;color:var(--muted);margin-bottom:10px;">Usuario: <span id="admin-target-user" style="color:#fff;font-weight:700;"></span></div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <button onclick="adminResetEdits()" style="background:rgba(0,255,255,.1);border:1px solid rgba(0,255,255,.3);color:var(--accent2);border-radius:8px;padding:9px 14px;font-size:.82rem;font-weight:700;cursor:pointer;text-align:left;">
+            🔄 Resetear límite de ediciones de perfil
+          </button>
+          <button onclick="adminMergeStories()" style="background:rgba(191,95,255,.1);border:1px solid rgba(191,95,255,.3);color:var(--accent3);border-radius:8px;padding:9px 14px;font-size:.82rem;font-weight:700;cursor:pointer;text-align:left;">
+            🗂️ Fusionar historias duplicadas
+          </button>
+          <button onclick="adminDeleteStories()" style="background:rgba(255,45,85,.08);border:1px solid rgba(255,45,85,.25);color:var(--accent);border-radius:8px;padding:9px 14px;font-size:.82rem;font-weight:700;cursor:pointer;text-align:left;">
+            🗑️ Borrar todas las historias del usuario
+          </button>
+        </div>
+      </div>
       <div class="prof-tabs">
         <button class="prof-tab active" id="ptab-posts" onclick="switchProfTab('posts')">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
@@ -2373,6 +2389,7 @@ async function syncUI(user){
       if(d.avatarUrl){
         ['sidebar-av','rp-av','prof-av','cs-my-av','composer-av','compose-av','story-create-av-bg'].forEach(id=>{const el=document.getElementById(id);if(el)el.src=d.avatarUrl;});
       }
+      refreshAdminPanel(user, d);
     }
   }catch(e){ console.warn(e); }
 }
@@ -4719,6 +4736,70 @@ window.saveProfile = async () => {
 // ── SETTINGS ──
 window.openSettings  = () => document.getElementById('settings-overlay').classList.add('show');
 window.closeSettings = () => document.getElementById('settings-overlay').classList.remove('show');
+
+// ── ADMIN PANEL ──
+const ADMIN_EMAIL = 'synxyes@gmail.com';
+
+function refreshAdminPanel(user, ud) {
+  const panel = document.getElementById('admin-panel');
+  const targetEl = document.getElementById('admin-target-user');
+  if (!panel) return;
+  if (user?.email === ADMIN_EMAIL) {
+    panel.style.display = 'block';
+    if (targetEl) targetEl.textContent = '@' + (ud?.username || user.displayName || 'usuario');
+  } else {
+    panel.style.display = 'none';
+  }
+}
+
+window.adminResetEdits = async () => {
+  if (!CU || CU.email !== ADMIN_EMAIL) return;
+  try {
+    await updateDoc(doc(db, 'users', CU.uid), { profileEdits: {} });
+    showToast('✅ Límite de ediciones reseteado');
+  } catch(e) { showToast('Error: ' + e.message); }
+};
+
+window.adminMergeStories = async () => {
+  if (!CU || CU.email !== ADMIN_EMAIL) return;
+  try {
+    showToast('🔍 Buscando historias duplicadas...');
+    const now = new Date();
+    const snap = await getDocs(query(collection(db, 'stories'), orderBy('createdAt', 'desc'), limit(100)));
+    const byUid = new Map();
+    snap.docs.forEach(d => {
+      const s = { id: d.id, ...d.data() };
+      const exp = s.expiresAt?.toDate?.();
+      if (exp && exp < now) return;
+      if (!byUid.has(s.uid)) byUid.set(s.uid, []);
+      byUid.get(s.uid).push(s);
+    });
+    let merged = 0;
+    for (const [uid, stories] of byUid.entries()) {
+      if (stories.length > 1) {
+        // Conservar la más reciente, borrar el resto
+        const sorted = stories.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+        for (let i = 1; i < sorted.length; i++) {
+          await deleteDoc(doc(db, 'stories', sorted[i].id));
+          merged++;
+        }
+      }
+    }
+    showToast(merged > 0 ? `✅ ${merged} historia(s) duplicada(s) eliminadas` : '✅ No había duplicados');
+    loadStories();
+  } catch(e) { showToast('Error: ' + e.message); }
+};
+
+window.adminDeleteStories = async () => {
+  if (!CU || CU.email !== ADMIN_EMAIL) return;
+  if (!confirm('¿Borrar TODAS las historias de este usuario?')) return;
+  try {
+    const snap = await getDocs(query(collection(db, 'stories'), where('uid', '==', CU.uid)));
+    for (const d of snap.docs) await deleteDoc(doc(db, 'stories', d.id));
+    showToast('✅ Historias eliminadas');
+    loadStories();
+  } catch(e) { showToast('Error: ' + e.message); }
+};
 
 // ── NOTIFICATIONS ──
 function loadNotifications(){
