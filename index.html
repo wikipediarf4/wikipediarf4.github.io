@@ -2686,7 +2686,7 @@ input.exp-range::-webkit-slider-thumb{
           <div class="music-selected-name" id="clipMusicName"></div>
           <div class="music-selected-artist" id="clipMusicArtist"></div>
         </div>
-        <audio id="clipMusicPreviewAudio" style="display:none"></audio>
+        <audio id="clipMusicPreviewAudio" style="visibility:hidden;position:absolute;width:0;height:0;"></audio>
         <button onclick="clipClearMusic()" style="background:none;border:none;color:#ff5555;cursor:pointer;font-size:1rem;flex-shrink:0;">✕</button>
       </div>
 
@@ -2919,6 +2919,7 @@ window.openMusicDisc = function(clipId) {
   document.getElementById('uam-play-btn').textContent = '▶';
   document.getElementById('uam-prog').style.width = '0%';
   document.getElementById('uam-time').textContent = '0:00';
+  if(musicPreview) audio.load(); // forzar carga para mobile
 
   audio.ontimeupdate = () => {
     const pct = audio.duration ? (audio.currentTime / audio.duration * 100) : 0;
@@ -4063,12 +4064,6 @@ window.handleVideoUpload = (inp) => {
   closeUpload();
   const cm = document.getElementById('caption-modal');
   const preview = document.getElementById('caption-preview');
-  // Limpiar preview anterior y revocar su blob URL
-  const oldVid = preview.querySelector('video');
-  const oldImg = preview.querySelector('img');
-  if (oldVid && oldVid.src) URL.revokeObjectURL(oldVid.src);
-  if (oldImg && oldImg.src && oldImg.src.startsWith('blob:')) URL.revokeObjectURL(oldImg.src);
-  preview.innerHTML = '';
   const isVideo = file.type.startsWith('video');
   const url = URL.createObjectURL(file);
   preview.innerHTML = isVideo
@@ -4080,15 +4075,6 @@ window.handleVideoUpload = (inp) => {
 
 window.closeCaptionModal = () => {
   document.getElementById('caption-modal').style.display = 'none';
-  // Limpiar preview y revocar blob URL para que no quede el video anterior
-  const preview = document.getElementById('caption-preview');
-  if (preview) {
-    const vid = preview.querySelector('video');
-    const img = preview.querySelector('img');
-    if (vid && vid.src) { URL.revokeObjectURL(vid.src); }
-    if (img && img.src && img.src.startsWith('blob:')) { URL.revokeObjectURL(img.src); }
-    preview.innerHTML = '';
-  }
   _pendingUploadFile = null;
   clipClearMusic();
   _clipuySelectedAudio = null;
@@ -4423,7 +4409,7 @@ window.publishClip = async () => {
     loadFeed();
     goTo('home');
   } catch(e) { showToast('❌ Error: ' + e.message); }
-  finally { _pendingUploadFile = null; }
+  _pendingUploadFile = null;
 };
 
 // ══════════════════════════════════════════════
@@ -6724,12 +6710,19 @@ window.clipSelectMusic = (track) => {
   document.getElementById('clipMusicResults').style.display = 'none';
   document.getElementById('clipMusicSearch').value = '';
   document.getElementById('clipMusicCover').src = track.cover || '';
+  document.getElementById('clipMusicCover').style.display = '';
   document.getElementById('clipMusicName').textContent = track.title || '';
   document.getElementById('clipMusicArtist').textContent = track.artist || '';
   document.getElementById('clipMusicSelected').classList.add('show');
-  // Play preview
+  // Play preview — esperar canplay para compatibilidad móvil
   const audio = document.getElementById('clipMusicPreviewAudio');
-  if(audio && track.preview) { audio.src = track.preview; audio.volume = 0.5; audio.play().catch(()=>{}); }
+  if(audio && track.preview) {
+    audio.src = track.preview;
+    audio.volume = 0.5;
+    const tryPlay = () => audio.play().catch(() => {});
+    audio.addEventListener('canplay', tryPlay, { once: true });
+    audio.load();
+  }
 };
 
 window.clipClearMusic = () => {
@@ -6834,7 +6827,7 @@ window.loadClipuyAudios = async (orden, q) => {
         <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--accent));display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">🎵</div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:.83rem;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(audio.titulo)}</div>
-          <div style="font-size:.7rem;color:var(--text-muted);">@${escHtml(audio.usuario)} · ❤️ ${audio.likes} · 🔥 ${audio.usos} usos${audio.duracion ? ' · ' + Math.round(audio.duracion) + 's' : ''}</div>
+          <div style="font-size:.7rem;color:var(--text-muted);">@${escHtml(audio.usuario)} · ❤️ ${audio.likes} · 🔥 ${audio.usos} usos${audio.duracion && audio.duracion > 0 ? ' · ' + Math.round(audio.duracion) + 's' : ''}</div>
         </div>
         <button data-aid="${escHtml(audio.id)}" style="background:none;border:none;color:var(--accent2);font-size:1.1rem;cursor:pointer;flex-shrink:0;padding:4px;" title="Preview">▶</button>
       `;
@@ -6884,7 +6877,9 @@ function selectClipuyAudio(audio, itemEl) {
   if(previewEl) {
     previewEl.src = UPLOAD_SERVER + '/audio/stream/' + audio.id;
     previewEl.volume = 0.5;
-    previewEl.play().catch(() => {});
+    const tryPlay = () => previewEl.play().catch(() => {});
+    previewEl.addEventListener('canplay', tryPlay, { once: true });
+    previewEl.load();
   }
 
   // Registrar uso
@@ -8736,7 +8731,7 @@ _expDrawPreview();
     </button>
   </div>
 </div>
-<audio id="uam-audio" style="display:none;"></audio>
+<audio id="uam-audio" style="visibility:hidden;position:absolute;width:0;height:0;"></audio>
 
 </body>
 </html>
