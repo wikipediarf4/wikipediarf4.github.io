@@ -261,10 +261,8 @@ img { display:block; }
 .post-act:hover { background:rgba(255,255,255,.06); }
 .post-act:active { transform:scale(.9); }
 .post-act svg { width:22px; height:22px; }
-.post-act.liked svg { fill:var(--accent) !important; stroke:var(--accent) !important; }
+.post-act.liked svg { fill:var(--accent); stroke:var(--accent); }
 .post-act.liked { color:var(--accent); }
-.reel-action.liked svg { fill:var(--accent) !important; stroke:var(--accent) !important; }
-.reel-action.liked { color:var(--accent); }
 .post-bookmark { margin-left:auto; }
 
 .post-likes { font-size:.86rem; font-weight:700; margin-bottom:6px; }
@@ -850,6 +848,59 @@ img { display:block; }
   #main-col { padding:0 10px; padding-bottom:72px; }
   #app.show { flex-direction:column; }
 }
+
+/* ───── POST COMPOSER (Facebook-style) ───── */
+.composer-card {
+  max-width:var(--feed-max);
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  margin:18px 0 0;
+  overflow:hidden;
+}
+.composer-top {
+  display:flex; align-items:center; gap:12px;
+  padding:12px 14px;
+}
+.composer-av {
+  width:40px; height:40px; border-radius:50%;
+  object-fit:cover; flex-shrink:0;
+  border:1.5px solid var(--border2);
+  background:var(--surface3);
+}
+.composer-input-btn {
+  flex:1; background:var(--surface2); border:1px solid var(--border2);
+  border-radius:99px; padding:10px 18px;
+  color:var(--muted); font-size:.88rem; font-family:inherit;
+  text-align:left; cursor:pointer;
+  transition:background .15s, border-color .15s;
+}
+.composer-input-btn:hover {
+  background:var(--surface3); border-color:rgba(255,255,255,.18);
+  color:var(--text);
+}
+.composer-divider {
+  height:1px; background:var(--border); margin:0 14px;
+}
+.composer-actions {
+  display:flex; align-items:center;
+}
+.composer-act {
+  flex:1; display:flex; align-items:center; justify-content:center;
+  gap:7px; padding:10px 8px;
+  background:none; border:none; cursor:pointer;
+  color:var(--muted); font-size:.82rem; font-weight:600; font-family:inherit;
+  border-radius:0; transition:background .15s, color .15s;
+}
+.composer-act:hover { background:rgba(255,255,255,.05); color:var(--text); }
+.composer-act:first-child { border-radius:0 0 0 var(--r); }
+.composer-act:last-child  { border-radius:0 0 var(--r) 0; }
+.composer-act svg { flex-shrink:0; }
+
+/* Stories bar — ahora sin border-top ya que está debajo del composer */
+.stories-bar {
+  margin-top:14px;
+}
 </style>
 </head>
 <body>
@@ -991,12 +1042,38 @@ img { display:block; }
 
     <!-- HOME / FEED -->
     <div id="page-home">
+
+      <!-- ── POST COMPOSER ── -->
+      <div class="composer-card">
+        <div class="composer-top">
+          <img id="composer-av" class="composer-av" src="https://ui-avatars.com/api/?name=U&background=222&color=fff&size=80" onerror="this.src='https://ui-avatars.com/api/?name=U&background=222&color=fff'"/>
+          <button class="composer-input-btn" onclick="openUpload()">¿Qué estás pensando?</button>
+        </div>
+        <div class="composer-divider"></div>
+        <div class="composer-actions">
+          <button class="composer-act" onclick="openUpload(); setTimeout(()=>document.getElementById('media-file').click(),300);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <span>Foto</span>
+          </button>
+          <button class="composer-act" onclick="openUpload(); setTimeout(()=>{ setUploadType('reel',document.getElementById('uptype-reel')); document.getElementById('media-file').click(); },300);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+            <span>Video</span>
+          </button>
+          <button class="composer-act" onclick="openUploadStory()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/></svg>
+            <span>Historia</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── STORIES BAR ── -->
       <div class="stories-bar" id="stories-bar">
         <div class="story-item" onclick="openUploadStory()">
           <div class="story-ring mine"><div class="story-add">+</div></div>
           <span class="story-name">Tu historia</span>
         </div>
       </div>
+
       <div id="feed-list">
         <!-- Skeletons iniciales -->
         <div class="skel-post">
@@ -1521,7 +1598,7 @@ onAuthStateChanged(auth, async user => {
 async function syncUI(user){
   const defAv=`https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName||'U')}&background=222&color=fff&size=128`;
   const av=user.photoURL||defAv;
-  ['sidebar-av','rp-av','prof-av','cs-my-av'].forEach(id=>{const el=document.getElementById(id);if(el)el.src=av;});
+  ['sidebar-av','rp-av','prof-av','cs-my-av','composer-av'].forEach(id=>{const el=document.getElementById(id);if(el)el.src=av;});
   try{
     const snap=await getDoc(doc(db,'users',user.uid));
     if(snap.exists()){
@@ -1542,7 +1619,7 @@ async function syncUI(user){
       document.getElementById('stat-followers').textContent=fmtN(d.followers||0);
       document.getElementById('stat-following').textContent=fmtN(d.following||0);
       if(d.avatarUrl){
-        ['sidebar-av','rp-av','prof-av','cs-my-av'].forEach(id=>{const el=document.getElementById(id);if(el)el.src=d.avatarUrl;});
+        ['sidebar-av','rp-av','prof-av','cs-my-av','composer-av'].forEach(id=>{const el=document.getElementById(id);if(el)el.src=d.avatarUrl;});
       }
     }
   }catch(e){ console.warn(e); }
@@ -1967,23 +2044,6 @@ function buildPost(post){
   // Música Deezer: inicializar audio con IntersectionObserver
   if(post.deezerTrack?.preview){
     setTimeout(()=>initPostMusic(post.id, post.deezerTrack.preview), 0);
-  }
-  // Inicializar estado de like y seguir
-  if(CU){
-    getDoc(doc(db,'likes',`${CU.uid}_${post.id}`)).then(snap=>{
-      const btn=card.querySelector(`#like-btn-${post.id}`);
-      if(btn && snap.exists()) btn.classList.add('liked');
-    }).catch(()=>{});
-    if(!isOwn){
-      getDoc(doc(db,'users',CU.uid)).then(snap=>{
-        const fl=snap.data()?.followingList||[];
-        const followBtn=card.querySelector('.post-follow-btn');
-        if(followBtn && fl.includes(post.uid)){
-          followBtn.textContent='Siguiendo';
-          followBtn.style.color='var(--muted)';
-        }
-      }).catch(()=>{});
-    }
   }
   return card;
 }
@@ -2872,8 +2932,8 @@ window.searchDMUser=v=>{
     if(!q){box.innerHTML='';return;}
     box.innerHTML='<div style="padding:12px;text-align:center;color:var(--muted);font-size:.8rem;">Buscando...</div>';
     try{
-      const snap=await getDocs(query(collection(db,'users'),limit(50)));
-      const results=snap.docs.map(d=>d.data()).filter(u=>u.uid!==CU.uid&&((u.username||'').toLowerCase().includes(q)||(u.displayName||'').toLowerCase().includes(q)));
+      const snap=await getDocs(query(collection(db,'users'),limit(20)));
+      const results=snap.docs.map(d=>d.data()).filter(u=>u.uid!==CU.uid&&((u.username||'').toLowerCase().includes(q)));
       box.innerHTML='';
       if(!results.length){box.innerHTML='<div style="padding:12px;text-align:center;color:var(--muted);font-size:.8rem;">Sin resultados</div>';return;}
       results.slice(0,8).forEach(u=>{
@@ -2922,7 +2982,7 @@ window.uploadAvatar = async file => {
     const url=await uploadToServer(file,CU.uid,'avatar');
     await updateDoc(doc(db,'users',CU.uid),{avatarUrl:url});
     await updateProfile(CU,{photoURL:url});
-    ['prof-av','sidebar-av','rp-av','cs-my-av'].forEach(id=>{const el=document.getElementById(id);if(el)el.src=url;});
+    ['prof-av','sidebar-av','rp-av','cs-my-av','composer-av'].forEach(id=>{const el=document.getElementById(id);if(el)el.src=url;});
     showToast('✅ Foto actualizada');
   }catch(e){ showToast('Error al subir foto'); }
 };
