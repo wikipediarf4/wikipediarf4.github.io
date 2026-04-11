@@ -3421,85 +3421,84 @@ async function _wm_addWatermarkToVideo(videoUrl, username) {
   });
 }
 
+// ── FFMPEG WASM loader (carga solo cuando se necesita) ──
+let _ffmpegReady = false;
+let _ffmpeg = null;
+async function _loadFFmpeg() {
+  if (_ffmpegReady) return _ffmpeg;
+  showToast('⏳ Cargando convertidor MP4... (primera vez)');
+  const { FFmpeg } = await import('https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js');
+  const { fetchFile, toBlobURL } = await import('https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/index.js');
+  _ffmpeg = new FFmpeg();
+  const baseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm';
+  await _ffmpeg.load({
+    coreURL:   await toBlobURL(`${baseURL}/ffmpeg-core.js`,   'text/javascript'),
+    wasmURL:   await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+  });
+  _ffmpeg._fetchFile = fetchFile;
+  _ffmpegReady = true;
+  return _ffmpeg;
+}
+
+async function _convertWebMtoMP4(webmBlob) {
+  const ff = await _loadFFmpeg();
+  const { fetchFile } = await import('https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/index.js');
+  await ff.writeFile('input.webm', await fetchFile(webmBlob));
+  await ff.exec(['-i','input.webm','-c:v','libx264','-preset','ultrafast','-c:a','aac','-movflags','+faststart','output.mp4']);
+  const data = await ff.readFile('output.mp4');
+  await ff.deleteFile('input.webm');
+  await ff.deleteFile('output.mp4');
+  return new Blob([data.buffer], { type: 'video/mp4' });
+}
+
 window.downloadVideo = async (url, filename) => {
   if(!url) return;
   const username     = (filename||'').split('_')[0] || 'trendlify';
   const safeFilename = `trendlify_${username}.mp4`;
 
-  showToast('🎬 Generando video con marca... un momento');
+  showToast('🎬 Generando video con marca...');
 
-  // 1️⃣ Intentar servidor externo primero
+  // 1️⃣ Servidor externo (procesar-outro devuelve MP4 directo)
   try {
     const fd = new FormData();
     fd.append('video_url', url);
     fd.append('username',  username);
-
     const res = await fetch('https://uploads.wikipediarf4.uy/procesar-outro', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer APaYczEALjtr_w6GtSM58-qCc0SPDyVvUjmwHiB74pE' },
       body: fd,
-      signal: AbortSignal.timeout(15000)   // 15 s máximo
+      signal: AbortSignal.timeout(15000)
     });
-
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-    const blob    = await res.blob();
+    const blob = await res.blob();
     const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = blobUrl; a.download = safeFilename; a.style.display = 'none';
     document.body.appendChild(a); a.click();
     setTimeout(() => { URL.revokeObjectURL(blobUrl); a.remove(); }, 8000);
-    showToast('✅ ¡Video con marca descargado!');
+    showToast('✅ ¡Video MP4 con marca descargado!');
     return;
-
   } catch(e) {
-    console.warn('Servidor externo no disponible, usando marca local:', e.message);
+    console.warn('Servidor externo no disponible:', e.message);
   }
 
-  // 2️⃣ Fallback: marca de agua en el navegador con Canvas + MediaRecorder, luego convertir a MP4 en el servidor
+  // 2️⃣ Marca en canvas + conversión MP4 con FFmpeg.wasm (100% en el navegador)
   try {
-    showToast('🖌️ Aplicando marca en el dispositivo...');
+    showToast('🖌️ Aplicando marca de agua...');
     const watermarkedBlob = await _wm_addWatermarkToVideo(url, username);
 
-    // Intentar convertir WebM → MP4 en el servidor
-    try {
-      showToast('🔄 Convirtiendo a MP4...');
-      const fd2 = new FormData();
-      fd2.append('video', watermarkedBlob, 'watermarked.webm');
-      fd2.append('username', username);
+    showToast('🔄 Convirtiendo a MP4... puede tardar unos segundos');
+    const mp4Blob = await _convertWebMtoMP4(watermarkedBlob);
 
-      const res2 = await fetch('https://uploads.wikipediarf4.uy/convertir-mp4', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer APaYczEALjtr_w6GtSM58-qCc0SPDyVvUjmwHiB74pE' },
-        body: fd2,
-        signal: AbortSignal.timeout(60000)   // 60s para la conversión
-      });
-
-      if (res2.ok) {
-        const mp4Blob = await res2.blob();
-        const blobUrl = URL.createObjectURL(mp4Blob);
-        const a = document.createElement('a');
-        a.href = blobUrl; a.download = safeFilename; a.style.display = 'none';
-        document.body.appendChild(a); a.click();
-        setTimeout(() => { URL.revokeObjectURL(blobUrl); a.remove(); }, 10000);
-        showToast('✅ ¡Video MP4 con marca descargado!');
-        return;
-      }
-    } catch(convErr) {
-      console.warn('Conversión MP4 falló, descargando WebM:', convErr.message);
-    }
-
-    // Si la conversión falla, descargar el WebM directamente
-    const blobUrl = URL.createObjectURL(watermarkedBlob);
+    const blobUrl = URL.createObjectURL(mp4Blob);
     const a = document.createElement('a');
-    a.href = blobUrl; a.download = safeFilename.replace('.mp4','.webm'); a.style.display = 'none';
+    a.href = blobUrl; a.download = safeFilename; a.style.display = 'none';
     document.body.appendChild(a); a.click();
     setTimeout(() => { URL.revokeObjectURL(blobUrl); a.remove(); }, 10000);
-    showToast('✅ ¡Video con marca descargado!');
+    showToast('✅ ¡Video MP4 con marca descargado!');
     return;
-
   } catch(e) {
-    console.warn('Canvas watermark falló:', e.message);
+    console.warn('FFmpeg falló:', e.message);
   }
 
   // 3️⃣ Último recurso: abrir en nueva pestaña
