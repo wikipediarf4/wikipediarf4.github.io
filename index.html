@@ -3091,15 +3091,7 @@ function showMainApp() {
 // ══════════════════════════════════════════════
 //  NAVIGATION
 // ══════════════════════════════════════════════
-// Pausa todos los videos que no estén en la pantalla activa
-function _pauseAllVideos() {
-  document.querySelectorAll('video').forEach(v => {
-    try { v.pause(); v.muted = true; } catch(e) {}
-  });
-}
-
 window.goTo = (screen) => {
-  _pauseAllVideos();
   document.querySelectorAll('#main-screen .screen').forEach(s => s.classList.remove('active'));
   document.getElementById(screen+'-screen').classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -7827,45 +7819,32 @@ window.expStartExport = async function() {
     const vid = _EXP.mediaEl;
     _expSetProg(15, 'Iniciando grabación...');
 
-    // FIX AUDIO: desmutar ANTES de play() para que el navegador
-    // active los audio tracks en captureStream(). Si muted=false llega
-    // después del primer play/pause, el stream sale sin tracks de audio.
-    vid.muted = false;
-    vid.volume = 1;
+    // El video usa crossOrigin='anonymous' para poder dibujarse en canvas,
+    // lo que bloquea captureStream() para audio (restricción CORS del navegador).
+    // Solución: descargar el video con fetch(), decodificar el audio con
+    // AudioContext y reproducirlo sincronizado durante la grabación.
+    vid.muted = true;
     vid.currentTime = 0;
-    // Reproducir 300ms con audio activo para que captureStream() encuentre los tracks.
-    try {
-      await vid.play();
-      await new Promise(r => setTimeout(r, 300));
-      vid.pause();
-      vid.currentTime = 0;
-    } catch(e) {}
 
     // 1. Canvas stream (frames visuales)
     const canvasStream = rc.captureStream(30);
 
-    // 2. AudioContext único para video + intro/end sounds
+    // 2. Descargar audio via fetch y decodificar con AudioContext
     let audioCtxLive = null;
     let audioDestNode = null;
     let audioSrcNode = null;
+    let _audioBuffer = null;
     try {
       audioCtxLive = new AudioContext({ sampleRate: 44100 });
       audioDestNode = audioCtxLive.createMediaStreamDestination();
-
-      const vidStream = vid.captureStream
-        ? vid.captureStream()
-        : (vid.mozCaptureStream ? vid.mozCaptureStream() : null);
-
-      if (vidStream && vidStream.getAudioTracks().length > 0) {
-        audioSrcNode = audioCtxLive.createMediaStreamSource(vidStream);
-        // GainNode en 0 para silenciar al usuario, pero la señal sigue al grabador
-        const silentGain = audioCtxLive.createGain();
-        silentGain.gain.value = 0;
-        audioSrcNode.connect(silentGain);
-        silentGain.connect(audioCtxLive.destination); // silencio al parlante
-        audioSrcNode.connect(audioDestNode);           // audio completo al grabador
-      }
-    } catch(e) { audioCtxLive = null; audioDestNode = null; }
+      _expSetProg(16, 'Cargando audio...');
+      const resp = await fetch(_EXP.mediaUrl);
+      const arrayBuf = await resp.arrayBuffer();
+      _audioBuffer = await audioCtxLive.decodeAudioData(arrayBuf);
+    } catch(e) {
+      _audioBuffer = null;
+      // Si falla la descarga, exportamos sin audio
+    }
 
     // 3. Construir el MediaStream final
     let finalStream;
@@ -7980,6 +7959,13 @@ window.expStartExport = async function() {
           videoStarted = true;
           vid.currentTime = 0;
           vid.play().catch(() => {});
+          // Arrancar el AudioBuffer sincronizado con el video
+          if (audioCtxLive && audioDestNode && _audioBuffer) {
+            audioSrcNode = audioCtxLive.createBufferSource();
+            audioSrcNode.buffer = _audioBuffer;
+            audioSrcNode.connect(audioDestNode); // audio al grabador
+            audioSrcNode.start(0);
+          }
         }
         rctx.fillStyle = '#000';
         rctx.fillRect(0, 0, RW, RH);
