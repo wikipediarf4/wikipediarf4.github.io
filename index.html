@@ -2797,11 +2797,12 @@ function initVideoPlayer(postId, card, username){
   vid.addEventListener('volumechange', setMuteIcon);
 
   // ── OUTRO OVERLAY: mostrar pantalla final al terminar el video ──
+  let _postOutroTimer = null;
   vid.addEventListener('ended', () => {
     vid.pause();
     showOutroOverlay(wrap, username);
     // Reanudar loop después del outro
-    setTimeout(() => {
+    _postOutroTimer = setTimeout(() => {
       vid.currentTime = 0;
       vid.play().catch(() => {});
     }, 4200);
@@ -2876,6 +2877,8 @@ function initVideoPlayer(postId, card, username){
         }
       } else {
         vid.pause();
+        if(_postOutroTimer){ clearTimeout(_postOutroTimer); _postOutroTimer = null; }
+        wrap.querySelectorAll('.outro-overlay').forEach(c => c.remove());
       }
     });
   }, { threshold: 0.5 }).observe(vid);
@@ -3568,9 +3571,10 @@ function openExploreViewer(startIdx){
 
       // ── OUTRO OVERLAY en explore viewer ──
       vid.loop = false;
+      let _evOutroTimer = null;
       vid.addEventListener('ended', ()=>{
         showOutroOverlay(card, p.username || 'trendlify');
-        setTimeout(()=>{ vid.currentTime=0; vid.play().catch(()=>{}); }, 4200);
+        _evOutroTimer = setTimeout(()=>{ vid.currentTime=0; vid.play().catch(()=>{}); }, 4200);
       });
 
       let _dbl=0;
@@ -3600,7 +3604,11 @@ function openExploreViewer(startIdx){
         entries.forEach(en=>{
           if(en.isIntersecting){
             const pp=vid.play(); if(pp) pp.catch(()=>{ vid.muted=true; vid.play().catch(()=>{}); });
-          } else { vid.pause(); vid.currentTime=0; }
+          } else {
+            vid.pause(); vid.currentTime=0;
+            if(_evOutroTimer){ clearTimeout(_evOutroTimer); _evOutroTimer=null; }
+            card.querySelectorAll('.outro-overlay').forEach(c=>c.remove());
+          }
         });
       },{threshold:0.6}).observe(card);
     }
@@ -3850,9 +3858,10 @@ async function loadReels(){
 
       // ── OUTRO OVERLAY en reels ──
       vid.loop = false; // desactivamos loop nativo para controlar el outro
+      let _outroTimer = null;
       vid.addEventListener('ended', () => {
         showOutroOverlay(el, p.username || 'trendlify');
-        setTimeout(() => {
+        _outroTimer = setTimeout(() => {
           vid.currentTime = 0;
           vid.play().catch(() => {});
         }, 4200);
@@ -3917,6 +3926,9 @@ async function loadReels(){
             }
           } else {
             vid.pause(); vid.currentTime = 0;
+            // Cancelar outro pendiente y limpiar overlay
+            if(_outroTimer){ clearTimeout(_outroTimer); _outroTimer = null; }
+            el.querySelectorAll('.outro-overlay').forEach(c => c.remove());
           }
         });
       }, { threshold: 0.6 }).observe(el);
