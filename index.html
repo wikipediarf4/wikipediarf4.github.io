@@ -437,18 +437,106 @@ img { display:block; }
 .reel-music {
   display:flex; align-items:center; gap:6px;
   font-size:.78rem; color:rgba(255,255,255,.85); font-weight:600;
-  text-shadow:0 1px 3px rgba(0,0,0,.5);
+  text-shadow:0 1px 3px rgba(0,0,0,.5); margin-bottom:10px;
 }
 
-/* ───── FEED VIDEO MUTE BUTTON ───── */
-.vid-mute-btn {
-  position:absolute; top:10px; right:10px; z-index:10;
-  background:rgba(0,0,0,.55); border:none; border-radius:50%;
-  width:34px; height:34px; display:flex; align-items:center; justify-content:center;
-  cursor:pointer; font-size:1rem; color:#fff; transition:background .15s;
-  backdrop-filter:blur(4px);
+/* Reel inline player controls */
+.reel-controls {
+  background:rgba(0,0,0,.35); border-radius:10px; padding:8px 10px;
+  backdrop-filter:blur(4px); margin-top:6px;
 }
-.vid-mute-btn:hover { background:rgba(0,0,0,.8); }
+.reel-prog-wrap {
+  position:relative; height:16px; display:flex; align-items:center; cursor:pointer; margin-bottom:4px;
+}
+.reel-prog-bg {
+  width:100%; height:3px; background:rgba(255,255,255,.3); border-radius:99px; position:relative;
+}
+.reel-prog-fill {
+  height:100%; background:var(--accent2); border-radius:99px; width:0%; pointer-events:none;
+}
+.reel-prog-thumb {
+  position:absolute; top:50%; left:0; transform:translate(-50%,-50%);
+  width:11px; height:11px; border-radius:50%; background:#fff;
+  pointer-events:none; opacity:0; transition:opacity .15s;
+}
+.reel-prog-wrap:hover .reel-prog-thumb { opacity:1; }
+.reel-ctrl-row {
+  display:flex; align-items:center; gap:4px;
+}
+
+/* ───── CUSTOM VIDEO PLAYER ───── */
+.vid-player {
+  position:relative; width:100%; height:100%;
+  background:#000; border-radius:var(--r); overflow:hidden;
+}
+.vid-player video {
+  width:100%; height:100%; object-fit:cover; display:block; cursor:pointer;
+}
+/* Controls overlay — visible on hover or while paused */
+.vid-controls {
+  position:absolute; bottom:0; left:0; right:0;
+  padding:32px 12px 10px;
+  background:linear-gradient(transparent, rgba(0,0,0,.72));
+  opacity:0; transition:opacity .22s;
+  display:flex; flex-direction:column; gap:6px;
+  pointer-events:none;
+}
+.vid-player:hover .vid-controls,
+.vid-player.paused .vid-controls { opacity:1; pointer-events:all; }
+
+/* Progress bar */
+.vid-progress-wrap {
+  position:relative; height:18px; display:flex; align-items:center; cursor:pointer;
+}
+.vid-progress-bg {
+  width:100%; height:3px; background:rgba(255,255,255,.25); border-radius:99px;
+  position:relative; overflow:visible;
+}
+.vid-progress-fill {
+  height:100%; background:var(--accent2); border-radius:99px;
+  width:0%; pointer-events:none; transition:width .05s linear;
+}
+.vid-progress-thumb {
+  position:absolute; top:50%; right:0; transform:translate(50%,-50%);
+  width:13px; height:13px; border-radius:50%; background:#fff;
+  box-shadow:0 0 4px rgba(0,0,0,.5); pointer-events:none;
+  opacity:0; transition:opacity .15s;
+}
+.vid-progress-wrap:hover .vid-progress-thumb { opacity:1; }
+
+/* Bottom row: play + time + vol + mute */
+.vid-bottom-row {
+  display:flex; align-items:center; gap:8px;
+}
+.vid-btn {
+  background:none; border:none; color:#fff; cursor:pointer;
+  font-size:1rem; width:30px; height:30px;
+  display:flex; align-items:center; justify-content:center;
+  border-radius:50%; transition:background .12s; flex-shrink:0;
+  padding:0;
+}
+.vid-btn:hover { background:rgba(255,255,255,.15); }
+.vid-btn svg { width:16px; height:16px; }
+.vid-time {
+  font-size:.72rem; color:rgba(255,255,255,.85); font-weight:600;
+  white-space:nowrap; flex-shrink:0; letter-spacing:.3px;
+}
+.vid-vol-wrap {
+  display:flex; align-items:center; gap:5px; margin-left:auto;
+}
+.vid-vol-slider {
+  -webkit-appearance:none; appearance:none;
+  width:64px; height:3px; border-radius:99px;
+  background:rgba(255,255,255,.3); outline:none; cursor:pointer;
+}
+.vid-vol-slider::-webkit-slider-thumb {
+  -webkit-appearance:none; width:12px; height:12px; border-radius:50%;
+  background:#fff; cursor:pointer; box-shadow:0 0 3px rgba(0,0,0,.4);
+}
+.vid-vol-slider::-moz-range-thumb {
+  width:12px; height:12px; border-radius:50%; background:#fff;
+  cursor:pointer; border:none; box-shadow:0 0 3px rgba(0,0,0,.4);
+}
 
 /* ───── MUSIC BAR ON POSTS ───── */
 .post-music-bar {
@@ -1332,10 +1420,30 @@ function buildPost(post){
     </div>
     <div class="post-media ${isVid?'video':'portrait'}" style="position:relative;">
       ${isVid
-        ?`<video src="${post.mediaUrl}" muted loop playsinline onclick="toggleVid(this)" style="cursor:pointer;"></video>
-          <button class="vid-mute-btn" onclick="event.stopPropagation();toggleMute(this)" title="Activar sonido">🔇</button>
-          ${post.deezerTrack?`<div class="post-music-bar"><img class="pmb-cover" src="${post.deezerTrack.cover||''}" /><div class="pmb-info"><span class="pmb-title">${post.deezerTrack.title||''}</span><span class="pmb-artist">${post.deezerTrack.artist||''}</span></div><span class="pmb-note">🎵</span></div>`:''}
-          `
+        ?`<div class="vid-player paused" id="vp-${post.id}">
+            <video src="${post.mediaUrl}" muted loop playsinline preload="metadata"></video>
+            <div class="vid-controls">
+              <div class="vid-progress-wrap" id="vp-prog-${post.id}">
+                <div class="vid-progress-bg">
+                  <div class="vid-progress-fill" id="vp-fill-${post.id}"></div>
+                  <div class="vid-progress-thumb" id="vp-thumb-${post.id}"></div>
+                </div>
+              </div>
+              <div class="vid-bottom-row">
+                <button class="vid-btn" id="vp-play-${post.id}" title="Play/Pausa">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                </button>
+                <span class="vid-time" id="vp-time-${post.id}">0:00 / 0:00</span>
+                <div class="vid-vol-wrap">
+                  <button class="vid-btn" id="vp-mute-${post.id}" title="Silenciar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
+                  </button>
+                  <input type="range" class="vid-vol-slider" id="vp-vol-${post.id}" min="0" max="1" step="0.05" value="1"/>
+                </div>
+              </div>
+            </div>
+            ${post.deezerTrack?`<div class="post-music-bar"><img class="pmb-cover" src="${post.deezerTrack.cover||''}" /><div class="pmb-info"><span class="pmb-title">${post.deezerTrack.title||''}</span><span class="pmb-artist">${post.deezerTrack.artist||''}</span></div><span class="pmb-note">🎵</span></div>`:''}
+          </div>`
         :`<img src="${post.mediaUrl}" alt="post" loading="lazy"/>
           ${post.deezerTrack?`<div class="post-music-bar"><img class="pmb-cover" src="${post.deezerTrack.cover||''}" /><div class="pmb-info"><span class="pmb-title">${post.deezerTrack.title||''}</span><span class="pmb-artist">${post.deezerTrack.artist||''}</span></div><span class="pmb-note">🎵</span></div>`:''}`
       }
@@ -1364,21 +1472,98 @@ function buildPost(post){
       <button class="post-comment-send" onclick="currentPostId='${post.id}';document.getElementById('cs-inp').value=this.previousElementSibling.value;sendComment();this.previousElementSibling.value='';">Publicar</button>
     </div>`;
   if(isVid){
-    const vid=card.querySelector('video');
-    new IntersectionObserver(entries=>{
-      entries.forEach(e=>{ if(e.isIntersecting)vid.play().catch(()=>{}); else vid.pause(); });
-    },{threshold:.5}).observe(vid);
+    // Initialize custom player after card is in DOM context
+    setTimeout(()=>initVideoPlayer(post.id, card), 0);
   }
   return card;
 }
 
+// ── CUSTOM VIDEO PLAYER ──
+function fmt(s){ s=Math.floor(s)||0; return Math.floor(s/60)+':'+(s%60<10?'0':'')+(s%60); }
+
+function initVideoPlayer(postId, card){
+  const wrap   = card.querySelector(`#vp-${postId}`);
+  const vid    = wrap?.querySelector('video');
+  const fill   = card.querySelector(`#vp-fill-${postId}`);
+  const thumb  = card.querySelector(`#vp-thumb-${postId}`);
+  const timeEl = card.querySelector(`#vp-time-${postId}`);
+  const playBtn= card.querySelector(`#vp-play-${postId}`);
+  const muteBtn= card.querySelector(`#vp-mute-${postId}`);
+  const volSlider = card.querySelector(`#vp-vol-${postId}`);
+  const progWrap  = card.querySelector(`#vp-prog-${postId}`);
+  if(!vid || !wrap) return;
+
+  const SVG_PLAY  = `<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><polygon points="5,3 19,12 5,21"/></svg>`;
+  const SVG_PAUSE = `<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>`;
+  const SVG_VOL   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>`;
+  const SVG_MUTE  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>`;
+
+  function updateProgress(){
+    if(!vid.duration) return;
+    const pct = (vid.currentTime/vid.duration)*100;
+    if(fill) fill.style.width = pct+'%';
+    if(thumb) thumb.style.left = pct+'%';
+    if(timeEl) timeEl.textContent = fmt(vid.currentTime)+' / '+fmt(vid.duration);
+  }
+
+  function setPlayIcon(){ if(playBtn) playBtn.innerHTML = vid.paused ? SVG_PLAY : SVG_PAUSE; }
+  function setMuteIcon(){ if(muteBtn) muteBtn.innerHTML = vid.muted ? SVG_MUTE : SVG_VOL; }
+
+  // Play/pause on video click or button
+  vid.addEventListener('click', ()=>{ vid.paused?vid.play():vid.pause(); });
+  if(playBtn) playBtn.addEventListener('click', e=>{ e.stopPropagation(); vid.paused?vid.play():vid.pause(); });
+
+  vid.addEventListener('play',  ()=>{ wrap.classList.remove('paused'); setPlayIcon(); });
+  vid.addEventListener('pause', ()=>{ wrap.classList.add('paused'); setPlayIcon(); });
+  vid.addEventListener('timeupdate', updateProgress);
+  vid.addEventListener('loadedmetadata', updateProgress);
+
+  // Progress bar scrubbing (mouse)
+  let scrubbing = false;
+  function scrubTo(e){
+    const rect = progWrap.getBoundingClientRect();
+    const pct  = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    if(vid.duration) vid.currentTime = pct * vid.duration;
+  }
+  if(progWrap){
+    progWrap.addEventListener('mousedown', e=>{ scrubbing=true; scrubTo(e); e.stopPropagation(); });
+    window.addEventListener('mousemove',   e=>{ if(scrubbing) scrubTo(e); });
+    window.addEventListener('mouseup',     ()=>{ scrubbing=false; });
+    // Touch support
+    progWrap.addEventListener('touchstart', e=>{ scrubTo(e.touches[0]); e.preventDefault(); }, {passive:false});
+    progWrap.addEventListener('touchmove',  e=>{ scrubTo(e.touches[0]); e.preventDefault(); }, {passive:false});
+  }
+
+  // Mute button
+  if(muteBtn) muteBtn.addEventListener('click', e=>{
+    e.stopPropagation();
+    vid.muted = !vid.muted;
+    if(volSlider) volSlider.value = vid.muted ? 0 : vid.volume;
+    setMuteIcon();
+  });
+
+  // Volume slider
+  if(volSlider) volSlider.addEventListener('input', e=>{
+    e.stopPropagation();
+    vid.volume  = parseFloat(volSlider.value);
+    vid.muted   = vid.volume === 0;
+    setMuteIcon();
+  });
+
+  // IntersectionObserver autoplay
+  new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting) vid.play().catch(()=>{});
+      else vid.pause();
+    });
+  },{threshold:.5}).observe(vid);
+
+  // Init icons
+  setPlayIcon(); setMuteIcon();
+}
+
 window.toggleVid = vid => { vid.paused?vid.play():vid.pause(); };
-window.toggleMute = btn => {
-  const vid = btn.previousElementSibling;
-  if(!vid || vid.tagName !== 'VIDEO') return;
-  vid.muted = !vid.muted;
-  btn.textContent = vid.muted ? '🔇' : '🔊';
-};
+window.toggleMute = btn => { /* legacy — handled by player now */ };
 
 // ── LIKES ──
 window.toggleLike = async (postId,btn) => {
@@ -1609,7 +1794,7 @@ async function loadReels(){
     const snap=await getDocs(query(collection(db,'posts'),where('mediaType','==','video'),orderBy('createdAt','desc'),limit(30)));
     if(!snap.size){ container.innerHTML='<div style="padding:60px;text-align:center;color:var(--muted);">Sin reels todavía</div>'; return; }
     container.innerHTML='';
-    snap.docs.forEach((d,i)=>{
+    snap.docs.forEach((d)=>{
       const p={id:d.id,...d.data()};
       const av=p.avatarUrl||`https://ui-avatars.com/api/?name=${encodeURIComponent(p.username||'U')}&background=222&color=fff&size=128`;
       const el=document.createElement('div');
@@ -1630,9 +1815,6 @@ async function loadReels(){
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="26" height="26"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
               <span>Compartir</span>
             </div>
-            <div class="reel-action reel-mute-btn" onclick="toggleReelMute(this)">
-              <span style="font-size:1.6rem;">🔇</span>
-            </div>
           </div>
           <div class="reel-info">
             <div class="reel-user">
@@ -1642,29 +1824,82 @@ async function loadReels(){
             </div>
             ${p.caption?`<div class="reel-caption">${esc((p.caption||'').slice(0,120))}</div>`:''}
             ${p.deezerTrack?`<div class="reel-music"><span>🎵</span><span>${esc(p.deezerTrack.title)} — ${esc(p.deezerTrack.artist)}</span></div>`:''}
+            <!-- Reel player controls -->
+            <div class="reel-controls">
+              <div class="reel-prog-wrap" data-reel="${p.id}">
+                <div class="reel-prog-bg">
+                  <div class="reel-prog-fill"></div>
+                  <div class="reel-prog-thumb"></div>
+                </div>
+              </div>
+              <div class="reel-ctrl-row">
+                <button class="vid-btn reel-play-btn">
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><polygon points="5,3 19,12 5,21"/></svg>
+                </button>
+                <span class="vid-time reel-time-label">0:00 / 0:00</span>
+                <div class="vid-vol-wrap" style="margin-left:auto;">
+                  <button class="vid-btn reel-mute-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
+                  </button>
+                  <input type="range" class="vid-vol-slider reel-vol" min="0" max="1" step="0.05" value="1"/>
+                </div>
+              </div>
+            </div>
           </div>
         </div>`;
       container.appendChild(el);
-      // IntersectionObserver for autoplay
-      const vid=el.querySelector('.reel-video');
+
+      const vid       = el.querySelector('.reel-video');
+      const fill      = el.querySelector('.reel-prog-fill');
+      const thumb     = el.querySelector('.reel-prog-thumb');
+      const timeEl    = el.querySelector('.reel-time-label');
+      const playBtn   = el.querySelector('.reel-play-btn');
+      const muteBtn   = el.querySelector('.reel-mute-btn');
+      const volSlider = el.querySelector('.reel-vol');
+      const progWrap  = el.querySelector('.reel-prog-wrap');
+
+      const SVG_PLAY  = `<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><polygon points="5,3 19,12 5,21"/></svg>`;
+      const SVG_PAUSE = `<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>`;
+      const SVG_VOL   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>`;
+      const SVG_MUTE  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>`;
+
+      const updProg = ()=>{
+        if(!vid.duration) return;
+        const pct=(vid.currentTime/vid.duration)*100;
+        fill.style.width=pct+'%'; thumb.style.left=pct+'%';
+        timeEl.textContent=fmt(vid.currentTime)+' / '+fmt(vid.duration);
+      };
+      vid.addEventListener('timeupdate', updProg);
+      vid.addEventListener('loadedmetadata', updProg);
+      vid.addEventListener('play',  ()=>{ playBtn.innerHTML=SVG_PAUSE; });
+      vid.addEventListener('pause', ()=>{ playBtn.innerHTML=SVG_PLAY; });
+
+      vid.addEventListener('click', ()=>{ vid.paused?vid.play():vid.pause(); });
+      playBtn.addEventListener('click', e=>{ e.stopPropagation(); vid.paused?vid.play():vid.pause(); });
+
+      // Scrub
+      let rs=false;
+      const reelScrub=e=>{ const r=progWrap.getBoundingClientRect(); const pct=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)); if(vid.duration) vid.currentTime=pct*vid.duration; };
+      progWrap.addEventListener('mousedown',e=>{ rs=true; reelScrub(e); e.stopPropagation(); });
+      window.addEventListener('mousemove',e=>{ if(rs) reelScrub(e); });
+      window.addEventListener('mouseup',()=>{ rs=false; });
+      progWrap.addEventListener('touchstart',e=>{ reelScrub(e.touches[0]); e.preventDefault(); },{passive:false});
+      progWrap.addEventListener('touchmove',e=>{ reelScrub(e.touches[0]); e.preventDefault(); },{passive:false});
+
+      muteBtn.addEventListener('click',e=>{ e.stopPropagation(); vid.muted=!vid.muted; volSlider.value=vid.muted?0:vid.volume; muteBtn.innerHTML=vid.muted?SVG_MUTE:SVG_VOL; });
+      volSlider.addEventListener('input',e=>{ e.stopPropagation(); vid.volume=parseFloat(volSlider.value); vid.muted=vid.volume===0; muteBtn.innerHTML=vid.muted?SVG_MUTE:SVG_VOL; });
+
+      // Autoplay on scroll
       new IntersectionObserver(entries=>{
         entries.forEach(e=>{
           if(e.isIntersecting){ vid.play().catch(()=>{}); }
           else { vid.pause(); vid.currentTime=0; }
         });
       },{threshold:.6}).observe(el);
-      // tap to play/pause
-      el.querySelector('.reel-video').addEventListener('click',function(){ this.paused?this.play():this.pause(); });
     });
   }catch(e){ container.innerHTML='<div style="padding:60px;text-align:center;color:var(--muted);">Error al cargar reels</div>'; console.error(e); }
 }
-window.toggleReelMute = btn => {
-  const card = btn.closest('.reel-card');
-  const vid = card?.querySelector('.reel-video');
-  if(!vid) return;
-  vid.muted = !vid.muted;
-  btn.querySelector('span').textContent = vid.muted ? '🔇' : '🔊';
-};
+window.toggleReelMute = ()=>{/* handled inline */};
 
 // ── PROFILE ──
 async function loadMyProfile(){
