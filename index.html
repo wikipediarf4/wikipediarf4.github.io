@@ -2920,26 +2920,11 @@ window.openMusicDisc = function(clipId) {
   document.getElementById('uam-prog').style.width = '0%';
   document.getElementById('uam-time').textContent = '0:00';
 
-  if (musicPreview) {
-    audio.load();
-    // Mostrar duración total cuando cargue metadata
-    audio.addEventListener('loadedmetadata', () => {
-      const tot = audio.duration || 0;
-      if (tot > 0) {
-        const ts = Math.floor(tot);
-        document.getElementById('uam-time').textContent = '0:00 / ' + Math.floor(ts/60) + ':' + String(ts%60).padStart(2,'0');
-      }
-    }, { once: true });
-  }
-
   audio.ontimeupdate = () => {
     const pct = audio.duration ? (audio.currentTime / audio.duration * 100) : 0;
     document.getElementById('uam-prog').style.width = pct + '%';
     const s = Math.floor(audio.currentTime);
-    const tot = Math.floor(audio.duration || 0);
-    const cur = Math.floor(s/60)+':'+ String(s%60).padStart(2,'0');
-    const end = Math.floor(tot/60)+':'+ String(tot%60).padStart(2,'0');
-    document.getElementById('uam-time').textContent = tot > 0 ? cur + ' / ' + end : cur;
+    document.getElementById('uam-time').textContent = Math.floor(s/60)+':'+ String(s%60).padStart(2,'0');
   };
   audio.onended = () => { document.getElementById('uam-play-btn').textContent = '▶'; };
 
@@ -2950,19 +2935,8 @@ window.uamTogglePlay = function() {
   const audio = document.getElementById('uam-audio');
   const btn   = document.getElementById('uam-play-btn');
   if (!audio.src) return;
-  if (audio.paused) {
-    // Si no cargó todavía, load() primero
-    if (audio.readyState < 2) {
-      audio.load();
-      audio.addEventListener('canplaythrough', () => { audio.play().catch(() => {}); btn.textContent = '⏸'; }, { once: true });
-    } else {
-      audio.play().catch(() => {});
-      btn.textContent = '⏸';
-    }
-  } else {
-    audio.pause();
-    btn.textContent = '▶';
-  }
+  if (audio.paused) { audio.play().catch(()=>{}); btn.textContent = '⏸'; }
+  else { audio.pause(); btn.textContent = '▶'; }
 };
 
 window.uamSeek = function(e, bar) {
@@ -4117,241 +4091,306 @@ window.closeCaptionModal = () => {
 //  Se ejecuta antes de subir al feed
 // ══════════════════════════════════════════════
 async function _procesarVideoParaFeed(file, handle) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const W = 720, H = 1280;
-      const ENDCARD_MS = 3000;
+  const W = 720, H = 1280;
+  const ENDCARD_MS = 3000;
+  const displayHandle = handle.startsWith('@') ? handle : '@' + handle;
 
-      // Cargar logo
-      const logoImg = await new Promise(res => {
-        const img = new Image();
-        img.onload = () => res(img);
-        img.onerror = () => res(null);
-        img.src = '/icon-192.png';
-      });
+  // ── 1. Cargar logo ──────────────────────────────────────────
+  const logoImg = await new Promise(res => {
+    const img = new Image();
+    img.onload  = () => res(img);
+    img.onerror = () => res(null);
+    img.src = '/icon-192.png';
+  });
 
-      // Crear canvas de renderizado
-      const canvas = document.createElement('canvas');
-      canvas.width = W; canvas.height = H;
-      const ctx = canvas.getContext('2d');
+  // ── 2. Canvas ───────────────────────────────────────────────
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
 
-      // Crear video element
-      const vid = document.createElement('video');
-      const blobUrl = URL.createObjectURL(file);
-      vid.src = blobUrl;
-      vid.muted = true;
-      vid.playsInline = true;
+  // ── 3. Video element (muted para canvas; audio por separado) ─
+  const blobUrl = URL.createObjectURL(file);
+  const vid = document.createElement('video');
+  vid.src = blobUrl;
+  vid.muted = true;       // DEBE ser muted para poder llamar play() sin gesto
+  vid.playsInline = true;
+  vid.loop = false;
 
-      await new Promise((res, rej) => {
-        vid.onloadeddata = res;
-        vid.onerror = rej;
-        vid.load();
-      });
+  await new Promise((res, rej) => {
+    vid.onloadedmetadata = res;
+    vid.onerror = rej;
+    vid.load();
+  });
 
-      const videoDur = Math.min(vid.duration || 30, 120) * 1000;
+  const videoDurMs = Math.min(vid.duration || 30, 120) * 1000;
 
-      // Audio: fetch + decodeAudioData
-      let audioCtx = null, audioDest = null, audioBuffer = null;
-      try {
-        audioCtx = new AudioContext({ sampleRate: 44100 });
-        audioDest = audioCtx.createMediaStreamDestination();
-        const resp = await fetch(blobUrl);
-        const arrBuf = await resp.arrayBuffer();
-        audioBuffer = await audioCtx.decodeAudioData(arrBuf);
-      } catch(e) { audioBuffer = null; }
+  // ── 4. Audio: crear un segundo <video> con sonido y enrutarlo por AudioContext ─
+  let audioCtx = null, audioDest = null;
+  try {
+    audioCtx  = new (window.AudioContext || window.webkitAudioContext)();
+    audioDest = audioCtx.createMediaStreamDestination();
+    const vidAudio = document.createElement('video');
+    vidAudio.src         = blobUrl;
+    vidAudio.playsInline = true;
+    vidAudio.muted       = false;
+    vidAudio.volume      = 1;
+    await new Promise(r => { vidAudio.onloadedmetadata = r; vidAudio.load(); });
+    const srcNode = audioCtx.createMediaElementSource(vidAudio);
+    srcNode.connect(audioDest);
+    // Guardamos referencia para arrancar/parar sincronizado con el video mudo
+    vid._audioEl = vidAudio;
+  } catch(e) {
+    audioCtx = null; audioDest = null;
+  }
 
-      // Stream final
-      const canvasStream = canvas.captureStream(30);
-      let finalStream;
-      if (audioCtx && audioDest) {
-        finalStream = new MediaStream([
-          ...canvasStream.getVideoTracks(),
-          ...audioDest.stream.getAudioTracks()
-        ]);
-      } else {
-        finalStream = new MediaStream(canvasStream.getVideoTracks());
-      }
+  // ── 5. MediaRecorder ────────────────────────────────────────
+  const canvasStream = canvas.captureStream(30);
+  const streamTracks = [...canvasStream.getVideoTracks()];
+  if (audioDest) streamTracks.push(...audioDest.stream.getAudioTracks());
+  const finalStream = new MediaStream(streamTracks);
 
-      // MediaRecorder
-      const mime = ['video/mp4','video/webm;codecs=vp9','video/webm'].find(t => MediaRecorder.isTypeSupported(t)) || 'video/webm';
-      const rec = new MediaRecorder(finalStream, { mimeType: mime, videoBitsPerSecond: 4000000 });
-      const chunks = [];
-      rec.ondataavailable = e => { if(e.data.size > 0) chunks.push(e.data); };
+  const mime = ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm']
+    .find(t => MediaRecorder.isTypeSupported(t)) || 'video/webm';
+  const rec = new MediaRecorder(finalStream, { mimeType: mime, videoBitsPerSecond: 4_000_000 });
+  const chunks = [];
+  rec.ondataavailable = e => { if (e.data && e.data.size > 0) chunks.push(e.data); };
 
-      const displayHandle = handle.startsWith('@') ? handle : '@' + handle;
-      const sc = W / 180;
+  // ── Helpers de dibujo ───────────────────────────────────────
+  function drawFit() {
+    const vw = vid.videoWidth  || W;
+    const vh = vid.videoHeight || H;
+    const sc = Math.max(W / vw, H / vh);
+    ctx.drawImage(vid, (W - vw * sc) / 2, (H - vh * sc) / 2, vw * sc, vh * sc);
+  }
 
-      // Función marca de agua (igual que la exportación)
-      function drawWM(ctx, W, H, uname) {
-        const pad = 12 * sc;
-        const icoSize = 26 * sc;
-        const fontSize = 11 * sc;
-        ctx.save();
-        ctx.globalAlpha = 0.82;
-        // Fondo semi-transparente
-        const textW = ctx.measureText(uname).width + icoSize + 10 * sc + pad * 2;
-        const boxH = icoSize + pad * 1.2;
-        const bx = W - textW - 12 * sc;
-        const by = H - boxH - 40 * sc;
-        ctx.fillStyle = 'rgba(0,0,0,0.45)';
-        const r = 10 * sc;
-        ctx.beginPath();
-        ctx.moveTo(bx + r, by);
-        ctx.lineTo(bx + textW - r, by);
-        ctx.quadraticCurveTo(bx + textW, by, bx + textW, by + r);
-        ctx.lineTo(bx + textW, by + boxH - r);
-        ctx.quadraticCurveTo(bx + textW, by + boxH, bx + textW - r, by + boxH);
-        ctx.lineTo(bx + r, by + boxH);
-        ctx.quadraticCurveTo(bx, by + boxH, bx, by + boxH - r);
-        ctx.lineTo(bx, by + r);
-        ctx.quadraticCurveTo(bx, by, bx + r, by);
-        ctx.closePath();
-        ctx.fill();
-        // Logo
-        const lx = bx + pad;
-        const ly = by + (boxH - icoSize) / 2;
-        if (logoImg) {
-          ctx.save();
-          ctx.beginPath();
-          ctx.arc(lx + icoSize/2, ly + icoSize/2, icoSize/2, 0, Math.PI*2);
-          ctx.closePath();
-          ctx.clip();
-          ctx.drawImage(logoImg, lx, ly, icoSize, icoSize);
-          ctx.restore();
-        }
-        // Handle
-        ctx.font = `700 ${fontSize}px "Space Grotesk", sans-serif`;
-        ctx.fillStyle = '#fff';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(uname, lx + icoSize + 8 * sc, ly + icoSize/2);
-        ctx.restore();
-      }
+  function drawWM() {
+    const icoSize = 40, fontSize = 26, padX = 14, padY = 10;
+    ctx.save();
+    ctx.font = `700 ${fontSize}px "Space Grotesk",Arial,sans-serif`;
+    const tw  = ctx.measureText(displayHandle).width;
+    const bw  = padX + icoSize + 10 + tw + padX;
+    const bh  = icoSize + padY * 2;
+    const bx  = W - bw - 16;          // pegado al borde derecho
+    const by  = H - bh - 60;
 
-      // Función end-card
-      function drawEndCard(ctx, W, H, uname, progress) {
+    // Fondo
+    ctx.globalAlpha = 0.78;
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    const r = 12;
+    ctx.beginPath();
+    ctx.moveTo(bx+r,by); ctx.lineTo(bx+bw-r,by);
+    ctx.quadraticCurveTo(bx+bw,by,bx+bw,by+r);
+    ctx.lineTo(bx+bw,by+bh-r);
+    ctx.quadraticCurveTo(bx+bw,by+bh,bx+bw-r,by+bh);
+    ctx.lineTo(bx+r,by+bh);
+    ctx.quadraticCurveTo(bx,by+bh,bx,by+bh-r);
+    ctx.lineTo(bx,by+r);
+    ctx.quadraticCurveTo(bx,by,bx+r,by);
+    ctx.closePath();
+    ctx.fill();
+
+    // Borde gradiente
+    const bg = ctx.createLinearGradient(bx,by,bx+bw,by+bh);
+    bg.addColorStop(0,'#25f4ee'); bg.addColorStop(1,'#fe2c55');
+    ctx.strokeStyle = bg; ctx.lineWidth = 1.8; ctx.globalAlpha = 0.9;
+    ctx.stroke();
+
+    // Logo circular
+    const lx = bx + padX, ly = by + (bh - icoSize) / 2;
+    ctx.globalAlpha = 1;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(lx + icoSize/2, ly + icoSize/2, icoSize/2, 0, Math.PI*2);
+    ctx.closePath(); ctx.clip();
+    if (logoImg) {
+      ctx.drawImage(logoImg, lx, ly, icoSize, icoSize);
+    } else {
+      const g = ctx.createLinearGradient(lx,ly,lx+icoSize,ly+icoSize);
+      g.addColorStop(0,'#25f4ee'); g.addColorStop(1,'#fe2c55');
+      ctx.fillStyle = g; ctx.fill();
+    }
+    ctx.restore();
+
+    // Texto
+    ctx.globalAlpha = 1;
+    ctx.fillStyle   = '#fff';
+    ctx.shadowColor = 'rgba(0,0,0,0.9)';
+    ctx.shadowBlur  = 6;
+    ctx.textBaseline = 'middle';
+    ctx.fillText(displayHandle, lx + icoSize + 10, by + bh/2);
+    ctx.shadowBlur = 0;
+    ctx.restore();
+  }
+
+  function drawEndCard(elapsedMs) {
+    const progress = Math.min(1, elapsedMs / ENDCARD_MS);
+    const fadeIn   = Math.min(1, elapsedMs / 400);   // fade-in en 400ms
+    const t        = elapsedMs / 1000;
+
+    // Fondo
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.save();
+    ctx.globalAlpha = fadeIn;
+
+    // Logo
+    const pulse    = 1 + 0.05 * Math.sin(t * 5);
+    const logoSize = W * 0.28 * pulse;
+    const logoX    = (W - logoSize) / 2;
+    const logoY    = H / 2 - logoSize * 0.85;
+
+    // Halo giratorio
+    for (let i = 0; i < 3; i++) {
+      const a = t * 2 + i * (Math.PI * 2 / 3);
+      const hg = ctx.createLinearGradient(
+        W/2 + Math.cos(a)*logoSize/2, logoY+logoSize/2 + Math.sin(a)*logoSize/2,
+        W/2 - Math.cos(a)*logoSize/2, logoY+logoSize/2 - Math.sin(a)*logoSize/2
+      );
+      hg.addColorStop(0,'#25f4ee'); hg.addColorStop(1,'rgba(254,44,85,0)');
+      ctx.strokeStyle = hg;
+      ctx.lineWidth   = 4;
+      ctx.beginPath();
+      ctx.arc(W/2, logoY + logoSize/2, logoSize/2 + 8, a, a + Math.PI*2/3);
+      ctx.stroke();
+    }
+
+    // Logo circular
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(W/2, logoY + logoSize/2, logoSize/2, 0, Math.PI*2);
+    ctx.closePath(); ctx.clip();
+    if (logoImg) {
+      ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
+    } else {
+      const g = ctx.createLinearGradient(logoX,logoY,logoX+logoSize,logoY+logoSize);
+      g.addColorStop(0,'#25f4ee'); g.addColorStop(1,'#fe2c55');
+      ctx.fillStyle = g; ctx.fillRect(logoX,logoY,logoSize,logoSize);
+      ctx.fillStyle = '#fff';
+      ctx.font = `700 ${logoSize*0.5}px sans-serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('C', W/2, logoY + logoSize/2);
+    }
+    ctx.restore();
+
+    // "Clipuy"
+    const brandY = logoY + logoSize + W * 0.07;
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.font = `700 ${W * 0.09}px "Clash Display",sans-serif`;
+    const tg = ctx.createLinearGradient(W*.2, brandY, W*.8, brandY);
+    tg.addColorStop(0,'#25f4ee'); tg.addColorStop(1,'#fe2c55');
+    ctx.fillStyle  = tg;
+    ctx.shadowColor = 'rgba(37,244,238,0.6)';
+    ctx.shadowBlur  = 18;
+    ctx.fillText('Clipuy', W/2, brandY);
+    ctx.shadowBlur = 0;
+
+    // @usuario — con brillo pulsante
+    const handleY = brandY + W * 0.08;
+    ctx.font      = `600 ${W * 0.052}px "Space Grotesk",Arial,sans-serif`;
+    ctx.fillStyle = `rgba(255,255,255,${0.8 + 0.2*Math.sin(t*3)})`;
+    ctx.shadowColor = 'rgba(255,255,255,0.5)';
+    ctx.shadowBlur  = 10 * Math.abs(Math.sin(t*3));
+    ctx.fillText(displayHandle, W/2, handleY);
+    ctx.shadowBlur = 0;
+
+    // Línea decorativa
+    const lineY = handleY + W * 0.03;
+    const lg    = ctx.createLinearGradient(W/2-W*.22, lineY, W/2+W*.22, lineY);
+    lg.addColorStop(0,'transparent');
+    lg.addColorStop(.5,`rgba(37,244,238,${0.7+0.3*Math.sin(t*4)})`);
+    lg.addColorStop(1,'transparent');
+    ctx.strokeStyle = lg; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(W/2-W*.22, lineY); ctx.lineTo(W/2+W*.22, lineY); ctx.stroke();
+
+    ctx.restore();
+  }
+
+  // ── 6. Grabar en tiempo real ────────────────────────────────
+  return new Promise((resolve, reject) => {
+    let raf = null;
+    let endcardT0 = null;
+    let phase = 'video';   // 'video' | 'endcard'
+
+    rec.onstop = () => {
+      if (raf) cancelAnimationFrame(raf);
+      vid.pause();
+      if (vid._audioEl) vid._audioEl.pause();
+      URL.revokeObjectURL(blobUrl);
+      if (audioCtx) try { audioCtx.close(); } catch(e) {}
+      resolve(new File([new Blob(chunks, {type:mime})], 'clip.webm', {type:mime}));
+    };
+
+    rec.onerror = (e) => reject(e);
+
+    function loop() {
+      if (phase === 'video') {
+        // Dibujar frame del video + marca de agua
         ctx.fillStyle = '#000';
         ctx.fillRect(0, 0, W, H);
-        const alpha = Math.min(1, progress / 0.3);
-        ctx.globalAlpha = alpha;
+        drawFit();
+        drawWM();
 
-        const logoSize = W * 0.28;
-        const logoX = (W - logoSize) / 2;
-        const logoY = H / 2 - logoSize * 0.75;
-
-        if (logoImg) {
-          ctx.save();
-          ctx.beginPath();
-          ctx.arc(W/2, logoY + logoSize/2, logoSize/2 + 4, 0, Math.PI*2);
-          const borderGrad = ctx.createLinearGradient(logoX, logoY, logoX+logoSize, logoY+logoSize);
-          borderGrad.addColorStop(0, '#25f4ee');
-          borderGrad.addColorStop(1, '#fe2c55');
-          ctx.fillStyle = borderGrad;
-          ctx.fill();
-          ctx.beginPath();
-          ctx.arc(W/2, logoY + logoSize/2, logoSize/2, 0, Math.PI*2);
-          ctx.closePath();
-          ctx.clip();
-          ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
-          ctx.restore();
-        }
-
-        const brandY = logoY + logoSize + W * 0.06;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'alphabetic';
-        ctx.font = `700 ${W * 0.085}px "Clash Display", sans-serif`;
-        const tGrad = ctx.createLinearGradient(W*0.2, brandY, W*0.8, brandY);
-        tGrad.addColorStop(0, '#25f4ee');
-        tGrad.addColorStop(1, '#fe2c55');
-        ctx.fillStyle = tGrad;
-        ctx.fillText('Clipuy', W/2, brandY);
-
-        const handleY = brandY + W * 0.075;
-        ctx.font = `500 ${W * 0.048}px "Space Grotesk", sans-serif`;
-        ctx.fillStyle = 'rgba(255,255,255,0.75)';
-        ctx.fillText(uname, W/2, handleY);
-
-        ctx.globalAlpha = 1;
-      }
-
-      // Función para escalar/centrar video en canvas (9:16)
-      function drawVideoFit(ctx, vid, W, H) {
-        const vw = vid.videoWidth || W;
-        const vh = vid.videoHeight || H;
-        const scale = Math.max(W / vw, H / vh);
-        const sw = vw * scale, sh = vh * scale;
-        ctx.drawImage(vid, (W - sw) / 2, (H - sh) / 2, sw, sh);
-      }
-
-      rec.start(100);
-
-      const t0 = performance.now();
-      let videoStarted = false;
-      let audioSrcNode = null;
-      let raf;
-
-      function frame() {
-        const elapsed = performance.now() - t0;
-
-        if (elapsed < videoDur && !vid.ended) {
-          // Fase VIDEO con marca de agua
-          if (!videoStarted) {
-            videoStarted = true;
-            vid.currentTime = 0;
-            vid.play().catch(() => {});
-            if (audioCtx && audioDest && audioBuffer) {
-              audioSrcNode = audioCtx.createBufferSource();
-              audioSrcNode.buffer = audioBuffer;
-              audioSrcNode.connect(audioDest);
-              audioSrcNode.start(0);
-            }
-          }
-          ctx.fillStyle = '#000';
-          ctx.fillRect(0, 0, W, H);
-          drawVideoFit(ctx, vid, W, H);
-          drawWM(ctx, W, H, displayHandle);
-          raf = requestAnimationFrame(frame);
-        } else {
-          // Fase END-CARD
-          if (videoStarted && !vid.paused) {
-            vid.pause();
-            if (audioSrcNode) { try { audioSrcNode.disconnect(); } catch(e){} }
-          }
-          const endElapsed = elapsed - videoDur;
-          if (endElapsed < ENDCARD_MS) {
-            drawEndCard(ctx, W, H, displayHandle, endElapsed / ENDCARD_MS);
-            raf = requestAnimationFrame(frame);
-          } else {
-            rec.stop();
+        if (vid.ended || vid.currentTime >= vid.duration - 0.05) {
+          // Termina la fase video → arrancar end-card
+          phase = 'endcard';
+          endcardT0 = performance.now();
+          vid.pause();
+          if (vid._audioEl) vid._audioEl.pause();
+          // Sonido: acorde suave con osciladores
+          if (audioCtx && audioDest) {
+            try {
+              [523.25, 659.25, 783.99].forEach((freq, i) => {
+                const osc  = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0, audioCtx.currentTime + i*0.1);
+                gain.gain.linearRampToValueAtTime(0.15, audioCtx.currentTime + i*0.1 + 0.06);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i*0.1 + 0.8);
+                osc.connect(gain); gain.connect(audioDest);
+                osc.start(audioCtx.currentTime + i*0.1);
+                osc.stop(audioCtx.currentTime + i*0.1 + 0.85);
+              });
+            } catch(e) {}
           }
         }
+      } else {
+        // Fase end-card
+        const elapsed = performance.now() - endcardT0;
+        drawEndCard(elapsed);
+        if (elapsed >= ENDCARD_MS) {
+          rec.stop();
+          return;
+        }
       }
-
-      raf = requestAnimationFrame(frame);
-
-      rec.onstop = async () => {
-        cancelAnimationFrame(raf);
-        vid.pause();
-        URL.revokeObjectURL(blobUrl);
-        if (audioCtx) { try { audioCtx.close(); } catch(e){} }
-        const blob = new Blob(chunks, { type: mime });
-        const ext = mime.includes('mp4') ? 'mp4' : 'webm';
-        const processedFile = new File([blob], 'clip.' + ext, { type: mime });
-        resolve(processedFile);
-      };
-
-    } catch(e) {
-      reject(e);
+      raf = requestAnimationFrame(loop);
     }
+
+    // Arrancar grabación y reproducción simultáneas
+    rec.start(200);
+    vid.currentTime = 0;
+    vid.play().then(() => {
+      if (vid._audioEl) {
+        vid._audioEl.currentTime = 0;
+        vid._audioEl.play().catch(() => {});
+      }
+      raf = requestAnimationFrame(loop);
+    }).catch(reject);
   });
 }
 
 window.publishClip = async () => {
   if(!currentUser || !_pendingUploadFile) return;
+  const fileToProcess = _pendingUploadFile;
+  _pendingUploadFile = null;   // limpiar YA para que no se reutilice
+
   const desc     = document.getElementById('caption-text').value.trim();
   const memeText = document.getElementById('caption-meme-text')?.value.trim() || '';
   const memoPosEl = document.querySelector('input[name="meme-pos"]:checked');
   const memePos  = memoPosEl ? memoPosEl.value : 'bottom';
-  const isVideo  = _pendingUploadFile.type.startsWith('video');
+  const isVideo  = fileToProcess.type.startsWith('video');
   const handle   = (myProfile.handle || myProfile.name || currentUser.displayName || 'Clipuy').replace('@','');
 
   showToast('📤 Procesando clip...');
@@ -4359,82 +4398,64 @@ window.publishClip = async () => {
 
   try {
     let mediaUrl;
+    let finalFile = fileToProcess;
 
-    // ── Si es video → procesar con marca de agua + end-card antes de subir ──
     if (isVideo) {
       showToast('🎬 Agregando marca de agua...');
-      _pendingUploadFile = await _procesarVideoParaFeed(_pendingUploadFile, handle);
+      finalFile = await _procesarVideoParaFeed(fileToProcess, handle);
       showToast('📤 Subiendo clip...');
     }
 
-    // ── Si eligió un audio de Clipuy Y es un video → mezclar en el servidor ──
     if(_clipuySelectedAudio && isVideo) {
       showToast('🎵 Mezclando audio con tu video...');
       const silenciar = document.getElementById('silence-video-toggle')?.checked || false;
       const formData = new FormData();
-      formData.append('archivo', _pendingUploadFile);
+      formData.append('archivo', finalFile);
       formData.append('audio_id', _clipuySelectedAudio.id);
       formData.append('usuario', handle);
       formData.append('volumen_audio', '1.0');
       formData.append('volumen_video', silenciar ? '0.0' : '1.0');
-
       const res = await fetch(UPLOAD_SERVER + '/audio/apply', {
-        method: 'POST',
-        body: formData,
+        method: 'POST', body: formData,
         headers: { 'ngrok-skip-browser-warning': 'true' }
       });
-      if(!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || 'Error al mezclar audio');
-      }
+      if(!res.ok) { const err = await res.json().catch(()=>({})); throw new Error(err.error||'Error al mezclar audio'); }
       const data = await res.json();
       mediaUrl = UPLOAD_SERVER + '/files/' + data.tipo + '/' + data.fecha + '/' + data.archivo;
-
     } else {
-      // ── Sin audio Clipuy → subida normal ──
-      mediaUrl = await uploadToServer(_pendingUploadFile, '@' + handle, desc || 'Sonido original');
+      mediaUrl = await uploadToServer(finalFile, '@' + handle, desc || 'Sonido original');
     }
 
     const tagMatches = desc.match(/(#[\w\u00C0-\u017E]+|@[\w\u00C0-\u017E]+)/g) || [];
     const tags = [...new Set(tagMatches)].join(' ');
-
     const clipData = {
       uid: currentUser.uid,
       name: myProfile.name || currentUser.displayName || 'Usuario',
       avatar: myProfile.avatar || avatarFallback(currentUser.uid),
-      description: desc,
-      tags,
-      mediaUrl,
+      description: desc, tags, mediaUrl,
       mediaType: isVideo ? 'video' : 'imagen',
-      likesCount: 0,
-      likes: [],
-      commentsCount: 0,
+      likesCount: 0, likes: [], commentsCount: 0,
       ts: serverTimestamp()
     };
-
     if(memeText) { clipData.memeText = memeText; clipData.memePos = memePos; }
-
     if(_clipSelectedMusic) {
-      clipData.musicName   = _clipSelectedMusic.title;
-      clipData.musicArtist = _clipSelectedMusic.artist;
-      clipData.musicCover  = _clipSelectedMusic.cover;
+      clipData.musicName    = _clipSelectedMusic.title;
+      clipData.musicArtist  = _clipSelectedMusic.artist;
+      clipData.musicCover   = _clipSelectedMusic.cover;
       clipData.musicPreview = _clipSelectedMusic.preview;
     }
-
     if(_clipuySelectedAudio) {
-      clipData.musicName    = _clipuySelectedAudio.titulo;
-      clipData.musicArtist  = '@' + _clipuySelectedAudio.usuario;
-      clipData.musicCover   = '';
-      clipData.musicPreview = UPLOAD_SERVER + '/audio/stream/' + _clipuySelectedAudio.id;
+      clipData.musicName     = _clipuySelectedAudio.titulo;
+      clipData.musicArtist   = '@' + _clipuySelectedAudio.usuario;
+      clipData.musicCover    = '';
+      clipData.musicPreview  = UPLOAD_SERVER + '/audio/stream/' + _clipuySelectedAudio.id;
       clipData.clipuyAudioId = _clipuySelectedAudio.id;
     }
-
     await addDoc(collection(db,'clips'), clipData);
     showToast('✅ ¡Clip publicado!');
     loadFeed();
     goTo('home');
   } catch(e) { showToast('❌ Error: ' + e.message); }
-  _pendingUploadFile = null;
 };
 
 // ══════════════════════════════════════════════
@@ -6744,16 +6765,7 @@ window.clipSelectMusic = (track) => {
     audio.src = track.preview;
     audio.volume = 0.5;
     audio.load();
-    const tryPlay = () => audio.play().catch(() => {});
-    audio.addEventListener('canplaythrough', tryPlay, { once: true });
-    // Mostrar duración real cuando cargue metadata
-    audio.addEventListener('loadedmetadata', () => {
-      const d = Math.round(audio.duration || 0);
-      if (d > 0) {
-        const cur = document.getElementById('clipMusicArtist').textContent;
-        if (!cur.includes('·')) document.getElementById('clipMusicArtist').textContent = cur + ' · ' + d + 's';
-      }
-    }, { once: true });
+    audio.addEventListener('canplaythrough', () => audio.play().catch(()=>{}), { once: true });
   }
 };
 
@@ -6859,7 +6871,7 @@ window.loadClipuyAudios = async (orden, q) => {
         <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--accent));display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">🎵</div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:.83rem;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(audio.titulo)}</div>
-          <div style="font-size:.7rem;color:var(--text-muted);">@${escHtml(audio.usuario)} · ❤️ ${audio.likes} · 🔥 ${audio.usos} usos<span data-dur>${audio.duracion > 0 ? ' · ' + Math.round(audio.duracion) + 's' : ''}</span></div>
+          <div style="font-size:.7rem;color:var(--text-muted);">@${escHtml(audio.usuario)} · ❤️ ${audio.likes} · 🔥 ${audio.usos} usos${audio.duracion ? ' · ' + Math.round(audio.duracion) + 's' : ''}</div>
         </div>
         <button data-aid="${escHtml(audio.id)}" style="background:none;border:none;color:var(--accent2);font-size:1.1rem;cursor:pointer;flex-shrink:0;padding:4px;" title="Preview">▶</button>
       `;
@@ -6869,23 +6881,11 @@ window.loadClipuyAudios = async (orden, q) => {
         e.stopPropagation();
         _stopClipuyPreview();
         const audioUrl = UPLOAD_SERVER + '/audio/stream/' + audio.id;
-        const a = new Audio();
-        a.volume = 0.6;
-        _clipuyPreviewAudio = a;
-        // Mostrar duración real en el item cuando cargue
-        a.addEventListener('loadedmetadata', () => {
-          const dur = Math.round(a.duration || 0);
-          if (dur > 0) {
-            const durEl = item.querySelector('[data-dur]');
-            if (durEl) durEl.textContent = ' · ' + dur + 's';
-          }
-        }, { once: true });
-        a.addEventListener('canplaythrough', () => a.play().catch(() => {}), { once: true });
-        a.onended = () => { playBtn.textContent = '▶'; _clipuyPreviewAudio = null; };
-        a.onerror = () => { playBtn.textContent = '▶'; _clipuyPreviewAudio = null; };
-        a.src = audioUrl;
-        a.load();
+        _clipuyPreviewAudio = new Audio(audioUrl);
+        _clipuyPreviewAudio.volume = 0.6;
+        _clipuyPreviewAudio.play().catch(() => {});
         playBtn.textContent = '⏹';
+        _clipuyPreviewAudio.onended = () => { playBtn.textContent = '▶'; };
       });
       // Seleccionar al tocar el item
       item.addEventListener('click', () => selectClipuyAudio(audio, item));
@@ -6903,7 +6903,7 @@ function _stopClipuyPreview() {
 function selectClipuyAudio(audio, itemEl) {
   _stopClipuyPreview();
   _clipuySelectedAudio = audio;
-  _clipSelectedMusic = null;
+  _clipSelectedMusic = null; // limpiar selección de Deezer
 
   // Highlight item seleccionado
   document.querySelectorAll('#clipuyAudioList > div').forEach(el => el.style.borderColor = 'var(--border)');
@@ -6916,20 +6916,18 @@ function selectClipuyAudio(audio, itemEl) {
   document.getElementById('clipMusicArtist').textContent = '🎤 @' + audio.usuario + ' — Clipuy';
   document.getElementById('clipMusicSelected').classList.add('show');
 
-  // Previsualizar con load() + canplaythrough para mobile
+  // Previsualizar
   const previewEl = document.getElementById('clipMusicPreviewAudio');
   if(previewEl) {
     previewEl.src = UPLOAD_SERVER + '/audio/stream/' + audio.id;
     previewEl.volume = 0.5;
     previewEl.load();
-    previewEl.addEventListener('canplaythrough', () => previewEl.play().catch(() => {}), { once: true });
-    // Actualizar duración real cuando cargue
+    previewEl.addEventListener('canplaythrough', () => previewEl.play().catch(()=>{}), { once: true });
     previewEl.addEventListener('loadedmetadata', () => {
       const dur = Math.round(previewEl.duration || 0);
       if (dur > 0) {
-        const artistEl = document.getElementById('clipMusicArtist');
-        const base = '🎤 @' + audio.usuario + ' — Clipuy';
-        artistEl.textContent = base + ' · ' + dur + 's';
+        const el = document.getElementById('clipMusicArtist');
+        el.textContent = '🎤 @' + audio.usuario + ' — Clipuy · ' + dur + 's';
       }
     }, { once: true });
   }
