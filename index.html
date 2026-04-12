@@ -1703,7 +1703,8 @@ img { display:block; }
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
   getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-  signOut, onAuthStateChanged, updateProfile, GoogleAuthProvider, signInWithPopup
+  signOut, onAuthStateChanged, updateProfile, GoogleAuthProvider, signInWithPopup,
+  browserSessionPersistence, setPersistence
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
   getFirestore, collection, addDoc, getDocs, doc, getDoc, setDoc, updateDoc,
@@ -2339,9 +2340,12 @@ window.doGoogle = () => {
 
 async function _execGoogleLogin() {
   const provider = new GoogleAuthProvider();
-  signInWithPopup(auth, provider)
+  setPersistence(auth, browserSessionPersistence)
+    .then(() => {
+      return signInWithPopup(auth, provider);
+    })
     .then(async (result) => {
-      console.log("Sesión iniciada:", result.user);
+      console.log("¡Logueado dentro del EXE!", result.user);
       const u = result.user;
       const snap = await getDoc(doc(db, 'users', u.uid));
       if (!snap.exists()) {
@@ -2354,7 +2358,7 @@ async function _execGoogleLogin() {
       }
     })
     .catch((error) => {
-      console.error("Error:", error.message);
+      console.error("Error detallado:", error.code, error.message);
       showToast('Error con Google: ' + error.message);
     });
 }
