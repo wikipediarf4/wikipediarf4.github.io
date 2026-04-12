@@ -1293,9 +1293,9 @@ img { display:block; }
         </div>
         <div class="composer-divider"></div>
         <div class="composer-actions">
-          <button class="composer-act" onclick="openCompose('video')">
+          <button class="composer-act" onclick="openUpload('reel')">
             <svg viewBox="0 0 24 24" fill="none" stroke="#e05555" stroke-width="2" width="20" height="20"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-            <span>Video en vivo</span>
+            <span>Reels</span>
           </button>
           <button class="composer-act" onclick="openCompose('photo')">
             <svg viewBox="0 0 24 24" fill="none" stroke="#45bd62" stroke-width="2" width="20" height="20"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
@@ -1485,7 +1485,7 @@ img { display:block; }
       </div>
       <button class="rp-switch" onclick="setPage('profile')">Cambiar</button>
     </div>
-    <div class="rp-section-title">Nuevos usuarios</div>
+    <div class="rp-section-title">Sugerencias para ti</div>
     <div id="suggestions-list"></div>
     <div class="rp-footer">
       <div style="margin-bottom:4px;"><a href="#">Información</a> · <a href="#">Ayuda</a> · <a href="#">Privacidad</a> · <a href="#">Condiciones</a></div>
@@ -1567,8 +1567,8 @@ img { display:block; }
         ondragleave="this.classList.remove('drag-over')"
         ondrop="onDrop(event)">
         <div class="up-drop-icon">📸</div>
-        <h4>Arrastrá tus fotos y videos aquí</h4>
-        <p>O tocá para seleccionar · JPG, PNG, MP4, MOV</p>
+        <h4>Tocá para seleccionar o tomar foto/video</h4>
+        <p>Desde tu galería o cámara · JPG, PNG, MP4, MOV</p>
       </div>
       <input type="file" id="media-file" accept="image/*,video/*" style="display:none" onchange="onFileSelected(this.files[0])"/>
       <div class="up-prev" id="up-prev">
@@ -2338,19 +2338,25 @@ window.doGoogle = () => {
 };
 
 async function _execGoogleLogin() {
-  try{
-    const cred=await signInWithPopup(auth,gp);
-    const u=cred.user;
-    const snap=await getDoc(doc(db,'users',u.uid));
-    if(!snap.exists()){
-      const username=(u.displayName||'usuario').replace(/\s+/g,'_').toLowerCase();
-      await setDoc(doc(db,'users',u.uid),{
-        uid:u.uid,username,displayName:u.displayName||username,
-        email:u.email,bio:'',avatarUrl:u.photoURL||'',
-        followers:0,following:0,posts:0,followingList:[],createdAt:serverTimestamp()
-      });
-    }
-  }catch(e){ showToast('Error con Google'); }
+  const provider = new GoogleAuthProvider();
+  signInWithPopup(auth, provider)
+    .then(async (result) => {
+      console.log("Sesión iniciada:", result.user);
+      const u = result.user;
+      const snap = await getDoc(doc(db, 'users', u.uid));
+      if (!snap.exists()) {
+        const username = (u.displayName || 'usuario').replace(/\s+/g, '_').toLowerCase();
+        await setDoc(doc(db, 'users', u.uid), {
+          uid: u.uid, username, displayName: u.displayName || username,
+          email: u.email, bio: '', avatarUrl: u.photoURL || '',
+          followers: 0, following: 0, posts: 0, followingList: [], createdAt: serverTimestamp()
+        });
+      }
+    })
+    .catch((error) => {
+      console.error("Error:", error.message);
+      showToast('Error con Google: ' + error.message);
+    });
 }
 window.doLogout = async () => { closeSettings(); await signOut(auth); };
 const authErr  = code => ({'auth/invalid-email':'Correo inválido.','auth/user-not-found':'Usuario no encontrado.','auth/wrong-password':'Contraseña incorrecta.','auth/email-already-in-use':'Correo ya registrado.','auth/weak-password':'Contraseña muy corta.','auth/invalid-credential':'Credenciales inválidas.'}[code]||'Error: '+code);
@@ -3855,9 +3861,13 @@ window.downloadVideo = async (url, filename) => {
 window.shareProfile = () => { if(!CU)return; const url=`${location.origin}/?u=${CU.uid}`; if(navigator.share)navigator.share({title:'Mi perfil en Clipuy',url}).catch(()=>{}); else navigator.clipboard?.writeText(url).then(()=>showToast('¡Link copiado! 🔗')); };
 
 // ── UPLOAD COMPONENT ──
-window.openUpload    = () => {
-  setUploadType('post', document.getElementById('uptype-post'));
+window.openUpload    = (type) => {
   document.getElementById('upload-modal').classList.add('show');
+  if(type==='reel'){
+    setTimeout(()=>setUploadType('reel', document.getElementById('uptype-reel')), 30);
+  } else {
+    setUploadType('post', document.getElementById('uptype-post'));
+  }
 };
 window.openUploadStory = () => {
   document.getElementById('upload-modal').classList.add('show');
@@ -5193,31 +5203,23 @@ function loadNotifications(){
 async function loadSuggestions(){
   if(!CU) return;
   try{
-    // Últimos 5 usuarios registrados (ordenados por createdAt desc), excluyendo al usuario actual
-    const snap=await getDocs(query(collection(db,'users'),orderBy('createdAt','desc'),limit(10)));
+    const fl=(await getDoc(doc(db,'users',CU.uid))).data()?.followingList||[];
+    const snap=await getDocs(query(collection(db,'users'),limit(8)));
     const list=document.getElementById('suggestions-list');
     list.innerHTML='';
     let count=0;
     snap.docs.forEach(d=>{
       const u=d.data();
-      if(u.uid===CU.uid) return;
+      if(u.uid===CU.uid||fl.includes(u.uid)) return;
       if(count>=5) return;
       count++;
       const av=u.avatarUrl||`https://ui-avatars.com/api/?name=${encodeURIComponent(u.username||'U')}&background=222&color=fff`;
-      const displayName = u.displayName && u.displayName !== u.username ? u.displayName : (u.username||'usuario');
-      const handle = '@' + (u.username||'usuario');
       const el=document.createElement('div');
       el.className='sug-item';
-      el.innerHTML=`
-        <img class="sug-av" src="${av}" onerror="this.src='https://ui-avatars.com/api/?name=U&background=222&color=fff'" style="cursor:pointer;" onclick="openUserProfile('${u.uid}','${esc(u.username||'usuario')}')"/>
-        <div style="flex:1;min-width:0;cursor:pointer;" onclick="openUserProfile('${u.uid}','${esc(u.username||'usuario')}')">
-          <div class="sug-name">${esc(displayName)}</div>
-          <div class="sug-sub">${esc(handle)} · Nuevo usuario</div>
-        </div>
-        <button class="sug-follow" data-uid="${u.uid}" onclick="toggleFollow('${u.uid}',this)">Seguir</button>`;
+      el.innerHTML=`<img class="sug-av" src="${av}" onerror="this.src='https://ui-avatars.com/api/?name=U&background=222&color=fff'"/><div><div class="sug-name">@${esc(u.username||'usuario')}</div><div class="sug-sub">Sugerencia para ti</div></div><button class="sug-follow" data-uid="${u.uid}" onclick="toggleFollow('${u.uid}',this)">Seguir</button>`;
       list.appendChild(el);
     });
-    if(!count) list.innerHTML='<div style="font-size:.8rem;color:var(--muted);padding:4px 0;">Sin usuarios nuevos por ahora</div>';
+    if(!count) list.innerHTML='<div style="font-size:.8rem;color:var(--muted);padding:4px 0;">Sin sugerencias por ahora</div>';
   }catch(e){ console.warn(e); }
 }
 
