@@ -2425,41 +2425,32 @@ const checkTerms   = () => { if(!localStorage.getItem('trendlify_terms_v1')) doc
       const firebaseEmail = email || `${discordId}@discord.trendlify`;
       const tempPass = `discord_${discordId}_trendlify`;
 
+      // Email único basado en discordId para evitar conflictos con otras cuentas
+      const safeEmail = `discord_${discordId}@trendlify.app`;
+      const safePass = `disc_${discordId}_tr3ndl1fy!`;
       let firebaseUser;
       try {
-        // Intentar login primero
-        const cred = await signInWithEmailAndPassword(auth, firebaseEmail, tempPass);
+        const cred = await signInWithEmailAndPassword(auth, safeEmail, safePass);
         firebaseUser = cred.user;
       } catch(e) {
-        if (e.code === 'auth/user-not-found' || e.code === 'auth/invalid-credential' || e.code === 'auth/email-already-in-use') {
-          try {
-            // Intentar crear cuenta nueva
-            const cred = await createUserWithEmailAndPassword(auth, firebaseEmail, tempPass);
-            firebaseUser = cred.user;
-            await updateProfile(firebaseUser, { displayName: username, photoURL: avatarUrl });
-            // Guardar en Firestore
-            const cleanUsername = username.replace(/[^a-zA-Z0-9_.]/g, '').toLowerCase();
-            await setDoc(doc(db, 'users', firebaseUser.uid), {
-              uid: firebaseUser.uid,
-              username: cleanUsername,
-              displayName: username,
-              email: firebaseEmail,
-              bio: '',
-              avatarUrl: avatarUrl || '',
-              discordId: discordId,
-              followers: 0, following: 0, posts: 0,
-              followingList: [],
-              createdAt: serverTimestamp()
-            });
-          } catch(e2) {
-            if (e2.code === 'auth/email-already-in-use') {
-              // Ya existe, hacer login directamente
-              const cred2 = await signInWithEmailAndPassword(auth, firebaseEmail, tempPass);
-              firebaseUser = cred2.user;
-            } else {
-              throw e2;
-            }
-          }
+        if (e.code === 'auth/user-not-found' || e.code === 'auth/invalid-credential') {
+          // Usuario nuevo — crear cuenta
+          const cred = await createUserWithEmailAndPassword(auth, safeEmail, safePass);
+          firebaseUser = cred.user;
+          await updateProfile(firebaseUser, { displayName: username, photoURL: avatarUrl });
+          const cleanUsername = username.replace(/[^a-zA-Z0-9_.]/g, '').toLowerCase();
+          await setDoc(doc(db, 'users', firebaseUser.uid), {
+            uid: firebaseUser.uid,
+            username: cleanUsername,
+            displayName: username,
+            email: email || safeEmail,
+            bio: '',
+            avatarUrl: avatarUrl || '',
+            discordId: discordId,
+            followers: 0, following: 0, posts: 0,
+            followingList: [],
+            createdAt: serverTimestamp()
+          });
         } else {
           throw e;
         }
