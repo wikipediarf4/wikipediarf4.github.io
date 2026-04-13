@@ -1704,7 +1704,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import {
   getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
   signOut, onAuthStateChanged, updateProfile, GoogleAuthProvider,
-  signInWithRedirect, getRedirectResult, browserLocalPersistence, setPersistence
+  signInWithPopup, browserLocalPersistence, setPersistence
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import {
   getFirestore, collection, addDoc, getDocs, doc, getDoc, setDoc, updateDoc,
@@ -2321,39 +2321,27 @@ window.doRegister = async () => {
     });
   }catch(e){ err.textContent=authErr(e.code); }
 };
-window.loginConGoogle = function() {
+window.loginConGoogle = async function() {
   const provider = new GoogleAuthProvider();
-  setPersistence(auth, browserLocalPersistence)
-    .then(() => {
-      return signInWithRedirect(auth, provider);
-    })
-    .catch((error) => {
-      console.error("Error al iniciar redirección:", error);
-      alert("Error al conectar con Google.");
-    });
-};
-
-// Detecta cuando el usuario vuelve de loguearse con Google
-getRedirectResult(auth)
-  .then(async (result) => {
-    if (result) {
-      console.log("¡Usuario logueado con éxito!", result.user);
-      const u = result.user;
-      const snap = await getDoc(doc(db, 'users', u.uid));
-      if (!snap.exists()) {
-        const username = (u.displayName || 'usuario').replace(/\s+/g, '_').toLowerCase();
-        await setDoc(doc(db, 'users', u.uid), {
-          uid: u.uid, username, displayName: u.displayName || username,
-          email: u.email, bio: '', avatarUrl: u.photoURL || '',
-          followers: 0, following: 0, posts: 0, followingList: [], createdAt: serverTimestamp()
-        });
-      }
-      // onAuthStateChanged se encarga de mostrar el feed automáticamente
+  try {
+    await setPersistence(auth, browserLocalPersistence);
+    const result = await signInWithPopup(auth, provider);
+    const u = result.user;
+    const snap = await getDoc(doc(db, 'users', u.uid));
+    if (!snap.exists()) {
+      const username = (u.displayName || 'usuario').replace(/\s+/g, '_').toLowerCase();
+      await setDoc(doc(db, 'users', u.uid), {
+        uid: u.uid, username, displayName: u.displayName || username,
+        email: u.email, bio: '', avatarUrl: u.photoURL || '',
+        followers: 0, following: 0, posts: 0, followingList: [], createdAt: serverTimestamp()
+      });
     }
-  })
-  .catch((error) => {
-    console.error("Error al procesar el retorno del login:", error);
-  });
+    // onAuthStateChanged se encarga de mostrar el feed automáticamente
+  } catch(error) {
+    console.error("Error al conectar con Google:", error);
+    alert("Error al conectar con Google: " + error.message);
+  }
+};
 window.doLogout = async () => { closeSettings(); await signOut(auth); };
 const authErr  = code => ({'auth/invalid-email':'Correo inválido.','auth/user-not-found':'Usuario no encontrado.','auth/wrong-password':'Contraseña incorrecta.','auth/email-already-in-use':'Correo ya registrado.','auth/weak-password':'Contraseña muy corta.','auth/invalid-credential':'Credenciales inválidas.'}[code]||'Error: '+code);
 
