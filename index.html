@@ -2397,7 +2397,11 @@ window.loginConDiscord = function() {
   const redirectUri = encodeURIComponent('http://localhost:5000/callback');
   const scope = encodeURIComponent('identify email');
   const url = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}`;
-  window.location.href = url;
+  if (window.pywebview) {
+    window.pywebview.api.open_url(url);
+  } else {
+    window.open(url, '_blank');
+  }
 };
 
 window.doLogout = async () => { closeSettings(); await signOut(auth); };
