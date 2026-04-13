@@ -1177,7 +1177,7 @@ img { display:block; }
       <button class="auth-tab" onclick="switchAuthTab('register',this)">Registrarse</button>
     </div>
     <div class="auth-form active" id="auth-login">
-      <input class="auth-inp" id="login-email" type="email" placeholder="Correo electrónico" autocomplete="email"/>
+      <input class="auth-inp" id="login-email" type="text" placeholder="Correo electrónico o usuario" autocomplete="username"/>
       <input class="auth-inp" id="login-pass" type="password" placeholder="Contraseña" autocomplete="current-password"/>
       <button class="btn-primary" onclick="doLogin()">Iniciar sesión</button>
       <div class="auth-sep">o</div>
@@ -2298,10 +2298,25 @@ window.switchAuthTab = (tab,btn) => {
   document.getElementById('auth-'+tab).classList.add('active');
 };
 window.doLogin = async () => {
-  const email=document.getElementById('login-email').value.trim();
+  let identifier=document.getElementById('login-email').value.trim();
   const pass=document.getElementById('login-pass').value;
   const err=document.getElementById('login-err');
   err.textContent='';
+  if(!identifier){ err.textContent='Ingresá tu correo o usuario'; return; }
+  if(!pass){ err.textContent='Ingresá tu contraseña'; return; }
+  // Si no parece un email, buscar el correo del usuario en Firestore
+  const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
+  let email = identifier;
+  if(!isEmail){
+    try{
+      // Normalizar: quitar @ si lo pusieron
+      const username = identifier.replace(/^@/, '').toLowerCase();
+      const snap = await getDocs(query(collection(db,'users'), where('username','==',username), limit(1)));
+      if(snap.empty){ err.textContent='Usuario no encontrado.'; return; }
+      email = snap.docs[0].data().email;
+      if(!email){ err.textContent='Este usuario no tiene correo asociado.'; return; }
+    }catch(e){ err.textContent='Error al buscar usuario: '+e.message; return; }
+  }
   try{ await signInWithEmailAndPassword(auth,email,pass); }
   catch(e){ err.textContent=authErr(e.code); }
 };
