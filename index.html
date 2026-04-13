@@ -2452,7 +2452,7 @@ window.loginConGoogle = async function() {
 };
 window.loginConDiscord = function() {
   const clientId = '1493071728598057031';
-  const redirectUri = encodeURIComponent('http://localhost:5000/callback');
+  const redirectUri = encodeURIComponent('https://wikipediarf4.uy/callback');
   const scope = encodeURIComponent('identify email');
   const url = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}`;
   window.location.href = url;
