@@ -1261,11 +1261,6 @@ img { display:block; }
         <span class="nav-label">Notificaciones</span>
       </button>
 
-      <button class="nav-item" id="nav-marketing" onclick="setPage('marketing')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-        <span class="nav-label">Publicidad B2B</span>
-      </button>
-
       <button class="nav-create" onclick="openUpload()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="5"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
         <span>Crear</span>
@@ -1385,25 +1380,6 @@ img { display:block; }
     </div>
 
     <!-- MESSAGES -->
-    <div id="page-marketing" style="display:none;">
-      <div style="background:#23272a;padding:30px;border-radius:15px;border:1px solid #5865f2;max-width:600px;margin:20px auto;">
-        <h2 style="color:#5865f2;margin-bottom:10px;">🚀 Impulsor de Marcas IA</h2>
-        <p style="color:#b9bbbe;margin-bottom:20px;">
-          Nuestra IA promocionará tu marca en grupos de nicho y perfiles interesados de forma automática.
-        </p>
-        <div style="display:flex;flex-direction:column;gap:15px;">
-          <label style="color:white;font-size:.9em;">Link de tu Marca o Facebook:</label>
-          <input type="text" id="b2b-link" placeholder="https://facebook.com/tu-marca"
-                 style="padding:12px;border-radius:8px;border:none;background:#2c2f33;color:white;font-size:16px;outline:none;">
-          <button onclick="ejecutarRobot()"
-                  style="background:#5865f2;color:white;border:none;padding:15px;border-radius:8px;cursor:pointer;font-weight:bold;font-size:1.1em;">
-            ¡Iniciar Difusión Ahora!
-          </button>
-        </div>
-        <div id="b2b-log" style="margin-top:20px;padding:10px;background:#1a1a1a;border-radius:5px;font-family:monospace;font-size:.85em;color:#43b581;display:none;"></div>
-      </div>
-    </div>
-
     <div id="page-messages" style="display:none;">
       <div style="display:flex;height:calc(100vh - 40px);gap:0;">
         <div id="dm-list-panel" style="width:300px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;">
@@ -2422,55 +2398,59 @@ const checkTerms   = () => { if(!localStorage.getItem('trendlify_terms_v1')) doc
 (async () => {
   const hash = window.location.hash;
   console.log('HASH AL CARGAR:', hash);
-  if (hash.startsWith('#discord_callback=')) {
+
+  // Implicit flow: Discord devuelve access_token en el hash
+  if (hash.includes('access_token=')) {
     try {
-      const raw = decodeURIComponent(hash.replace('#discord_callback=', ''));
-      const userData = JSON.parse(raw);
-      // Limpiar el hash de la URL
+      const params = new URLSearchParams(hash.replace('#', ''));
+      const accessToken = params.get('access_token');
       history.replaceState(null, '', window.location.pathname);
 
-      const { discordId, username, email, avatarUrl } = userData;
+      // Obtener datos del usuario desde la API de Discord
+      const res = await fetch('https://discord.com/api/users/@me', {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      if (!res.ok) throw new Error('No se pudo obtener usuario de Discord');
+      const discordUser = await res.json();
+
+      const discordId = discordUser.id;
+      const username = discordUser.username;
+      const email = discordUser.email || null;
+      const avatarUrl = discordUser.avatar
+        ? `https://cdn.discordapp.com/avatars/${discordId}/${discordUser.avatar}.png`
+        : `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=5865F2&color=fff`;
 
       // Crear o buscar usuario en Firebase usando email de Discord
       // Si no tiene email usamos discordId@discord.com como fallback
       const firebaseEmail = email || `${discordId}@discord.trendlify`;
       const tempPass = `discord_${discordId}_trendlify`;
 
+      // Email único basado en discordId para evitar conflictos con otras cuentas
+      const safeEmail = `discord_${discordId}@trendlify.app`;
+      const safePass = `disc_${discordId}_tr3ndl1fy!`;
       let firebaseUser;
       try {
-        // Intentar login primero
-        const cred = await signInWithEmailAndPassword(auth, firebaseEmail, tempPass);
+        const cred = await signInWithEmailAndPassword(auth, safeEmail, safePass);
         firebaseUser = cred.user;
       } catch(e) {
-        if (e.code === 'auth/user-not-found' || e.code === 'auth/invalid-credential' || e.code === 'auth/email-already-in-use') {
-          try {
-            // Intentar crear cuenta nueva
-            const cred = await createUserWithEmailAndPassword(auth, firebaseEmail, tempPass);
-            firebaseUser = cred.user;
-            await updateProfile(firebaseUser, { displayName: username, photoURL: avatarUrl });
-            // Guardar en Firestore
-            const cleanUsername = username.replace(/[^a-zA-Z0-9_.]/g, '').toLowerCase();
-            await setDoc(doc(db, 'users', firebaseUser.uid), {
-              uid: firebaseUser.uid,
-              username: cleanUsername,
-              displayName: username,
-              email: firebaseEmail,
-              bio: '',
-              avatarUrl: avatarUrl || '',
-              discordId: discordId,
-              followers: 0, following: 0, posts: 0,
-              followingList: [],
-              createdAt: serverTimestamp()
-            });
-          } catch(e2) {
-            if (e2.code === 'auth/email-already-in-use') {
-              // Ya existe, hacer login directamente
-              const cred2 = await signInWithEmailAndPassword(auth, firebaseEmail, tempPass);
-              firebaseUser = cred2.user;
-            } else {
-              throw e2;
-            }
-          }
+        if (e.code === 'auth/user-not-found' || e.code === 'auth/invalid-credential') {
+          // Usuario nuevo — crear cuenta
+          const cred = await createUserWithEmailAndPassword(auth, safeEmail, safePass);
+          firebaseUser = cred.user;
+          await updateProfile(firebaseUser, { displayName: username, photoURL: avatarUrl });
+          const cleanUsername = username.replace(/[^a-zA-Z0-9_.]/g, '').toLowerCase();
+          await setDoc(doc(db, 'users', firebaseUser.uid), {
+            uid: firebaseUser.uid,
+            username: cleanUsername,
+            displayName: username,
+            email: email || safeEmail,
+            bio: '',
+            avatarUrl: avatarUrl || '',
+            discordId: discordId,
+            followers: 0, following: 0, posts: 0,
+            followingList: [],
+            createdAt: serverTimestamp()
+          });
         } else {
           throw e;
         }
@@ -2581,34 +2561,11 @@ window.loginConGoogle = async function() {
 };
 window.loginConDiscord = function() {
   const clientId = '1493071728598057031';
-  const redirectUri = encodeURIComponent('http://localhost:5000/callback');
+  const redirectUri = encodeURIComponent('https://wikipediarf4.uy');
   const scope = encodeURIComponent('identify email');
-  const url = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}`;
+  const url = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token&scope=${scope}`;
   window.location.href = url;
 };
-
-window.ejecutarRobot = async function() {
-  const link = document.getElementById('b2b-link').value;
-  const log = document.getElementById('b2b-log');
-  if (!link) { alert('Por favor, ingresa un link válido.'); return; }
-  log.style.display = 'block';
-  log.innerHTML = '> Conectando con el servidor de publicidad...<br>';
-  try {
-    const response = await fetch('/promocionar', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ link: link })
-    });
-    const res = await response.json();
-    if (res.status === 'success') {
-      log.innerHTML += `> <span style="color:#43b581">${res.message}</span><br>`;
-      log.innerHTML += '> Buscando grupos de Facebook...<br>';
-      log.innerHTML += '> Escaneando audiencia activa...<br>';
-    }
-  } catch (error) {
-    log.innerHTML += '> <span style="color:#f04747">Error: No se pudo contactar al robot.</span>';
-  }
-}
 
 window.doLogout = async () => { closeSettings(); await signOut(auth); };
 const authErr  = code => ({'auth/invalid-email':'Correo inválido.','auth/user-not-found':'Usuario no encontrado.','auth/wrong-password':'Contraseña incorrecta.','auth/email-already-in-use':'Correo ya registrado.','auth/weak-password':'Contraseña muy corta.','auth/invalid-credential':'Credenciales inválidas.'}[code]||'Error: '+code);
@@ -5665,50 +5622,6 @@ window.doCompose = async () => {
     </div>
   </div>
 </div>
-
-
-<div id="b2b-panel" style="background: #23272a; padding: 25px; border-radius: 12px; margin: 20px; color: white; border: 1px solid #5865f2;">
-    <h2 style="color: #5865f2;">🚀 Impulsor de Marcas IA</h2>
-    <p>Ingresa el link de tu Facebook o Marca de Ropa para iniciar la publicidad masiva.</p>
-    
-    <div style="display: flex; gap: 10px; margin-top: 15px;">
-        <input type="text" id="link-input" placeholder="https://facebook.com/tu-marca" 
-               style="flex: 1; padding: 12px; border-radius: 6px; border: none; outline: none; background: #2c2f33; color: white;">
-        <button onclick="iniciarPublicidad()" 
-                style="background: #5865f2; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold;">
-            Iniciar Difusión
-        </button>
-    </div>
-    <p id="b2b-status" style="margin-top: 15px; font-size: 0.9em; color: #b9bbbe;"></p>
-</div>
-<script>
-async function iniciarPublicidad() {
-    const link = document.getElementById('link-input').value;
-    const status = document.getElementById('b2b-status');
-    
-    if (!link) {
-        status.style.color = "#f04747";
-        status.innerText = "❌ Debes pegar un link válido.";
-        return;
-    }
-    status.style.color = "#faa61a";
-    status.innerText = "⏳ Conectando con el robot de publicidad...";
-    try {
-        const res = await fetch('/promocionar', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ link: link })
-        });
-        const data = await res.json();
-        
-        status.style.color = "#43b581";
-        status.innerText = "✅ " + data.message;
-    } catch (e) {
-        status.style.color = "#f04747";
-        status.innerText = "❌ Error: El servidor no responde.";
-    }
-}
-</script>
 
 </body>
 </html>
