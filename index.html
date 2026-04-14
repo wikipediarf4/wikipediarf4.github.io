@@ -3755,6 +3755,8 @@ window.openUserProfile = async (uid, username) => {
 
     upmRenderGrid('upm-grid-posts', postDocs, 'Sin publicaciones todavía.', uid);
     upmRenderGrid('upm-grid-reels', reelDocs, 'Sin reels todavía.', uid);
+    // Guardar lista combinada para el viewer con navegación
+    window._upmPostsList = [...postDocs, ...reelDocs.filter(r=>!postDocs.find(p=>p.id===r.id))].map(({id,data})=>({id,...data}));
 
     // 3. Me gusta
     const likesSnap = await getDocs(query(collection(db,'likes'), where('uid','==',uid), limit(40)));
@@ -3802,11 +3804,13 @@ function upmRenderGrid(gridId, docs, emptyMsg, ownerUid){
     grid.innerHTML = `<div style="grid-column:1/-1;padding:48px;text-align:center;color:var(--muted);font-size:.85rem;">${emptyMsg}</div>`;
     return;
   }
-  docs.forEach(({id, data:p}) => {
+  // Guardar lista de este grid para navegación
+  const postList = docs.map(({id,data})=>({id,...data}));
+  docs.forEach(({id, data:p}, i) => {
     const isVid = p.mediaUrl?.match(/\.(mp4|mov|webm|ogg)/i) || p.mediaType==='video';
     const el = document.createElement('div');
     el.style.cssText = 'position:relative;aspect-ratio:1;background:var(--surface2);overflow:hidden;cursor:pointer;';
-    el.onclick = () => upmOpenViewer(id, p);
+    el.onclick = () => { window._upmPostsList = postList; openProfileViewer(i); };
     if(isVid){
       const vid = document.createElement('video');
       vid.src = p.mediaUrl; vid.muted = true; vid.preload = 'metadata';
@@ -3825,7 +3829,6 @@ function upmRenderGrid(gridId, docs, emptyMsg, ownerUid){
       el.style.display = 'flex'; el.style.alignItems = 'center'; el.style.justifyContent = 'center'; el.style.padding = '8px';
       el.innerHTML = `<span style="font-size:.72rem;color:var(--muted);text-align:center;overflow:hidden;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;">${esc(p.caption||'')}</span>`;
     }
-    // Overlay de likes
     const hov = document.createElement('div');
     hov.style.cssText = 'position:absolute;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;gap:10px;opacity:0;transition:opacity .16s;pointer-events:none;';
     hov.innerHTML = `<span style="color:#fff;font-size:.85rem;font-weight:700;display:flex;align-items:center;gap:4px;"><svg viewBox="0 0 24 24" fill="#fff" width="14" height="14"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>${fmtN(p.likes||0)}</span>`;
@@ -3837,38 +3840,151 @@ function upmRenderGrid(gridId, docs, emptyMsg, ownerUid){
 }
 
 window.upmOpenViewer = (postId, p) => {
-  const isVid = p.mediaUrl?.match(/\.(mp4|mov|webm|ogg)/i) || p.mediaType==='video';
-  // Si tiene media, mostrar en overlay con el post completo
-  let ov = document.getElementById('upm-viewer-overlay');
-  if(!ov){
-    ov = document.createElement('div');
-    ov.id = 'upm-viewer-overlay';
-    ov.style.cssText = 'position:fixed;inset:0;z-index:8500;background:rgba(0,0,0,.92);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:16px;';
-    ov.onclick = e => { if(e.target===ov) ov.style.display='none'; };
-    document.body.appendChild(ov);
-  }
-  ov.innerHTML = `
-    <div style="width:100%;max-width:420px;max-height:92vh;background:var(--surface);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;animation:fadeUp .2s ease;">
-      <div style="display:flex;align-items:center;padding:12px 14px;border-bottom:1px solid var(--border);flex-shrink:0;">
-        <span style="font-size:.9rem;font-weight:700;flex:1;">@${esc(p.username||'usuario')}</span>
-        <button onclick="document.getElementById('upm-viewer-overlay').style.display='none'" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.3rem;line-height:1;padding:4px 8px;">✕</button>
-      </div>
-      ${p.mediaUrl ? `<div style="background:#000;flex-shrink:0;max-height:60vh;display:flex;align-items:center;justify-content:center;overflow:hidden;">
-        ${isVid
-          ? `<video src="${p.mediaUrl}" controls playsinline autoplay style="width:100%;max-height:60vh;object-fit:contain;display:block;"></video>`
-          : `<img src="${p.mediaUrl}" style="width:100%;max-height:60vh;object-fit:contain;display:block;"/>`
-        }
-      </div>` : ''}
-      <div style="padding:14px 16px;overflow-y:auto;">
-        ${p.caption ? `<div style="font-size:.88rem;line-height:1.5;margin-bottom:10px;"><span style="font-weight:700;">@${esc(p.username||'usuario')}</span> ${esc(p.caption)}</div>` : ''}
-        <div style="display:flex;align-items:center;gap:16px;padding-top:8px;border-top:1px solid var(--border);">
-          <span style="font-size:.82rem;color:var(--muted);">❤️ ${fmtN(p.likes||0)} me gusta</span>
-          <button onclick="document.getElementById('upm-viewer-overlay').style.display='none';openComments('${postId}','${fmtN(p.commentsCount||0)}')" style="background:none;border:none;color:var(--accent2);font-size:.82rem;font-weight:700;cursor:pointer;">💬 Ver comentarios</button>
-        </div>
-      </div>
-    </div>`;
-  ov.style.display = 'flex';
+  // Reusar openExploreViewer con la lista de posts del perfil
+  if(!window._upmPostsList || !window._upmPostsList.length) return;
+  const idx = window._upmPostsList.findIndex(x => x.id === postId);
+  openProfileViewer(idx >= 0 ? idx : 0);
 };
+
+function openProfileViewer(startIdx){
+  const posts = window._upmPostsList || [];
+  if(!posts.length) return;
+
+  // Remover viewer anterior si existe
+  const old = document.getElementById('upm-viewer-overlay');
+  if(old){ old.querySelectorAll('video').forEach(v=>{v.pause();v.src='';}); old.remove(); }
+
+  const overlay = document.createElement('div');
+  overlay.id = 'upm-viewer-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:8500;background:#000;display:flex;flex-direction:column;overflow:hidden;';
+
+  const hdr = document.createElement('div');
+  hdr.style.cssText = 'position:absolute;top:0;left:0;right:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:linear-gradient(to bottom,rgba(0,0,0,.7),transparent);';
+  hdr.innerHTML = `<span style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:#fff;">Posts</span><button id="upmv-close" style="background:rgba(0,0,0,.45);border:none;color:#fff;font-size:1rem;width:34px;height:34px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>`;
+  overlay.appendChild(hdr);
+
+  const scroller = document.createElement('div');
+  scroller.style.cssText = 'width:100%;height:100%;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;';
+  overlay.appendChild(scroller);
+
+  document.body.appendChild(overlay);
+  document.body.style.overflow = 'hidden';
+
+  const SVG_PLAY  = `<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><polygon points="5,3 19,12 5,21"/></svg>`;
+  const SVG_PAUSE = `<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>`;
+  const SVG_VOL   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>`;
+  const SVG_MUTE  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>`;
+  const fmt = s => { if(!isFinite(s)||isNaN(s)) return '0:00'; const m=Math.floor(s/60),sec=Math.floor(s%60); return m+':'+(sec<10?'0':'')+sec; };
+
+  posts.forEach((p, idx) => {
+    const isVid = p.mediaUrl?.match(/\.(mp4|mov|webm|ogg)/i) || p.mediaType==='video';
+    const av = p.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.username||'U')}&background=222&color=fff&size=128`;
+    const card = document.createElement('div');
+    card.style.cssText = 'position:relative;width:100%;height:100vh;flex-shrink:0;scroll-snap-align:start;background:#000;overflow:hidden;display:flex;align-items:center;justify-content:center;';
+    card.dataset.idx = idx;
+
+    if(isVid){
+      card.innerHTML = `
+        <video class="ev-video" src="${p.mediaUrl}" playsinline preload="metadata" style="width:100%;height:100%;object-fit:contain;display:block;"></video>
+        <div class="ev-overlay">
+          <div class="ev-side">
+            <div class="ev-action" data-post="${p.id}" data-action="like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+              <span id="ev-likes-${p.id}">${fmtN(p.likes||0)}</span>
+            </div>
+            <div class="ev-action" data-post="${p.id}" data-action="comment">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              <span>${fmtN(p.commentsCount||0)}</span>
+            </div>
+            <div class="ev-action" data-post="${p.id}" data-action="share">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              <span>Compartir</span>
+            </div>
+          </div>
+          <div class="ev-info">
+            <div class="ev-user-row">
+              <img class="ev-av" src="${av}" onerror="this.src='https://ui-avatars.com/api/?name=U&background=222&color=fff'"/>
+              <span class="ev-username">@${esc(p.username||'usuario')}</span>
+            </div>
+            ${p.caption?`<div class="ev-caption">${esc((p.caption||'').slice(0,120))}</div>`:''}
+            <div class="ev-controls">
+              <div class="ev-prog-wrap"><div class="ev-prog-bg"><div class="ev-prog-fill"></div><div class="ev-prog-thumb"></div></div></div>
+              <div class="ev-ctrl-row">
+                <button class="vid-btn ev-play-btn">${SVG_PLAY}</button>
+                <span class="vid-time ev-time">0:00 / 0:00</span>
+                <div class="vid-vol-wrap" style="margin-left:auto;">
+                  <button class="vid-btn ev-mute-btn">${SVG_VOL}</button>
+                  <input type="range" class="vid-vol-slider ev-vol" min="0" max="1" step="0.05" value="1"/>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    } else {
+      card.innerHTML = `
+        <img src="${p.mediaUrl}" style="width:100%;height:100%;object-fit:contain;display:block;" loading="lazy"/>
+        <div class="ev-overlay">
+          <div class="ev-side">
+            <div class="ev-action" data-post="${p.id}" data-action="like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+              <span id="ev-likes-${p.id}">${fmtN(p.likes||0)}</span>
+            </div>
+            <div class="ev-action" data-post="${p.id}" data-action="comment">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              <span>${fmtN(p.commentsCount||0)}</span>
+            </div>
+            <div class="ev-action" data-post="${p.id}" data-action="share">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              <span>Compartir</span>
+            </div>
+          </div>
+          <div class="ev-info">
+            <div class="ev-user-row">
+              <img class="ev-av" src="${av}" onerror="this.src='https://ui-avatars.com/api/?name=U&background=222&color=fff'"/>
+              <span class="ev-username">@${esc(p.username||'usuario')}</span>
+            </div>
+            ${p.caption?`<div class="ev-caption">${esc((p.caption||'').slice(0,120))}</div>`:''}
+          </div>
+        </div>`;
+    }
+    scroller.appendChild(card);
+
+    if(isVid){
+      const vid=card.querySelector('.ev-video'), fill=card.querySelector('.ev-prog-fill'), thmb=card.querySelector('.ev-prog-thumb'), timeEl=card.querySelector('.ev-time'), playBtn=card.querySelector('.ev-play-btn'), muteBtn=card.querySelector('.ev-mute-btn'), volSl=card.querySelector('.ev-vol'), progWrap=card.querySelector('.ev-prog-wrap');
+      const updProg=()=>{ const dur=vid.duration,cur=vid.currentTime; if(!isFinite(dur)||isNaN(dur)||dur<=0)return; const pct=Math.max(0,Math.min(100,(cur/dur)*100)); if(fill)fill.style.width=pct+'%'; if(thmb)thmb.style.left=pct+'%'; if(timeEl)timeEl.textContent=fmt(cur)+' / '+fmt(dur); };
+      vid.addEventListener('timeupdate',updProg); vid.addEventListener('loadedmetadata',updProg);
+      vid.addEventListener('play',()=>{ if(playBtn)playBtn.innerHTML=SVG_PAUSE; });
+      vid.addEventListener('pause',()=>{ if(playBtn)playBtn.innerHTML=SVG_PLAY; });
+      vid.addEventListener('ended',()=>{ vid.currentTime=0; vid.play().catch(()=>{}); });
+      let _dbl=0;
+      vid.addEventListener('click',e=>{ const now=Date.now(); if(now-_dbl<350){toggleLike(p.id,card.querySelector('.ev-action'));spawnHeartFlood(e.clientX,e.clientY);_dbl=0;}else{_dbl=now;vid.paused?vid.play():vid.pause();} });
+      if(playBtn) playBtn.addEventListener('click',e=>{e.stopPropagation();vid.paused?vid.play():vid.pause();});
+      if(muteBtn) muteBtn.addEventListener('click',e=>{e.stopPropagation();vid.muted=!vid.muted;if(volSl)volSl.value=vid.muted?0:vid.volume;muteBtn.innerHTML=vid.muted?SVG_MUTE:SVG_VOL;});
+      if(volSl)   volSl.addEventListener('input',e=>{e.stopPropagation();vid.volume=parseFloat(volSl.value);vid.muted=vid.volume===0;if(muteBtn)muteBtn.innerHTML=vid.muted?SVG_MUTE:SVG_VOL;});
+      let _rs=false;
+      const scrub=e=>{const dur=vid.duration;if(!isFinite(dur)||isNaN(dur)||dur<=0)return;const r=progWrap.getBoundingClientRect();const cx=e.touches?e.touches[0].clientX:e.clientX;const pct=Math.max(0,Math.min(1,(cx-r.left)/r.width));if(vid.readyState>=1){vid.currentTime=pct*dur;updProg();}};
+      if(progWrap){ progWrap.addEventListener('mousedown',e=>{_rs=true;scrub(e);e.stopPropagation();}); window.addEventListener('mousemove',e=>{if(_rs)scrub(e);}); window.addEventListener('mouseup',()=>{_rs=false;}); progWrap.addEventListener('touchstart',e=>{_rs=true;scrub(e);e.preventDefault();},{passive:false}); progWrap.addEventListener('touchmove',e=>{if(_rs)scrub(e);e.preventDefault();},{passive:false}); progWrap.addEventListener('touchend',()=>{_rs=false;}); }
+      new IntersectionObserver(entries=>{ entries.forEach(en=>{ if(en.isIntersecting){ const pp=vid.play();if(pp)pp.catch(()=>{vid.muted=true;vid.play().catch(()=>{});}); }else{ vid.pause();vid.currentTime=0; } }); },{threshold:0.6}).observe(card);
+    }
+
+    card.querySelectorAll('.ev-action').forEach(btn=>{
+      btn.addEventListener('click',e=>{
+        e.stopPropagation();
+        const action=btn.dataset.action, postId=btn.dataset.post;
+        if(action==='like') toggleLike(postId,btn);
+        else if(action==='comment') openComments(postId,fmtN(p.commentsCount||0));
+        else if(action==='share') sharePost(postId);
+      });
+    });
+  });
+
+  requestAnimationFrame(()=>{ const cards=scroller.children; if(cards[startIdx]) cards[startIdx].scrollIntoView({behavior:'instant'}); });
+
+  const closeViewer=()=>{ overlay.querySelectorAll('video').forEach(v=>{v.pause();v.src='';}); overlay.remove(); document.body.style.overflow=''; };
+  document.getElementById('upmv-close').addEventListener('click', closeViewer);
+  const onEsc=e=>{ if(e.key==='Escape'){closeViewer();document.removeEventListener('keydown',onEsc);} };
+  document.addEventListener('keydown', onEsc);
+}
 
 window.closeUserProfile = () => {
   const m = document.getElementById('user-profile-modal');
@@ -5164,8 +5280,8 @@ function renderThumbGrid(grid, docs, emptyMsg, onClickFn){
   });
 }
 
-// ── PROFILE POST VIEWER (fullscreen al hacer click en thumb) ──
-function openProfileViewer(startIdx, docs){
+// ── PROFILE POST VIEWER (perfil propio) ──
+function openMyProfileViewer(startIdx, docs){
   const overlay=document.createElement('div');
   overlay.style.cssText='position:fixed;inset:0;z-index:7000;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;';
 
@@ -5310,13 +5426,13 @@ async function loadMyProfile(){
       document.getElementById('prof-grid-posts'),
       postDocs,
       'Sin publicaciones todavía. ¡Compartí algo!',
-      (idx,docs)=>openProfileViewer(idx,docs)
+      (idx,docs)=>openMyProfileViewer(idx,docs)
     );
     renderThumbGrid(
       document.getElementById('prof-grid-reels'),
       reelDocs,
       'Sin reels todavía. ¡Subí tu primer video!',
-      (idx,docs)=>openProfileViewer(idx,docs)
+      (idx,docs)=>openMyProfileViewer(idx,docs)
     );
   }catch(e){
     console.error('Error cargando posts del perfil:', e);
@@ -5357,7 +5473,7 @@ async function loadProfLiked(){
       grid,
       likedDocs,
       'Sin publicaciones likeadas todavía.',
-      (idx,docs)=>openProfileViewer(idx,docs)
+      (idx,docs)=>openMyProfileViewer(idx,docs)
     );
   }catch(e){
     console.error('Error cargando likes del perfil:', e);
