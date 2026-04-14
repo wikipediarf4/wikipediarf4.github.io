@@ -4301,19 +4301,7 @@ window.doUpload = async () => {
     const tags=document.getElementById('up-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
     const ud=(await getDoc(doc(db,'users',CU.uid))).data()||{};
     pFill.style.width='20%';
-    // Si es video, aplicar marca de agua y outro antes de subir
     let fileToUpload = _file;
-    if (_fileIsVideo) {
-      btn.textContent = 'Procesando...';
-      try {
-        const avatarUrlWm = ud.avatarUrl || CU.photoURL || '';
-        fileToUpload = await processVideoWithWatermark(_file, ud.username || CU.displayName || 'usuario', avatarUrlWm);
-      } catch(wErr) {
-        console.warn('No se pudo agregar marca de agua, subiendo original:', wErr);
-        fileToUpload = _file;
-      }
-      btn.textContent = 'Subiendo...';
-    }
     pFill.style.width='40%';
     const mediaUrl=await uploadToServer(fileToUpload,ud.username||CU.displayName,caption);
     pFill.style.width='80%';
@@ -5560,19 +5548,7 @@ window.doCompose = async () => {
     const ud=(await getDoc(doc(db,'users',CU.uid))).data()||{};
     let mediaUrl='', mediaType='';
     if(_composeFile){
-      // Si es video, aplicar marca de agua antes de subir
       let composeFileToUpload = _composeFile;
-      if (_composeIsVideo) {
-        btn.textContent = 'Procesando...';
-        try {
-          const avatarUrlWm = ud.avatarUrl || CU.photoURL || '';
-          composeFileToUpload = await processVideoWithWatermark(_composeFile, ud.username || CU.displayName || 'usuario', avatarUrlWm);
-        } catch(wErr) {
-          console.warn('Marca de agua fallida, subiendo original:', wErr);
-          composeFileToUpload = _composeFile;
-        }
-        btn.textContent = 'Publicando...';
-      }
       mediaUrl = await uploadToServer(composeFileToUpload, ud.username||CU.displayName, caption);
       mediaType = _composeIsVideo ? 'video' : 'image';
     }
