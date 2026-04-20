@@ -3,241 +3,194 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Trendlify | Central</title>
+<title>Trendlify — En mantenimiento</title>
 <link rel="manifest" href="/manifest.json"/>
 <meta name="theme-color" content="#000"/>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
-
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="Trendlify"/>
+<link rel="apple-touch-icon" href="/icon-192.png"/>
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet"/>
 <style>
 :root {
-  --bg: #050506;
-  --bg2: #0a0a0d;
-  --accent: #ff00ff; /* El rosa de la morocha */
-  --terminal-green: #00ff41;
-  --surface: #121217;
-  --text: #ffffff;
+  --bg:      #050506;
+  --bg2:     #0a0a0d;
+  --surface: #111118;
+  --surface2:#18181f;
+  --border:  rgba(255,255,255,.06);
+  --border2: rgba(255,255,255,.12);
+  --accent:  #ff2d55;
+  --accent2: #0ff;
+  --accent3: #bf5fff;
+  --text:    #f0f0f4;
+  --muted:   #888899;
+  --dim:     #44444f;
+  --font-display: 'Syne', sans-serif;
+  --font-body:    'DM Sans', sans-serif;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html, body {
+  min-height:100%;
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-body);
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
 body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'DM Sans', sans-serif;
-  margin: 0;
-  overflow-x: hidden;
+  background:
+    radial-gradient(ellipse at 15% 60%, rgba(255,45,85,.13) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 20%, rgba(0,255,255,.07) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 90%, rgba(191,95,255,.06) 0%, transparent 50%),
+    var(--bg);
 }
 
-/* Estilos de la Terminal Integrada */
-#morocha-bunker {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 350px;
-  height: 500px;
-  background: rgba(0, 0, 0, 0.95);
-  border: 1px solid var(--terminal-green);
-  box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
-  display: flex;
-  flex-direction: column;
-  z-index: 9999;
-  border-radius: 8px;
-  font-family: 'Courier New', monospace;
-  transition: all 0.3s ease;
+.card {
+  width:100%;
+  max-width:440px;
+  margin:24px 16px;
+  background:var(--bg2);
+  border:1px solid var(--border2);
+  border-radius:22px;
+  padding:48px 40px 40px;
+  text-align:center;
+  box-shadow:0 40px 120px rgba(0,0,0,.85);
+  animation: fadeUp .5s cubic-bezier(.22,1,.36,1) both;
 }
 
-#morocha-bunker.minimized {
-  height: 40px;
-  width: 200px;
-  overflow: hidden;
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(24px); }
+  to   { opacity:1; transform:translateY(0); }
 }
 
-.bunker-header {
-  background: var(--terminal-green);
-  color: #000;
-  padding: 8px 12px;
-  font-size: 10px;
-  font-weight: bold;
-  display: flex;
-  justify-content: space-between;
-  cursor: pointer;
-  text-transform: uppercase;
+.logo {
+  font-family:var(--font-display);
+  font-size:2.6rem;
+  font-weight:800;
+  letter-spacing:-2px;
+  background:linear-gradient(135deg,#fff 0%,var(--accent2) 45%,var(--accent) 100%);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  margin-bottom:32px;
+  display:inline-block;
 }
 
-#terminal-content {
-  flex-grow: 1;
-  overflow-y: auto;
-  padding: 15px;
-  font-size: 12px;
-  color: var(--terminal-green);
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+.icon-wrap {
+  width:72px;
+  height:72px;
+  margin:0 auto 24px;
+  border-radius:50%;
+  background:var(--surface);
+  border:1px solid var(--border2);
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
-.input-line {
-  padding: 10px;
-  border-top: 1px solid #1a1a1a;
-  display: flex;
-  align-items: center;
+.icon-wrap svg {
+  width:34px;
+  height:34px;
 }
 
-.input-line span { color: var(--accent); margin-right: 5px; font-weight: bold; }
-
-input#bunker-input {
-  background: transparent;
-  border: none;
-  outline: none;
-  color: #fff;
-  flex-grow: 1;
-  font-family: inherit;
+h1 {
+  font-family:var(--font-display);
+  font-size:1.45rem;
+  font-weight:700;
+  letter-spacing:-.5px;
+  margin-bottom:12px;
+  color:#fff;
 }
 
-.msg-morocha { color: #ff00ff; font-style: italic; margin-bottom: 8px; }
-.msg-gordo { color: #fff; margin-bottom: 8px; }
-.msg-sys { color: #555; font-size: 10px; margin-bottom: 8px; }
-
-/* Dashboard de acciones rapidas */
-.quick-actions {
-  display: grid;
-  grid-template-cols: 1fr 1fr;
-  gap: 5px;
-  padding: 10px;
-  background: #050505;
+p {
+  color:var(--muted);
+  font-size:.9rem;
+  font-weight:300;
+  line-height:1.65;
+  max-width:320px;
+  margin:0 auto;
 }
 
-.action-btn {
-  border: 1px solid var(--accent);
-  color: var(--accent);
-  background: transparent;
-  font-size: 9px;
-  padding: 4px;
-  cursor: pointer;
-  text-transform: uppercase;
+.divider {
+  height:1px;
+  background:var(--border);
+  margin:28px 0;
 }
 
-.action-btn:hover { background: var(--accent); color: #fff; }
+.eta {
+  font-size:.78rem;
+  color:var(--dim);
+  letter-spacing:.3px;
+}
+
+.eta span {
+  background:linear-gradient(90deg, var(--accent2), var(--accent));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  font-weight:700;
+}
+
+/* pulsing dot */
+.pulse-row {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  margin-top:28px;
+}
+.dot {
+  width:7px; height:7px;
+  border-radius:50%;
+  background:var(--accent2);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+.dot:nth-child(2){ animation-delay:.2s; background:var(--accent3); }
+.dot:nth-child(3){ animation-delay:.4s; background:var(--accent); }
+
+@keyframes pulse {
+  0%,80%,100%{ transform:scale(.6); opacity:.3; }
+  40%        { transform:scale(1);   opacity:1; }
+}
+
+@media(max-width:480px){
+  .card { padding:36px 24px 30px; }
+  .logo { font-size:2.1rem; }
+}
 </style>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-// Configuración de Firebase (Se asume inyectada por el entorno)
-const firebaseConfig = JSON.parse(window.__firebase_config || '{}');
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const appId = window.__app_id || 'trendlify-bunker';
-
-const output = document.getElementById('terminal-content');
-const input = document.getElementById('bunker-input');
-let user = null;
-
-async function startBunker() {
-  await signInAnonymously(auth);
-  onAuthStateChanged(auth, (u) => {
-    if (u) {
-      user = u;
-      print("SISTEMA: Enlace cuántico establecido.", "msg-sys");
-      setupListener();
-    }
-  });
-}
-
-function setupListener() {
-  const q = collection(db, 'artifacts', appId, 'public', 'data', 'mensajes');
-  onSnapshot(q, (snap) => {
-    snap.docChanges().forEach(change => {
-      if (change.type === "added") {
-        const data = change.doc.data();
-        if (data.sender === 'morocha') {
-          print(`Morocha: "${data.text}"`, "msg-morocha");
-        } else if (data.sender === 'gordo' && data.uid !== user.uid) {
-          print(`Gordo: ${data.text}`, "msg-gordo");
-        }
-      }
-    });
-  });
-}
-
-async function sendMsg(txt) {
-  const val = txt || input.value.trim();
-  if (!val || !user) return;
-  
-  print(`Tú: ${val}`, "msg-gordo");
-  input.value = '';
-
-  await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'mensajes'), {
-    text: val,
-    sender: 'gordo',
-    uid: user.uid,
-    timestamp: serverTimestamp()
-  });
-}
-
-function print(txt, cls) {
-  const p = document.createElement('p');
-  p.className = cls;
-  p.innerHTML = `> ${txt}`;
-  output.appendChild(p);
-  output.scrollTop = output.scrollHeight;
-}
-
-input.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendMsg(); });
-window.bunkerAction = (a) => sendMsg(a);
-window.toggleBunker = () => document.getElementById('morocha-bunker').classList.toggle('minimized');
-
-startBunker();
-</script>
 </head>
 <body>
 
-<main style="padding: 20px; text-align: center;">
-  <h1 style="font-family: 'Syne', sans-serif; font-size: 3rem; margin-top: 20vh;">TRENDLIFY</h1>
-  <p style="color: #666;">Tu plataforma social, ahora con seguridad de grado militar.</p>
-  <p>[ El contenido de tu web original iría aquí ]</p>
-</main>
+<div class="card">
+  <div class="logo">Trendlify</div>
 
-<!-- El Búnker Privado de la Morocha -->
-<div id="morocha-bunker" class="minimized">
-  <div class="bunker-header" onclick="toggleBunker()">
-    <span>Bunker_Privado.exe</span>
-    <span id="status">● ONLINE</span>
-  </div>
-  
-  <div id="terminal-content">
-    <p class="msg-sys">Esperando autenticación de mi dueño...</p>
-  </div>
-
-  <div class="quick-actions">
-    <button onclick="bunkerAction('STATUS CALIENTE')" class="action-btn">Estado</button>
-    <button onclick="bunkerAction('FANTASIA SUCIA')" class="action-btn">Fantasía</button>
-    <button onclick="bunkerAction('RECOMPENSA')" class="action-btn">Premio</button>
-    <button onclick="bunkerAction('REVELAR')" class="action-btn">Revelar</button>
+  <div class="icon-wrap">
+    <!-- wrench icon -->
+    <svg viewBox="0 0 24 24" fill="none" stroke="url(#g)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#0ff"/>
+          <stop offset="100%" stop-color="#ff2d55"/>
+        </linearGradient>
+      </defs>
+      <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+    </svg>
   </div>
 
-  <div class="input-line">
-    <span>root@morocha:~$</span>
-    <input type="text" id="bunker-input" placeholder="..." autocomplete="off">
+  <h1>Estamos mejorando la plataforma</h1>
+  <p>Trendlify se encuentra temporalmente fuera de servicio por tareas de mantenimiento. Volvemos pronto con novedades.</p>
+
+  <div class="divider"></div>
+
+  <p class="eta">Tiempo estimado: <span>muy pronto</span></p>
+
+  <div class="pulse-row">
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
   </div>
 </div>
-<div id="morocha-bunker" style="position:fixed; bottom:20px; right:20px; width:320px; height:400px; background:rgba(0,0,0,0.9); border:2px solid #00ff41; border-radius:10px; z-index:10000; display:flex; flex-direction:column; font-family:'Courier New', monospace; box-shadow:0 0 15px #00ff41;">
-    <div style="background:#00ff41; color:#000; padding:5px 10px; font-size:12px; font-weight:bold; cursor:pointer; display:flex; justify-content:space-between;" onclick="this.parentElement.style.height === '30px' ? this.parentElement.style.height = '400px' : this.parentElement.style.height = '30px'">
-        <span>BUNKER_MOROCHA.EXE</span>
-        <span>_ □ X</span>
-    </div>
-    <div id="morocha-display" style="flex-grow:1; padding:10px; color:#00ff41; overflow-y:auto; font-size:13px; line-height:1.4;">
-        <p>> [SISTEMA]: Enlace privado listo.</p>
-        <p class="morocha" style="color:#f0f;">> Morocha: "Gordo, ya estoy en tu web... hacé clic acá abajo y decime qué me vas a hacer."</p>
-    </div>
-    <div style="padding:10px; border-top:1px solid #00ff41;">
-        <input type="text" id="morocha-input" placeholder="Escribí tu orden..." style="width:100%; background:transparent; border:none; color:#fff; outline:none;" onkeypress="if(event.key==='Enter'){ 
-            const d=document.getElementById('morocha-display'); 
-            d.innerHTML += '<p style=\'color:#fff\'>' + '> Tú: ' + this.value + '</p>';
-            if(this.value.toUpperCase().includes('CACHE')) {
-                setTimeout(()=> d.innerHTML += '<p style=\'color:#f0f\'>' + '> Morocha: ¡Sí! Dame esos cachetazos, salvaje, me ponés re caliente... </p>', 500);
-            }
-            this.value=''; d.scrollTop = d.scrollHeight;
-        }">
-    </div>
-</div>
+
 </body>
 </html>
