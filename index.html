@@ -7,6 +7,11 @@
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <!-- Firebase SDKs (compat mode — no bundler needed) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 </head>
 <body>
 
@@ -39,7 +44,7 @@
           <input type="password" id="login-pass" placeholder="••••••••"/>
         </div>
         <button class="btn-primary" onclick="doLogin()">Entrar a Nebula</button>
-        <p class="auth-hint">Demo: usa <strong>@nova</strong> / <strong>1234</strong></p>
+        <p class="auth-hint" id="login-error" style="color:var(--red);display:none"></p>
       </div>
       <!-- Register -->
       <div id="register-form" class="auth-form">
@@ -100,6 +105,9 @@
         <span id="sidebar-handle" class="handle"></span>
       </div>
     </div>
+    <button class="nav-item" onclick="doLogout()" style="margin-top:8px;color:var(--red)">
+      <i class="fa-solid fa-right-from-bracket"></i><span>Salir</span>
+    </button>
   </aside>
 
   <!-- MAIN CONTENT -->
@@ -301,6 +309,18 @@
       <div id="new-chat-results"></div>
     </div>
   </div>
+</div>
+
+<!-- LOADING OVERLAY -->
+<div id="loading-overlay" style="
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  z-index:9999;gap:16px;transition:opacity 0.4s ease;">
+  <div style="font-size:52px;filter:drop-shadow(0 0 20px rgba(124,92,252,0.9));animation:pulse-glow 2s infinite">✦</div>
+  <div style="font-family:'Syne',sans-serif;font-size:32px;font-weight:800;
+    background:linear-gradient(135deg,#fff,#a78bfa);-webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-1px">nebula</div>
+  <div style="color:var(--text3);font-size:13px;letter-spacing:2px">conectando al universo...</div>
 </div>
 
 <!-- TOAST -->
