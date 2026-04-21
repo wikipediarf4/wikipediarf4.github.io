@@ -18,6 +18,126 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db   = firebase.database();
 
+// ── CLOUDINARY CONFIG ──
+// Agrega aquí tus cuentas. Los upload_preset deben ser "Unsigned" en tu dashboard.
+const CLOUDINARY_ACCOUNTS = [
+  {
+    cloud_name:    "mi_cuenta_principal",  // ← reemplaza
+    upload_preset: "nebula_unsigned",       // ← reemplaza
+    folder:        "nebula/posts",
+  },
+  {
+    cloud_name:    "mi_cuenta_backup_1",   // ← reemplaza
+    upload_preset: "nebula_unsigned_2",    // ← reemplaza
+    folder:        "nebula/posts",
+  },
+  {
+    cloud_name:    "mi_cuenta_backup_2",   // ← reemplaza
+    upload_preset: "nebula_unsigned_3",    // ← reemplaza
+    folder:        "nebula/posts",
+  },
+];
+const CLOUDINARY_TIMEOUT_MS  = 15000;
+const CLOUDINARY_STORAGE_KEY = "nebula_cloudinary_preferred";
+
+function _cloudinaryGetOrdered() {
+  const preferred = localStorage.getItem(CLOUDINARY_STORAGE_KEY);
+  if (!preferred) return [...CLOUDINARY_ACCOUNTS];
+  return [...CLOUDINARY_ACCOUNTS].sort((a, b) =>
+    a.cloud_name === preferred ? -1 : b.cloud_name === preferred ? 1 : 0
+  );
+}
+function _cloudinarySavePreferred(cloud_name) {
+  localStorage.setItem(CLOUDINARY_STORAGE_KEY, cloud_name);
+}
+function _cloudinaryUploadUrl(cloud_name, file) {
+  const type = file.type.startsWith("video/") ? "video" : "image";
+  return `https://api.cloudinary.com/v1_1/${cloud_name}/${type}/upload`;
+}
+function _cloudinaryFormatBytes(b) {
+  if (b < 1024) return b + " B";
+  if (b < 1048576) return (b / 1024).toFixed(1) + " KB";
+  return (b / 1048576).toFixed(1) + " MB";
+}
+
+// Sube a UNA cuenta usando XHR (soporta progreso nativo)
+function _cloudinaryUploadOne(file, account, onProgress) {
+  return new Promise((resolve, reject) => {
+    const { cloud_name, upload_preset, folder } = account;
+    const url = _cloudinaryUploadUrl(cloud_name, file);
+    const fd  = new FormData();
+    fd.append("file",           file);
+    fd.append("upload_preset",  upload_preset);
+    if (folder) fd.append("folder", folder);
+
+    const xhr = new XMLHttpRequest();
+
+    const timer = setTimeout(() => {
+      xhr.abort();
+      reject(new Error(`Timeout (${CLOUDINARY_TIMEOUT_MS / 1000}s) en "${cloud_name}"`));
+    }, CLOUDINARY_TIMEOUT_MS);
+
+    if (typeof onProgress === "function") {
+      xhr.upload.addEventListener("progress", e => {
+        if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
+      });
+    }
+
+    xhr.onload = () => {
+      clearTimeout(timer);
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try { resolve(JSON.parse(xhr.responseText)); }
+        catch { reject(new Error("Respuesta inválida de " + cloud_name)); }
+      } else {
+        let msg = `Error ${xhr.status} en "${cloud_name}"`;
+        try { msg = JSON.parse(xhr.responseText)?.error?.message || msg; } catch {}
+        reject(new Error(msg));
+      }
+    };
+    xhr.onerror = () => { clearTimeout(timer); reject(new Error(`Red caída en "${cloud_name}"`)); };
+    xhr.onabort = () => { clearTimeout(timer); reject(new Error(`Cancelado: "${cloud_name}"`)); };
+
+    xhr.open("POST", url);
+    xhr.send(fd);
+  });
+}
+
+// Función principal: intenta cada cuenta en orden, con fallback automático
+async function subirConFallback(file, { onProgress, onAttempt } = {}) {
+  const accounts = _cloudinaryGetOrdered();
+  const errors   = [];
+
+  console.groupCollapsed(`[Nebula ✦] Subiendo: ${file.name} (${_cloudinaryFormatBytes(file.size)})`);
+  console.log("Tipo:", file.type);
+  console.log("Orden de cuentas:", accounts.map(a => a.cloud_name));
+
+  for (let i = 0; i < accounts.length; i++) {
+    const account = accounts[i];
+    console.log(`\n⬆ Intento ${i + 1}/${accounts.length} → "${account.cloud_name}"`);
+    if (typeof onAttempt === "function") {
+      onAttempt({ cloud_name: account.cloud_name, attempt: i + 1, total: accounts.length });
+    }
+    try {
+      const result = await _cloudinaryUploadOne(file, account, onProgress);
+      _cloudinarySavePreferred(account.cloud_name);
+      console.log(`✅ Éxito en "${account.cloud_name}" → ${result.secure_url}`);
+      console.groupEnd();
+      return { ...result, _usedAccount: account.cloud_name };
+    } catch (err) {
+      console.warn(`❌ Falló "${account.cloud_name}": ${err.message}`);
+      errors.push({ cloud_name: account.cloud_name, error: err.message });
+      if (typeof onProgress === "function" && i < accounts.length - 1) onProgress(0);
+    }
+  }
+
+  console.error("🚫 Todas las cuentas fallaron:", errors);
+  console.groupEnd();
+  throw new Error(
+    "No se pudo subir el archivo. Todos los servicios fallaron:\n" +
+    errors.map(e => `• ${e.cloud_name}: ${e.error}`).join("\n")
+  );
+}
+
 // ── ESTADO GLOBAL ──
 let currentUser      = null;
 let activeChatUserId = null;
@@ -342,35 +462,106 @@ function openComposer(type) {
   av.textContent=getInitials(currentUser.name);
   $('post-text').value=''; $('char-count').textContent='0';
   $('media-preview').innerHTML=''; $('file-input').value='';
+  _selectedFile = null;
   delete $('media-preview').dataset.src; delete $('media-preview').dataset.type;
   $('post-text').oninput=function(){$('char-count').textContent=this.value.length;$('char-count').style.color=this.value.length>450?'var(--red)':'var(--text3)';};
   if(type==='image'){$('file-input').accept='image/*';$('file-input').click();}
   else if(type==='video'){$('file-input').accept='video/*';$('file-input').click();}
 }
 
+// Archivo seleccionado actualmente en el composer
+let _selectedFile = null;
+
 function handleFileSelect(input) {
-  const file=input.files[0]; if(!file)return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    const preview=$('media-preview');
-    if(file.type.startsWith('image/')){preview.innerHTML='<img src="'+e.target.result+'" style="max-height:200px;width:100%;object-fit:cover;border-radius:10px"/>';preview.dataset.type='image';}
-    else if(file.type.startsWith('video/')){preview.innerHTML='<video src="'+e.target.result+'" controls style="width:100%;max-height:200px;border-radius:10px"></video>';preview.dataset.type='video';}
-    preview.dataset.src=e.target.result;
-  };
-  reader.readAsDataURL(file);
+  const file = input.files[0];
+  if (!file) return;
+  _selectedFile = file; // guardamos el File real para subirlo a Cloudinary
+
+  const preview  = $('media-preview');
+  const localUrl = URL.createObjectURL(file);
+
+  if (file.type.startsWith('image/')) {
+    preview.innerHTML = '<img src="' + localUrl + '" style="max-height:200px;width:100%;object-fit:cover;border-radius:10px"/>';
+    preview.dataset.type = 'image';
+  } else if (file.type.startsWith('video/')) {
+    preview.innerHTML = '<video src="' + localUrl + '" controls style="width:100%;max-height:200px;border-radius:10px"></video>';
+    preview.dataset.type = 'video';
+  }
+  preview.dataset.src = localUrl; // solo para detectar si hay media pendiente
 }
 
 async function publishPost() {
-  const text=$('post-text').value.trim(), preview=$('media-preview');
-  if(!text&&!preview.dataset.src){showToast('Escribe algo antes de lanzar','⚠️');return;}
-  const btn=document.querySelector('#modal-composer .btn-primary');
-  btn.disabled=true; btn.textContent='Lanzando...';
-  const ref=db.ref('posts').push();
-  await ref.set({authorId:currentUser.uid,authorName:currentUser.name,authorHandle:currentUser.username,authorColor:currentUser.color,
-    text,mediaUrl:preview.dataset.src||null,mediaType:preview.dataset.type||null,sharedBy:null,
-    reactions:{supernova:{},quantum:{},warp:{},eclipse:{},pulsar:{}},shares:{},commentCount:0,timestamp:ts()});
-  btn.disabled=false; btn.textContent='Lanzar al universo ✦';
-  closeModal('modal-composer'); showToast('¡Publicación lanzada al universo!','🚀');
+  const text    = $('post-text').value.trim();
+  const preview = $('media-preview');
+
+  if (!text && !preview.dataset.src) {
+    showToast('Escribe algo antes de lanzar', '⚠️');
+    return;
+  }
+
+  const btn = document.querySelector('#modal-composer .btn-primary');
+  btn.disabled = true;
+
+  let mediaUrl  = null;
+  let mediaType = preview.dataset.type || null;
+
+  // ── Subida a Cloudinary con fallback ──
+  if (_selectedFile) {
+    // Barra de progreso (HTML en el modal: <div id="upload-progress-wrap"> ... </div>)
+    const progressWrap = $('upload-progress-wrap');
+    const progressFill = $('upload-progress-fill');
+    const progressText = $('upload-progress-text');
+
+    if (progressWrap) progressWrap.style.display = 'flex';
+    btn.textContent = 'Subiendo... 0%';
+
+    try {
+      const result = await subirConFallback(_selectedFile, {
+        onProgress: (percent) => {
+          btn.textContent = `Subiendo... ${percent}%`;
+          if (progressFill) progressFill.style.width = percent + '%';
+          if (progressText) progressText.textContent  = percent + '%';
+        },
+        onAttempt: ({ cloud_name, attempt, total }) => {
+          if (attempt > 1) showToast(`Reintentando con cuenta ${attempt}/${total}...`, '🔄');
+        },
+      });
+      mediaUrl  = result.secure_url;
+      mediaType = result.resource_type === 'video' ? 'video' : 'image';
+    } catch (err) {
+      if (progressWrap) progressWrap.style.display = 'none';
+      btn.disabled = false;
+      btn.textContent = 'Lanzar al universo ✦';
+      showToast('Error al subir: ' + err.message.split('\n')[0], '❌');
+      return;
+    }
+
+    if (progressWrap) progressWrap.style.display = 'none';
+    _selectedFile = null;
+  }
+
+  // ── Guardar post en Firebase ──
+  btn.textContent = 'Publicando...';
+  const ref = db.ref('posts').push();
+  await ref.set({
+    authorId:    currentUser.uid,
+    authorName:  currentUser.name,
+    authorHandle:currentUser.username,
+    authorColor: currentUser.color,
+    text,
+    mediaUrl:    mediaUrl,
+    mediaType:   mediaType,
+    sharedBy:    null,
+    reactions:   { supernova:{}, quantum:{}, warp:{}, eclipse:{}, pulsar:{} },
+    shares:      {},
+    commentCount: 0,
+    timestamp:   ts(),
+  });
+
+  btn.disabled = false;
+  btn.textContent = 'Lanzar al universo ✦';
+  closeModal('modal-composer');
+  showToast('¡Publicación lanzada al universo!', '🚀');
 }
 
 /* ══ TRENDING & SUGGESTIONS ══ */
