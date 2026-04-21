@@ -168,6 +168,17 @@ function showToast(msg, emoji='✦') {
 function getInitials(n) { return n ? n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2) : '?'; }
 function escapeHtml(t) { return t ? t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
 function hideLoading() { const e=$('loading-overlay'); if(e){e.style.opacity='0';setTimeout(()=>e.remove(),400);} }
+
+// Safety timeout: si Firebase tarda más de 5s, muestra el login de todas formas
+setTimeout(() => {
+  const overlay = $('loading-overlay');
+  if (overlay) {
+    hideLoading();
+    if (!$('app-screen').classList.contains('active')) {
+      $('auth-screen').classList.add('active');
+    }
+  }
+}, 5000);
 function closeModal(id) { $(id).classList.remove('open'); }
 function closeAllContextMenus() {
   document.querySelectorAll('.msg-context-menu,.post-context-menu').forEach(e=>e.remove());

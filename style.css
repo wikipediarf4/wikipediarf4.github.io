@@ -52,15 +52,15 @@ a { text-decoration: none; color: inherit; }
 img { display: block; max-width: 100%; border-radius: var(--radius-sm); }
 
 /* ── SCREENS ── */
-.screen { display: none; }
-.screen.active { display: block; }
+.screen { display: none !important; }
+#auth-screen.active { display: flex !important; }
+#app-screen.active  { display: flex !important; }
 
 /* ══════════════════════════════════════════════
    AUTH SCREEN
    ══════════════════════════════════════════════ */
 #auth-screen {
   min-height: 100vh;
-  display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
@@ -241,13 +241,8 @@ img { display: block; max-width: 100%; border-radius: var(--radius-sm); }
 /* ══════════════════════════════════════════════
    APP LAYOUT
    ══════════════════════════════════════════════ */
-#app-screen {
-  display: none;
-  min-height: 100vh;
-}
-#app-screen.active {
-  display: flex;
-}
+/* app-screen layout handled by .screen rules above */
+#app-screen { min-height: 100vh; }
 
 /* ── SIDEBAR ── */
 .sidebar {
