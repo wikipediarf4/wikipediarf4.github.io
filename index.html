@@ -673,14 +673,18 @@ function hideLoading() {
   e.style.pointerEvents='none';
   setTimeout(()=>{ if(e.parentNode) e.parentNode.removeChild(e); }, 450);
 }
-// Safety timeout — si venimos de Google redirect esperamos más tiempo
-var _safetyDelay = (sessionStorage.getItem('wikipediarf4_google_redirect')==='1') ? 20000 : 6000;
+// Safety timeout — sólo muestra login si el app NO cargó después de 10s
 setTimeout(()=>{
   if($('loading-overlay')){
     hideLoading();
-    if(!$('app-screen').classList.contains('active')) $('auth-screen').classList.add('active');
+    // Solo redirigir al login si el app no está activo Y no hay usuario autenticado
+    if(!$('app-screen').classList.contains('active')){
+      try{
+        if(!firebase.auth().currentUser) $('auth-screen').classList.add('active');
+      }catch(e){ $('auth-screen').classList.add('active'); }
+    }
   }
-}, _safetyDelay);
+}, 10000);
 
 function closeModal(id){ $(id).classList.remove('open'); }
 function closeAllContextMenus(){
@@ -741,15 +745,20 @@ async function doGoogleLogin(){
   }
 }
 
-// Punto de entrada único: primero resuelve el redirect (si venimos de Google),
-// luego arranca el listener. Así no hay carrera entre crear el perfil y onAuthStateChanged.
+// Punto de entrada único — arranca el listener de auth.
 async function bootApp(){
-  // Procesar resultado del redirect de Google si corresponde
+  // Siempre limpiar flag de redirect primero
+  sessionStorage.removeItem('wikipediarf4_google_redirect');
+
+  // Intentar procesar redirect de Google (puede fallar en iframes/preview — se ignora)
   try{
-    const result = await auth.getRedirectResult();
+    const result = await Promise.race([
+      auth.getRedirectResult(),
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error('redirect_timeout')),3000))
+    ]);
     if(result && result.user){
       const firebaseUser = result.user;
-      const snap = await db.ref('users/'+firebaseUser.uid).get();
+      const snap=await db.ref('users/'+firebaseUser.uid).get();
       if(!snap.exists()){
         const colors=['#7c5cfc','#4ade80','#f59e0b','#f43f5e','#38bdf8','#e879f9'];
         const color=colors[Math.floor(Math.random()*colors.length)];
@@ -764,26 +773,28 @@ async function bootApp(){
         await db.ref('users/'+firebaseUser.uid).set(profile);
         await db.ref('usernames/'+username).set(firebaseUser.uid);
       }
-      // Perfil listo — cargar app directo sin esperar onAuthStateChanged
       const profileSnap = await db.ref('users/'+firebaseUser.uid).get();
-      sessionStorage.removeItem('wikipediarf4_google_redirect');
       currentUser={uid:firebaseUser.uid,...profileSnap.val()};
       showApp();
-      return; // No necesitamos el listener para este flujo
+      return;
     }
   }catch(e){
-    if(e.code && e.code!=='auth/null-user')
-      showToast(getFriendlyError(e.code)||'Error con Google','❌');
+    // getRedirectResult falla en iframes/preview por permisos — continuar normalmente
+    const ignorable = !e.code || e.message==='redirect_timeout'
+      || e.code==='auth/null-user'
+      || (e.message&&(e.message.includes('Permission')||e.message.includes('permission')
+          ||e.message.includes('iframe')||e.message.includes('cross-origin')));
+    if(!ignorable) console.warn('[Nebula] getRedirectResult:', e.message||e.code);
   }
 
-  // No venimos de redirect de Google — limpiar flag
-  sessionStorage.removeItem('wikipediarf4_google_redirect');
-  // Flujo normal (email/pass o ya logueado)
+  // Flujo normal (email/pass o sesión persistente)
   auth.onAuthStateChanged(async(firebaseUser)=>{
     if(firebaseUser){
-      const snap=await db.ref('users/'+firebaseUser.uid).get();
-      if(snap.exists()){currentUser={uid:firebaseUser.uid,...snap.val()};showApp();}
-      else hideLoading();
+      try{
+        const snap=await db.ref('users/'+firebaseUser.uid).get();
+        if(snap.exists()){currentUser={uid:firebaseUser.uid,...snap.val()};showApp();}
+        else hideLoading();
+      }catch(dbErr){ console.warn('[Nebula] db read:', dbErr); hideLoading(); }
     } else { hideLoading(); $('auth-screen').classList.add('active'); }
   });
 }
