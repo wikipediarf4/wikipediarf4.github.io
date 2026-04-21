@@ -716,16 +716,24 @@ async function doRegister(){
 async function doGoogleLogin(){
   try{
     const provider=new firebase.auth.GoogleAuthProvider();
-    const cred=await auth.signInWithPopup(provider);
-    const firebaseUser=cred.user;
+    await auth.signInWithRedirect(provider);
+  }catch(e){
+    showToast(getFriendlyError(e.code)||'Error iniciando Google','❌');
+  }
+}
+
+async function handleGoogleRedirect(){
+  try{
+    const result=await auth.getRedirectResult();
+    if(!result||!result.user)return;
+    const firebaseUser=result.user;
     const snap=await db.ref('users/'+firebaseUser.uid).get();
     if(!snap.exists()){
-      // Primera vez — crear perfil automáticamente
       const colors=['#7c5cfc','#4ade80','#f59e0b','#f43f5e','#38bdf8','#e879f9'];
       const color=colors[Math.floor(Math.random()*colors.length)];
       const rawName=firebaseUser.displayName||'Viajero';
       const baseUser=rawName.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
-      let username=baseUser, i=1;
+      let username=baseUser,i=1;
       while((await db.ref('usernames/'+username).get()).exists()){username=baseUser+i++;}
       const profile={uid:firebaseUser.uid,name:rawName,username:'@'+username,
         email:firebaseUser.email||'',bio:'',location:'',color,
@@ -735,7 +743,7 @@ async function doGoogleLogin(){
       await db.ref('usernames/'+username).set(firebaseUser.uid);
     }
   }catch(e){
-    if(e.code!=='auth/popup-closed-by-user')showToast(getFriendlyError(e.code)||'Error con Google','❌');
+    if(e.code!=='auth/null-user')showToast(getFriendlyError(e.code)||'Error con Google','❌');
   }
 }
 async function doLogout(){
@@ -749,6 +757,7 @@ function getFriendlyError(code){
   return m[code]||'Error de autenticación';
 }
 
+handleGoogleRedirect();
 auth.onAuthStateChanged(async(firebaseUser)=>{
   if(firebaseUser){
     const snap=await db.ref('users/'+firebaseUser.uid).get();
