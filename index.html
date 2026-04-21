@@ -377,7 +377,14 @@ img{display:block;max-width:100%;border-radius:var(--radius-sm);}
   <div style="font-family:'Syne',sans-serif;font-size:32px;font-weight:800;background:linear-gradient(135deg,#fff,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-1px">nebula</div>
   <div style="color:#5a5b70;font-size:13px;letter-spacing:2px">conectando al universo...</div>
 </div>
-<script>(function(){var o=document.getElementById('loading-overlay');if(o)o.style.display='flex';})();</script>
+<script>(function(){
+  var o=document.getElementById('loading-overlay');if(o)o.style.display='flex';
+  // Si venimos de un redirect de Google, extender el timeout a 20s
+  if(document.referrer.includes('accounts.google.com')||
+     sessionStorage.getItem('wikipediarf4_google_redirect')==='1'){
+    window._googleRedirectPending=true;
+  }
+})();</script>
 
 <!-- ══ AUTH SCREEN ══ -->
 <div id="auth-screen" class="screen">
@@ -667,13 +674,14 @@ function hideLoading() {
   e.style.pointerEvents='none';
   setTimeout(()=>{ if(e.parentNode) e.parentNode.removeChild(e); }, 450);
 }
-// Safety: si Firebase tarda más de 6s, muestra el login igual
+// Safety timeout — si venimos de Google redirect esperamos más tiempo
+var _safetyDelay = (sessionStorage.getItem('wikipediarf4_google_redirect')==='1') ? 20000 : 6000;
 setTimeout(()=>{
   if($('loading-overlay')){
     hideLoading();
     if(!$('app-screen').classList.contains('active')) $('auth-screen').classList.add('active');
   }
-}, 6000);
+}, _safetyDelay);
 
 function closeModal(id){ $(id).classList.remove('open'); }
 function closeAllContextMenus(){
@@ -725,9 +733,11 @@ function getFriendlyError(code){
 
 async function doGoogleLogin(){
   try{
+    sessionStorage.setItem('wikipediarf4_google_redirect','1');
     const provider=new firebase.auth.GoogleAuthProvider();
     await auth.signInWithRedirect(provider);
   }catch(e){
+    sessionStorage.removeItem('wikipediarf4_google_redirect');
     showToast(getFriendlyError(e.code)||'Error iniciando Google','❌');
   }
 }
@@ -757,6 +767,7 @@ async function bootApp(){
       }
       // Perfil listo — cargar app directo sin esperar onAuthStateChanged
       const profileSnap = await db.ref('users/'+firebaseUser.uid).get();
+      sessionStorage.removeItem('wikipediarf4_google_redirect');
       currentUser={uid:firebaseUser.uid,...profileSnap.val()};
       showApp();
       return; // No necesitamos el listener para este flujo
@@ -766,6 +777,8 @@ async function bootApp(){
       showToast(getFriendlyError(e.code)||'Error con Google','❌');
   }
 
+  // No venimos de redirect de Google — limpiar flag
+  sessionStorage.removeItem('wikipediarf4_google_redirect');
   // Flujo normal (email/pass o ya logueado)
   auth.onAuthStateChanged(async(firebaseUser)=>{
     if(firebaseUser){
