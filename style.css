@@ -241,7 +241,6 @@ img { display: block; max-width: 100%; border-radius: var(--radius-sm); }
 /* ══════════════════════════════════════════════
    APP LAYOUT
    ══════════════════════════════════════════════ */
-/* app-screen layout handled by .screen rules above */
 #app-screen { min-height: 100vh; }
 
 /* ── SIDEBAR ── */

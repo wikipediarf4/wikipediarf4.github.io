@@ -319,15 +319,23 @@
 
 <!-- LOADING OVERLAY -->
 <div id="loading-overlay" style="
-  position:fixed;inset:0;background:var(--bg);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  z-index:9999;gap:16px;transition:opacity 0.4s ease;">
-  <div style="font-size:52px;filter:drop-shadow(0 0 20px rgba(124,92,252,0.9));animation:pulse-glow 2s infinite">✦</div>
+  position:fixed;inset:0;background:#0a0b10;
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  z-index:9999;gap:16px;transition:opacity 0.4s ease;opacity:1;">
+  <div style="font-size:52px;filter:drop-shadow(0 0 20px rgba(124,92,252,0.9))">✦</div>
   <div style="font-family:'Syne',sans-serif;font-size:32px;font-weight:800;
     background:linear-gradient(135deg,#fff,#a78bfa);-webkit-background-clip:text;
     -webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-1px">nebula</div>
-  <div style="color:var(--text3);font-size:13px;letter-spacing:2px">conectando al universo...</div>
+  <div style="color:#5a5b70;font-size:13px;letter-spacing:2px">conectando al universo...</div>
 </div>
+
+<script>
+  // Mostrar el overlay inmediatamente, antes de que cargue app.js
+  (function(){
+    var o = document.getElementById('loading-overlay');
+    if(o) o.style.display = 'flex';
+  })();
+</script>
 
 <!-- TOAST -->
 <div id="toast" class="toast"></div>

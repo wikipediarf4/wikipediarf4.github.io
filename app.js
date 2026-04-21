@@ -167,18 +167,23 @@ function showToast(msg, emoji='✦') {
 }
 function getInitials(n) { return n ? n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2) : '?'; }
 function escapeHtml(t) { return t ? t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
-function hideLoading() { const e=$('loading-overlay'); if(e){e.style.opacity='0';setTimeout(()=>e.remove(),400);} }
+function hideLoading() {
+  const e = $('loading-overlay');
+  if (!e) return;
+  e.style.opacity = '0';
+  e.style.pointerEvents = 'none';
+  setTimeout(() => { if(e.parentNode) e.parentNode.removeChild(e); }, 450);
+}
 
-// Safety timeout: si Firebase tarda más de 5s, muestra el login de todas formas
+// Safety timeout: si Firebase tarda más de 6s, muestra el login igual
 setTimeout(() => {
-  const overlay = $('loading-overlay');
-  if (overlay) {
+  if ($('loading-overlay')) {
     hideLoading();
     if (!$('app-screen').classList.contains('active')) {
       $('auth-screen').classList.add('active');
     }
   }
-}, 5000);
+}, 6000);
 function closeModal(id) { $(id).classList.remove('open'); }
 function closeAllContextMenus() {
   document.querySelectorAll('.msg-context-menu,.post-context-menu').forEach(e=>e.remove());
