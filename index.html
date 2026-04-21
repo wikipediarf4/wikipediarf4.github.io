@@ -712,40 +712,6 @@ async function doRegister(){
     await db.ref('usernames/'+username.toLowerCase()).set(uid);
   }catch(e){ showToast(getFriendlyError(e.code),'❌'); }
 }
-
-async function doGoogleLogin(){
-  try{
-    const provider=new firebase.auth.GoogleAuthProvider();
-    await auth.signInWithRedirect(provider);
-  }catch(e){
-    showToast(getFriendlyError(e.code)||'Error iniciando Google','❌');
-  }
-}
-
-async function handleGoogleRedirect(){
-  try{
-    const result=await auth.getRedirectResult();
-    if(!result||!result.user)return;
-    const firebaseUser=result.user;
-    const snap=await db.ref('users/'+firebaseUser.uid).get();
-    if(!snap.exists()){
-      const colors=['#7c5cfc','#4ade80','#f59e0b','#f43f5e','#38bdf8','#e879f9'];
-      const color=colors[Math.floor(Math.random()*colors.length)];
-      const rawName=firebaseUser.displayName||'Viajero';
-      const baseUser=rawName.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
-      let username=baseUser,i=1;
-      while((await db.ref('usernames/'+username).get()).exists()){username=baseUser+i++;}
-      const profile={uid:firebaseUser.uid,name:rawName,username:'@'+username,
-        email:firebaseUser.email||'',bio:'',location:'',color,
-        following:{},followers:{},
-        joinDate:new Date().toISOString().split('T')[0],createdAt:ts()};
-      await db.ref('users/'+firebaseUser.uid).set(profile);
-      await db.ref('usernames/'+username).set(firebaseUser.uid);
-    }
-  }catch(e){
-    if(e.code!=='auth/null-user')showToast(getFriendlyError(e.code)||'Error con Google','❌');
-  }
-}
 async function doLogout(){
   Object.values(chatListeners).forEach(f=>f&&f());
   if(feedUnsubscribe)feedUnsubscribe();
@@ -757,14 +723,60 @@ function getFriendlyError(code){
   return m[code]||'Error de autenticación';
 }
 
-handleGoogleRedirect();
-auth.onAuthStateChanged(async(firebaseUser)=>{
-  if(firebaseUser){
-    const snap=await db.ref('users/'+firebaseUser.uid).get();
-    if(snap.exists()){currentUser={uid:firebaseUser.uid,...snap.val()};showApp();}
-    else hideLoading();
-  } else { hideLoading(); $('auth-screen').classList.add('active'); }
-});
+async function doGoogleLogin(){
+  try{
+    const provider=new firebase.auth.GoogleAuthProvider();
+    await auth.signInWithRedirect(provider);
+  }catch(e){
+    showToast(getFriendlyError(e.code)||'Error iniciando Google','❌');
+  }
+}
+
+// Punto de entrada único: primero resuelve el redirect (si venimos de Google),
+// luego arranca el listener. Así no hay carrera entre crear el perfil y onAuthStateChanged.
+async function bootApp(){
+  // Procesar resultado del redirect de Google si corresponde
+  try{
+    const result = await auth.getRedirectResult();
+    if(result && result.user){
+      const firebaseUser = result.user;
+      const snap = await db.ref('users/'+firebaseUser.uid).get();
+      if(!snap.exists()){
+        const colors=['#7c5cfc','#4ade80','#f59e0b','#f43f5e','#38bdf8','#e879f9'];
+        const color=colors[Math.floor(Math.random()*colors.length)];
+        const rawName=firebaseUser.displayName||'Viajero';
+        const baseUser=rawName.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
+        let username=baseUser, i=1;
+        while((await db.ref('usernames/'+username).get()).exists()){username=baseUser+i++;}
+        const profile={uid:firebaseUser.uid,name:rawName,username:'@'+username,
+          email:firebaseUser.email||'',bio:'',location:'',color,
+          following:{},followers:{},
+          joinDate:new Date().toISOString().split('T')[0],createdAt:ts()};
+        await db.ref('users/'+firebaseUser.uid).set(profile);
+        await db.ref('usernames/'+username).set(firebaseUser.uid);
+      }
+      // Perfil listo — cargar app directo sin esperar onAuthStateChanged
+      const profileSnap = await db.ref('users/'+firebaseUser.uid).get();
+      currentUser={uid:firebaseUser.uid,...profileSnap.val()};
+      showApp();
+      return; // No necesitamos el listener para este flujo
+    }
+  }catch(e){
+    if(e.code && e.code!=='auth/null-user')
+      showToast(getFriendlyError(e.code)||'Error con Google','❌');
+  }
+
+  // Flujo normal (email/pass o ya logueado)
+  auth.onAuthStateChanged(async(firebaseUser)=>{
+    if(firebaseUser){
+      const snap=await db.ref('users/'+firebaseUser.uid).get();
+      if(snap.exists()){currentUser={uid:firebaseUser.uid,...snap.val()};showApp();}
+      else hideLoading();
+    } else { hideLoading(); $('auth-screen').classList.add('active'); }
+  });
+}
+
+bootApp();
 
 function showApp(){
   $('auth-screen').classList.remove('active');
