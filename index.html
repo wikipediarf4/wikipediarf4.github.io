@@ -1,634 +1,206 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Nebula — Red Social Gaming</title>
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-<style>
-:root {
-  --bg:#0B0F1A; --bg2:#0E1320; --bg3:#12182A; --bg4:#161D30;
-  --surface:#1A2236; --surface2:#1E2840;
-  --border:rgba(123,63,242,0.18); --border2:rgba(123,63,242,0.35);
-  --primary:#7B3FF2; --primary2:#9B6BFF;
-  --secondary:#3A8DFF; --secondary2:#5BA4FF;
-  --grad:linear-gradient(135deg,#7B3FF2,#3A8DFF);
-  --grad2:linear-gradient(135deg,#9B6BFF,#5BA4FF);
-  --glow:0 0 20px rgba(123,63,242,0.5);
-  --glow-sm:0 0 10px rgba(123,63,242,0.35);
-  --text:#FFFFFF; --text2:#A0A7B8; --text3:#5A6280;
-  --green:#22D87A; --red:#FF4D6D; --gold:#FFB830;
-  --r:12px; --r2:18px; --r3:24px;
-  --font-d:'Rajdhani',sans-serif; --font-b:'Exo 2',sans-serif; --font-m:'JetBrains Mono',monospace;
-  --sidebar-w:260px; --topbar-h:64px;
-  --t:0.2s cubic-bezier(0.4,0,0.2,1);
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nebula ULTRA</title>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getDatabase, ref, push, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA9oat9dd0S9vlxkg1osH4dW3XhRDGiOiw",
+  authDomain: "charlasrf4.firebaseapp.com",
+  databaseURL: "https://charlasrf4-default-rtdb.firebaseio.com",
+  projectId: "charlasrf4",
+  storageBucket: "charlasrf4.firebasestorage.app",
+  messagingSenderId: "345019626508",
+  appId: "1:345019626508:web:d099ca499acb29eac12a29"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+const provider = new GoogleAuthProvider();
+
+let currentUser = null;
+
+window.loginGoogle = async () => {
+  await signInWithPopup(auth, provider);
+};
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    currentUser = user;
+    document.getElementById('login').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    document.getElementById('userName').innerText = user.displayName;
+    document.getElementById('userPhoto').src = user.photoURL;
+    loadFeed();
+    loadTrends();
+  }
+});
+
+// CLOUDINARY
+const cloudName = "ds4ejt5sp";
+const uploadPreset = "VIDEOS";
+
+async function uploadFile(id){
+  const file = document.getElementById(id).files[0];
+  if(!file) return "";
+
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', uploadPreset);
+
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,{
+    method:'POST',
+    body:formData
+  });
+
+  const data = await res.json();
+  return data.secure_url;
 }
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html{scroll-behavior:smooth;}
-body{background:var(--bg);color:var(--text);font-family:var(--font-b);font-size:14px;line-height:1.6;min-height:100vh;overflow-x:hidden;}
-button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;}
-input,textarea{font-family:inherit;outline:none;border:none;background:none;color:inherit;}
-a{text-decoration:none;color:inherit;}
-img{display:block;max-width:100%;}
-::-webkit-scrollbar{width:4px;height:4px;}
-::-webkit-scrollbar-track{background:var(--bg2);}
-::-webkit-scrollbar-thumb{background:var(--primary);border-radius:4px;}
 
-/* LAYOUT */
-.app{display:grid;grid-template-columns:var(--sidebar-w) 1fr 300px;grid-template-rows:var(--topbar-h) 1fr;min-height:100vh;grid-template-areas:"side top top" "side feed right";}
+// PUBLICAR
+window.publish = async () => {
+  const text = document.getElementById('postText').value;
+  const file = await uploadFile('filePost');
 
-/* TOPBAR */
-.topbar{grid-area:top;background:rgba(11,15,26,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;padding:0 20px;position:sticky;top:0;z-index:200;}
-.search-box{flex:1;max-width:500px;position:relative;}
-.search-box i{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px;}
-.search-box input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:30px;padding:10px 16px 10px 42px;font-size:13px;transition:all var(--t);}
-.search-box input::placeholder{color:var(--text3);}
-.search-box input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(123,63,242,0.15);}
-.top-actions{display:flex;align-items:center;gap:8px;margin-left:auto;}
-.top-btn{width:40px;height:40px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:15px;transition:all var(--t);position:relative;}
-.top-btn:hover{background:var(--surface);border-color:var(--primary);color:var(--primary2);box-shadow:var(--glow);}
-.top-btn .dot{position:absolute;top:7px;right:7px;width:8px;height:8px;background:var(--primary);border-radius:50%;border:2px solid var(--bg);box-shadow:0 0 8px var(--primary);}
-.btn-create{background:var(--grad);border-radius:30px;padding:9px 20px;font-family:var(--font-d);font-size:15px;font-weight:600;color:white;display:flex;align-items:center;gap:8px;transition:all var(--t);box-shadow:0 4px 20px rgba(123,63,242,0.4);}
-.btn-create:hover{transform:translateY(-1px);box-shadow:0 6px 30px rgba(123,63,242,0.6);}
-.av-top{width:38px;height:38px;border-radius:50%;border:2px solid var(--primary);box-shadow:var(--glow);overflow:hidden;cursor:pointer;transition:box-shadow var(--t);flex-shrink:0;}
-.av-top:hover{box-shadow:0 0 30px rgba(123,63,242,0.8);}
-.av-top .ini{width:100%;height:100%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:700;color:white;font-size:15px;}
+  push(ref(db, 'posts'), {
+    user: currentUser.displayName,
+    photo: currentUser.photoURL,
+    text,
+    file,
+    likes: 0,
+    comments: {},
+    views: 0,
+    time: Date.now()
+  });
+};
 
-/* SIDEBAR */
-.sidebar{grid-area:side;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:0 12px 20px;position:sticky;top:0;height:100vh;overflow-y:auto;z-index:100;}
-.s-logo{display:flex;align-items:center;gap:12px;padding:18px 12px 20px;border-bottom:1px solid var(--border);margin-bottom:16px;}
-.s-logo-icon{width:42px;height:42px;border-radius:13px;overflow:hidden;box-shadow:var(--glow);flex-shrink:0;}
-.s-logo-icon .ini{width:100%;height:100%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-size:24px;font-weight:700;color:white;}
-.s-logo-text{font-family:var(--font-d);font-size:26px;font-weight:700;letter-spacing:1px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.s-label{font-size:10px;font-weight:600;letter-spacing:2px;color:var(--text3);text-transform:uppercase;padding:12px 14px 6px;font-family:var(--font-m);}
-.nav-item{display:flex;align-items:center;gap:14px;padding:11px 14px;border-radius:var(--r);color:var(--text2);font-size:15px;font-weight:500;transition:all var(--t);position:relative;cursor:pointer;width:100%;text-align:left;}
-.nav-item:hover{background:rgba(123,63,242,0.1);color:var(--text);}
-.nav-item.active{background:rgba(123,63,242,0.18);color:var(--primary2);font-weight:600;}
-.nav-item.active::before{content:'';position:absolute;left:0;top:6px;bottom:6px;width:3px;background:var(--grad);border-radius:0 3px 3px 0;box-shadow:var(--glow);}
-.nav-item i{width:20px;font-size:16px;text-align:center;}
-.nav-item.active i{color:var(--primary2);filter:drop-shadow(0 0 6px rgba(123,63,242,0.8));}
-.n-badge{margin-left:auto;background:var(--grad);color:white;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;min-width:20px;text-align:center;font-family:var(--font-m);box-shadow:0 2px 10px rgba(123,63,242,0.5);}
-.n-tag{margin-left:auto;font-size:9px;font-weight:700;letter-spacing:1px;padding:2px 8px;border-radius:20px;background:var(--grad);color:white;font-family:var(--font-m);text-transform:uppercase;}
-.s-footer{margin-top:auto;padding-top:16px;border-top:1px solid var(--border);}
-.s-user{display:flex;align-items:center;gap:12px;padding:12px;border-radius:var(--r);cursor:pointer;transition:background var(--t);}
-.s-user:hover{background:var(--surface);}
-.av-sm{width:38px;height:38px;border-radius:50%;background:var(--grad);border:2px solid var(--primary);box-shadow:var(--glow-sm);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:700;font-size:14px;color:white;flex-shrink:0;overflow:hidden;}
-.s-user-info{flex:1;min-width:0;}
-.s-user-name{font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.s-user-online{font-size:11px;color:var(--green);display:flex;align-items:center;gap:5px;}
-.s-user-online::before{content:'';width:6px;height:6px;background:var(--green);border-radius:50%;box-shadow:0 0 6px var(--green);}
-.btn-pub{width:100%;margin-top:10px;padding:12px;background:var(--grad);border-radius:var(--r);font-family:var(--font-d);font-size:16px;font-weight:700;letter-spacing:0.5px;color:white;display:flex;align-items:center;justify-content:center;gap:10px;transition:all var(--t);box-shadow:0 4px 24px rgba(123,63,242,0.45);}
-.btn-pub:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(123,63,242,0.65);}
+// FEED
+function loadFeed(){
+  onValue(ref(db, 'posts'), snapshot => {
+    const feed = document.getElementById('feed');
+    feed.innerHTML = '';
 
-/* FEED */
-.feed{grid-area:feed;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;max-width:680px;width:100%;margin:0 auto;}
+    let postsArr = [];
+    snapshot.forEach(child => {
+      postsArr.push({id:child.key, ...child.val()});
+    });
 
-/* STORIES */
-.stories{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:16px 20px;display:flex;align-items:center;gap:14px;}
-.stories-list{display:flex;align-items:center;gap:14px;overflow-x:auto;flex:1;scrollbar-width:none;padding-bottom:2px;}
-.stories-list::-webkit-scrollbar{display:none;}
-.story{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;flex-shrink:0;}
-.story-ring{width:62px;height:62px;border-radius:50%;padding:2.5px;background:var(--grad);box-shadow:var(--glow);transition:box-shadow var(--t),transform var(--t);}
-.story-ring:hover{box-shadow:0 0 30px rgba(123,63,242,0.85);transform:scale(1.06);}
-.story-ring.seen{background:var(--text3);box-shadow:none;}
-.story-ring.add{background:var(--bg4);border:2px dashed var(--primary);}
-.story-inner{width:100%;height:100%;border-radius:50%;background:var(--surface);border:2.5px solid var(--bg3);overflow:hidden;display:flex;align-items:center;justify-content:center;}
-.story-add-inner{width:100%;height:100%;border-radius:50%;background:var(--surface);border:2px solid var(--bg3);display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--primary);}
-.story-name{font-size:11px;color:var(--text2);font-weight:500;text-align:center;max-width:64px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.story.live-story .story-ring::after{content:'LIVE';position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);background:var(--red);color:white;font-size:8px;font-weight:700;letter-spacing:0.5px;padding:1px 6px;border-radius:10px;font-family:var(--font-m);box-shadow:0 2px 8px rgba(255,77,109,0.6);}
-.story.live-story{position:relative;}
-.story-scroll-btn{width:32px;height:32px;border-radius:50%;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;color:var(--text2);flex-shrink:0;transition:all var(--t);}
-.story-scroll-btn:hover{background:var(--primary);color:white;box-shadow:var(--glow);}
+    postsArr.sort((a,b)=>b.time-a.time);
 
-/* COMPOSER */
-.composer{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:18px 20px;transition:border-color var(--t);}
-.composer:hover{border-color:var(--border2);}
-.c-top{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
-.av-md{width:44px;height:44px;border-radius:50%;background:var(--grad);border:2px solid var(--primary);box-shadow:var(--glow-sm);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:700;font-size:17px;color:white;flex-shrink:0;overflow:hidden;cursor:pointer;transition:box-shadow var(--t);}
-.av-md:hover{box-shadow:var(--glow);}
-.c-input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:30px;padding:11px 20px;font-size:14px;color:var(--text2);cursor:text;transition:all var(--t);}
-.c-input:hover{border-color:var(--border2);color:var(--text);}
-.c-actions{display:flex;align-items:center;gap:8px;padding-top:14px;border-top:1px solid var(--border);}
-.c-btn{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:20px;border:1px solid var(--border);color:var(--text2);font-size:13px;font-weight:500;transition:all var(--t);background:var(--surface);}
-.c-btn:hover{border-color:var(--primary);color:var(--primary2);background:rgba(123,63,242,0.08);}
-.c-submit{margin-left:auto;padding:9px 22px;background:var(--grad);border-radius:20px;font-family:var(--font-d);font-size:15px;font-weight:600;color:white;display:flex;align-items:center;gap:8px;transition:all var(--t);box-shadow:0 4px 16px rgba(123,63,242,0.4);}
-.c-submit:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(123,63,242,0.6);}
+    postsArr.forEach(p=>{
+      let div = document.createElement('div');
+      div.className='card';
 
-/* POST CARD */
-.post{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;transition:border-color var(--t),box-shadow var(--t);animation:up .4s cubic-bezier(0.4,0,0.2,1);}
-@keyframes up{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
-.post:hover{border-color:var(--border2);}
-.p-header{display:flex;align-items:center;gap:12px;padding:16px 18px 12px;}
-.p-user{flex:1;}
-.p-name-row{display:flex;align-items:center;gap:8px;}
-.p-name{font-weight:700;font-size:15px;cursor:pointer;transition:color var(--t);}
-.p-name:hover{color:var(--primary2);}
-.vbadge{width:16px;height:16px;background:var(--grad);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;color:white;box-shadow:var(--glow-sm);}
-.lvl{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;font-family:var(--font-m);background:rgba(255,184,48,0.15);color:var(--gold);border:1px solid rgba(255,184,48,0.3);padding:2px 8px;border-radius:10px;}
-.p-meta{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:6px;margin-top:2px;}
-.p-menu{color:var(--text3);padding:6px;border-radius:8px;transition:all var(--t);}
-.p-menu:hover{background:var(--surface);color:var(--text);}
-.p-body{padding:0 18px 14px;}
-.p-text{line-height:1.75;font-size:14.5px;margin-bottom:12px;}
-.p-tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;letter-spacing:.5px;padding:3px 10px;border-radius:20px;font-family:var(--font-m);margin-bottom:8px;}
-.p-tag.gaming{background:rgba(123,63,242,0.2);color:var(--primary2);border:1px solid rgba(123,63,242,0.3);}
-.p-tag.ai{background:rgba(58,141,255,0.2);color:var(--secondary2);border:1px solid rgba(58,141,255,0.3);}
-.p-tag.live{background:rgba(255,77,109,0.2);color:#FF8CAD;border:1px solid rgba(255,77,109,0.3);}
-.p-media{border-radius:var(--r);overflow:hidden;position:relative;cursor:pointer;}
-.video-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);transition:background var(--t);}
-.video-overlay:hover{background:rgba(0,0,0,0.15);}
-.play-btn{width:64px;height:64px;border-radius:50%;background:rgba(123,63,242,0.92);display:flex;align-items:center;justify-content:center;font-size:24px;color:white;box-shadow:0 0 40px rgba(123,63,242,0.8);transition:transform var(--t);}
-.video-overlay:hover .play-btn{transform:scale(1.1);}
-.vid-dur{position:absolute;bottom:10px;right:12px;background:rgba(0,0,0,0.75);color:white;font-size:11px;font-family:var(--font-m);padding:2px 8px;border-radius:6px;}
-.p-stats{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);}
-.r-mini{display:flex;align-items:center;gap:4px;}
-.r-emoji{font-size:15px;width:24px;height:24px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;border:2px solid var(--bg3);transition:transform var(--t);}
-.r-emoji:hover{transform:scale(1.2);}
-.p-actions{display:flex;padding:8px 12px;}
-.a-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:9px 8px;border-radius:var(--r);color:var(--text2);font-size:13px;font-weight:500;transition:all var(--t);}
-.a-btn:hover{background:rgba(123,63,242,0.1);color:var(--primary2);}
-.a-btn i{font-size:15px;}
-.a-btn.like:hover{color:#FF6B9D;background:rgba(255,107,157,0.1);}
-.a-btn.share:hover{color:var(--secondary);background:rgba(58,141,255,0.1);}
-.a-btn.epic{color:var(--gold);}
-.a-btn.epic:hover{background:rgba(255,184,48,0.1);}
-.c-section{border-top:1px solid var(--border);background:var(--bg4);}
-.c-comp{display:flex;gap:10px;align-items:center;padding:14px 18px;}
-.c-inp{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:9px 16px;font-size:13px;transition:all var(--t);}
-.c-inp:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(123,63,242,0.12);}
-.c-send{width:34px;height:34px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:13px;color:white;transition:all var(--t);box-shadow:0 2px 12px rgba(123,63,242,0.4);}
-.c-send:hover{transform:scale(1.1);box-shadow:var(--glow);}
-.c-item{display:flex;gap:10px;padding:10px 18px;}
-.c-bubble{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:4px 14px 14px 14px;padding:10px 14px;}
-.c-author-row{display:flex;align-items:center;gap:8px;margin-bottom:3px;}
-.c-author{font-weight:600;font-size:13px;}
-.c-ts{font-size:11px;color:var(--text3);}
-.c-text{font-size:13px;color:var(--text2);line-height:1.5;}
-.c-acts{display:flex;gap:12px;margin-top:6px;}
-.ca{font-size:11px;color:var(--text3);font-weight:600;cursor:pointer;transition:color var(--t);}
-.ca:hover{color:var(--primary2);}
+      update(ref(db, 'posts/'+p.id), {views:(p.views||0)+1});
 
-/* RIGHT PANEL */
-.right{grid-area:right;padding:20px 16px;display:flex;flex-direction:column;gap:16px;overflow-y:auto;border-left:1px solid var(--border);background:var(--bg2);}
-.ai-card{background:linear-gradient(135deg,rgba(123,63,242,0.14),rgba(58,141,255,0.09));border:1px solid var(--border2);border-radius:var(--r2);padding:18px;position:relative;overflow:hidden;}
-.ai-card::before{content:'';position:absolute;top:-40px;right:-40px;width:140px;height:140px;background:radial-gradient(circle,rgba(123,63,242,0.25),transparent);border-radius:50%;pointer-events:none;}
-.ai-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-.ai-title{font-family:var(--font-d);font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px;}
-.ai-ic{width:28px;height:28px;border-radius:8px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:14px;color:white;box-shadow:var(--glow-sm);}
-.more{font-size:12px;color:var(--primary2);font-weight:600;cursor:pointer;transition:color var(--t);}
-.more:hover{color:var(--secondary2);}
-.ai-body{display:flex;gap:12px;align-items:flex-start;}
-.ai-av{width:48px;height:48px;border-radius:14px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;box-shadow:var(--glow-sm);}
-.ai-text{flex:1;}
-.ai-hi{font-weight:600;font-size:14px;margin-bottom:4px;}
-.ai-desc{font-size:12px;color:var(--text2);line-height:1.5;}
-.btn-disc{width:100%;margin-top:14px;padding:10px;background:var(--grad);border-radius:var(--r);font-family:var(--font-d);font-size:14px;font-weight:600;color:white;text-align:center;cursor:pointer;transition:all var(--t);box-shadow:0 4px 16px rgba(123,63,242,0.4);}
-.btn-disc:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(123,63,242,0.6);}
-.widget{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:18px;}
-.w-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-.w-title{font-family:var(--font-d);font-size:15px;font-weight:700;}
-.trend{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:all var(--t);}
-.trend:last-child{border-bottom:none;}
-.trend:hover .trend-tag{color:var(--primary2);}
-.t-ic{width:32px;height:32px;border-radius:8px;background:rgba(123,63,242,0.15);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--primary2);flex-shrink:0;transition:background var(--t);}
-.trend:hover .t-ic{background:rgba(123,63,242,0.3);}
-.t-info{flex:1;}
-.trend-tag{font-weight:700;font-size:13px;transition:color var(--t);}
-.t-cnt{font-size:11px;color:var(--text3);font-family:var(--font-m);}
-.friend{display:flex;align-items:center;gap:10px;padding:8px 0;cursor:pointer;transition:all var(--t);}
-.friend:hover .f-name{color:var(--primary2);}
-.av-f{width:38px;height:38px;border-radius:50%;background:var(--grad);border:2px solid var(--primary);box-shadow:0 0 10px rgba(123,63,242,0.35);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:700;font-size:13px;color:white;flex-shrink:0;overflow:hidden;position:relative;}
-.online-dot{position:absolute;bottom:0;right:0;width:10px;height:10px;background:var(--green);border-radius:50%;border:2px solid var(--bg3);box-shadow:0 0 6px var(--green);}
-.f-info{flex:1;min-width:0;}
-.f-name{font-weight:600;font-size:13px;transition:color var(--t);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.f-status{font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.f-status.play{color:var(--green);}
+      div.innerHTML = `
+        <img src="${p.photo}" width="40" style="border-radius:50%"> ${p.user}
+        <p>${p.text}</p>
+        ${p.file ? (p.file.includes('video') ? `<video src="${p.file}" controls width="100%"></video>` : `<img src="${p.file}" width="100%">`) : ''}
+        <br>
+        ❤️ ${p.likes || 0}
+        <button onclick="likePost('${p.id}',${p.likes||0})">Like</button>
+        <div>
+          <input placeholder="comentario" id="c-${p.id}">
+          <button onclick="commentPost('${p.id}')">Enviar</button>
+        </div>
+        <div>${renderComments(p.comments)}</div>
+      `;
 
-/* AVATAR GRADIENTS */
-.av1{background:linear-gradient(135deg,#7B3FF2,#3A8DFF)!important;}
-.av2{background:linear-gradient(135deg,#FF4D6D,#FF8C42)!important;}
-.av3{background:linear-gradient(135deg,#22D87A,#3A8DFF)!important;}
-.av4{background:linear-gradient(135deg,#FFB830,#FF4D6D)!important;}
-.av5{background:linear-gradient(135deg,#9B6BFF,#22D87A)!important;}
-.av6{background:linear-gradient(135deg,#3A8DFF,#22D87A)!important;}
+      feed.appendChild(div);
+    });
+  });
+}
+
+window.likePost = (id,likes)=>{
+  update(ref(db,'posts/'+id),{likes:likes+1});
+}
+
+window.commentPost = (id)=>{
+  const text = document.getElementById('c-'+id).value;
+  push(ref(db,'posts/'+id+'/comments'),{
+    user:currentUser.displayName,
+    text
+  });
+}
+
+function renderComments(comments){
+  if(!comments) return '';
+  let html='';
+  Object.values(comments).forEach(c=>{
+    html+=`<p><b>${c.user}:</b> ${c.text}</p>`;
+  });
+  return html;
+}
+
+// TENDENCIAS
+function loadTrends(){
+  onValue(ref(db,'posts'),snapshot=>{
+    let arr=[];
+    snapshot.forEach(c=>arr.push(c.val()));
+
+    arr.sort((a,b)=>(b.views + b.likes*2)-(a.views + a.likes*2));
+
+    const trends=document.getElementById('trends');
+    trends.innerHTML='';
+
+    arr.slice(0,5).forEach(p=>{
+      let div=document.createElement('div');
+      div.className='card';
+      div.innerHTML=`🔥 ${p.text} <br> 👁 ${p.views} ❤️ ${p.likes}`;
+      trends.appendChild(div);
+    });
+  });
+}
+</script>
+
+<style>
+body{margin:0;background:#0b0f1a;color:white;font-family:Arial;display:flex}
+#login{display:flex;justify-content:center;align-items:center;height:100vh;width:100%}
+button{padding:8px;background:#6c2cff;border:none;color:white;border-radius:6px;cursor:pointer}
+#app{display:none;width:100%}
+.sidebar{width:220px;background:#0a0d17;padding:20px;height:100vh}
+.main{flex:1;padding:20px}
+.right{width:250px;background:#0a0d17;padding:20px}
+.card{background:#141a2e;padding:10px;margin:10px 0;border-radius:10px}
 </style>
 </head>
+
 <body>
-<div class="app">
 
-<!-- ═══ SIDEBAR ═══ -->
-<aside class="sidebar">
-  <div class="s-logo">
-    <div class="s-logo-icon"><div class="ini">N</div></div>
-    <span class="s-logo-text">Nebula</span>
-  </div>
-  <button class="nav-item active"><i class="fa-solid fa-house"></i><span>Inicio</span></button>
-  <button class="nav-item"><i class="fa-solid fa-user-group"></i><span>Amigos</span></button>
-  <button class="nav-item"><i class="fa-solid fa-fire"></i><span>Tendencias</span></button>
-  <button class="nav-item"><i class="fa-solid fa-gamepad"></i><span>Gaming</span></button>
-  <button class="nav-item"><i class="fa-solid fa-robot"></i><span>IA Nebula</span><span class="n-tag">Nuevo</span></button>
-  <div class="s-label">Social</div>
-  <button class="nav-item"><i class="fa-solid fa-message"></i><span>Mensajes</span><span class="n-badge">3</span></button>
-  <button class="nav-item"><i class="fa-solid fa-bell"></i><span>Notificaciones</span><span class="n-badge">7</span></button>
-  <button class="nav-item"><i class="fa-solid fa-bookmark"></i><span>Guardados</span></button>
-  <button class="nav-item"><i class="fa-solid fa-calendar-days"></i><span>Eventos</span></button>
-  <div class="s-label">Explorar</div>
-  <button class="nav-item"><i class="fa-solid fa-store"></i><span>Marketplace</span></button>
-  <button class="nav-item"><i class="fa-solid fa-people-group"></i><span>Grupos</span></button>
-  <button class="nav-item"><i class="fa-solid fa-gear"></i><span>Configuración</span></button>
-  <div class="s-footer">
-    <div class="s-user">
-      <div class="av-sm av1">U</div>
-      <div class="s-user-info">
-        <div class="s-user-name">Usuario123</div>
-        <div class="s-user-online">En línea</div>
-      </div>
-      <button style="color:var(--text3);padding:6px;border-radius:8px;transition:color var(--t);" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text3)'"><i class="fa-solid fa-ellipsis"></i></button>
-    </div>
-    <button class="btn-pub"><i class="fa-solid fa-plus"></i> Crear publicación</button>
-  </div>
-</aside>
+<div id="login">
+<button onclick="loginGoogle()">Login con Google</button>
+</div>
 
-<!-- ═══ TOPBAR ═══ -->
-<header class="topbar">
-  <div class="search-box">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <input type="text" placeholder="Buscar en Nebula..."/>
-  </div>
-  <div class="top-actions">
-    <button class="btn-create"><i class="fa-solid fa-plus"></i> Crear</button>
-    <button class="top-btn"><i class="fa-brands fa-facebook-messenger"></i><span class="dot"></span></button>
-    <button class="top-btn"><i class="fa-solid fa-bell"></i><span class="dot"></span></button>
-    <div class="av-top"><div class="ini">U</div></div>
-    <button style="color:var(--text2);font-size:13px;padding:4px;"><i class="fa-solid fa-caret-down"></i></button>
-  </div>
-</header>
+<div id="app">
+<div class="sidebar">
+<h2>Nebula</h2>
+<img id="userPhoto" width="50" style="border-radius:50%"><br>
+<span id="userName"></span>
+</div>
 
-<!-- ═══ FEED ═══ -->
-<main class="feed">
+<div class="main">
+<h3>Publicar</h3>
+<input id="postText" placeholder="Que estas pensando?">
+<input type="file" id="filePost">
+<button onclick="publish()">Publicar</button>
 
-  <!-- Stories -->
-  <div class="stories">
-    <div class="stories-list">
-      <div class="story">
-        <div class="story-ring add"><div class="story-add-inner">＋</div></div>
-        <span class="story-name">Crear historia</span>
-      </div>
-      <div class="story live-story">
-        <div class="story-ring" style="position:relative;">
-          <div class="story-inner"><div style="width:100%;height:100%;background:linear-gradient(135deg,#FF4D6D,#FF8C42);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani';font-weight:700;color:white;font-size:16px;">A</div></div>
-        </div>
-        <span class="story-name">AriGamer</span>
-      </div>
-      <div class="story">
-        <div class="story-ring">
-          <div class="story-inner"><div style="width:100%;height:100%;background:linear-gradient(135deg,#9B6BFF,#3A8DFF);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani';font-weight:700;color:white;font-size:16px;">L</div></div>
-        </div>
-        <span class="story-name">LuzNebula</span>
-      </div>
-      <div class="story">
-        <div class="story-ring">
-          <div class="story-inner"><div style="width:100%;height:100%;background:linear-gradient(135deg,#22D87A,#3A8DFF);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani';font-weight:700;color:white;font-size:16px;">M</div></div>
-        </div>
-        <span class="story-name">MatiPlay</span>
-      </div>
-      <div class="story">
-        <div class="story-ring">
-          <div class="story-inner"><div style="width:100%;height:100%;background:linear-gradient(135deg,#FFB830,#FF4D6D);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani';font-weight:700;color:white;font-size:16px;">S</div></div>
-        </div>
-        <span class="story-name">Sofi_uwu</span>
-      </div>
-      <div class="story">
-        <div class="story-ring seen">
-          <div class="story-inner"><div style="width:100%;height:100%;background:linear-gradient(135deg,#3A8DFF,#22D87A);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani';font-weight:700;color:white;font-size:16px;">C</div></div>
-        </div>
-        <span class="story-name">ClipsTop</span>
-      </div>
-      <div class="story">
-        <div class="story-ring seen">
-          <div class="story-inner"><div style="width:100%;height:100%;background:linear-gradient(135deg,#7B3FF2,#FF4D6D);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani';font-weight:700;color:white;font-size:16px;">N</div></div>
-        </div>
-        <span class="story-name">NovaKing</span>
-      </div>
-    </div>
-    <button class="story-scroll-btn"><i class="fa-solid fa-chevron-right"></i></button>
-  </div>
+<div id="feed"></div>
+</div>
 
-  <!-- Composer -->
-  <div class="composer">
-    <div class="c-top">
-      <div class="av-md av1">U</div>
-      <div class="c-input" id="composer-trigger">¿Qué está pasando, Usuario123?</div>
-    </div>
-    <div class="c-actions">
-      <button class="c-btn"><i class="fa-solid fa-image" style="color:#22D87A;"></i> Foto/video</button>
-      <button class="c-btn"><i class="fa-solid fa-face-smile" style="color:var(--gold);"></i> Sentimiento</button>
-      <button class="c-btn"><i class="fa-solid fa-gamepad" style="color:var(--secondary);"></i> Actividad</button>
-      <button class="c-btn"><i class="fa-solid fa-ellipsis" style="color:var(--text3);"></i> Más</button>
-      <button class="c-submit"><i class="fa-solid fa-paper-plane"></i> Publicar</button>
-    </div>
-  </div>
-
-  <!-- POST 1 — Video Gaming -->
-  <div class="post">
-    <div class="p-header">
-      <div class="av-md av2">A</div>
-      <div class="p-user">
-        <div class="p-name-row">
-          <span class="p-name">AriGamer</span>
-          <span class="vbadge"><i class="fa-solid fa-check"></i></span>
-          <span class="lvl"><i class="fa-solid fa-star"></i> Lv.84</span>
-        </div>
-        <div class="p-meta"><span>2h</span><span>·</span><i class="fa-solid fa-earth-americas" style="font-size:11px;"></i></div>
-      </div>
-      <button class="p-menu"><i class="fa-solid fa-ellipsis"></i></button>
-    </div>
-    <div class="p-body">
-      <div><span class="p-tag gaming"><i class="fa-solid fa-gamepad"></i> GAMING</span></div>
-      <p class="p-text">¡Victoria épica en Farlight 84! 🚀💥<br>Nunca te rindas y sé el último en pie 😎🔥</p>
-      <div class="p-media">
-        <div style="width:100%;height:300px;background:linear-gradient(160deg,#071020 0%,#0d1f3c 35%,#112240 60%,#0a1628 100%);display:flex;align-items:center;justify-content:center;position:relative;border-radius:var(--r);">
-          <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 25% 65%,rgba(20,100,30,0.5),transparent 45%),radial-gradient(ellipse at 75% 35%,rgba(20,60,120,0.3),transparent 50%);border-radius:var(--r);"></div>
-          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-58%);text-align:center;z-index:1;">
-            <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;letter-spacing:4px;color:var(--gold);margin-bottom:6px;">#1</div>
-            <div style="font-family:'Rajdhani',sans-serif;font-size:30px;font-weight:800;letter-spacing:2px;line-height:1.1;background:linear-gradient(135deg,#FFB830,#FF8C42);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:none;">VICTORIA<br>MAGISTRAL</div>
-          </div>
-          <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.025) 3px,rgba(0,0,0,0.025) 4px);border-radius:var(--r);pointer-events:none;"></div>
-        </div>
-        <div class="video-overlay" onclick="this.style.display='none'">
-          <div class="play-btn"><i class="fa-solid fa-play" style="margin-left:3px;"></i></div>
-        </div>
-        <div class="vid-dur">0:45</div>
-      </div>
-    </div>
-    <div class="p-stats">
-      <div class="r-mini">
-        <div class="r-emoji">👍</div><div class="r-emoji">🔥</div><div class="r-emoji">😮</div>
-        <span style="margin-left:6px;font-weight:500;">1.2K</span>
-      </div>
-      <div style="display:flex;gap:14px;font-size:13px;color:var(--text2);">
-        <span style="cursor:pointer;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration=''">230 comentarios</span>
-        <span style="cursor:pointer;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration=''">89 compartidos</span>
-      </div>
-    </div>
-    <div class="p-actions">
-      <button class="a-btn like" onclick="toggleLike(this)"><i class="fa-solid fa-thumbs-up"></i> Me gusta</button>
-      <button class="a-btn" onclick="toggleComment(this)"><i class="fa-solid fa-comment"></i> Comentar</button>
-      <button class="a-btn share"><i class="fa-solid fa-share"></i> Compartir</button>
-      <button class="a-btn epic"><i class="fa-solid fa-fire"></i> Épico 🔥</button>
-    </div>
-    <div class="c-section" style="display:none;">
-      <div class="c-comp">
-        <div class="av-sm av1" style="width:32px;height:32px;font-size:12px;">U</div>
-        <input class="c-inp" placeholder="Escribe un comentario..."/>
-        <button class="c-send"><i class="fa-solid fa-paper-plane"></i></button>
-      </div>
-      <div class="c-item">
-        <div class="av-sm av3" style="width:32px;height:32px;font-size:11px;">M</div>
-        <div class="c-bubble">
-          <div class="c-author-row"><span class="c-author">MatiPlay</span><span class="c-ts">1h</span></div>
-          <p class="c-text">¡Brutal! ¿Qué arma usaste en la final? 🎮</p>
-          <div class="c-acts"><span class="ca">Me gusta</span><span class="ca">Responder</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- POST 2 — IA -->
-  <div class="post">
-    <div class="p-header">
-      <div class="av-md av5">L</div>
-      <div class="p-user">
-        <div class="p-name-row">
-          <span class="p-name">LuzNebula</span>
-          <span class="vbadge"><i class="fa-solid fa-check"></i></span>
-        </div>
-        <div class="p-meta"><span>5h</span><span>·</span><i class="fa-solid fa-lock" style="font-size:11px;"></i></div>
-      </div>
-      <button class="p-menu"><i class="fa-solid fa-ellipsis"></i></button>
-    </div>
-    <div class="p-body">
-      <div><span class="p-tag ai"><i class="fa-solid fa-robot"></i> IA NEBULA</span></div>
-      <p class="p-text">La IA de Nebula acaba de predecir mis próximas 3 victorias con 94% de precisión 🤯🧠<br>El futuro del gaming ya está acá. <strong style="color:var(--primary2);">#NebulaIA</strong> <strong style="color:var(--secondary2);">#Gaming</strong></p>
-      <div style="background:linear-gradient(135deg,rgba(123,63,242,0.1),rgba(58,141,255,0.07));border:1px solid var(--border2);border-radius:var(--r);padding:16px;display:flex;align-items:center;gap:14px;">
-        <div style="width:50px;height:50px;border-radius:14px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:var(--glow-sm);flex-shrink:0;">🤖</div>
-        <div style="flex:1;">
-          <div style="font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;margin-bottom:4px;">Análisis IA Nebula</div>
-          <div style="font-size:12px;color:var(--text2);margin-bottom:8px;">Basado en 1,247 partidas. Precisión: <span style="color:var(--green);font-weight:700;font-family:'JetBrains Mono',monospace;">94.3%</span></div>
-          <div style="height:6px;background:var(--surface);border-radius:10px;overflow:hidden;"><div style="height:100%;width:94%;background:var(--grad);border-radius:10px;box-shadow:0 0 10px rgba(123,63,242,0.5);"></div></div>
-        </div>
-      </div>
-    </div>
-    <div class="p-stats">
-      <div class="r-mini"><div class="r-emoji">🤯</div><div class="r-emoji">🔥</div><div class="r-emoji">👾</div><span style="margin-left:6px;font-weight:500;">847</span></div>
-      <div style="display:flex;gap:14px;font-size:13px;color:var(--text2);"><span>124 comentarios</span><span>56 compartidos</span></div>
-    </div>
-    <div class="p-actions">
-      <button class="a-btn like" onclick="toggleLike(this)"><i class="fa-solid fa-thumbs-up"></i> Me gusta</button>
-      <button class="a-btn" onclick="toggleComment(this)"><i class="fa-solid fa-comment"></i> Comentar</button>
-      <button class="a-btn share"><i class="fa-solid fa-share"></i> Compartir</button>
-      <button class="a-btn epic"><i class="fa-solid fa-fire"></i> Épico 🔥</button>
-    </div>
-    <div class="c-section" style="display:none;">
-      <div class="c-comp">
-        <div class="av-sm av1" style="width:32px;height:32px;font-size:12px;">U</div>
-        <input class="c-inp" placeholder="Escribe un comentario..."/>
-        <button class="c-send"><i class="fa-solid fa-paper-plane"></i></button>
-      </div>
-    </div>
-  </div>
-
-  <!-- POST 3 — Live Stream -->
-  <div class="post">
-    <div class="p-header">
-      <div class="av-md av6">N</div>
-      <div class="p-user">
-        <div class="p-name-row">
-          <span class="p-name">NovaKing</span>
-          <span class="vbadge"><i class="fa-solid fa-check"></i></span>
-          <span class="lvl"><i class="fa-solid fa-crown"></i> Pro</span>
-        </div>
-        <div class="p-meta"><span style="color:var(--red);font-weight:700;">● EN VIVO</span><span>·</span><span>1,847 espectadores</span></div>
-      </div>
-      <button class="p-menu"><i class="fa-solid fa-ellipsis"></i></button>
-    </div>
-    <div class="p-body">
-      <div><span class="p-tag live"><i class="fa-solid fa-tower-broadcast"></i> EN VIVO</span></div>
-      <p class="p-text">🔴 Torneo clasificatorio Farlight 84 — ¡Únete al stream!</p>
-      <div class="p-media">
-        <div style="width:100%;height:260px;background:linear-gradient(135deg,#0a0e1a,#180e30,#0a1628);display:flex;align-items:center;justify-content:center;position:relative;border-radius:var(--r);">
-          <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(123,63,242,0.18),transparent 65%);border-radius:var(--r);"></div>
-          <div style="text-align:center;position:relative;z-index:1;">
-            <div style="font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px;">STREAMING EN VIVO</div>
-            <div style="font-size:12px;color:var(--text2);">Click para unirse</div>
-          </div>
-          <div style="position:absolute;top:12px;left:12px;background:var(--red);color:white;font-size:10px;font-weight:700;padding:3px 10px;border-radius:6px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;box-shadow:0 2px 10px rgba(255,77,109,0.6);">● LIVE</div>
-          <div style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.65);color:var(--text2);font-size:11px;padding:3px 10px;border-radius:6px;font-family:'JetBrains Mono',monospace;">👁 1.8K</div>
-        </div>
-      </div>
-    </div>
-    <div class="p-stats">
-      <div class="r-mini"><div class="r-emoji">🔥</div><div class="r-emoji">🎮</div><div class="r-emoji">💜</div><span style="margin-left:6px;font-weight:500;">3.4K</span></div>
-      <div style="display:flex;gap:14px;font-size:13px;color:var(--text2);"><span>412 comentarios</span><span>203 compartidos</span></div>
-    </div>
-    <div class="p-actions">
-      <button class="a-btn like" onclick="toggleLike(this)"><i class="fa-solid fa-thumbs-up"></i> Me gusta</button>
-      <button class="a-btn" onclick="toggleComment(this)"><i class="fa-solid fa-comment"></i> Comentar</button>
-      <button class="a-btn share"><i class="fa-solid fa-share"></i> Compartir</button>
-      <button class="a-btn epic"><i class="fa-solid fa-fire"></i> Épico 🔥</button>
-    </div>
-    <div class="c-section" style="display:none;">
-      <div class="c-comp">
-        <div class="av-sm av1" style="width:32px;height:32px;font-size:12px;">U</div>
-        <input class="c-inp" placeholder="Escribe un comentario..."/>
-        <button class="c-send"><i class="fa-solid fa-paper-plane"></i></button>
-      </div>
-    </div>
-  </div>
-
-</main>
-
-<!-- ═══ RIGHT PANEL ═══ -->
-<aside class="right">
-  <!-- IA Card -->
-  <div class="ai-card">
-    <div class="ai-hdr">
-      <div class="ai-title"><div class="ai-ic">🤖</div> IA Nebula</div>
-      <span class="more">Ver más</span>
-    </div>
-    <div class="ai-body">
-      <div class="ai-av">🤖</div>
-      <div class="ai-text">
-        <div class="ai-hi">¡Hola, Usuario123! 👋</div>
-        <div class="ai-desc">He encontrado contenido que te puede encantar basado en tu actividad gaming.</div>
-      </div>
-    </div>
-    <button class="btn-disc">Descubrir</button>
-  </div>
-
-  <!-- Tendencias -->
-  <div class="widget">
-    <div class="w-hdr"><span class="w-title">Tendencias para ti</span><span class="more">Ver más</span></div>
-    <div class="trend">
-      <div class="t-ic"><i class="fa-solid fa-arrow-trend-up"></i></div>
-      <div class="t-info"><div class="trend-tag">#Farlight84</div><div class="t-cnt">12.5K publicaciones</div></div>
-      <i class="fa-solid fa-chevron-right" style="font-size:11px;color:var(--text3);"></i>
-    </div>
-    <div class="trend">
-      <div class="t-ic"><i class="fa-solid fa-arrow-trend-up"></i></div>
-      <div class="t-info"><div class="trend-tag">#GamersUnidos</div><div class="t-cnt">8.7K publicaciones</div></div>
-      <i class="fa-solid fa-chevron-right" style="font-size:11px;color:var(--text3);"></i>
-    </div>
-    <div class="trend">
-      <div class="t-ic" style="background:rgba(58,141,255,0.15);color:var(--secondary2);"><i class="fa-solid fa-robot"></i></div>
-      <div class="t-info"><div class="trend-tag">#NebulaIA</div><div class="t-cnt">6.1K publicaciones</div></div>
-      <i class="fa-solid fa-chevron-right" style="font-size:11px;color:var(--text3);"></i>
-    </div>
-    <div class="trend">
-      <div class="t-ic" style="background:rgba(255,184,48,0.12);color:var(--gold);"><i class="fa-solid fa-trophy"></i></div>
-      <div class="t-info"><div class="trend-tag">#EsportsLATAM</div><div class="t-cnt">4.3K publicaciones</div></div>
-      <i class="fa-solid fa-chevron-right" style="font-size:11px;color:var(--text3);"></i>
-    </div>
-  </div>
-
-  <!-- Amigos conectados -->
-  <div class="widget">
-    <div class="w-hdr"><span class="w-title">Amigos conectados</span><span class="more">Ver todos</span></div>
-    <div class="friend">
-      <div class="av-f av2">A<span class="online-dot"></span></div>
-      <div class="f-info"><div class="f-name">AriGamer</div><div class="f-status play"><i class="fa-solid fa-gamepad" style="font-size:10px;"></i> Jugando Farlight 84</div></div>
-    </div>
-    <div class="friend">
-      <div class="av-f av5">L<span class="online-dot"></span></div>
-      <div class="f-info"><div class="f-name">LuzNebula</div><div class="f-status">En línea</div></div>
-    </div>
-    <div class="friend">
-      <div class="av-f av3">M<span class="online-dot"></span></div>
-      <div class="f-info"><div class="f-name">MatiPlay</div><div class="f-status">En línea</div></div>
-    </div>
-    <div class="friend">
-      <div class="av-f av4">S<span class="online-dot"></span></div>
-      <div class="f-info"><div class="f-name">Sofi_uwu</div><div class="f-status">En línea</div></div>
-    </div>
-    <div class="friend">
-      <div class="av-f av6">N<span class="online-dot"></span></div>
-      <div class="f-info"><div class="f-name">NovaKing</div><div class="f-status play"><i class="fa-solid fa-tower-broadcast" style="font-size:10px;"></i> En línea · Stream</div></div>
-    </div>
-  </div>
-
-  <div style="font-size:11px;color:var(--text3);line-height:2.2;">
-    <span style="cursor:pointer;" onmouseover="this.style.color='var(--primary2)'" onmouseout="this.style.color='var(--text3)'">Privacidad</span> ·
-    <span style="cursor:pointer;" onmouseover="this.style.color='var(--primary2)'" onmouseout="this.style.color='var(--text3)'">Términos</span> ·
-    <span style="cursor:pointer;" onmouseover="this.style.color='var(--primary2)'" onmouseout="this.style.color='var(--text3)'">Cookies</span> ·
-    <span style="cursor:pointer;" onmouseover="this.style.color='var(--primary2)'" onmouseout="this.style.color='var(--text3)'">Publicidad</span><br>
-    Nebula © 2025
-  </div>
-</aside>
+<div class="right">
+<h3>🔥 Tendencias</h3>
+<div id="trends"></div>
+</div>
 
 </div>
 
-<script>
-// Nav active
-document.querySelectorAll('.nav-item').forEach(item => {
-  item.addEventListener('click', () => {
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    item.classList.add('active');
-  });
-});
-
-// Toggle comment section
-function toggleComment(btn) {
-  const post = btn.closest('.post');
-  const cs = post.querySelector('.c-section');
-  if (!cs) return;
-  const show = cs.style.display === 'none' || !cs.style.display;
-  cs.style.display = show ? 'block' : 'none';
-  if (show) { const inp = cs.querySelector('.c-inp'); if (inp) inp.focus(); }
-}
-
-// Like toggle
-function toggleLike(btn) {
-  btn.classList.toggle('liked');
-  if (btn.classList.contains('liked')) {
-    btn.style.color = 'var(--primary2)';
-    btn.style.background = 'rgba(123,63,242,0.12)';
-  } else {
-    btn.style.color = '';
-    btn.style.background = '';
-  }
-}
-
-// Post card subtle glow on hover
-document.querySelectorAll('.post').forEach(card => {
-  card.addEventListener('mousemove', e => {
-    const r = card.getBoundingClientRect();
-    const x = ((e.clientX - r.left) / r.width - 0.5) * 2;
-    const y = ((e.clientY - r.top) / r.height - 0.5) * 2;
-    card.style.boxShadow = `${x*8}px ${y*8}px 40px rgba(123,63,242,0.1), 0 0 0 1px rgba(123,63,242,0.18)`;
-  });
-  card.addEventListener('mouseleave', () => { card.style.boxShadow = ''; });
-});
-
-// Composer click → real input
-document.getElementById('composer-trigger').addEventListener('click', function() {
-  this.innerHTML = '';
-  const inp = document.createElement('input');
-  inp.type = 'text';
-  inp.placeholder = '¿Qué está pasando, Usuario123?';
-  inp.style.cssText = 'background:none;border:none;outline:none;width:100%;font-size:14px;color:var(--text);font-family:inherit;padding:0;';
-  this.appendChild(inp);
-  this.style.borderColor = 'var(--primary)';
-  this.style.boxShadow = '0 0 0 3px rgba(123,63,242,0.12)';
-  this.style.background = 'var(--surface2)';
-  inp.focus();
-});
-
-// Story hover glow
-document.querySelectorAll('.story-ring').forEach(r => {
-  r.addEventListener('mouseenter', () => r.style.filter = 'drop-shadow(0 0 14px rgba(123,63,242,0.9))');
-  r.addEventListener('mouseleave', () => r.style.filter = '');
-});
-</script>
 </body>
 </html>
