@@ -34,10 +34,11 @@ window.loginGoogle = async () => {
 onAuthStateChanged(auth, (user) => {
   if (user) {
     currentUser = user;
-    document.getElementById('login').style.display = 'none';
-    document.getElementById('app').style.display = 'flex';
-    document.getElementById('userName').innerText = user.displayName;
-    document.getElementById('userPhoto').src = user.photoURL;
+    login.style.display = 'none';
+    appDiv.style.display = 'flex';
+    userName.innerText = user.displayName;
+    userPhoto.src = user.photoURL;
+    userAvatar.src = user.photoURL;
     loadFeed();
     loadTrends();
   }
@@ -47,8 +48,8 @@ onAuthStateChanged(auth, (user) => {
 const cloudName = "ds4ejt5sp";
 const uploadPreset = "VIDEOS";
 
-async function uploadFile(id){
-  const file = document.getElementById(id).files[0];
+async function uploadFile(){
+  const file = filePost.files[0];
   if(!file) return "";
 
   const formData = new FormData();
@@ -66,8 +67,8 @@ async function uploadFile(id){
 
 // PUBLICAR
 window.publish = async () => {
-  const text = document.getElementById('postText').value;
-  const file = await uploadFile('filePost');
+  const text = postText.value;
+  const file = await uploadFile();
 
   push(ref(db, 'posts'), {
     user: currentUser.displayName,
@@ -79,38 +80,62 @@ window.publish = async () => {
     views: 0,
     time: Date.now()
   });
+
+  postText.value = "";
+  preview.innerHTML = "";
+};
+
+// PREVIEW
+window.previewFile = () => {
+  const file = filePost.files[0];
+  if(!file) return;
+
+  const url = URL.createObjectURL(file);
+
+  if(file.type.includes("video")){
+    preview.innerHTML = `<video src="${url}" controls></video>`;
+  } else {
+    preview.innerHTML = `<img src="${url}">`;
+  }
 };
 
 // FEED
 function loadFeed(){
   onValue(ref(db, 'posts'), snapshot => {
-    const feed = document.getElementById('feed');
     feed.innerHTML = '';
 
-    let postsArr = [];
-    snapshot.forEach(child => {
-      postsArr.push({id:child.key, ...child.val()});
-    });
+    let arr=[];
+    snapshot.forEach(c=>arr.push({id:c.key,...c.val()}));
+    arr.sort((a,b)=>b.time-a.time);
 
-    postsArr.sort((a,b)=>b.time-a.time);
-
-    postsArr.forEach(p=>{
-      let div = document.createElement('div');
-      div.className='card';
+    arr.forEach(p=>{
+      let div=document.createElement('div');
+      div.className='card fade';
 
       update(ref(db, 'posts/'+p.id), {views:(p.views||0)+1});
 
-      div.innerHTML = `
-        <img src="${p.photo}" width="40" style="border-radius:50%"> ${p.user}
+      div.innerHTML=`
+        <div class="user">
+          <img src="${p.photo}">
+          <b>${p.user}</b>
+        </div>
+
         <p>${p.text}</p>
-        ${p.file ? (p.file.includes('video') ? `<video src="${p.file}" controls width="100%"></video>` : `<img src="${p.file}" width="100%">`) : ''}
-        <br>
-        ❤️ ${p.likes || 0}
-        <button onclick="likePost('${p.id}',${p.likes||0})">Like</button>
-        <div>
+
+        ${p.file ? (p.file.includes('video') 
+        ? `<video src="${p.file}" controls></video>` 
+        : `<img src="${p.file}">`) : ''}
+
+        <div class="actions">
+          ❤️ ${p.likes || 0}
+          <button onclick="likePost('${p.id}',${p.likes||0})">Like</button>
+        </div>
+
+        <div class="commentBox">
           <input placeholder="comentario" id="c-${p.id}">
           <button onclick="commentPost('${p.id}')">Enviar</button>
         </div>
+
         <div>${renderComments(p.comments)}</div>
       `;
 
@@ -148,7 +173,6 @@ function loadTrends(){
 
     arr.sort((a,b)=>(b.views + b.likes*2)-(a.views + a.likes*2));
 
-    const trends=document.getElementById('trends');
     trends.innerHTML='';
 
     arr.slice(0,5).forEach(p=>{
@@ -162,14 +186,141 @@ function loadTrends(){
 </script>
 
 <style>
-body{margin:0;background:#0b0f1a;color:white;font-family:Arial;display:flex}
-#login{display:flex;justify-content:center;align-items:center;height:100vh;width:100%}
-button{padding:8px;background:#6c2cff;border:none;color:white;border-radius:6px;cursor:pointer}
-#app{display:none;width:100%}
-.sidebar{width:220px;background:#0a0d17;padding:20px;height:100vh}
-.main{flex:1;padding:20px}
-.right{width:250px;background:#0a0d17;padding:20px}
-.card{background:#141a2e;padding:10px;margin:10px 0;border-radius:10px}
+body{
+  margin:0;
+  background:#0b0f1a;
+  color:white;
+  font-family:Arial;
+  display:flex;
+}
+
+#login{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  width:100%;
+}
+
+/* SIDEBAR */
+.sidebar{
+  width:220px;
+  background:#0a0d17;
+  padding:20px;
+  height:100vh;
+}
+
+/* MAIN */
+.main{
+  flex:1;
+  max-width:600px;
+  margin:auto;
+  padding:20px;
+}
+
+/* RIGHT */
+.right{
+  width:250px;
+  background:#0a0d17;
+  padding:20px;
+}
+
+/* CARD */
+.card{
+  background:#141a2e;
+  padding:15px;
+  margin:15px 0;
+  border-radius:15px;
+  transition:.3s;
+}
+
+.card:hover{
+  transform:scale(1.02);
+}
+
+/* USER */
+.user{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.user img{
+  width:40px;
+  border-radius:50%;
+}
+
+/* PUBLICAR */
+.postBox{
+  background:#141a2e;
+  padding:15px;
+  border-radius:15px;
+}
+
+.postTop{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+.postTop img{
+  width:45px;
+  border-radius:50%;
+}
+
+input{
+  flex:1;
+  padding:10px;
+  border-radius:20px;
+  border:none;
+  background:#1c233a;
+  color:white;
+  margin-top:8px;
+}
+
+/* BOTONES */
+.actions{
+  display:flex;
+  justify-content:space-between;
+  margin-top:10px;
+}
+
+button{
+  background:#6c2cff;
+  border:none;
+  color:white;
+  padding:8px 12px;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+button:hover{
+  background:#5a22d1;
+}
+
+/* PREVIEW */
+#preview img, #preview video{
+  width:100%;
+  border-radius:10px;
+  margin-top:10px;
+}
+
+/* COMENTARIOS */
+.commentBox{
+  display:flex;
+  gap:5px;
+  margin-top:10px;
+}
+
+/* ANIMACIÓN */
+.fade{
+  animation:fadeIn .5s ease;
+}
+
+@keyframes fadeIn{
+  from{opacity:0; transform:translateY(10px);}
+  to{opacity:1; transform:translateY(0);}
+}
 </style>
 </head>
 
@@ -179,20 +330,35 @@ button{padding:8px;background:#6c2cff;border:none;color:white;border-radius:6px;
 <button onclick="loginGoogle()">Login con Google</button>
 </div>
 
-<div id="app">
+<div id="appDiv" style="display:none;width:100%">
+
 <div class="sidebar">
 <h2>Nebula</h2>
-<img id="userPhoto" width="50" style="border-radius:50%"><br>
+<img id="userPhoto" width="50" style="border-radius:50%">
+<br>
 <span id="userName"></span>
 </div>
 
 <div class="main">
-<h3>Publicar</h3>
-<input id="postText" placeholder="Que estas pensando?">
-<input type="file" id="filePost">
-<button onclick="publish()">Publicar</button>
+
+<div class="postBox">
+  <div class="postTop">
+    <img id="userAvatar">
+    <input id="postText" placeholder="¿Qué estás pensando?">
+  </div>
+
+  <input type="file" id="filePost" onchange="previewFile()">
+
+  <div id="preview"></div>
+
+  <div class="actions">
+    <span>📸 🎥</span>
+    <button onclick="publish()">Publicar</button>
+  </div>
+</div>
 
 <div id="feed"></div>
+
 </div>
 
 <div class="right">
