@@ -423,12 +423,12 @@
             <input type="file" id="prodImages" multiple accept="image/*">
             <div style="font-size: 2rem; margin-bottom: 0.5rem">📷</div>
             <div>Toca aquí para subir fotos</div>
-            <div style="font-size: 0.8rem; color: var(--fb-text-secondary); margin-top: 0.5rem">Máximo 6 fotos · Se suben a Firebase Storage</div>
+            <div style="font-size: 0.8rem; color: var(--fb-text-secondary); margin-top: 0.5rem">Máximo 6 fotos · Se suben a Cloudinary</div>
           </div>
           <div id="imgPreview" class="preview-grid"></div>
         </div>
         <div class="form-group"><label class="form-label">Descripción</label><textarea class="form-textarea" id="prodDesc" rows="4"></textarea></div>
-        <div class="uploading-bar" id="uploadingBar">⏳ Subiendo imágenes y publicando...</div>
+        <div class="uploading-bar" id="uploadingBar">⏳ Subiendo imágenes a Cloudinary...</div>
         <button class="btn-primary" style="width:100%" id="publishBtn" onclick="publishProduct()">Publicar</button>
       </div>
     </div>
@@ -572,9 +572,6 @@
       getFirestore, collection, doc, setDoc, getDoc, addDoc, deleteDoc,
       query, orderBy, limit, where, onSnapshot, serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-    import {
-      getStorage, ref, uploadBytes, getDownloadURL
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyA9oat9dd0S9vlxkg1osH4dW3XhRDGiOiw",
@@ -588,7 +585,6 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    const storage = getStorage(app);
 
     // ===== STATE =====
     const departamentos = ["Artigas","Canelones","Cerro Largo","Colonia","Durazno","Flores","Florida","Lavalleja","Maldonado","Montevideo","Paysandú","Río Negro","Rivera","Rocha","Salto","San José","Soriano","Tacuarembó","Treinta y Tres"];
@@ -833,11 +829,19 @@
       document.getElementById('publishBtn').disabled = true;
 
       try {
-        // Upload images to Firebase Storage
-        const imageUrls = await Promise.all(files.map(async (file, i) => {
-          const storageRef = ref(storage, `marketplace/${state.user.uid}/${Date.now()}_${i}_${file.name}`);
-          await uploadBytes(storageRef, file);
-          return await getDownloadURL(storageRef);
+        // Upload images to Cloudinary (unsigned)
+        const imageUrls = await Promise.all(files.map(async (file) => {
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('upload_preset', 'dblmunvjx');
+          formData.append('folder', 'marketplace');
+          const res = await fetch('https://api.cloudinary.com/v1_1/dblmunvjx/image/upload', {
+            method: 'POST',
+            body: formData
+          });
+          if (!res.ok) throw new Error('Error al subir imagen a Cloudinary');
+          const data = await res.json();
+          return data.secure_url;
         }));
 
         const prod = {
