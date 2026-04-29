@@ -8,24 +8,14 @@
         body { font-family: 'Segoe UI', Arial; background: var(--bg); color: var(--text); margin: 0; text-align: center; }
         
         /* Navbar estilo Canela */
-        header { background: #000; padding: 15px; border-bottom: 1px solid #222; display: flex; gap: 20px; justify-content: center; overflow-x: auto; }
-        .nav-link { color: #ccc; font-size: 13px; font-weight: bold; white-space: nowrap; cursor: pointer; }
-        .nav-link:hover { color: var(--blue); }
+        header { background: #000; padding: 15px; border-bottom: 1px solid #222; display: flex; gap: 20px; justify-content: center; }
+        .nav-link { color: #ccc; font-size: 13px; font-weight: bold; cursor: pointer; }
 
         .main { padding: 40px; display: flex; flex-direction: column; align-items: center; }
-        
-        /* Arreglo de Imagen Dyta */
-        .header-img { 
-            max-width: 450px; 
-            width: 100%; 
-            height: auto;
-            margin-bottom: 20px; 
-            display: block;
-        }
+        .header-img { max-width: 450px; width: 100%; margin-bottom: 20px; }
         
         .box { background: var(--card); padding: 35px; border-radius: 20px; border: 1px solid #333; width: 100%; max-width: 650px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); }
         input { width: 100%; padding: 18px; border-radius: 12px; border: 2px solid #444; background: #000; color: white; margin-bottom: 25px; outline: none; box-sizing: border-box; }
-        input:focus { border-color: var(--blue); }
         
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
         button { padding: 18px; border: none; border-radius: 12px; font-weight: 800; color: white; cursor: pointer; text-transform: uppercase; font-size: 12px; transition: 0.3s; }
@@ -33,7 +23,6 @@
         .btn-mp3 { background: var(--accent); }
         .btn-mp4 { background: var(--primary); }
         .btn-movie { background: var(--blue); }
-        button:hover { transform: translateY(-3px); filter: brightness(1.2); }
 
         /* Barra de progreso estilo EXE */
         #prog-area { display: none; margin-top: 30px; }
@@ -42,23 +31,26 @@
         #status { font-size: 14px; margin-top: 12px; color: #aaa; font-weight: bold; }
 
         footer { margin-top: 40px; padding: 20px; color: #444; font-size: 12px; }
+        
+        /* Iframe oculto para forzar descarga sin abrir pestañas */
+        #dl-helper { display: none; }
     </style>
 </head>
 <body>
     <header>
-        <div class="nav-link">Inicio</div><div class="nav-link">Películas</div><div class="nav-link">Series</div><div class="nav-link">Música</div><div class="nav-link">Kids</div>
+        <div class="nav-link">Inicio</div><div class="nav-link">Películas</div><div class="nav-link">Series</div><div class="nav-link">Música</div>
     </header>
 
     <div class="main">
-        <img src="dytatube.png" alt="DYTATUBE" class="header-img" onerror="this.src='https://via.placeholder.com/450x150?text=dytatube.png+no+encontrado'">
+        <img src="dytatube.png" alt="DYTATUBE" class="header-img">
         
         <div class="box">
-            <input type="text" id="url-input" placeholder="Pega el link de YouTube o Película aquí...">
+            <input type="text" id="url-input" placeholder="Pega el link aquí...">
             
             <div class="btn-grid">
-                <button class="btn-mp3" onclick="start('mp3')">MP3 Música</button>
-                <button class="btn-mp4" onclick="start('mp4')">MP4 Video</button>
-                <button class="btn-movie" onclick="start('movie')">Películas</button>
+                <button class="btn-mp3" onclick="startDownload('mp3')">MP3 Música</button>
+                <button class="btn-mp4" onclick="startDownload('mp4')">MP4 Video</button>
+                <button class="btn-movie" onclick="startDownload('movie')">Películas</button>
             </div>
 
             <div id="prog-area">
@@ -68,49 +60,46 @@
         </div>
     </div>
 
-    <footer>
-        DYTA 2026 Todos los derechos reservados
-    </footer>
+    <iframe id="dl-helper"></iframe>
+
+    <footer>DYTA 2026 Todos los derechos reservados</footer>
 
     <script>
-        function start(type) {
+        function startDownload(type) {
             const url = document.getElementById('url-input').value;
             if (!url) return alert("Pega un link primero");
 
             const area = document.getElementById('prog-area');
             const bar = document.getElementById('bar');
             const status = document.getElementById('status');
+            const helper = document.getElementById('dl-helper');
 
             area.style.display = 'block';
             let p = 0;
 
             const timer = setInterval(() => {
-                p += Math.random() * 10;
+                p += Math.random() * 12;
                 if (p >= 100) {
                     p = 100;
                     clearInterval(timer);
                     status.innerText = "¡Descarga Lista! Revisa tus archivos.";
                     
-                    // USANDO LOADER.TO PARA DESCARGA REAL
-                    let loaderUrl = "";
-                    if (type === 'mp3') {
-                        loaderUrl = `https://loader.to/api/button/?url=${encodeURIComponent(url)}&f=mp3`;
-                    } else if (type === 'mp4') {
-                        loaderUrl = `https://loader.to/api/button/?url=${encodeURIComponent(url)}&f=720`;
-                    } else {
-                        // Para películas abrimos el link directo
-                        window.open(url, '_blank');
-                        return;
-                    }
+                    // Lógica para saltar la ventana de Loader.to
+                    let format = (type === 'mp3') ? 'mp3' : '720';
+                    let dlUrl = `https://loader.to/api/card/?url=${encodeURIComponent(url)}&f=${format}`;
                     
-                    // Abrimos el procesador de Loader en una pestaña pequeña o nueva para asegurar la descarga
-                    window.open(loaderUrl, '_blank', 'width=500,height=400');
+                    if (type === 'movie') {
+                        window.open(url, '_blank');
+                    } else {
+                        // Forzamos la descarga dentro del iframe invisible
+                        helper.src = dlUrl;
+                    }
 
                     setTimeout(() => { area.style.display = 'none'; bar.style.width = '0%'; }, 5000);
                 }
                 bar.style.width = p + "%";
-                status.innerText = `Procesando ${type.toUpperCase()}... ${Math.floor(p)}%`;
-            }, 350);
+                status.innerText = `Descargando ${type.toUpperCase()}... ${Math.floor(p)}%`;
+            }, 300);
         }
     </script>
 </body>
