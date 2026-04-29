@@ -2,93 +2,115 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>DYTATUBE - Descarga Directa</title>
+    <title>DYTATUBE - Downloads</title>
     <style>
-        :root { --primary: #ff0000; --bg: #050505; --card: #121212; --text: #ffffff; --accent: #2ecc71; }
+        :root { --primary: #ff0000; --bg: #050505; --card: #121212; --text: #ffffff; --accent: #2ecc71; --blue: #01b4e4; }
         body { font-family: 'Segoe UI', Arial; background: var(--bg); color: var(--text); margin: 0; text-align: center; }
         
-        /* Navbar Canela */
-        header { background: #000; padding: 15px; border-bottom: 1px solid #222; display: flex; gap: 15px; justify-content: center; overflow-x: auto; }
-        .nav-link { color: #ccc; font-size: 13px; font-weight: bold; white-space: nowrap; }
+        /* Navbar estilo Canela */
+        header { background: #000; padding: 15px; border-bottom: 1px solid #222; display: flex; gap: 20px; justify-content: center; overflow-x: auto; }
+        .nav-link { color: #ccc; font-size: 13px; font-weight: bold; white-space: nowrap; cursor: pointer; }
+        .nav-link:hover { color: var(--blue); }
 
         .main { padding: 40px; display: flex; flex-direction: column; align-items: center; }
-        .header-img { max-width: 400px; margin-bottom: 20px; } /* */
         
-        .box { background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid #333; width: 100%; max-width: 600px; }
-        input { width: 90%; padding: 15px; border-radius: 10px; border: 2px solid #444; background: #000; color: white; margin-bottom: 20px; outline: none; }
+        /* Arreglo de Imagen Dyta */
+        .header-img { 
+            max-width: 450px; 
+            width: 100%; 
+            height: auto;
+            margin-bottom: 20px; 
+            display: block;
+        }
         
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        button { padding: 15px; border: none; border-radius: 10px; font-weight: bold; color: white; cursor: pointer; text-transform: uppercase; }
+        .box { background: var(--card); padding: 35px; border-radius: 20px; border: 1px solid #333; width: 100%; max-width: 650px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); }
+        input { width: 100%; padding: 18px; border-radius: 12px; border: 2px solid #444; background: #000; color: white; margin-bottom: 25px; outline: none; box-sizing: border-box; }
+        input:focus { border-color: var(--blue); }
+        
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        button { padding: 18px; border: none; border-radius: 12px; font-weight: 800; color: white; cursor: pointer; text-transform: uppercase; font-size: 12px; transition: 0.3s; }
+        
         .btn-mp3 { background: var(--accent); }
         .btn-mp4 { background: var(--primary); }
+        .btn-movie { background: var(--blue); }
+        button:hover { transform: translateY(-3px); filter: brightness(1.2); }
 
         /* Barra de progreso estilo EXE */
-        #prog-cont { display: none; margin-top: 25px; }
-        .bar-bg { background: #222; height: 12px; border-radius: 10px; overflow: hidden; }
-        #bar { width: 0%; height: 100%; background: var(--accent); transition: width 0.3s; }
-        
-        /* Botón de descarga real que aparece al final */
-        #final-download { 
-            display: none; margin-top: 20px; padding: 15px; width: 100%; 
-            background: #f1c40f; color: #000; text-decoration: none; 
-            border-radius: 10px; font-weight: 900; animation: pulse 1.5s infinite;
-        }
-        @keyframes pulse { 0% {transform: scale(1);} 50% {transform: scale(1.02);} 100% {transform: scale(1);} }
+        #prog-area { display: none; margin-top: 30px; }
+        .bar-bg { background: #222; height: 14px; border-radius: 10px; overflow: hidden; border: 1px solid #333; }
+        #bar { width: 0%; height: 100%; background: linear-gradient(90deg, var(--accent), #00ff88); transition: width 0.3s; }
+        #status { font-size: 14px; margin-top: 12px; color: #aaa; font-weight: bold; }
+
+        footer { margin-top: 40px; padding: 20px; color: #444; font-size: 12px; }
     </style>
 </head>
 <body>
     <header>
-        <div class="nav-link">Inicio</div><div class="nav-link">Películas</div><div class="nav-link">Series</div><div class="nav-link">Música</div>
+        <div class="nav-link">Inicio</div><div class="nav-link">Películas</div><div class="nav-link">Series</div><div class="nav-link">Música</div><div class="nav-link">Kids</div>
     </header>
 
     <div class="main">
-        <img src="dytatube.png" class="header-img"> <div class="box">
-            <input type="text" id="url" placeholder="Pega el link de YouTube aquí...">
+        <img src="dytatube.png" alt="DYTATUBE" class="header-img" onerror="this.src='https://via.placeholder.com/450x150?text=dytatube.png+no+encontrado'">
+        
+        <div class="box">
+            <input type="text" id="url-input" placeholder="Pega el link de YouTube o Película aquí...">
+            
             <div class="btn-grid">
-                <button class="btn-mp3" onclick="preparar('mp3')">Convertir a MP3</button>
-                <button class="btn-mp4" onclick="preparar('mp4')">Convertir a MP4</button>
+                <button class="btn-mp3" onclick="start('mp3')">MP3 Música</button>
+                <button class="btn-mp4" onclick="start('mp4')">MP4 Video</button>
+                <button class="btn-movie" onclick="start('movie')">Películas</button>
             </div>
 
-            <div id="prog-cont">
+            <div id="prog-area">
                 <div class="bar-bg"><div id="bar"></div></div>
                 <p id="status">Iniciando...</p>
-                <a id="final-download" href="#" target="_blank">¡CLIC AQUÍ PARA DESCARGAR ARCHIVO!</a>
             </div>
         </div>
     </div>
 
-    <script>
-        function preparar(tipo) {
-            const link = document.getElementById('url').value;
-            if (!link) return alert("Pega un link");
-            
-            const id = link.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-            if (!id) return alert("Link de YouTube no válido");
+    <footer>
+        DYTA 2026 Todos los derechos reservados
+    </footer>
 
-            // UI
-            document.getElementById('prog-cont').style.display = 'block';
-            document.getElementById('final-download').style.display = 'none';
-            let b = document.getElementById('bar');
-            let s = document.getElementById('status');
+    <script>
+        function start(type) {
+            const url = document.getElementById('url-input').value;
+            if (!url) return alert("Pega un link primero");
+
+            const area = document.getElementById('prog-area');
+            const bar = document.getElementById('bar');
+            const status = document.getElementById('status');
+
+            area.style.display = 'block';
             let p = 0;
 
-            let interval = setInterval(() => {
+            const timer = setInterval(() => {
                 p += Math.random() * 10;
                 if (p >= 100) {
                     p = 100;
-                    clearInterval(interval);
-                    s.innerText = "¡Conversión Completa! Haz clic abajo:"; //
+                    clearInterval(timer);
+                    status.innerText = "¡Descarga Lista! Revisa tus archivos.";
                     
-                    // Configuramos el botón real
-                    const btnDescarga = document.getElementById('final-download');
-                    btnDescarga.style.display = 'block';
-                    btnDescarga.href = tipo === 'mp3' 
-                        ? `https://api.v-mate.net/api/mp3/${id[1]}`
-                        : `https://api.v-mate.net/api/video/${id[1]}`;
+                    // USANDO LOADER.TO PARA DESCARGA REAL
+                    let loaderUrl = "";
+                    if (type === 'mp3') {
+                        loaderUrl = `https://loader.to/api/button/?url=${encodeURIComponent(url)}&f=mp3`;
+                    } else if (type === 'mp4') {
+                        loaderUrl = `https://loader.to/api/button/?url=${encodeURIComponent(url)}&f=720`;
+                    } else {
+                        // Para películas abrimos el link directo
+                        window.open(url, '_blank');
+                        return;
+                    }
+                    
+                    // Abrimos el procesador de Loader en una pestaña pequeña o nueva para asegurar la descarga
+                    window.open(loaderUrl, '_blank', 'width=500,height=400');
+
+                    setTimeout(() => { area.style.display = 'none'; bar.style.width = '0%'; }, 5000);
                 }
-                b.style.width = p + "%";
-                s.innerText = `Procesando ${tipo.toUpperCase()}... ${Math.floor(p)}%`;
-            }, 300);
+                bar.style.width = p + "%";
+                status.innerText = `Procesando ${type.toUpperCase()}... ${Math.floor(p)}%`;
+            }, 350);
         }
     </script>
 </body>
