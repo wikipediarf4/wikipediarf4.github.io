@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="referrer" content="origin">
-    <title>Canela TV Pro</title>
+    <title>DYTA Downloads - Online Gratis</title>
     <style>
         :root {
-            --bg: #050505;
-            --accent: #01b4e4;
+            --primary: #ff0000; /* Rojo YouTube */
+            --bg: #0f0f0f;
+            --card: #1e1e1e;
             --text: #ffffff;
-            --card-bg: #1a1a1a;
         }
 
         body {
@@ -18,240 +17,180 @@
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
-            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            align-items: center;
         }
 
-        /* --- MENÚ SUPERIOR ESTILO CANELA --- */
         header {
-            background: rgba(0, 0, 0, 0.9);
-            padding: 15px 50px;
-            display: flex;
-            align-items: center;
-            position: fixed;
-            top: 0; width: 100%;
-            z-index: 1000;
-            border-bottom: 1px solid #222;
-        }
-
-        .logo { 
-            font-size: 24px; 
-            font-weight: 900; 
-            color: var(--accent); 
-            margin-right: 40px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        nav { display: flex; gap: 25px; }
-
-        .nav-link {
-            color: #aaa;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 16px;
-            cursor: pointer;
-            transition: 0.3s;
-            padding-bottom: 5px;
-        }
-
-        .nav-link:hover, .nav-link.active {
-            color: white;
-            border-bottom: 3px solid var(--accent);
-        }
-
-        /* --- CONTENIDO PRINCIPAL --- */
-        main { padding-top: 100px; padding-bottom: 50px; }
-
-        .category-row { margin-bottom: 40px; padding: 0 50px; }
-
-        .row-title {
-            font-size: 22px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            color: white;
-            display: flex;
-            align-items: center;
-        }
-        
-        .row-title::before {
-            content: "";
-            width: 4px;
-            height: 24px;
-            background: var(--accent);
-            margin-right: 12px;
-            border-radius: 2px;
-        }
-
-        .scroll-container {
-            display: flex;
-            overflow-x: auto;
-            gap: 20px;
-            padding-bottom: 15px;
-            scroll-behavior: smooth;
-        }
-
-        /* Ocultar scrollbar pero mantener funcionalidad */
-        .scroll-container::-webkit-scrollbar { height: 6px; }
-        .scroll-container::-webkit-scrollbar-track { background: #111; }
-        .scroll-container::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
-
-        .movie-card {
-            min-width: 180px;
-            cursor: pointer;
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border-radius: 10px;
-            background: var(--card-bg);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
-
-        .movie-card:hover { transform: scale(1.08); box-shadow: 0 8px 25px rgba(1, 180, 228, 0.3); }
-
-        /* ARREGLO DE PORTADAS */
-        .movie-card img { 
-            width: 100%; 
-            height: 270px; 
-            object-fit: cover; 
-            border-radius: 10px 10px 0 0;
-            display: block;
-        }
-        
-        .movie-card p {
-            font-size: 14px;
-            font-weight: 600;
-            padding: 12px;
-            margin: 0;
             text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            padding: 40px 20px;
         }
 
-        /* --- REPRODUCTOR FULLSCREEN --- */
-        #video-overlay {
+        h1 {
+            font-size: 3rem;
+            margin: 0;
+            color: var(--text);
+            letter-spacing: -1px;
+        }
+
+        h1 span { color: var(--primary); }
+
+        .subtitle { color: #aaa; margin-top: 10px; }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            background: var(--card);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            margin-bottom: 40px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        input {
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #333;
+            background: #121212;
+            color: white;
+            font-size: 16px;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        input:focus { border-color: var(--primary); }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        button {
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: 0.3s;
+        }
+
+        .btn-mp3 { background: #2ecc71; color: white; }
+        .btn-mp4 { background: var(--primary); color: white; }
+        .btn-movie { background: #3498db; color: white; grid-column: span 2; }
+
+        button:hover { opacity: 0.8; transform: translateY(-2px); }
+
+        /* --- SECCIÓN PELICULAS --- */
+        .movie-section {
+            width: 90%;
+            max-width: 800px;
+            text-align: center;
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 20px;
+            color: #555;
+            font-size: 14px;
+        }
+
+        iframe {
+            width: 100%;
+            height: 150px;
+            border: none;
+            margin-top: 20px;
             display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #000;
-            z-index: 2000;
+            border-radius: 8px;
         }
-
-        .close-player {
-            position: absolute;
-            top: 25px; right: 35px;
-            font-size: 45px; color: white;
-            cursor: pointer; z-index: 2001;
-            text-shadow: 0 0 10px rgba(0,0,0,0.8);
-        }
-
-        iframe { width: 100%; height: 100%; border: none; }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="logo">CANELA TV</div>
-        <nav>
-            <div class="nav-link active" id="nav-all" onclick="loadContent('all')">Inicio</div>
-            <div class="nav-link" id="nav-movie" onclick="loadContent('movie')">Películas</div>
-            <div class="nav-link" id="nav-tv" onclick="loadContent('tv')">Series</div>
-        </nav>
+        <h1>DYTA <span>Downloads</span></h1>
+        <p class="subtitle">Online gratis - YouTube, Music & Movies</p>
     </header>
 
-    <main id="app-content"></main>
+    <div class="container">
+        <div class="input-group">
+            <input type="text" id="url-input" placeholder="Pega el link de YouTube o nombre de película aquí...">
+            
+            <div class="btn-group">
+                <button class="btn-mp3" onclick="download('mp3')">Descargar MP3</button>
+                <button class="btn-mp4" onclick="download('mp4')">Descargar Video</button>
+                <button class="btn-movie" onclick="searchMovie()">Buscar Película para Descargar</button>
+            </div>
+        </div>
 
-    <div id="video-overlay">
-        <span class="close-player" onclick="closeVideo()">×</span>
-        <iframe id="player-frame" src="" allowfullscreen allow="autoplay; encrypted-media" referrerpolicy="origin"></iframe>
+        <iframe id="download-frame"></iframe>
     </div>
 
+    <div class="movie-section" id="movie-results"></div>
+
+    <footer>
+        DYTA 2026 Todos los derechos reservados
+    </footer>
+
     <script>
-        const API_KEY = 'f663f105c4c1626d23e86d2ac19471a9';
+        // Función para descargar de YouTube
+        function download(format) {
+            const url = document.getElementById('url-input').value;
+            if (!url) { alert("Por favor pega un link"); return; }
 
-        async function loadContent(type) {
-            const main = document.getElementById('app-content');
-            main.innerHTML = '<div style="padding:50px">Cargando catálogo...</div>';
-            
-            // UI: Cambiar pestaña activa
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            document.getElementById(`nav-${type}`).classList.add('active');
+            const frame = document.getElementById('download-frame');
+            frame.style.display = 'block';
 
-            let sections = [];
-            if (type === 'all') {
-                sections = [
-                    { t: "Películas Más Populares", u: `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=es-ES` },
-                    { t: "Series Recomendadas", u: `https://api.themoviedb.org/3/tv/top_rated?api_key=${API_KEY}&language=es-ES` },
-                    { t: "Acción y Aventura", u: `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=28&language=es-ES` }
-                ];
-            } else if (type === 'movie') {
-                sections = [
-                    { t: "Estrenos de Cine", u: `https://api.themoviedb.org/3/movie/now_playing?api_key=${API_KEY}&language=es-ES` },
-                    { t: "Lo más votado", u: `https://api.themoviedb.org/3/movie/top_rated?api_key=${API_KEY}&language=es-ES` }
-                ];
-            } else if (type === 'tv') {
-                sections = [
-                    { t: "Series en Emisión", u: `https://api.themoviedb.org/3/tv/on_the_air?api_key=${API_KEY}&language=es-ES` },
-                    { t: "Series Populares", u: `https://api.themoviedb.org/3/tv/popular?api_key=${API_KEY}&language=es-ES` }
-                ];
-            }
-
-            main.innerHTML = '';
-            for (const s of sections) {
-                try {
-                    const res = await fetch(s.u);
-                    const data = await res.json();
-                    renderRow(s.t, data.results);
-                } catch (e) { console.error("Error cargando sección", e); }
+            // Usamos un servicio de conversión (y2mate / loader.to compatible)
+            // Nota: Estas URLs pueden cambiar, son servicios externos.
+            if (format === 'mp3') {
+                frame.src = `https://loader.to/api/button/?url=${encodeURIComponent(url)}&f=mp3`;
+            } else {
+                frame.src = `https://loader.to/api/button/?url=${encodeURIComponent(url)}&f=720`;
             }
         }
 
-        function renderRow(title, items) {
-            const main = document.getElementById('app-content');
-            const row = document.createElement('div');
-            row.className = 'category-row';
-            row.innerHTML = `<div class="row-title">${title}</div>`;
-            
-            const scroll = document.createElement('div');
-            scroll.className = 'scroll-container';
+        // Función para buscar películas (TMDB) y dar opción de descarga
+        async function searchMovie() {
+            const query = document.getElementById('url-input').value;
+            if (!query) { alert("Escribe el nombre de una película"); return; }
 
-            items.forEach(item => {
-                if (!item.poster_path) return;
-                const card = document.createElement('div');
-                card.className = 'movie-card';
-                
-                const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
-                
-                // URL DE IMAGEN CORREGIDA: https://image.tmdb.org/t/p/w500/[PATH]
-                const imgUrl = `https://image.tmdb.org/t/p/w500${item.poster_path}`;
+            const API_KEY = 'f663f105c4c1626d23e86d2ac19471a9';
+            const res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&language=es-ES`);
+            const data = await res.json();
 
-                card.innerHTML = `
-                    <img src="${imgUrl}" alt="${item.title || item.name}" loading="lazy">
-                    <p>${item.title || item.name}</p>
+            const resultsContainer = document.getElementById('movie-results');
+            resultsContainer.innerHTML = '<h3>Resultados encontrados:</h3>';
+
+            data.results.slice(0, 3).forEach(movie => {
+                const div = document.createElement('div');
+                div.style.background = "#1e1e1e";
+                div.style.padding = "15px";
+                div.style.marginBottom = "10px";
+                div.style.borderRadius = "8px";
+                div.style.display = "flex";
+                div.style.alignItems = "center";
+                div.style.justifyContent = "space-between";
+
+                div.innerHTML = `
+                    <span>${movie.title} (${movie.release_date.split('-')[0]})</span>
+                    <button onclick="window.open('https://vidsrc.to/embed/movie/${movie.id}')" 
+                            style="padding:5px 10px; font-size:12px; background:#e67e22; color:white; border:none; border-radius:4px; cursor:pointer;">
+                        VER/DESCARGAR
+                    </button>
                 `;
-                card.onclick = () => playVideo(mediaType, item.id);
-                scroll.appendChild(card);
+                resultsContainer.appendChild(div);
             });
-
-            row.appendChild(scroll);
-            main.appendChild(row);
         }
-
-        function playVideo(tipo, id) {
-            const overlay = document.getElementById('video-overlay');
-            const frame = document.getElementById('player-frame');
-            // Multiembed para mejor compatibilidad con audio español
-            frame.src = `https://multiembed.mov/?video_id=${id}&tmdb=1`;
-            overlay.style.display = 'block';
-            document.body.style.overflow = 'hidden'; // Evita scroll atrás
-        }
-
-        function closeVideo() {
-            document.getElementById('video-overlay').style.display = 'none';
-            document.getElementById('player-frame').src = '';
-            document.body.style.overflow = 'auto';
-        }
-
-        // Cargar Inicio al abrir
-        loadContent('all');
     </script>
 </body>
 </html>
