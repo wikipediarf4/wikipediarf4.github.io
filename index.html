@@ -2,101 +2,209 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>DYTATUBE - SaveFrom Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DYTATUBE - Descargador de YouTube</title>
     <style>
-        :root { --primary: #ff0000; --bg: #050505; --card: #121212; --text: #ffffff; --accent: #2ecc71; --blue: #01b4e4; }
-        body { font-family: 'Segoe UI', Arial; background: var(--bg); color: var(--text); margin: 0; text-align: center; }
-        
-        header { background: #000; padding: 15px; border-bottom: 1px solid #222; display: flex; gap: 20px; justify-content: center; }
-        .nav-link { color: #ccc; font-size: 13px; font-weight: bold; cursor: pointer; }
+        :root {
+            --bg: #000000;
+            --card: #0a0a0a;
+            --primary: #ff0000;
+            --accent: #2ecc71;
+            --text-main: #ffffff;
+            --text-dim: #a0a0a0;
+            --input-bg: #111111;
+        }
 
-        .main { padding: 40px; display: flex; flex-direction: column; align-items: center; }
-        .header-img { max-width: 500px; width: 100%; height: auto; margin-bottom: 20px; }
-        
-        .box { background: var(--card); padding: 35px; border-radius: 20px; border: 1px solid #333; width: 100%; max-width: 650px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); }
-        input { width: 100%; padding: 18px; border-radius: 12px; border: 2px solid #444; background: #000; color: white; margin-bottom: 25px; outline: none; box-sizing: border-box; }
-        
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
-        button { padding: 18px; border: none; border-radius: 12px; font-weight: 800; color: white; cursor: pointer; text-transform: uppercase; font-size: 12px; transition: 0.3s; }
-        
-        .btn-mp3 { background: var(--accent); }
-        .btn-mp4 { background: var(--primary); }
-        .btn-movie { background: var(--blue); }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
 
-        #prog-area { display: none; margin-top: 30px; }
-        .bar-bg { background: #222; height: 14px; border-radius: 10px; overflow: hidden; border: 1px solid #333; }
-        #bar { width: 0%; height: 100%; background: linear-gradient(90deg, var(--accent), #00ff88); transition: width 0.3s; }
-        #status { font-size: 14px; margin-top: 12px; color: #aaa; font-weight: bold; }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 80px 20px;
+            text-align: center;
+        }
 
-        footer { margin-top: 40px; padding: 20px; color: #444; font-size: 12px; }
-        #dl-helper { display: none; }
+        /* Imagen DYTATUBE */
+        .logo {
+            max-width: 350px;
+            margin-bottom: 20px;
+        }
+
+        h1 { font-size: 2.5rem; margin-bottom: 10px; font-weight: 800; }
+        .subtitle { color: var(--text-dim); margin-bottom: 40px; font-size: 1.1rem; }
+
+        /* Estilo Turboscribe */
+        .downloader-card {
+            background: var(--card);
+            padding: 40px;
+            border-radius: 24px;
+            border: 1px solid #222;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 20px;
+            background: var(--input-bg);
+            border: 2px solid #333;
+            border-radius: 16px;
+            color: white;
+            font-size: 1.1rem;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input:focus { border-color: var(--primary); }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .format-select {
+            padding: 15px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-download {
+            width: 100%;
+            padding: 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.2rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.3s;
+        }
+
+        .btn-download:hover {
+            background: #cc0000;
+            transform: translateY(-2px);
+        }
+
+        /* Barra de progreso estilo EXE */
+        #progress-section {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .bar-container {
+            background: #222;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        #bar-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--accent);
+            transition: width 0.3s;
+        }
+
+        #status-text {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 40px;
+            color: #444;
+            font-size: 0.8rem;
+        }
     </style>
 </head>
 <body>
-    <header>
-        <div class="nav-link">Inicio</div><div class="nav-link">Películas</div><div class="nav-link">Series</div><div class="nav-link">Música</div>
-    </header>
 
-    <div class="main">
-        <img src="dytatube.png" alt="DYTATUBE" class="header-img">
+    <div class="container">
+        <img src="dytatube.png" alt="DYTATUBE" class="logo">
         
-        <div class="box">
-            <input type="text" id="url-input" placeholder="Pega el link aquí (YouTube o Película)...">
+        <p class="subtitle">Descarga videos y audios de YouTube de forma instantánea.</p>
+
+        <div class="downloader-card">
+            <input type="text" id="video-url" placeholder="Pega el enlace de YouTube aquí...">
             
-            <div class="btn-grid">
-                <button class="btn-mp3" onclick="descargarSF('mp3')">MP3 Música</button>
-                <button class="btn-mp4" onclick="descargarSF('mp4')">MP4 Video</button>
-                <button class="btn-movie" onclick="descargarSF('movie')">Películas</button>
+            <div class="options-grid">
+                <select id="format" class="format-select">
+                    <option value="mp3">Audio (MP3)</option>
+                    <option value="720">Video (MP4 720p)</option>
+                    <option value="1080">Video (MP4 1080p)</option>
+                </select>
+                <select id="lang" class="format-select">
+                    <option value="es">Español</option>
+                    <option value="en">English</option>
+                </select>
             </div>
 
-            <div id="prog-area">
-                <div class="bar-bg"><div id="bar"></div></div>
-                <p id="status">Iniciando...</p>
+            <button class="btn-download" onclick="process()">Descargar ahora</button>
+
+            <div id="progress-section">
+                <div class="bar-container"><div id="bar-fill"></div></div>
+                <div id="status-text">Analizando video...</div>
             </div>
         </div>
     </div>
 
-    <iframe id="dl-helper"></iframe>
-
-    <footer>DYTA 2026 Todos los derechos reservados</footer>
+    <footer>DYTA 2026 • Sin anuncios • Sin límites</footer>
 
     <script>
-        function descargarSF(tipo) {
-            const urlOriginal = document.getElementById('url-input').value;
-            if (!urlOriginal) return alert("Pega un link primero");
+        function process() {
+            const url = document.getElementById('video-url').value;
+            if (!url) return alert("Por favor ingresa un link");
 
-            const area = document.getElementById('prog-area');
-            const bar = document.getElementById('bar');
-            const status = document.getElementById('status');
-            const helper = document.getElementById('dl-helper');
+            const idMatch = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+            if (!idMatch) return alert("Link de YouTube no válido");
 
-            area.style.display = 'block';
+            const section = document.getElementById('progress-section');
+            const bar = document.getElementById('bar-fill');
+            const status = document.getElementById('status-text');
+            const format = document.getElementById('format').value;
+
+            section.style.display = 'block';
             let p = 0;
 
-            const timer = setInterval(() => {
+            const interval = setInterval(() => {
                 p += Math.random() * 15;
                 if (p >= 100) {
                     p = 100;
-                    clearInterval(timer);
-                    status.innerText = "¡Descarga Lista! Revisa tus archivos.";
+                    clearInterval(interval);
+                    status.innerText = "¡Descarga lista! Revisa tus archivos.";
                     
-                    // MÉTODO SAVEFROM: Agregamos 'ss' antes de 'youtube.com'
-                    let urlSF = urlOriginal.replace("youtube.com", "ssyoutube.com").replace("youtu.be/", "ssyoutube.com/watch?v=");
+                    // Método directo estilo SS (SaveFrom) para evitar ventanas
+                    let finalUrl = url.replace("youtube.com", "ssyoutube.com").replace("youtu.be/", "ssyoutube.com/watch?v=");
+                    window.location.href = finalUrl;
                     
-                    if (tipo === 'movie') {
-                        window.open(urlOriginal, '_blank');
-                    } else {
-                        // Intentamos la descarga directa a través del helper
-                        helper.src = urlSF;
-                        // Como respaldo por si el iframe se bloquea, abrimos en la misma pestaña
-                        window.location.href = urlSF;
-                    }
-
-                    setTimeout(() => { area.style.display = 'none'; bar.style.width = '0%'; }, 5000);
+                    setTimeout(() => { section.style.display = 'none'; bar.style.width = '0%'; }, 4000);
                 }
                 bar.style.width = p + "%";
-                status.innerText = `Procesando con SaveFrom... ${Math.floor(p)}%`;
-            }, 250);
+                status.innerText = `Preparando ${format.toUpperCase()}... ${Math.floor(p)}%`;
+            }, 300);
         }
     </script>
 </body>
