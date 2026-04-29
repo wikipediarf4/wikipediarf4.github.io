@@ -3,199 +3,228 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DYTA Downloads - Online Gratis</title>
+    <title>DYTATUBE - Descargas Online</title>
     <style>
         :root {
             --primary: #ff0000;
-            --bg: #0a0a0a;
-            --card: #161616;
+            --bg: #050505;
+            --card: #121212;
             --text: #ffffff;
             --accent: #2ecc71;
+            --blue: #01b4e4;
         }
 
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
+            font-family: 'Open Sans', Arial, sans-serif;
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
             min-height: 100vh;
         }
 
-        .container {
-            width: 90%;
-            max-width: 600px;
-            background: var(--card);
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.7);
-            text-align: center;
-            border: 1px solid #222;
+        /* --- NAVBAR ESTILO CANELA --- */
+        header {
+            background: rgba(0, 0, 0, 0.95);
+            padding: 15px 40px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #222;
+            position: sticky;
+            top: 0; z-index: 1000;
         }
 
-        h1 { font-size: 2.5rem; margin-bottom: 10px; font-weight: 900; }
+        nav { display: flex; gap: 20px; overflow-x: auto; white-space: nowrap; }
+        .nav-link { color: #ccc; text-decoration: none; font-weight: 700; font-size: 14px; cursor: pointer; }
+        .nav-link:hover { color: var(--blue); }
+
+        /* --- CONTENIDO PRINCIPAL --- */
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .header-img {
+            max-width: 400px;
+            width: 90%;
+            margin-bottom: 20px;
+            border-radius: 10px;
+        }
+
+        h1 { font-size: 2.2rem; margin: 0; font-weight: 900; }
         h1 span { color: var(--primary); }
-        .tagline { color: #888; margin-bottom: 30px; font-size: 14px; }
+
+        .download-box {
+            width: 100%;
+            max-width: 650px;
+            background: var(--card);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+            margin-top: 30px;
+            border: 1px solid #333;
+            text-align: center;
+        }
 
         input {
             width: 100%;
             padding: 18px;
             border-radius: 12px;
-            border: 2px solid #333;
+            border: 2px solid #444;
             background: #000;
             color: white;
             font-size: 16px;
+            margin-bottom: 20px;
             box-sizing: border-box;
-            margin-bottom: 25px;
             outline: none;
-            transition: border-color 0.3s;
         }
 
-        input:focus { border-color: var(--primary); }
+        input:focus { border-color: var(--blue); }
 
-        .btn-group {
+        .btn-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
         }
 
         button {
             padding: 18px;
             border: none;
             border-radius: 12px;
-            font-weight: bold;
-            font-size: 14px;
+            font-weight: 800;
             cursor: pointer;
-            text-transform: uppercase;
-            transition: all 0.3s;
             color: white;
+            transition: 0.3s;
+            text-transform: uppercase;
+            font-size: 12px;
         }
 
         .btn-mp3 { background: var(--accent); }
         .btn-mp4 { background: var(--primary); }
+        .btn-movie { background: var(--blue); }
 
-        button:hover { transform: translateY(-3px); filter: brightness(1.1); }
-        button:disabled { background: #444; cursor: not-allowed; transform: none; }
+        button:hover { transform: translateY(-3px); filter: brightness(1.2); }
 
-        /* --- BARRA DE CARGA --- */
-        #progress-container {
+        /* --- PROGRESO --- */
+        #progress-area {
             display: none;
-            margin-top: 30px;
+            margin-top: 25px;
+        }
+
+        .bar-bg {
             background: #222;
-            height: 12px;
+            height: 10px;
             border-radius: 10px;
             overflow: hidden;
-            position: relative;
         }
 
-        #progress-bar {
+        .bar-fill {
             width: 0%;
             height: 100%;
-            background: linear-gradient(90deg, var(--accent), #00ff88);
-            transition: width 0.4s ease;
+            background: var(--accent);
+            transition: width 0.3s;
         }
 
-        #status-text {
-            margin-top: 10px;
-            font-size: 13px;
-            color: #aaa;
-        }
+        #status-msg { font-size: 13px; margin-top: 10px; color: #aaa; }
 
         footer {
-            margin-top: 40px;
-            color: #444;
+            padding: 25px;
+            text-align: center;
             font-size: 12px;
+            color: #555;
+            background: #000;
         }
-
-        /* Iframe invisible para disparar la descarga sin abrir pestañas */
-        #dl-helper { display: none; }
     </style>
 </head>
 <body>
 
-    <div class="container">
+    <header>
+        <nav>
+            <div class="nav-link">Inicio</div>
+            <div class="nav-link">Guía de TV</div>
+            <div class="nav-link">Películas</div>
+            <div class="nav-link">Series</div>
+            <div class="nav-link">Clásicos</div>
+            <div class="nav-link">Deportes</div>
+            <div class="nav-link">Música</div>
+            <div class="nav-link">Kids</div>
+            <div class="nav-link">Noticias</div>
+        </nav>
+    </header>
+
+    <div class="main-container">
+        <img src="dytatube.png" alt="DYTATUBE" class="header-img">
+        
         <h1>DYTA <span>Downloads</span></h1>
-        <div class="tagline">Descarga MP3 y MP4 con carátula incluida</div>
+        
+        <div class="download-box">
+            <input type="text" id="main-url" placeholder="Pega el link aquí (YouTube, Music o Película)...">
+            
+            <div class="btn-grid">
+                <button class="btn-mp3" onclick="processDownload('mp3')">MP3 Música</button>
+                <button class="btn-mp4" onclick="processDownload('mp4')">MP4 Video</button>
+                <button class="btn-movie" onclick="processDownload('movie')">Peliculas</button>
+            </div>
 
-        <input type="text" id="youtube-url" placeholder="Pega el link de YouTube aquí...">
-
-        <div class="btn-group">
-            <button class="btn-mp3" id="btn-mp3" onclick="startDownload('mp3')">Descargar MP3</button>
-            <button class="btn-mp4" id="btn-mp4" onclick="startDownload('mp4')">Descargar MP4</button>
+            <div id="progress-area">
+                <div class="bar-bg"><div class="bar-fill" id="bar"></div></div>
+                <div id="status-msg"></div>
+            </div>
         </div>
-
-        <div id="progress-container">
-            <div id="progress-bar"></div>
-        </div>
-        <div id="status-text"></div>
     </div>
-
-    <iframe id="dl-helper"></iframe>
 
     <footer>
         DYTA 2026 Todos los derechos reservados
     </footer>
 
     <script>
-        function startDownload(format) {
-            const url = document.getElementById('youtube-url').value;
-            if (!url) return alert("Por favor, pega un link de YouTube");
+        function processDownload(type) {
+            const url = document.getElementById('main-url').value;
+            if (!url) return alert("¡Pega un enlace primero!");
 
-            const videoId = extractID(url);
-            if (!videoId) return alert("Link de YouTube no válido");
+            const area = document.getElementById('progress-area');
+            const bar = document.getElementById('bar');
+            const msg = document.getElementById('status-msg');
 
-            // UI: Desactivar botones y mostrar barra
-            document.getElementById('btn-mp3').disabled = true;
-            document.getElementById('btn-mp4').disabled = true;
-            document.getElementById('progress-container').style.display = 'block';
-            const progressBar = document.getElementById('progress-bar');
-            const statusText = document.getElementById('status-text');
-
-            let progress = 0;
-            statusText.innerText = "Iniciando conversión...";
-
-            // Simulación de progreso (Ya que las APIs externas no devuelven % real por seguridad)
-            const interval = setInterval(() => {
-                progress += Math.random() * 5;
-                if (progress > 95) {
-                    progress = 95;
-                    statusText.innerText = "Preparando archivo para descarga...";
-                } else {
-                    statusText.innerText = `Procesando ${format.toUpperCase()} (${Math.floor(progress)}%)`;
+            area.style.display = 'block';
+            let p = 0;
+            
+            const timer = setInterval(() => {
+                p += Math.random() * 8;
+                if (p >= 100) {
+                    p = 100;
+                    clearInterval(timer);
+                    msg.innerText = "¡Listo! Iniciando descarga...";
+                    setTimeout(() => area.style.display = 'none', 3000);
                 }
-                progressBar.style.width = progress + "%";
-            }, 500);
+                bar.style.width = p + "%";
+                msg.innerText = `Analizando enlace para ${type.toUpperCase()}... ${Math.floor(p)}%`;
+            }, 300);
 
-            // Disparar la descarga usando el helper invisible
-            const downloadUrl = format === 'mp3' 
-                ? `https://api.vevioz.com/@api/button/mp3/${videoId}`
-                : `https://api.vevioz.com/@api/button/videos/${videoId}`;
-
-            // En lugar de window.open, cargamos la URL en el iframe oculto
-            // Esto intenta disparar el "Save As" sin salir de tu web
-            document.getElementById('dl-helper').src = downloadUrl;
-
-            // Finalización estética
-            setTimeout(() => {
-                clearInterval(interval);
-                progressBar.style.width = "100%";
-                statusText.innerText = "¡Descarga lista! Revisa tus archivos.";
-                
-                setTimeout(() => {
-                    document.getElementById('btn-mp3').disabled = false;
-                    document.getElementById('btn-mp4').disabled = false;
-                    document.getElementById('progress-container').style.display = 'none';
-                    progressBar.style.width = "0%";
-                }, 3000);
-            }, 8000);
+            // LOGICA DE DESCARGA REAL
+            if (type === 'movie') {
+                // Para películas, intentamos abrir el visor/descargador
+                window.open(url, '_blank'); 
+            } else {
+                const vidId = extractID(url);
+                if (!vidId) {
+                    // Si no es YouTube, abrimos el link directo como fallback
+                    window.open(url, '_blank');
+                } else {
+                    // API de descarga forzada para YT
+                    const api = type === 'mp3' ? 'mp3' : 'videos';
+                    window.open(`https://api.vevioz.com/@api/button/${api}/${vidId}`, '_blank');
+                }
+            }
         }
 
         function extractID(url) {
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-            const match = url.match(regExp);
+            const reg = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(reg);
             return (match && match[2].length == 11) ? match[2] : null;
         }
     </script>
