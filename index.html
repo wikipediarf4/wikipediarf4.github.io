@@ -15,52 +15,52 @@
         }
 
         body {
-            font-family: 'Open Sans', Arial, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            align-items: center;
         }
 
-        /* --- NAVBAR --- */
+        /* --- NAVBAR ESTILO CANELA --- */
         header {
-            background: rgba(0, 0, 0, 0.95);
-            padding: 15px 40px;
+            background: #000;
+            padding: 15px 50px;
             display: flex;
             align-items: center;
+            width: 100%;
             border-bottom: 1px solid #222;
+            box-sizing: border-box;
         }
 
         nav { display: flex; gap: 20px; overflow-x: auto; white-space: nowrap; }
-        .nav-link { color: #ccc; text-decoration: none; font-weight: 700; font-size: 14px; }
+        .nav-link { color: #ccc; text-decoration: none; font-weight: 700; font-size: 14px; cursor: pointer; }
 
-        /* --- CONTENIDO --- */
+        /* --- CONTENEDOR PRINCIPAL --- */
         .main-container {
-            flex: 1;
+            padding: 40px 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 40px 20px;
+            width: 100%;
         }
 
-        /* ARREGLO DE IMAGEN */
         .header-img {
             max-width: 450px;
-            width: 100%;
-            height: auto;
-            margin-bottom: 20px;
-            display: block;
+            width: 90%;
+            margin-bottom: 25px;
         }
 
         .download-box {
             width: 100%;
-            max-width: 650px;
+            max-width: 600px;
             background: var(--card);
-            padding: 30px;
+            padding: 35px;
             border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9);
             border: 1px solid #333;
             text-align: center;
         }
@@ -73,14 +73,15 @@
             background: #000;
             color: white;
             font-size: 16px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             box-sizing: border-box;
+            outline: none;
         }
 
-        .btn-grid {
+        .btn-group {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            gap: 12px;
+            gap: 15px;
         }
 
         button {
@@ -91,27 +92,51 @@
             cursor: pointer;
             color: white;
             text-transform: uppercase;
-            font-size: 12px;
+            font-size: 13px;
+            transition: 0.3s;
         }
 
         .btn-mp3 { background: var(--accent); }
         .btn-mp4 { background: var(--primary); }
         .btn-movie { background: var(--blue); }
 
-        /* BARRA DE PROGRESO */
-        #progress-area {
+        button:hover { transform: translateY(-3px); filter: brightness(1.2); }
+
+        /* --- BARRA DE PROGRESO --- */
+        #progress-container {
             display: none;
-            margin-top: 25px;
+            margin-top: 30px;
         }
 
-        .bar-bg { background: #222; height: 12px; border-radius: 10px; overflow: hidden; }
-        .bar-fill { width: 0%; height: 100%; background: var(--accent); transition: width 0.3s; }
-        #status-msg { font-size: 13px; margin-top: 10px; color: #aaa; }
+        .progress-bg {
+            background: #222;
+            height: 12px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
 
-        footer { padding: 25px; text-align: center; font-size: 12px; color: #555; background: #000; }
-        
-        /* Iframe oculto para forzar descarga sin saltar de página */
-        #hidden-downloader { display: none; }
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #00ff88);
+            transition: width 0.4s;
+        }
+
+        #status-text {
+            margin-top: 12px;
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 30px;
+            color: #444;
+            font-size: 13px;
+        }
+
+        /* El "motor" invisible para descargar sin pestañas */
+        #dl-engine { display: none; }
     </style>
 </head>
 <body>
@@ -131,77 +156,89 @@
     </header>
 
     <div class="main-container">
-        <img src="./dytatube.png" alt="DYTATUBE" class="header-img">
-        
+        <img src="dytatube.png" alt="DYTATUBE" class="header-img">
+
         <div class="download-box">
-            <input type="text" id="main-url" placeholder="Pega el link aquí (YouTube, Music o Película)...">
+            <input type="text" id="target-url" placeholder="Pega el link de YouTube o Película aquí...">
             
-            <div class="btn-grid">
-                <button class="btn-mp3" onclick="doDownload('mp3')">MP3-Música</button>
-                <button class="btn-mp4" onclick="doDownload('mp4')">MP4-Video</button>
-                <button class="btn-movie" onclick="doDownload('movie')">Peliculas</button>
+            <div class="btn-group">
+                <button class="btn-mp3" onclick="handleDownload('mp3')">MP3 Música</button>
+                <button class="btn-mp4" onclick="handleDownload('mp4')">MP4 Video</button>
+                <button class="btn-movie" onclick="handleDownload('movie')">Películas</button>
             </div>
 
-            <div id="progress-area">
-                <div class="bar-bg"><div class="bar-fill" id="bar"></div></div>
-                <div id="status-msg"></div>
+            <div id="progress-container">
+                <div class="progress-bg"><div id="progress-bar"></div></div>
+                <div id="status-text">Analizando...</div>
             </div>
         </div>
     </div>
 
-    <iframe id="hidden-downloader"></iframe>
+    <iframe id="dl-engine"></iframe>
 
     <footer>
         DYTA 2026 Todos los derechos reservados
     </footer>
 
     <script>
-        function doDownload(type) {
-            const url = document.getElementById('main-url').value;
-            if (!url) return alert("¡Pega un enlace!");
+        function handleDownload(type) {
+            const url = document.getElementById('target-url').value;
+            if (!url) return alert("Pega un link primero");
 
-            const area = document.getElementById('progress-area');
-            const bar = document.getElementById('bar');
-            const msg = document.getElementById('status-msg');
-            const dlHelper = document.getElementById('hidden-downloader');
+            const container = document.getElementById('progress-container');
+            const bar = document.getElementById('progress-bar');
+            const status = document.getElementById('status-text');
+            const engine = document.getElementById('dl-engine');
 
-            area.style.display = 'block';
+            container.style.display = 'block';
             let p = 0;
-            
-            const timer = setInterval(() => {
-                p += Math.random() * 12;
-                if (p >= 100) {
-                    p = 100;
-                    clearInterval(timer);
-                    msg.innerText = "¡Descarga iniciada! Revisa tu carpeta de descargas.";
-                    setTimeout(() => { area.style.display = 'none'; bar.style.width = '0%'; }, 5000);
+            status.innerText = `Iniciando descarga de ${type.toUpperCase()}...`;
+
+            // Animación de barra estilo EXE
+            const anim = setInterval(() => {
+                p += Math.random() * 7;
+                if (p >= 95) {
+                    p = 95;
+                    status.innerText = "¡Casi listo! El archivo se bajará en breve...";
+                } else {
+                    bar.style.width = p + "%";
+                    status.innerText = `Descargando... ${Math.floor(p)}%`;
                 }
-                bar.style.width = p + "%";
-                msg.innerText = `Descargando ${type.toUpperCase()}... ${Math.floor(p)}%`;
             }, 400);
 
-            // LOGICA DE DESCARGA DIRECTA
+            // LOGICA DE DESCARGA
+            const videoId = extractID(url);
+            let finalUrl = "";
+
             if (type === 'movie') {
-                window.open(url, '_blank'); 
+                finalUrl = url; // Para pelis abre el link directo
+                window.open(finalUrl, '_blank');
+            } else if (videoId) {
+                // Motor de descarga directa sin popups
+                finalUrl = type === 'mp3' 
+                    ? `https://api.v-mate.net/api/mp3/${videoId}` 
+                    : `https://api.v-mate.net/api/video/${videoId}`;
+                
+                // Usamos el iframe oculto para forzar la bajada sin salir de la web
+                engine.src = finalUrl;
             } else {
-                const vidId = extractID(url);
-                if (vidId) {
-                    // Nuevo motor de descarga directa (intenta forzar el archivo)
-                    const downloadUrl = type === 'mp3' 
-                        ? `https://api.v-mate.net/api/mp3/${vidId}`
-                        : `https://api.v-mate.net/api/video/${vidId}`;
-                    
-                    // Cargamos en el iframe oculto para que no abra pestañas
-                    dlHelper.src = downloadUrl;
-                } else {
-                    dlHelper.src = url;
-                }
+                status.innerText = "Error: El link no es de YouTube.";
+                clearInterval(anim);
+                return;
             }
+
+            // Finalización
+            setTimeout(() => {
+                clearInterval(anim);
+                bar.style.width = "100%";
+                status.innerText = "¡Descarga lista! Revisa tu carpeta de descargas.";
+                setTimeout(() => { container.style.display = 'none'; bar.style.width = '0%'; }, 5000);
+            }, 8000);
         }
 
         function extractID(url) {
-            const reg = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-            const match = url.match(reg);
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
             return (match && match[2].length == 11) ? match[2] : null;
         }
     </script>
