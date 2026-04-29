@@ -3,137 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Meta tag de referrer que pidió la API para evitar bloqueos -->
     <meta name="referrer" content="origin">
-    <title>Cine Pro - TMDB Player</title>
+    <title>Cine Pro Latino</title>
     <style>
-        :root {
-            --primary: #E50914;
-            --bg: #141414;
-            --card-bg: #232323;
-            --text: #ffffff;
-        }
-
-        body {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        header {
-            width: 100%;
-            padding: 20px 0;
-            text-align: center;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
-        }
-
-        .search-box {
-            margin: 20px 0;
-            display: flex;
-            gap: 10px;
-            width: 90%;
-            max-width: 600px;
-        }
-
-        input {
-            flex: 1;
-            padding: 15px;
-            border: none;
-            border-radius: 4px;
-            background: #333;
-            color: white;
-            font-size: 16px;
-        }
-
-        button {
-            padding: 15px 30px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        #results {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 20px;
-            padding: 20px;
-            width: 95%;
-        }
-
-        .card {
-            background: var(--card-bg);
-            border-radius: 8px;
-            overflow: hidden;
-            transition: transform 0.3s;
-            cursor: pointer;
-            position: relative;
-        }
-
-        .card:hover {
-            transform: scale(1.05);
-            z-index: 2;
-        }
-
-        .card img {
-            width: 100%;
-            display: block;
-        }
-
-        .card-info {
-            padding: 10px;
-            font-size: 13px;
-            text-align: center;
-        }
-
-        /* Reproductor Pantalla Completa */
-        #player-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: black;
-            z-index: 1000;
-        }
-
-        .close-btn {
-            position: absolute;
-            top: 20px;
-            right: 30px;
-            font-size: 30px;
-            color: white;
-            cursor: pointer;
-            z-index: 1001;
-            background: rgba(0,0,0,0.5);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
+        :root { --primary: #E50914; --bg: #141414; --text: #ffffff; }
+        body { font-family: Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; text-align: center; }
+        .search-box { margin: 20px; }
+        input { padding: 12px; width: 300px; border-radius: 4px; border: none; }
+        button { padding: 12px 20px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        #results { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; padding: 20px; }
+        .card { background: #222; border-radius: 8px; overflow: hidden; cursor: pointer; transition: 0.3s; }
+        .card:hover { transform: scale(1.05); }
+        .card img { width: 100%; }
+        #player-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 1000; }
+        .close-btn { position: absolute; top: 10px; right: 20px; font-size: 40px; color: white; cursor: pointer; z-index: 1001; }
+        iframe { width: 100%; height: 100%; border: none; }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1 style="color: var(--primary); margin:0;">CINE PRO</h1>
-    </header>
+    <h1 style="color: var(--primary); margin-top: 20px;">CINE PRO ESPAÑOL</h1>
 
     <div class="search-box">
         <input type="text" id="query" placeholder="Buscar película o serie...">
@@ -153,26 +42,17 @@
         async function buscar() {
             const q = document.getElementById('query').value;
             if(!q) return;
-
             const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(q)}&language=es-ES`);
             const data = await res.json();
-            
             const resultsDiv = document.getElementById('results');
             resultsDiv.innerHTML = '';
 
             data.results.forEach(item => {
                 if(!item.poster_path) return;
-
                 const card = document.createElement('div');
                 card.className = 'card';
-                const titulo = item.title || item.name;
                 const tipo = item.media_type === 'tv' ? 'tv' : 'movie';
-
-                card.innerHTML = `
-                    <img src="https://image.tmdb.org/t/p/w500${item.poster_path}">
-                    <div class="card-info">${titulo}</div>
-                `;
-
+                card.innerHTML = `<img src="https://image.tmdb.org/t/p/w500${item.poster_path}"><div style="padding:5px">${item.title || item.name}</div>`;
                 card.onclick = () => reproducir(tipo, item.id);
                 resultsDiv.appendChild(card);
             });
@@ -181,22 +61,17 @@
         function reproducir(tipo, id) {
             const overlay = document.getElementById('player-overlay');
             const frame = document.getElementById('video-frame');
-            // Usamos la estructura de vidsrc.me que pide el referrer
-            frame.src = `https://vidsrc.me/embed/${tipo}?tmdb=${id}`;
+            
+            // Intentamos forzar español con el parámetro lang=es
+            frame.src = `https://vidsrc.to/embed/${tipo}/${id}?lang=es`;
+            
             overlay.style.display = 'block';
         }
 
         function cerrar() {
-            const overlay = document.getElementById('player-overlay');
-            const frame = document.getElementById('video-frame');
-            frame.src = '';
-            overlay.style.display = 'none';
+            document.getElementById('player-overlay').style.display = 'none';
+            document.getElementById('video-frame').src = '';
         }
-
-        // Buscar con Enter
-        document.getElementById('query').addEventListener('keypress', (e) => {
-            if(e.key === 'Enter') buscar();
-        });
     </script>
 </body>
 </html>
