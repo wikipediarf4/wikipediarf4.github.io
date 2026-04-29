@@ -4,98 +4,114 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="origin">
-    <title>Cine Pro Multi-Idioma</title>
+    <title>Mi Canela TV Clone</title>
     <style>
         :root {
-            --primary: #E50914;
-            --bg: #141414;
-            --card-bg: #1f1f1f;
-            --text: #ffffff;
+            --bg-color: #0c0c0c;
+            --text-color: #ffffff;
+            --accent-color: #00b4e4; /* El azul de TMDB de tu imagen */
+            --nav-bg: rgba(0, 0, 0, 0.8);
         }
 
         body {
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             margin: 0;
             padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* --- MENÚ SUPERIOR (Segunda Imagen) --- */
+        nav {
+            background: var(--nav-bg);
+            padding: 15px 40px;
             display: flex;
-            flex-direction: column;
             align-items: center;
-        }
-
-        header {
+            position: fixed;
+            top: 0;
             width: 100%;
-            padding: 30px 0;
-            background: linear-gradient(to bottom, #000, transparent);
+            z-index: 1000;
+            gap: 25px;
         }
 
+        .nav-item {
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            color: #ccc;
+            transition: color 0.3s;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            color: white;
+        }
+
+        /* --- BUSCADOR --- */
         .search-container {
-            width: 90%;
-            max-width: 700px;
+            margin-top: 100px;
+            padding: 0 50px;
             display: flex;
             gap: 10px;
-            margin-bottom: 40px;
         }
 
         input {
             flex: 1;
-            padding: 15px;
-            border-radius: 4px;
-            border: 1px solid #333;
+            padding: 12px;
             background: #222;
+            border: 1px solid #444;
             color: white;
-            font-size: 16px;
-        }
-
-        button {
-            padding: 15px 30px;
-            background: var(--primary);
-            color: white;
-            border: none;
             border-radius: 4px;
+        }
+
+        /* --- SECCIONES DE CATEGORÍAS --- */
+        .section-title {
+            padding: 20px 50px 10px 50px;
+            font-size: 22px;
             font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
         }
 
-        button:hover { background: #b20710; }
-
-        #results {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 25px;
-            width: 90%;
-            max-width: 1200px;
-            padding-bottom: 50px;
+        .horizontal-scroll {
+            display: flex;
+            overflow-x: auto;
+            padding: 10px 50px 30px 50px;
+            gap: 15px;
+            scroll-behavior: smooth;
         }
 
-        .movie-card {
-            background: var(--card-bg);
-            border-radius: 10px;
+        .horizontal-scroll::-webkit-scrollbar { display: none; }
+
+        .card {
+            min-width: 180px;
+            max-width: 180px;
+            background: #1a1a1a;
+            border-radius: 8px;
             overflow: hidden;
-            transition: transform 0.3s, box-shadow 0.3s;
             cursor: pointer;
+            transition: transform 0.3s;
         }
 
-        .movie-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        .card:hover {
+            transform: scale(1.1);
+            z-index: 5;
         }
 
-        .movie-card img { width: 100%; display: block; }
+        .card img {
+            width: 100%;
+            height: 270px;
+            object-fit: cover;
+        }
 
-        .movie-title {
-            padding: 10px;
+        .card-title {
+            padding: 8px;
             font-size: 14px;
-            font-weight: bold;
             text-align: center;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        /* Overlay del Reproductor */
+        /* --- REPRODUCTOR INTEGRADO --- */
         #player-overlay {
             display: none;
             position: fixed;
@@ -103,19 +119,18 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: #000;
-            z-index: 9999;
+            background: black;
+            z-index: 2000;
         }
 
         .close-btn {
             position: absolute;
-            top: 15px;
-            right: 25px;
-            font-size: 45px;
+            top: 20px;
+            right: 30px;
+            font-size: 40px;
             color: white;
             cursor: pointer;
-            z-index: 10000;
-            text-shadow: 0 0 10px rgba(0,0,0,0.8);
+            z-index: 2001;
         }
 
         iframe {
@@ -123,97 +138,112 @@
             height: 100%;
             border: none;
         }
-
-        .info-msg {
-            color: #aaa;
-            font-size: 12px;
-            margin-top: 10px;
-        }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1 style="color: var(--primary); margin:0; font-size: 40px; letter-spacing: 2px;">CINE PRO</h1>
-        <p style="color: #888;">Audio Español / Latino Seleccionable</p>
-    </header>
+    <nav>
+        <div class="nav-item active" onclick="location.reload()">Inicio</div>
+        <div class="nav-item">Guía de TV</div>
+        <div class="nav-item">Películas</div>
+        <div class="nav-item">Series</div>
+        <div class="nav-item">Clásicos</div>
+        <div class="nav-item">Deportes</div>
+        <div class="nav-item">Música</div>
+        <div class="nav-item">Kids</div>
+        <div class="nav-item">Noticias</div>
+    </nav>
 
     <div class="search-container">
-        <input type="text" id="search-input" placeholder="Busca una película o serie...">
-        <button onclick="search()">BUSCAR</button>
+        <input type="text" id="search-input" placeholder="Buscar en el catálogo...">
+        <button onclick="buscarManual()" style="padding:10px 20px; background:var(--accent-color); border:none; color:white; font-weight:bold; cursor:pointer;">BUSCAR</button>
     </div>
 
-    <div id="results"></div>
+    <div id="dynamic-content">
+        </div>
 
     <div id="player-overlay">
-        <div class="close-btn" onclick="closePlayer()">&times;</div>
-        <iframe id="video-iframe" src="" allowfullscreen referrerpolicy="origin"></iframe>
+        <div class="close-btn" onclick="cerrarReproductor()">×</div>
+        <iframe id="main-player" src="" allowfullscreen referrerpolicy="origin"></iframe>
     </div>
 
     <script>
         const API_KEY = 'f663f105c4c1626d23e86d2ac19471a9';
+        
+        // Categorías que queremos mostrar en el inicio
+        const categorias = [
+            { nombre: "Películas Tendencia", url: `https://api.themoviedb.org/3/trending/movie/week?api_key=${API_KEY}&language=es-ES` },
+            { nombre: "Series Más Populares", url: `https://api.themoviedb.org/3/tv/popular?api_key=${API_KEY}&language=es-ES` },
+            { nombre: "Acción y Adrenalina", url: `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=28&language=es-ES` },
+            { nombre: "Comedia para Reír", url: `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=35&language=es-ES` }
+        ];
 
-        async function search() {
-            const query = document.getElementById('search-input').value;
-            if (!query) return;
+        async function cargarInicio() {
+            const contenedor = document.getElementById('dynamic-content');
+            contenedor.innerHTML = '';
 
-            // Buscamos en TMDB en español
-            const url = `https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&language=es-ES`;
-            
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                displayResults(data.results);
-            } catch (error) {
-                console.error("Error:", error);
+            for (const cat of categorias) {
+                const res = await fetch(cat.url);
+                const data = await res.json();
+                crearFila(cat.nombre, data.results);
             }
         }
 
-        function displayResults(results) {
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = '';
+        function crearFila(titulo, items) {
+            const contenedor = document.getElementById('dynamic-content');
+            
+            const sectionTitle = document.createElement('div');
+            sectionTitle.className = 'section-title';
+            sectionTitle.innerText = titulo;
+            
+            const scroll = document.createElement('div');
+            scroll.className = 'horizontal-scroll';
 
-            results.forEach(item => {
+            items.forEach(item => {
                 if (!item.poster_path) return;
-
                 const card = document.createElement('div');
-                card.className = 'movie-card';
+                card.className = 'card';
+                const tipo = item.media_type === 'tv' || item.first_air_date ? 'tv' : 'movie';
                 
-                const title = item.title || item.name;
-                // Importante: Multiembed a veces usa solo el ID, verificamos si es serie o peli
-                const type = item.media_type === 'tv' ? 'tv' : 'movie';
-
                 card.innerHTML = `
-                    <img src="https://image.tmdb.org/t/p/w500${item.poster_path}" alt="${title}">
-                    <div class="movie-title">${title}</div>
+                    <img src="https://image.tmdb.org/t/p/w500${item.poster_path}">
+                    <div class="card-title">${item.title || item.name}</div>
                 `;
-
-                card.onclick = () => openPlayer(item.id, type);
-                resultsDiv.appendChild(card);
+                card.onclick = () => abrirReproductor(tipo, item.id);
+                scroll.appendChild(card);
             });
+
+            contenedor.appendChild(sectionTitle);
+            contenedor.appendChild(scroll);
         }
 
-        function openPlayer(id, type) {
-            const overlay = document.getElementById('player-overlay');
-            const iframe = document.getElementById('video-iframe');
+        async function buscarManual() {
+            const query = document.getElementById('search-input').value;
+            if (!query) return;
+            const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&language=es-ES`);
+            const data = await res.json();
             
-            // Usamos Multiembed que permite elegir servidor con banderas de idiomas
-            // Este link suele mostrar opciones Latino (MX) y Español (ES)
+            const contenedor = document.getElementById('dynamic-content');
+            contenedor.innerHTML = '';
+            crearFila(`Resultados para: ${query}`, data.results);
+        }
+
+        function abrirReproductor(tipo, id) {
+            const overlay = document.getElementById('player-overlay');
+            const iframe = document.getElementById('main-player');
+            // Usamos un servidor que permite elegir audio Latino/Español
             iframe.src = `https://multiembed.mov/?video_id=${id}&tmdb=1`;
-            
             overlay.style.display = 'block';
+            document.body.style.overflow = 'hidden';
         }
 
-        function closePlayer() {
-            const overlay = document.getElementById('player-overlay');
-            const iframe = document.getElementById('video-iframe');
-            iframe.src = '';
-            overlay.style.display = 'none';
+        function cerrarReproductor() {
+            document.getElementById('player-overlay').style.display = 'none';
+            document.getElementById('main-player').src = '';
+            document.body.style.overflow = 'auto';
         }
 
-        document.getElementById('search-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') search();
-        });
+        cargarInicio();
     </script>
 </body>
 </html>
