@@ -3,140 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DYTATUBE - Descargador de YouTube</title>
+    <title>DYTATUBE - Sitio en Construcción</title>
     <style>
-        :root {
-            --bg: #000000;
-            --card: #0a0a0a;
-            --primary: #ff0000;
-            --accent: #2ecc71;
-            --text-main: #ffffff;
-            --text-dim: #a0a0a0;
-            --input-bg: #111111;
-        }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg);
-            color: var(--text-main);
+            background-color: #000000;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
         }
 
         .container {
-            width: 100%;
-            max-width: 800px;
-            padding: 80px 20px;
-            text-align: center;
+            max-width: 600px;
+            padding: 20px;
         }
 
         /* Imagen DYTATUBE */
         .logo {
-            max-width: 350px;
-            margin-bottom: 20px;
+            max-width: 400px;
+            width: 90%;
+            height: auto;
+            margin-bottom: 30px;
+            filter: grayscale(50%);
         }
 
-        h1 { font-size: 2.5rem; margin-bottom: 10px; font-weight: 800; }
-        .subtitle { color: var(--text-dim); margin-bottom: 40px; font-size: 1.1rem; }
-
-        /* Estilo Turboscribe */
-        .downloader-card {
-            background: var(--card);
-            padding: 40px;
-            border-radius: 24px;
-            border: 1px solid #222;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        .input-wrapper {
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        input {
-            width: 100%;
-            padding: 20px;
-            background: var(--input-bg);
-            border: 2px solid #333;
-            border-radius: 16px;
-            color: white;
-            font-size: 1.1rem;
-            box-sizing: border-box;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-
-        input:focus { border-color: var(--primary); }
-
-        .options-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .format-select {
-            padding: 15px;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 12px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .btn-download {
-            width: 100%;
-            padding: 20px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 16px;
-            font-size: 1.2rem;
-            font-weight: 800;
-            cursor: pointer;
-            transition: transform 0.2s, background 0.3s;
-        }
-
-        .btn-download:hover {
-            background: #cc0000;
-            transform: translateY(-2px);
-        }
-
-        /* Barra de progreso estilo EXE */
-        #progress-section {
-            display: none;
-            margin-top: 30px;
-        }
-
-        .bar-container {
-            background: #222;
-            height: 8px;
-            border-radius: 4px;
-            overflow: hidden;
+        h1 {
+            font-size: 2.5rem;
             margin-bottom: 10px;
+            color: #ff0000;
         }
 
-        #bar-fill {
-            width: 0%;
-            height: 100%;
-            background: var(--accent);
-            transition: width 0.3s;
+        p {
+            font-size: 1.2rem;
+            color: #aaaaaa;
+            line-height: 1.6;
         }
 
-        #status-text {
-            font-size: 0.9rem;
-            color: var(--text-dim);
+        .loader {
+            border: 4px solid #222;
+            border-top: 4px solid #ff0000;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 30px auto;
         }
 
-        footer {
-            margin-top: auto;
-            padding: 40px;
-            color: #444;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .footer {
+            margin-top: 50px;
             font-size: 0.8rem;
+            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
     </style>
 </head>
@@ -145,67 +73,17 @@
     <div class="container">
         <img src="dytatube.png" alt="DYTATUBE" class="logo">
         
-        <p class="subtitle">Descarga videos y audios de YouTube de forma instantánea.</p>
-
-        <div class="downloader-card">
-            <input type="text" id="video-url" placeholder="Pega el enlace de YouTube aquí...">
-            
-            <div class="options-grid">
-                <select id="format" class="format-select">
-                    <option value="mp3">Audio (MP3)</option>
-                    <option value="720">Video (MP4 720p)</option>
-                    <option value="1080">Video (MP4 1080p)</option>
-                </select>
-                <select id="lang" class="format-select">
-                    <option value="es">Español</option>
-                    <option value="en">English</option>
-                </select>
-            </div>
-
-            <button class="btn-download" onclick="process()">Descargar ahora</button>
-
-            <div id="progress-section">
-                <div class="bar-container"><div id="bar-fill"></div></div>
-                <div id="status-text">Analizando video...</div>
-            </div>
-        </div>
+        <h1>SITIO EN CONSTRUCCIÓN</h1>
+        <p>Estamos mejorando el sistema de descarga directa para que funcione sin ventanas emergentes y con la mejor calidad MP3/MP4.</p>
+        
+        <div class="loader"></div>
+        
+        <p style="font-size: 0.9rem;">Vuelve pronto. Estamos trabajando para servirte mejor.</p>
     </div>
 
-    <footer>DYTA 2026 • Sin anuncios • Sin límites</footer>
+    <div class="footer">
+        DYTA 2026 • PRÓXIMAMENTE
+    </div>
 
-    <script>
-        function process() {
-            const url = document.getElementById('video-url').value;
-            if (!url) return alert("Por favor ingresa un link");
-
-            const idMatch = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-            if (!idMatch) return alert("Link de YouTube no válido");
-
-            const section = document.getElementById('progress-section');
-            const bar = document.getElementById('bar-fill');
-            const status = document.getElementById('status-text');
-            const format = document.getElementById('format').value;
-
-            section.style.display = 'block';
-            let p = 0;
-
-            const interval = setInterval(() => {
-                p += Math.random() * 15;
-                if (p >= 100) {
-                    p = 100;
-                    clearInterval(interval);
-                    status.innerText = "¡Descarga lista! Revisa tus archivos.";
-                    
-                    // Método directo estilo SS (SaveFrom) para evitar ventanas
-                    let finalUrl = url.replace("youtube.com", "ssyoutube.com").replace("youtu.be/", "ssyoutube.com/watch?v=");
-                    window.location.href = finalUrl;
-                    
-                    setTimeout(() => { section.style.display = 'none'; bar.style.width = '0%'; }, 4000);
-                }
-                bar.style.width = p + "%";
-                status.innerText = `Preparando ${format.toUpperCase()}... ${Math.floor(p)}%`;
-            }, 300);
-        }
-    </script>
 </body>
 </html>
