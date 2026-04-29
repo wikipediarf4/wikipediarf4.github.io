@@ -4,74 +4,216 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="origin">
-    <title>Cine Pro Latino</title>
+    <title>Cine Pro Multi-Idioma</title>
     <style>
-        :root { --primary: #E50914; --bg: #141414; --text: #ffffff; }
-        body { font-family: Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; text-align: center; }
-        .search-box { margin: 20px; }
-        input { padding: 12px; width: 300px; border-radius: 4px; border: none; }
-        button { padding: 12px 20px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        #results { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; padding: 20px; }
-        .card { background: #222; border-radius: 8px; overflow: hidden; cursor: pointer; transition: 0.3s; }
-        .card:hover { transform: scale(1.05); }
-        .card img { width: 100%; }
-        #player-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 1000; }
-        .close-btn { position: absolute; top: 10px; right: 20px; font-size: 40px; color: white; cursor: pointer; z-index: 1001; }
-        iframe { width: 100%; height: 100%; border: none; }
+        :root {
+            --primary: #E50914;
+            --bg: #141414;
+            --card-bg: #1f1f1f;
+            --text: #ffffff;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            width: 100%;
+            padding: 30px 0;
+            background: linear-gradient(to bottom, #000, transparent);
+        }
+
+        .search-container {
+            width: 90%;
+            max-width: 700px;
+            display: flex;
+            gap: 10px;
+            margin-bottom: 40px;
+        }
+
+        input {
+            flex: 1;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #333;
+            background: #222;
+            color: white;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 15px 30px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover { background: #b20710; }
+
+        #results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 25px;
+            width: 90%;
+            max-width: 1200px;
+            padding-bottom: 50px;
+        }
+
+        .movie-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+
+        .movie-card img { width: 100%; display: block; }
+
+        .movie-title {
+            padding: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Overlay del Reproductor */
+        #player-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            z-index: 9999;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            font-size: 45px;
+            color: white;
+            cursor: pointer;
+            z-index: 10000;
+            text-shadow: 0 0 10px rgba(0,0,0,0.8);
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .info-msg {
+            color: #aaa;
+            font-size: 12px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
 
-    <h1 style="color: var(--primary); margin-top: 20px;">CINE PRO ESPAÑOL</h1>
+    <header>
+        <h1 style="color: var(--primary); margin:0; font-size: 40px; letter-spacing: 2px;">CINE PRO</h1>
+        <p style="color: #888;">Audio Español / Latino Seleccionable</p>
+    </header>
 
-    <div class="search-box">
-        <input type="text" id="query" placeholder="Buscar película o serie...">
-        <button onclick="buscar()">BUSCAR</button>
+    <div class="search-container">
+        <input type="text" id="search-input" placeholder="Busca una película o serie...">
+        <button onclick="search()">BUSCAR</button>
     </div>
 
     <div id="results"></div>
 
     <div id="player-overlay">
-        <div class="close-btn" onclick="cerrar()">×</div>
-        <iframe id="video-frame" src="" allowfullscreen referrerpolicy="origin"></iframe>
+        <div class="close-btn" onclick="closePlayer()">&times;</div>
+        <iframe id="video-iframe" src="" allowfullscreen referrerpolicy="origin"></iframe>
     </div>
 
     <script>
         const API_KEY = 'f663f105c4c1626d23e86d2ac19471a9';
 
-        async function buscar() {
-            const q = document.getElementById('query').value;
-            if(!q) return;
-            const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(q)}&language=es-ES`);
-            const data = await res.json();
+        async function search() {
+            const query = document.getElementById('search-input').value;
+            if (!query) return;
+
+            // Buscamos en TMDB en español
+            const url = `https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&language=es-ES`;
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                displayResults(data.results);
+            } catch (error) {
+                console.error("Error:", error);
+            }
+        }
+
+        function displayResults(results) {
             const resultsDiv = document.getElementById('results');
             resultsDiv.innerHTML = '';
 
-            data.results.forEach(item => {
-                if(!item.poster_path) return;
+            results.forEach(item => {
+                if (!item.poster_path) return;
+
                 const card = document.createElement('div');
-                card.className = 'card';
-                const tipo = item.media_type === 'tv' ? 'tv' : 'movie';
-                card.innerHTML = `<img src="https://image.tmdb.org/t/p/w500${item.poster_path}"><div style="padding:5px">${item.title || item.name}</div>`;
-                card.onclick = () => reproducir(tipo, item.id);
+                card.className = 'movie-card';
+                
+                const title = item.title || item.name;
+                // Importante: Multiembed a veces usa solo el ID, verificamos si es serie o peli
+                const type = item.media_type === 'tv' ? 'tv' : 'movie';
+
+                card.innerHTML = `
+                    <img src="https://image.tmdb.org/t/p/w500${item.poster_path}" alt="${title}">
+                    <div class="movie-title">${title}</div>
+                `;
+
+                card.onclick = () => openPlayer(item.id, type);
                 resultsDiv.appendChild(card);
             });
         }
 
-        function reproducir(tipo, id) {
+        function openPlayer(id, type) {
             const overlay = document.getElementById('player-overlay');
-            const frame = document.getElementById('video-frame');
+            const iframe = document.getElementById('video-iframe');
             
-            // Intentamos forzar español con el parámetro lang=es
-            frame.src = `https://vidsrc.to/embed/${tipo}/${id}?lang=es`;
+            // Usamos Multiembed que permite elegir servidor con banderas de idiomas
+            // Este link suele mostrar opciones Latino (MX) y Español (ES)
+            iframe.src = `https://multiembed.mov/?video_id=${id}&tmdb=1`;
             
             overlay.style.display = 'block';
         }
 
-        function cerrar() {
-            document.getElementById('player-overlay').style.display = 'none';
-            document.getElementById('video-frame').src = '';
+        function closePlayer() {
+            const overlay = document.getElementById('player-overlay');
+            const iframe = document.getElementById('video-iframe');
+            iframe.src = '';
+            overlay.style.display = 'none';
         }
+
+        document.getElementById('search-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') search();
+        });
     </script>
 </body>
 </html>
