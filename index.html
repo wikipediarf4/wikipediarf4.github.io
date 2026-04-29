@@ -2,17 +2,16 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>DYTATUBE - Downloads</title>
+    <title>DYTATUBE - SaveFrom Edition</title>
     <style>
         :root { --primary: #ff0000; --bg: #050505; --card: #121212; --text: #ffffff; --accent: #2ecc71; --blue: #01b4e4; }
         body { font-family: 'Segoe UI', Arial; background: var(--bg); color: var(--text); margin: 0; text-align: center; }
         
-        /* Navbar estilo Canela */
         header { background: #000; padding: 15px; border-bottom: 1px solid #222; display: flex; gap: 20px; justify-content: center; }
         .nav-link { color: #ccc; font-size: 13px; font-weight: bold; cursor: pointer; }
 
         .main { padding: 40px; display: flex; flex-direction: column; align-items: center; }
-        .header-img { max-width: 450px; width: 100%; margin-bottom: 20px; }
+        .header-img { max-width: 500px; width: 100%; height: auto; margin-bottom: 20px; }
         
         .box { background: var(--card); padding: 35px; border-radius: 20px; border: 1px solid #333; width: 100%; max-width: 650px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); }
         input { width: 100%; padding: 18px; border-radius: 12px; border: 2px solid #444; background: #000; color: white; margin-bottom: 25px; outline: none; box-sizing: border-box; }
@@ -24,15 +23,12 @@
         .btn-mp4 { background: var(--primary); }
         .btn-movie { background: var(--blue); }
 
-        /* Barra de progreso estilo EXE */
         #prog-area { display: none; margin-top: 30px; }
         .bar-bg { background: #222; height: 14px; border-radius: 10px; overflow: hidden; border: 1px solid #333; }
         #bar { width: 0%; height: 100%; background: linear-gradient(90deg, var(--accent), #00ff88); transition: width 0.3s; }
         #status { font-size: 14px; margin-top: 12px; color: #aaa; font-weight: bold; }
 
         footer { margin-top: 40px; padding: 20px; color: #444; font-size: 12px; }
-        
-        /* Iframe oculto para forzar descarga sin abrir pestañas */
         #dl-helper { display: none; }
     </style>
 </head>
@@ -45,12 +41,12 @@
         <img src="dytatube.png" alt="DYTATUBE" class="header-img">
         
         <div class="box">
-            <input type="text" id="url-input" placeholder="Pega el link aquí...">
+            <input type="text" id="url-input" placeholder="Pega el link aquí (YouTube o Película)...">
             
             <div class="btn-grid">
-                <button class="btn-mp3" onclick="startDownload('mp3')">MP3 Música</button>
-                <button class="btn-mp4" onclick="startDownload('mp4')">MP4 Video</button>
-                <button class="btn-movie" onclick="startDownload('movie')">Películas</button>
+                <button class="btn-mp3" onclick="descargarSF('mp3')">MP3 Música</button>
+                <button class="btn-mp4" onclick="descargarSF('mp4')">MP4 Video</button>
+                <button class="btn-movie" onclick="descargarSF('movie')">Películas</button>
             </div>
 
             <div id="prog-area">
@@ -65,9 +61,9 @@
     <footer>DYTA 2026 Todos los derechos reservados</footer>
 
     <script>
-        function startDownload(type) {
-            const url = document.getElementById('url-input').value;
-            if (!url) return alert("Pega un link primero");
+        function descargarSF(tipo) {
+            const urlOriginal = document.getElementById('url-input').value;
+            if (!urlOriginal) return alert("Pega un link primero");
 
             const area = document.getElementById('prog-area');
             const bar = document.getElementById('bar');
@@ -78,28 +74,29 @@
             let p = 0;
 
             const timer = setInterval(() => {
-                p += Math.random() * 12;
+                p += Math.random() * 15;
                 if (p >= 100) {
                     p = 100;
                     clearInterval(timer);
                     status.innerText = "¡Descarga Lista! Revisa tus archivos.";
                     
-                    // Lógica para saltar la ventana de Loader.to
-                    let format = (type === 'mp3') ? 'mp3' : '720';
-                    let dlUrl = `https://loader.to/api/card/?url=${encodeURIComponent(url)}&f=${format}`;
+                    // MÉTODO SAVEFROM: Agregamos 'ss' antes de 'youtube.com'
+                    let urlSF = urlOriginal.replace("youtube.com", "ssyoutube.com").replace("youtu.be/", "ssyoutube.com/watch?v=");
                     
-                    if (type === 'movie') {
-                        window.open(url, '_blank');
+                    if (tipo === 'movie') {
+                        window.open(urlOriginal, '_blank');
                     } else {
-                        // Forzamos la descarga dentro del iframe invisible
-                        helper.src = dlUrl;
+                        // Intentamos la descarga directa a través del helper
+                        helper.src = urlSF;
+                        // Como respaldo por si el iframe se bloquea, abrimos en la misma pestaña
+                        window.location.href = urlSF;
                     }
 
                     setTimeout(() => { area.style.display = 'none'; bar.style.width = '0%'; }, 5000);
                 }
                 bar.style.width = p + "%";
-                status.innerText = `Descargando ${type.toUpperCase()}... ${Math.floor(p)}%`;
-            }, 300);
+                status.innerText = `Procesando con SaveFrom... ${Math.floor(p)}%`;
+            }, 250);
         }
     </script>
 </body>
