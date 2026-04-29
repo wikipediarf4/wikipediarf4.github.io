@@ -1,1251 +1,202 @@
 <!DOCTYPE html>
-<html lang="es-UY">
+<html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Marketplace - Uruguay</title>
-  <style>
-    :root {
-      --fb-dark: #18191a;
-      --fb-darker: #101010;
-      --fb-card: #242526;
-      --fb-hover: #3a3b3c;
-      --fb-border: #3e4042;
-      --fb-text: #e4e6eb;
-      --fb-text-secondary: #b0b3b8;
-      --fb-blue: #2d88ff;
-      --fb-green: #42b72a;
-      --fb-radius: 8px;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-    body { background: var(--fb-darker); color: var(--fb-text); }
-    button { cursor: pointer; border: none; font-family: inherit; background: none; color: inherit; }
-    input, select, textarea { font-family: inherit; background: var(--fb-card); color: var(--fb-text); border: 1px solid var(--fb-border); }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Meta tag de referrer que pidió la API para evitar bloqueos -->
+    <meta name="referrer" content="origin">
+    <title>Cine Pro - TMDB Player</title>
+    <style>
+        :root {
+            --primary: #E50914;
+            --bg: #141414;
+            --card-bg: #232323;
+            --text: #ffffff;
+        }
 
-    /* ===== AUTH SCREEN ===== */
-    #authScreen {
-      display: none;
-      position: fixed; inset: 0;
-      background: var(--fb-darker);
-      z-index: 9999;
-      align-items: center;
-      justify-content: center;
-    }
-    #authScreen.active { display: flex; }
-    .auth-box {
-      background: var(--fb-dark);
-      border: 1px solid var(--fb-border);
-      border-radius: 12px;
-      padding: 2rem;
-      width: 100%;
-      max-width: 420px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-    }
-    .auth-logo { text-align: center; margin-bottom: 1.5rem; }
-    .auth-logo-icon { width: 64px; height: 64px; background: var(--fb-blue); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; color: #fff; }
-    .auth-logo h1 { font-size: 1.5rem; font-weight: 700; margin-top: 0.8rem; }
-    .auth-logo p { color: var(--fb-text-secondary); font-size: 0.9rem; margin-top: 0.3rem; }
-    .auth-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--fb-border); margin-bottom: 1.5rem; }
-    .auth-tab { flex: 1; padding: 0.7rem; text-align: center; cursor: pointer; font-weight: 600; color: var(--fb-text-secondary); border-bottom: 2px solid transparent; transition: 0.2s; }
-    .auth-tab.active { color: var(--fb-blue); border-color: var(--fb-blue); }
-    .auth-form { display: none; flex-direction: column; gap: 0.8rem; }
-    .auth-form.active { display: flex; }
-    .auth-form input { padding: 0.75rem 1rem; border-radius: var(--fb-radius); font-size: 1rem; }
-    .auth-form input:focus { outline: none; border-color: var(--fb-blue); }
-    .auth-btn { padding: 0.8rem; border-radius: var(--fb-radius); font-weight: 700; font-size: 1rem; text-align: center; transition: 0.2s; }
-    .auth-btn-primary { background: var(--fb-blue); color: #fff; }
-    .auth-btn-primary:hover { background: #1a73e8; }
-    .auth-btn-google { background: #fff; color: #333; display: flex; align-items: center; justify-content: center; gap: 0.6rem; border: 1px solid #ccc; }
-    .auth-btn-google:hover { background: #f5f5f5; }
-    .auth-divider { text-align: center; color: var(--fb-text-secondary); font-size: 0.85rem; position: relative; }
-    .auth-divider::before, .auth-divider::after { content: ''; position: absolute; top: 50%; width: 42%; height: 1px; background: var(--fb-border); }
-    .auth-divider::before { left: 0; }
-    .auth-divider::after { right: 0; }
-    .auth-error { color: #ff6b6b; font-size: 0.85rem; text-align: center; min-height: 1.2em; }
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-    /* ===== LOADING OVERLAY ===== */
-    #appLoader {
-      display: flex;
-      position: fixed; inset: 0;
-      background: var(--fb-darker);
-      z-index: 9998;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    #appLoader.hidden { display: none; }
-    .spinner { width: 40px; height: 40px; border: 4px solid var(--fb-border); border-top-color: var(--fb-blue); border-radius: 50%; animation: spin 0.8s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+        header {
+            width: 100%;
+            padding: 20px 0;
+            text-align: center;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+        }
 
-    /* HEADER */
-    .header { background: var(--fb-dark); padding: 0.5rem 1rem; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--fb-border); display: flex; align-items: center; justify-content: space-between; height: 56px; }
-    .header-left { display: flex; align-items: center; gap: 1rem; }
-    .logo { font-size: 1.8rem; font-weight: bold; color: var(--fb-blue); display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: var(--fb-blue); border-radius: 50%; color: #fff; cursor: pointer; }
-    .search-bar { background: var(--fb-card); border-radius: 50px; padding: 0.4rem 1rem; width: 240px; display: flex; align-items: center; gap: 0.5rem; }
-    .search-bar input { background: transparent; border: none; outline: none; width: 100%; }
-    .header-center { display: flex; gap: 0.5rem; }
-    .header-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--fb-card); cursor: pointer; transition: 0.2s; }
-    .header-icon:hover { background: var(--fb-hover); }
-    .header-icon.active { background: var(--fb-blue); color: #fff; }
-    .header-right { display: flex; align-items: center; gap: 0.8rem; }
-    .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--fb-blue); display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; overflow: hidden; }
-    .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .logout-btn { font-size: 0.8rem; color: var(--fb-text-secondary); padding: 0.4rem 0.8rem; border-radius: var(--fb-radius); background: var(--fb-card); border: 1px solid var(--fb-border); cursor: pointer; }
-    .logout-btn:hover { background: var(--fb-hover); color: var(--fb-text); }
+        .search-box {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            width: 90%;
+            max-width: 600px;
+        }
 
-    /* REALTIME BADGE */
-    .realtime-badge { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.7rem; color: var(--fb-green); background: rgba(66,183,42,0.12); padding: 2px 8px; border-radius: 20px; }
-    .realtime-dot { width: 6px; height: 6px; background: var(--fb-green); border-radius: 50%; animation: pulse 1.5s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        input {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 4px;
+            background: #333;
+            color: white;
+            font-size: 16px;
+        }
 
-    /* LAYOUT PRINCIPAL */
-    .main-container { display: flex; max-width: 1512px; margin: 0 auto; }
-    
-    /* SIDEBAR IZQUIERDO */
-    .sidebar-left { width: 360px; padding: 1rem; position: sticky; top: 56px; height: calc(100vh - 56px); overflow-y: auto; border-right: 1px solid var(--fb-border); }
-    .menu-item { display: flex; align-items: center; gap: 0.8rem; padding: 0.6rem; border-radius: var(--fb-radius); cursor: pointer; transition: 0.2s; margin-bottom: 0.2rem; }
-    .menu-item:hover { background: var(--fb-card); }
-    .menu-item.active { background: var(--fb-card); }
-    .menu-icon { width: 36px; height: 36px; border-radius: 50%; background: var(--fb-blue); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-    .menu-text { flex: 1; }
-    .menu-title { font-weight: 600; font-size: 0.95rem; }
-    .menu-subtitle { font-size: 0.8rem; color: var(--fb-text-secondary); }
-    .section-title { color: var(--fb-text-secondary); font-size: 0.8rem; font-weight: 600; margin: 1.2rem 0 0.6rem 0.8rem; text-transform: uppercase; }
-    .category-list { list-style: none; }
-    .category-item { padding: 0.5rem 0.8rem; border-radius: var(--fb-radius); cursor: pointer; display: flex; align-items: center; gap: 0.8rem; font-size: 0.9rem; }
-    .category-item:hover { background: var(--fb-card); }
-    .category-item.active { background: var(--fb-card); font-weight: 600; }
+        button {
+            padding: 15px 30px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+        }
 
-    /* CONTENIDO PRINCIPAL */
-    .content { flex: 1; padding: 1.2rem; min-height: calc(100vh - 56px); }
-    
-    /* BANNER SUPERIOR */
-    .top-banner { background: var(--fb-card); border-radius: var(--fb-radius); padding: 1rem; margin-bottom: 1.2rem; display: flex; justify-content: space-between; align-items: flex-start; }
-    .banner-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; }
-    .banner-item { background: var(--fb-dark); padding: 0.6rem; border-radius: var(--fb-radius); margin-bottom: 0.5rem; font-size: 0.85rem; }
-    .banner-link { color: var(--fb-blue); cursor: pointer; font-size: 0.9rem; }
-    .location-tag { display: flex; align-items: center; gap: 0.3rem; color: var(--fb-blue); font-size: 0.9rem; margin-top: 0.5rem; }
+        #results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            width: 95%;
+        }
 
-    /* GRID DE PRODUCTOS */
-    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-    .section-title-main { font-size: 1.2rem; font-weight: 700; }
-    .view-all { color: var(--fb-blue); cursor: pointer; font-size: 0.9rem; }
-    .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 0.8rem; }
-    .product-card { background: var(--fb-card); border-radius: var(--fb-radius); overflow: hidden; cursor: pointer; transition: 0.2s; }
-    .product-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-    .product-image { width: 100%; height: 210px; object-fit: cover; background: var(--fb-dark); }
-    .product-info { padding: 0.8rem; }
-    .product-price { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.2rem; }
-    .product-title { font-size: 0.9rem; color: var(--fb-text-secondary); margin-bottom: 0.4rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .product-meta { font-size: 0.8rem; color: var(--fb-text-secondary); display: flex; justify-content: space-between; }
-    .product-location { display: flex; align-items: center; gap: 0.2rem; }
-    .badge-new { background: var(--fb-blue); color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; position: absolute; top: 8px; left: 8px; }
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
 
-    /* MODALES */
-    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; align-items: center; justify-content: center; }
-    .modal.active { display: flex; }
-    .modal-content { background: var(--fb-dark); border-radius: var(--fb-radius); width: 100%; max-width: 900px; max-height: 90vh; overflow-y: auto; border: 1px solid var(--fb-border); }
-    .modal-header { padding: 1rem; border-bottom: 1px solid var(--fb-border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--fb-dark); z-index: 10; }
-    .modal-title { font-size: 1.3rem; font-weight: 700; }
-    .close-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--fb-card); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.2rem; }
-    .modal-body { padding: 1.2rem; }
+        .card:hover {
+            transform: scale(1.05);
+            z-index: 2;
+        }
 
-    /* DETALLE DE PRODUCTO */
-    .detail-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1.5rem; }
-    .detail-gallery { background: var(--fb-darker); border-radius: var(--fb-radius); overflow: hidden; position: relative; }
-    .detail-main-img { width: 100%; height: 500px; object-fit: contain; cursor: zoom-in; }
-    .detail-main-img.zoomed { object-fit: cover; transform: scale(2); }
-    .gallery-thumbs { display: flex; gap: 0.5rem; padding: 0.8rem; background: var(--fb-card); overflow-x: auto; }
-    .thumb { width: 60px; height: 60px; border-radius: 6px; object-fit: cover; cursor: pointer; border: 2px solid transparent; opacity: 0.6; }
-    .thumb.active { border-color: var(--fb-blue); opacity: 1; }
-    .gallery-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; background: rgba(0,0,0,0.6); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; }
-    .gallery-nav.prev { left: 1rem; }
-    .gallery-nav.next { right: 1rem; }
-    .detail-info h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
-    .detail-price { font-size: 2rem; font-weight: 700; color: var(--fb-text); margin-bottom: 0.8rem; }
-    .detail-meta { color: var(--fb-text-secondary); font-size: 0.9rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
-    .detail-description { background: var(--fb-card); padding: 1rem; border-radius: var(--fb-radius); margin-bottom: 1rem; }
-    .detail-description h3 { margin-bottom: 0.5rem; font-size: 1rem; }
-    .detail-description p { font-size: 0.95rem; line-height: 1.5; color: var(--fb-text-secondary); }
-    .seller-card { background: var(--fb-card); padding: 1rem; border-radius: var(--fb-radius); margin-bottom: 1rem; }
-    .seller-header { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.8rem; }
-    .seller-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--fb-blue); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; overflow: hidden; }
-    .seller-avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .seller-name { font-weight: 600; }
-    .seller-rating { font-size: 0.85rem; color: var(--fb-text-secondary); }
-    .seller-info-item { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--fb-text-secondary); }
-    .map-placeholder { width: 100%; height: 150px; background: var(--fb-dark); border-radius: var(--fb-radius); margin-top: 0.5rem; display: flex; align-items: center; justify-content: center; color: var(--fb-text-secondary); }
-    .contact-buttons { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1rem; }
-    .btn-primary { background: var(--fb-blue); color: #fff; padding: 0.8rem; border-radius: var(--fb-radius); font-weight: 600; font-size: 1rem; text-align: center; }
-    .btn-primary:hover { background: #1a73e8; }
-    .btn-secondary { background: var(--fb-card); color: var(--fb-text); padding: 0.8rem; border-radius: var(--fb-radius); font-weight: 600; text-align: center; border: 1px solid var(--fb-border); }
-    .btn-secondary:hover { background: var(--fb-hover); }
+        .card img {
+            width: 100%;
+            display: block;
+        }
 
-    /* FORMULARIOS */
-    .form-group { margin-bottom: 1rem; }
-    .form-label { display: block; margin-bottom: 0.4rem; font-weight: 600; font-size: 0.9rem; }
-    .form-input, .form-select, .form-textarea { width: 100%; padding: 0.7rem; border-radius: var(--fb-radius); border: 1px solid var(--fb-border); background: var(--fb-card); color: var(--fb-text); font-size: 0.95rem; }
-    .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--fb-blue); }
-    .upload-area { border: 2px dashed var(--fb-border); border-radius: var(--fb-radius); padding: 2rem; text-align: center; cursor: pointer; transition: 0.2s; }
-    .upload-area:hover { border-color: var(--fb-blue); background: rgba(45,136,255,0.05); }
-    .upload-area input[type="file"] { display: none; }
-    .preview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: 1rem; }
-    .preview-img { width: 100%; height: 80px; object-fit: cover; border-radius: 6px; border: 2px solid var(--fb-border); }
+        .card-info {
+            padding: 10px;
+            font-size: 13px;
+            text-align: center;
+        }
 
-    /* PERFIL DE USUARIO */
-    .profile-header { background: linear-gradient(135deg, var(--fb-blue), #1a56c4); height: 200px; border-radius: var(--fb-radius); position: relative; margin-bottom: 3rem; }
-    .profile-avatar-large { width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--fb-dark); position: absolute; bottom: -60px; left: 50%; transform: translateX(-50%); background: var(--fb-blue); display: flex; align-items: center; justify-content: center; font-size: 3rem; font-weight: bold; overflow: hidden; }
-    .profile-avatar-large img { width: 100%; height: 100%; object-fit: cover; }
-    .profile-info { text-align: center; margin-top: 4rem; margin-bottom: 1.5rem; }
-    .profile-name { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.3rem; }
-    .profile-stats { display: flex; justify-content: center; gap: 2rem; color: var(--fb-text-secondary); margin-bottom: 1rem; }
-    .profile-location { color: var(--fb-text-secondary); font-size: 0.9rem; }
-    .profile-tabs { display: flex; gap: 0.5rem; border-bottom: 1px solid var(--fb-border); margin-bottom: 1rem; }
-    .profile-tab { padding: 0.8rem 1.2rem; border-radius: var(--fb-radius) var(--fb-radius) 0 0; cursor: pointer; font-weight: 600; }
-    .profile-tab.active { background: var(--fb-card); border-bottom: 2px solid var(--fb-blue); }
-    .edit-profile-btn { background: var(--fb-card); border: 1px solid var(--fb-border); padding: 0.6rem 1.2rem; border-radius: 6px; margin-top: 1rem; cursor: pointer; font-weight: 600; }
-    .edit-profile-btn:hover { background: var(--fb-hover); }
+        /* Reproductor Pantalla Completa */
+        #player-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            z-index: 1000;
+        }
 
-    /* CHAT */
-    .chat-container { display: flex; height: 500px; }
-    .chat-sidebar { width: 300px; border-right: 1px solid var(--fb-border); overflow-y: auto; }
-    .chat-conversation { flex: 1; display: flex; flex-direction: column; }
-    .chat-header { padding: 1rem; border-bottom: 1px solid var(--fb-border); display: flex; align-items: center; gap: 0.8rem; }
-    .chat-messages { flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.6rem; }
-    .chat-message { max-width: 70%; padding: 0.7rem 1rem; border-radius: 18px; font-size: 0.95rem; }
-    .chat-message.sent { background: var(--fb-blue); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
-    .chat-message.received { background: var(--fb-card); align-self: flex-start; border-bottom-left-radius: 4px; }
-    .chat-input-area { padding: 1rem; border-top: 1px solid var(--fb-border); display: flex; gap: 0.6rem; }
-    .chat-input-area input { flex: 1; padding: 0.7rem 1rem; border-radius: 20px; border: 1px solid var(--fb-border); background: var(--fb-card); }
-    .chat-time { font-size: 0.7rem; color: var(--fb-text-secondary); margin-top: 0.2rem; text-align: right; }
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 30px;
+            color: white;
+            cursor: pointer;
+            z-index: 1001;
+            background: rgba(0,0,0,0.5);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-    /* TOASTS */
-    .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--fb-card); border: 1px solid var(--fb-border); padding: 0.8rem 1.2rem; border-radius: var(--fb-radius); font-size: 0.9rem; z-index: 9000; animation: slideIn 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
-    .toast.success { border-left: 4px solid var(--fb-green); }
-    .toast.error { border-left: 4px solid #ff6b6b; }
-    @keyframes slideIn { from { transform: translateX(100px); opacity: 0; } to { transform: none; opacity: 1; } }
-
-    /* UPLOADING INDICATOR */
-    .uploading-bar { background: var(--fb-card); border-radius: var(--fb-radius); padding: 0.8rem; text-align: center; color: var(--fb-text-secondary); font-size: 0.9rem; display: none; }
-    .uploading-bar.active { display: block; }
-
-    /* CATEGORÍAS SIDEBAR */
-    .cat-group { margin-bottom: 0.2rem; }
-    .cat-group-header { display: flex; align-items: center; gap: 0.7rem; padding: 0.5rem 0.8rem; border-radius: var(--fb-radius); cursor: pointer; font-size: 0.92rem; font-weight: 600; transition: 0.15s; user-select: none; }
-    .cat-group-header:hover { background: var(--fb-card); }
-    .cat-group-header.active { background: var(--fb-card); color: var(--fb-blue); }
-    .cat-group-header .cat-arrow { margin-left: auto; font-size: 0.7rem; transition: transform 0.2s; color: var(--fb-text-secondary); }
-    .cat-group-header.open .cat-arrow { transform: rotate(90deg); }
-    .cat-sub-list { display: none; padding-left: 1.2rem; }
-    .cat-sub-list.open { display: block; }
-    .cat-sub-item { padding: 0.35rem 0.8rem; border-radius: var(--fb-radius); cursor: pointer; font-size: 0.85rem; color: var(--fb-text-secondary); transition: 0.15s; }
-    .cat-sub-item:hover { background: var(--fb-card); color: var(--fb-text); }
-    .cat-sub-item.active { background: var(--fb-card); color: var(--fb-blue); font-weight: 600; }
-
-    /* BADGE CATEGORÍA en card */
-    .product-cat-badge { display: inline-block; font-size: 0.7rem; background: var(--fb-hover); color: var(--fb-text-secondary); padding: 1px 6px; border-radius: 4px; margin-bottom: 0.3rem; }
-    @media (max-width: 1200px) {
-      .sidebar-left { display: none; }
-      .detail-grid { grid-template-columns: 1fr; }
-      .detail-main-img { height: 300px; }
-    }
-    @media (max-width: 768px) {
-      .header-center { display: none; }
-      .search-bar { width: 150px; }
-      .products-grid { grid-template-columns: repeat(2, 1fr); }
-      .detail-grid { grid-template-columns: 1fr; }
-      .chat-sidebar { display: none; }
-    }
-  </style>
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
 </head>
 <body>
 
-  <!-- LOADING -->
-  <div id="appLoader">
-    <div class="spinner"></div>
-    <div style="color: var(--fb-text-secondary); font-size: 0.9rem;">Conectando...</div>
-  </div>
+    <header>
+        <h1 style="color: var(--primary); margin:0;">CINE PRO</h1>
+    </header>
 
-  <!-- AUTH SCREEN -->
-  <div id="authScreen">
-    <div class="auth-box">
-      <div class="auth-logo">
-        <div class="auth-logo-icon">M</div>
-        <h1>Marketplace Uruguay</h1>
-        <p>Compra y vende en tu comunidad</p>
-      </div>
-
-      <div class="auth-tabs">
-        <div class="auth-tab active" onclick="switchAuthTab('login')">Ingresar</div>
-        <div class="auth-tab" onclick="switchAuthTab('register')">Registrarse</div>
-      </div>
-
-      <!-- LOGIN -->
-      <div class="auth-form active" id="loginForm">
-        <input type="email" id="loginEmail" placeholder="Correo electrónico">
-        <input type="password" id="loginPassword" placeholder="Contraseña">
-        <div class="auth-error" id="loginError"></div>
-        <button class="auth-btn auth-btn-primary" onclick="loginEmail()">Ingresar</button>
-        <div class="auth-divider">o</div>
-        <button class="auth-btn auth-btn-google" onclick="loginGoogle()">
-          <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18z"/><path fill="#34A353" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17z"/><path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07z"/><path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.3z"/></svg>
-          Continuar con Google
-        </button>
-        <p style="font-size:0.8rem; color:var(--fb-text-secondary); text-align:center; cursor:pointer;" onclick="forgotPassword()">¿Olvidaste tu contraseña?</p>
-      </div>
-
-      <!-- REGISTER -->
-      <div class="auth-form" id="registerForm">
-        <input type="email" id="regEmail" placeholder="Correo electrónico">
-        <input type="password" id="regPassword" placeholder="Contraseña (mín. 6 caracteres)">
-        <input type="password" id="regPassword2" placeholder="Confirmar contraseña">
-        <div class="auth-error" id="registerError"></div>
-        <button class="auth-btn auth-btn-primary" onclick="registerEmail()">Crear cuenta</button>
-        <div class="auth-divider">o</div>
-        <button class="auth-btn auth-btn-google" onclick="loginGoogle()">
-          <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18z"/><path fill="#34A353" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17z"/><path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07z"/><path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.3z"/></svg>
-          Continuar con Google
-        </button>
-      </div>
+    <div class="search-box">
+        <input type="text" id="query" placeholder="Buscar película o serie...">
+        <button onclick="buscar()">BUSCAR</button>
     </div>
-  </div>
 
-  <!-- HEADER -->
-  <header class="header" id="appHeader" style="display:none;">
-    <div class="header-left">
-      <div class="logo" onclick="showHome()">M</div>
-      <div class="search-bar">
-        <span>🔍</span>
-        <input type="text" id="searchInput" placeholder="Buscar en Marketplace">
-      </div>
+    <div id="results"></div>
+
+    <div id="player-overlay">
+        <div class="close-btn" onclick="cerrar()">×</div>
+        <iframe id="video-frame" src="" allowfullscreen referrerpolicy="origin"></iframe>
     </div>
-    <div class="header-center">
-      <div class="header-icon">🏠</div>
-      <div class="header-icon"></div>
-      <div class="header-icon active">🏪</div>
-      <div class="header-icon">👥</div>
-    </div>
-    <div class="header-right">
-      <span class="realtime-badge"><span class="realtime-dot"></span>En vivo</span>
-      <div class="header-icon">🔔</div>
-      <div class="user-avatar" onclick="openProfile()" id="headerAvatar">U</div>
-      <button class="logout-btn" onclick="logout()">Salir</button>
-    </div>
-  </header>
 
-  <div class="main-container" id="appMain" style="display:none;">
-    <!-- SIDEBAR IZQUIERDO -->
-    <aside class="sidebar-left">
-      <div class="menu-item active" onclick="showHome()">
-        <div class="menu-icon">🏪</div>
-        <div class="menu-text">
-          <div class="menu-title">Marketplace</div>
-          <div class="menu-subtitle">Compra y vende localmente</div>
-        </div>
-      </div>
-      <div class="menu-item" onclick="openPublishModal()">
-        <div class="menu-icon" style="background: var(--fb-green)">➕</div>
-        <div class="menu-text">
-          <div class="menu-title">Crear publicación</div>
-          <div class="menu-subtitle">Vende algo que no uses</div>
-        </div>
-      </div>
-      <div class="menu-item">
-        <div class="menu-icon" style="background: #ff6b6b">💬</div>
-        <div class="menu-text">
-          <div class="menu-title">Bandeja de entrada</div>
-          <div class="menu-subtitle">Mensajes de compradores</div>
-        </div>
-      </div>
+    <script>
+        const API_KEY = 'f663f105c4c1626d23e86d2ac19471a9';
 
-      <div class="section-title">Categorías</div>
-      <div id="catSidebar"></div>
+        async function buscar() {
+            const q = document.getElementById('query').value;
+            if(!q) return;
 
-      <div class="section-title">Ubicación</div>
-      <div style="padding: 0.6rem 0.8rem; color: var(--fb-blue); font-size: 0.9rem;">
-        📍 Uruguay
-      </div>
-    </aside>
+            const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(q)}&language=es-ES`);
+            const data = await res.json();
+            
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
 
-    <!-- CONTENIDO PRINCIPAL -->
-    <main class="content">
-      <div class="top-banner">
-        <div>
-          <div class="banner-title">Novedades para ti</div>
-          <div style="font-size:0.85rem; color:var(--fb-text-secondary);">Publicaciones en tiempo real de toda Uruguay</div>
-        </div>
-        <div class="location-tag">📍 Uruguay</div>
-      </div>
+            data.results.forEach(item => {
+                if(!item.poster_path) return;
 
-      <div class="section-header">
-        <div class="section-title-main">Sugerencias de hoy</div>
-        <div class="view-all">Ver todo</div>
-      </div>
-      <div id="productsGrid" class="products-grid">
-        <div style="grid-column:1/-1; text-align:center; padding:3rem; color:var(--fb-text-secondary);">
-          <div class="spinner" style="margin:0 auto 1rem;"></div>
-          Cargando publicaciones...
-        </div>
-      </div>
-    </main>
-  </div>
+                const card = document.createElement('div');
+                card.className = 'card';
+                const titulo = item.title || item.name;
+                const tipo = item.media_type === 'tv' ? 'tv' : 'movie';
 
-  <!-- MODAL: CONFIGURACIÓN/EDICIÓN DE PERFIL -->
-  <div id="profileModal" class="modal">
-    <div class="modal-content" style="max-width: 500px;">
-      <div class="modal-header">
-        <div class="modal-title">Completar perfil</div>
-        <button class="close-btn" onclick="closeModal('profileModal')">×</button>
-      </div>
-      <div class="modal-body">
-        <p style="margin-bottom: 1rem; color: var(--fb-text-secondary);">Completa tus datos para comenzar a usar Marketplace</p>
-        <div class="form-group"><label class="form-label">Nombre</label><input type="text" class="form-input" id="pNombre" required></div>
-        <div class="form-group"><label class="form-label">Apellido</label><input type="text" class="form-input" id="pApellido" required></div>
-        <div class="form-group"><label class="form-label">Departamento</label><select class="form-select" id="pDept" required></select></div>
-        <div class="form-group"><label class="form-label">Teléfono</label><input type="tel" class="form-input" id="pTel" placeholder="09X XXX XXX"></div>
-        <div class="form-group"><label class="form-label">WhatsApp</label><input type="tel" class="form-input" id="pWa" placeholder="09X XXX XXX"></div>
-        <div class="form-group"><label class="form-label">Horario de contacto</label><input type="text" class="form-input" id="pHorario" placeholder="Ej: Lun a Vie 9:00 a 18:00"></div>
-        <button class="btn-primary" style="width:100%" onclick="saveProfile()">Guardar</button>
-      </div>
-    </div>
-  </div>
+                card.innerHTML = `
+                    <img src="https://image.tmdb.org/t/p/w500${item.poster_path}">
+                    <div class="card-info">${titulo}</div>
+                `;
 
-  <!-- MODAL: PUBLICAR PRODUCTO -->
-  <div id="publishModal" class="modal">
-    <div class="modal-content" style="max-width: 600px;">
-      <div class="modal-header">
-        <div class="modal-title">Crear publicación</div>
-        <button class="close-btn" onclick="closeModal('publishModal')">×</button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group"><label class="form-label">Título</label><input type="text" class="form-input" id="prodTitle" required></div>
-        <div class="form-group"><label class="form-label">Precio (UYU)</label><input type="number" class="form-input" id="prodPrice" required min="0"></div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem;">
-          <div class="form-group"><label class="form-label">Categoría</label><select class="form-select" id="prodCat" onchange="onCatChange()" required></select></div>
-          <div class="form-group"><label class="form-label">Subcategoría</label><select class="form-select" id="prodSubCat" required></select></div>
-        </div>
-        <div class="form-group"><label class="form-label">Departamento</label><select class="form-select" id="prodDept" required></select></div>
-        <div class="form-group">
-          <label class="form-label">Fotos (máx. 6)</label>
-          <div class="upload-area" onclick="document.getElementById('prodImages').click()">
-            <input type="file" id="prodImages" multiple accept="image/*">
-            <div style="font-size: 2rem; margin-bottom: 0.5rem">📷</div>
-            <div>Toca aquí para subir fotos</div>
-            <div style="font-size: 0.8rem; color: var(--fb-text-secondary); margin-top: 0.5rem">Máximo 6 fotos · Se suben a Cloudinary</div>
-          </div>
-          <div id="imgPreview" class="preview-grid"></div>
-        </div>
-        <div class="form-group"><label class="form-label">Descripción</label><textarea class="form-textarea" id="prodDesc" rows="4"></textarea></div>
-        <div class="uploading-bar" id="uploadingBar">⏳ Subiendo imágenes a Cloudinary...</div>
-        <button class="btn-primary" style="width:100%" id="publishBtn" onclick="publishProduct()">Publicar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: DETALLE DE PRODUCTO -->
-  <div id="detailModal" class="modal">
-    <div class="modal-content" style="max-width: 1100px;">
-      <div class="modal-header">
-        <div class="modal-title">Detalle del producto</div>
-        <button class="close-btn" onclick="closeModal('detailModal')">×</button>
-      </div>
-      <div class="modal-body">
-        <div class="detail-grid">
-          <div>
-            <div class="detail-gallery">
-              <img id="detailMainImg" class="detail-main-img" src="" alt="">
-              <button class="gallery-nav prev" onclick="navGallery(-1)">‹</button>
-              <button class="gallery-nav next" onclick="navGallery(1)">›</button>
-              <div class="gallery-thumbs" id="galleryThumbs"></div>
-            </div>
-          </div>
-          <div class="detail-info">
-            <h1 id="detailTitle"></h1>
-            <div id="detailCatBadge" style="margin-bottom:0.5rem;"></div>
-            <div id="detailPrice" class="detail-price"></div>
-            <div class="detail-meta">
-              <span>📍 <span id="detailLocation"></span></span>
-              <span>•</span>
-              <span id="detailTime"></span>
-            </div>
-            <div class="detail-description">
-              <h3>Descripción del vendedor</h3>
-              <p id="detailDesc"></p>
-            </div>
-            <div class="seller-card">
-              <div class="seller-header">
-                <div class="seller-avatar" id="sellerAvatar">U</div>
-                <div>
-                  <div class="seller-name" id="sellerName"></div>
-                  <div class="seller-rating">⭐ Miembro de Marketplace UY</div>
-                </div>
-              </div>
-              <div class="seller-info-item">📍 <span id="sellerDept"></span></div>
-              <div class="seller-info-item">🕒 <span id="sellerHours"></span></div>
-            </div>
-            <div class="contact-buttons">
-              <button class="btn-primary" onclick="openContactChoice()">💬 Enviar mensaje</button>
-              <button class="btn-secondary" onclick="contactWA()">📱 WhatsApp</button>
-              <button class="btn-secondary" id="deleteProductBtn" style="display:none; background:#3d1515; color:#ff6b6b; border-color:#5a2020;" onclick="deleteCurrentProduct()">🗑️ Eliminar publicación</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: ELECCIÓN DE CONTACTO -->
-  <div id="contactChoiceModal" class="modal">
-    <div class="modal-content" style="max-width: 400px;">
-      <div class="modal-header">
-        <div class="modal-title">Contactar vendedor</div>
-        <button class="close-btn" onclick="closeModal('contactChoiceModal')">×</button>
-      </div>
-      <div class="modal-body">
-        <div class="contact-buttons">
-          <button class="btn-primary" onclick="openChat()">💬 Mensaje privado (tiempo real)</button>
-          <button class="btn-primary" style="background: #25D366" onclick="contactWA()">📱 WhatsApp</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: CHAT TIEMPO REAL -->
-  <div id="chatModal" class="modal">
-    <div class="modal-content" style="max-width: 800px;">
-      <div class="modal-header">
-        <div class="modal-title">Chat <span class="realtime-badge" style="font-size:0.65rem;"><span class="realtime-dot"></span>Tiempo real</span></div>
-        <button class="close-btn" onclick="closeChatModal()">×</button>
-      </div>
-      <div class="chat-container">
-        <div class="chat-sidebar" id="chatSidebar">
-          <div style="padding:0.8rem; font-size:0.85rem; color:var(--fb-text-secondary); font-weight:600;">Conversaciones</div>
-          <div id="chatList"></div>
-        </div>
-        <div class="chat-conversation">
-          <div class="chat-header">
-            <div class="seller-avatar" id="chatAvatar">U</div>
-            <div>
-              <div class="seller-name" id="chatName">Selecciona una conversación</div>
-              <div style="font-size: 0.8rem; color: var(--fb-text-secondary)" id="chatProduct"></div>
-            </div>
-          </div>
-          <div class="chat-messages" id="chatMessages">
-            <div style="text-align:center; color:var(--fb-text-secondary); margin-top:2rem; font-size:0.9rem;">Los mensajes se envían en tiempo real</div>
-          </div>
-          <div class="chat-input-area">
-            <input type="text" id="chatInput" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter')sendChat()">
-            <button class="btn-primary" onclick="sendChat()">Enviar</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: PERFIL -->
-  <div id="userProfileModal" class="modal">
-    <div class="modal-content" style="max-width: 800px;">
-      <div class="modal-header">
-        <div class="modal-title">Mi perfil</div>
-        <button class="close-btn" onclick="closeModal('userProfileModal')">×</button>
-      </div>
-      <div class="modal-body">
-        <div class="profile-header">
-          <div class="profile-avatar-large" id="profileAvatarLarge">U</div>
-        </div>
-        <div class="profile-info">
-          <div class="profile-name" id="profileNameDisplay"></div>
-          <div class="profile-stats">
-            <span><strong id="statPublications">0</strong> publicaciones</span>
-          </div>
-          <div class="profile-location" id="profileLocationDisplay"></div>
-          <button class="edit-profile-btn" onclick="editProfile()">✏️ Editar perfil</button>
-        </div>
-        <div class="profile-tabs">
-          <div class="profile-tab active">Mis publicaciones</div>
-        </div>
-        <div id="userProductsGrid" class="products-grid"></div>
-      </div>
-    </div>
-  </div>
-
-  <script type="module">
-    // ===== FIREBASE CONFIG =====
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import {
-      getAuth, onAuthStateChanged, signInWithEmailAndPassword,
-      createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider,
-      signOut, sendPasswordResetEmail
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import {
-      getFirestore, collection, doc, setDoc, getDoc, addDoc, deleteDoc,
-      query, orderBy, limit, where, onSnapshot, serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyA9oat9dd0S9vlxkg1osH4dW3XhRDGiOiw",
-      authDomain: "charlasrf4.firebaseapp.com",
-      databaseURL: "https://charlasrf4-default-rtdb.firebaseio.com",
-      projectId: "charlasrf4",
-      storageBucket: "charlasrf4.firebasestorage.app",
-      messagingSenderId: "345019626508",
-      appId: "1:345019626508:web:d099ca499acb29eac12a29"
-    };
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    // ===== STATE =====
-    const departamentos = ["Artigas","Canelones","Cerro Largo","Colonia","Durazno","Flores","Florida","Lavalleja","Maldonado","Montevideo","Paysandú","Río Negro","Rivera","Rocha","Salto","San José","Soriano","Tacuarembó","Treinta y Tres"];
-    let state = {
-      user: null,
-      profile: null,
-      products: [],
-      currentProd: null,
-      galleryIndex: 0,
-      currentChatId: null,
-      chatUnsubscribe: null,
-      productsUnsubscribe: null
-    };
-
-    // Poblar selects de departamentos
-    ['pDept','prodDept'].forEach(id => {
-      const sel = document.getElementById(id);
-      if(sel) departamentos.forEach(d => sel.innerHTML += `<option value="${d}">${d}</option>`);
-    });
-
-    // ===== INIT UI =====
-    buildSidebar();
-    buildCatSelects();
-
-    // ===== AUTH LISTENER =====
-    onAuthStateChanged(auth, async user => {
-      document.getElementById('appLoader').classList.add('hidden');
-      if (user) {
-        state.user = user;
-        document.getElementById('authScreen').classList.remove('active');
-        document.getElementById('appHeader').style.display = '';
-        document.getElementById('appMain').style.display = '';
-        await loadUserProfile();
-        startRealtimeProducts();
-      } else {
-        state.user = null;
-        state.profile = null;
-        document.getElementById('authScreen').classList.add('active');
-        document.getElementById('appHeader').style.display = 'none';
-        document.getElementById('appMain').style.display = 'none';
-        if(state.productsUnsubscribe) state.productsUnsubscribe();
-        if(state.chatUnsubscribe) state.chatUnsubscribe();
-      }
-    });
-
-    // ===== AUTH FUNCTIONS =====
-    function switchAuthTab(tab) {
-      document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='login')||(i===1&&tab==='register')));
-      document.getElementById('loginForm').classList.toggle('active', tab==='login');
-      document.getElementById('registerForm').classList.toggle('active', tab==='register');
-    }
-
-    async function loginEmail() {
-      const email = document.getElementById('loginEmail').value.trim();
-      const pass = document.getElementById('loginPassword').value;
-      const errEl = document.getElementById('loginError');
-      errEl.textContent = '';
-      if(!email||!pass) { errEl.textContent='Completá todos los campos'; return; }
-      try {
-        await signInWithEmailAndPassword(auth, email, pass);
-      } catch(e) {
-        errEl.textContent = translateAuthError(e.code);
-      }
-    }
-
-    async function registerEmail() {
-      const email = document.getElementById('regEmail').value.trim();
-      const pass = document.getElementById('regPassword').value;
-      const pass2 = document.getElementById('regPassword2').value;
-      const errEl = document.getElementById('registerError');
-      errEl.textContent = '';
-      if(!email||!pass) { errEl.textContent='Completá todos los campos'; return; }
-      if(pass !== pass2) { errEl.textContent='Las contraseñas no coinciden'; return; }
-      if(pass.length < 6) { errEl.textContent='La contraseña debe tener al menos 6 caracteres'; return; }
-      try {
-        await createUserWithEmailAndPassword(auth, email, pass);
-      } catch(e) {
-        errEl.textContent = translateAuthError(e.code);
-      }
-    }
-
-    async function loginGoogle() {
-      const provider = new GoogleAuthProvider();
-      try {
-        await signInWithPopup(auth, provider);
-      } catch(e) {
-        showToast('Error con Google: ' + e.message, 'error');
-      }
-    }
-
-    async function forgotPassword() {
-      const email = document.getElementById('loginEmail').value.trim();
-      if(!email) { document.getElementById('loginError').textContent='Escribí tu email primero'; return; }
-      try {
-        await sendPasswordResetEmail(auth, email);
-        showToast('Email de recuperación enviado ✉️', 'success');
-      } catch(e) {
-        document.getElementById('loginError').textContent = translateAuthError(e.code);
-      }
-    }
-
-    async function logout() {
-      if(state.productsUnsubscribe) state.productsUnsubscribe();
-      if(state.chatUnsubscribe) state.chatUnsubscribe();
-      await signOut(auth);
-    }
-
-    function translateAuthError(code) {
-      const m = {
-        'auth/user-not-found': 'No existe una cuenta con ese email',
-        'auth/wrong-password': 'Contraseña incorrecta',
-        'auth/email-already-in-use': 'Ya existe una cuenta con ese email',
-        'auth/invalid-email': 'Email inválido',
-        'auth/weak-password': 'Contraseña muy débil',
-        'auth/too-many-requests': 'Demasiados intentos, esperá unos minutos',
-        'auth/network-request-failed': 'Error de red',
-      };
-      return m[code] || 'Error: ' + code;
-    }
-
-    // ===== PROFILE =====
-    async function loadUserProfile() {
-      const uid = state.user.uid;
-      const snap = await getDoc(doc(db, 'marketplace_users', uid));
-      if(snap.exists) {
-        state.profile = snap.data();
-        updateHeaderAvatar();
-      } else {
-        // Auto-fill from Google if available
-        if(state.user.displayName) {
-          const parts = state.user.displayName.split(' ');
-          document.getElementById('pNombre').value = parts[0] || '';
-          document.getElementById('pApellido').value = parts.slice(1).join(' ') || '';
+                card.onclick = () => reproducir(tipo, item.id);
+                resultsDiv.appendChild(card);
+            });
         }
-        document.getElementById('profileModal').classList.add('active');
-      }
-    }
 
-    async function saveProfile() {
-      const nombre = document.getElementById('pNombre').value.trim();
-      const apellido = document.getElementById('pApellido').value.trim();
-      if(!nombre) { showToast('El nombre es requerido','error'); return; }
-      const profile = {
-        nombre,
-        apellido,
-        departamento: document.getElementById('pDept').value,
-        telefono: document.getElementById('pTel').value.trim(),
-        whatsapp: document.getElementById('pWa').value.trim(),
-        horario: document.getElementById('pHorario').value.trim(),
-        avatar: nombre[0].toUpperCase(),
-        email: state.user.email,
-        photoURL: state.user.photoURL || null,
-        uid: state.user.uid
-      };
-      try {
-        await setDoc(doc(db, 'marketplace_users', state.user.uid), profile, {merge:true});
-        state.profile = profile;
-        closeModal('profileModal');
-        updateHeaderAvatar();
-        showToast('Perfil guardado ✅','success');
-      } catch(e) {
-        showToast('Error al guardar: '+e.message,'error');
-      }
-    }
+        function reproducir(tipo, id) {
+            const overlay = document.getElementById('player-overlay');
+            const frame = document.getElementById('video-frame');
+            // Usamos la estructura de vidsrc.me que pide el referrer
+            frame.src = `https://vidsrc.me/embed/${tipo}?tmdb=${id}`;
+            overlay.style.display = 'block';
+        }
 
-    function updateHeaderAvatar() {
-      const el = document.getElementById('headerAvatar');
-      if(!state.profile) return;
-      if(state.user.photoURL) {
-        el.innerHTML = `<img src="${state.user.photoURL}" alt="">`;
-      } else {
-        el.textContent = state.profile.avatar || 'U';
-      }
-    }
+        function cerrar() {
+            const overlay = document.getElementById('player-overlay');
+            const frame = document.getElementById('video-frame');
+            frame.src = '';
+            overlay.style.display = 'none';
+        }
 
-    function editProfile() {
-      if(!state.profile) return;
-      document.getElementById('pNombre').value = state.profile.nombre || '';
-      document.getElementById('pApellido').value = state.profile.apellido || '';
-      document.getElementById('pDept').value = state.profile.departamento || '';
-      document.getElementById('pTel').value = state.profile.telefono || '';
-      document.getElementById('pWa').value = state.profile.whatsapp || '';
-      document.getElementById('pHorario').value = state.profile.horario || '';
-      closeModal('userProfileModal');
-      document.getElementById('profileModal').classList.add('active');
-    }
-
-    function openProfile() {
-      if(!state.profile) { document.getElementById('profileModal').classList.add('active'); return; }
-      document.getElementById('profileNameDisplay').textContent = `${state.profile.nombre} ${state.profile.apellido}`;
-      document.getElementById('profileLocationDisplay').textContent = `📍 ${state.profile.departamento}, Uruguay`;
-      
-      const avatarEl = document.getElementById('profileAvatarLarge');
-      if(state.user.photoURL) {
-        avatarEl.innerHTML = `<img src="${state.user.photoURL}" alt="">`;
-      } else {
-        avatarEl.textContent = state.profile.avatar || 'U';
-      }
-
-      const myProducts = state.products.filter(p => p.uid === state.user.uid);
-      document.getElementById('statPublications').textContent = myProducts.length;
-      document.getElementById('userProductsGrid').innerHTML = myProducts.map(p => productCardHTML(p)).join('');
-      document.getElementById('userProfileModal').classList.add('active');
-    }
-
-    // ===== REALTIME PRODUCTS =====
-    function startRealtimeProducts() {
-      if(state.productsUnsubscribe) state.productsUnsubscribe();
-      const q = query(collection(db, 'marketplace_products'), orderBy('fecha','desc'), limit(100));
-      state.productsUnsubscribe = onSnapshot(q, snap => {
-          state.products = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-          renderProducts();
-        }, err => {
-          console.error(err);
-          showToast('Error de conexión','error');
+        // Buscar con Enter
+        document.getElementById('query').addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') buscar();
         });
-    }
-
-    // ===== PUBLISH PRODUCT =====
-    document.getElementById('prodImages').addEventListener('change', function() {
-      const preview = document.getElementById('imgPreview');
-      preview.innerHTML = '';
-      if(this.files.length > 6) { showToast('Máximo 6 fotos','error'); this.value=''; return; }
-      Array.from(this.files).forEach(f => {
-        const reader = new FileReader();
-        reader.onload = e => {
-          const img = document.createElement('img');
-          img.src = e.target.result;
-          img.className = 'preview-img';
-          preview.appendChild(img);
-        };
-        reader.readAsDataURL(f);
-      });
-    });
-
-    async function publishProduct() {
-      if(!state.profile) { showToast('Completá tu perfil primero','error'); return; }
-      const titulo = document.getElementById('prodTitle').value.trim();
-      const precio = document.getElementById('prodPrice').value;
-      if(!titulo || !precio) { showToast('Completá título y precio','error'); return; }
-
-      const files = Array.from(document.getElementById('prodImages').files);
-      if(files.length > 6) { showToast('Máx 6 fotos','error'); return; }
-
-      document.getElementById('uploadingBar').classList.add('active');
-      document.getElementById('publishBtn').disabled = true;
-
-      try {
-        // Upload images to Cloudinary (unsigned)
-        const imageUrls = await Promise.all(files.map(async (file) => {
-          const formData = new FormData();
-          formData.append('file', file);
-          formData.append('upload_preset', 'markeplace');
-          const res = await fetch('https://api.cloudinary.com/v1_1/dblmunvjx/image/upload', {
-            method: 'POST',
-            body: formData
-          });
-          const data = await res.json();
-          if (!res.ok) {
-            console.error('Cloudinary error:', JSON.stringify(data));
-            throw new Error(data?.error?.message || `HTTP ${res.status}`);
-          }
-          return data.secure_url;
-        }));
-
-        const prod = {
-          titulo,
-          precio: Number(precio),
-          categoria: document.getElementById('prodCat').value,
-          subcategoria: document.getElementById('prodSubCat').value,
-          departamento: document.getElementById('prodDept').value,
-          descripcion: document.getElementById('prodDesc').value.trim(),
-          imagenes: imageUrls,
-          fecha: serverTimestamp(),
-          uid: state.user.uid,
-          vendedor: {
-            nombre: state.profile.nombre,
-            apellido: state.profile.apellido,
-            departamento: state.profile.departamento,
-            whatsapp: state.profile.whatsapp || '',
-            horario: state.profile.horario || '',
-            avatar: state.profile.avatar || 'U',
-            photoURL: state.user.photoURL || null
-          }
-        };
-
-        await addDoc(collection(db, 'marketplace_products'), prod);
-        closeModal('publishModal');
-        document.getElementById('prodTitle').value = '';
-        document.getElementById('prodPrice').value = '';
-        document.getElementById('prodCat').value = '';
-        document.getElementById('prodSubCat').innerHTML = '<option value="">— Seleccioná subcategoría —</option>';
-        document.getElementById('prodDesc').value = '';
-        document.getElementById('prodImages').value = '';
-        document.getElementById('imgPreview').innerHTML = '';
-        showToast('¡Publicación creada! 🎉','success');
-      } catch(e) {
-        showToast('Error al publicar: ' + e.message,'error');
-      } finally {
-        document.getElementById('uploadingBar').classList.remove('active');
-        document.getElementById('publishBtn').disabled = false;
-      }
-    }
-
-    // ===== RENDER PRODUCTS =====
-    function productCardHTML(p) {
-      const ts = p.fecha?.toDate ? p.fecha.toDate() : new Date(p.fecha || Date.now());
-      const hours = Math.floor((Date.now() - ts) / 3600000);
-      const time = hours < 1 ? 'Hace poco' : hours < 24 ? `Hace ${hours} h` : `Hace ${Math.floor(hours/24)} d`;
-      const catObj = CATEGORIAS.find(c => c.id === p.categoria);
-      const catLabel = p.subcategoria || (catObj ? catObj.label.split(' ').slice(1).join(' ') : '');
-      return `
-        <div class="product-card" onclick="openDetail('${p.id}')">
-          <div style="position: relative;">
-            <img class="product-image" src="${p.imagenes?.[0] || 'https://placehold.co/210x210/242526/b0b3b8?text=Sin+foto'}" alt="${p.titulo}" loading="lazy">
-            ${hours < 24 ? '<span class="badge-new">Recién publicado</span>' : ''}
-          </div>
-          <div class="product-info">
-            ${catLabel ? `<div class="product-cat-badge">${catLabel}</div>` : ''}
-            <div class="product-price">$U${Number(p.precio).toLocaleString('es-UY')}</div>
-            <div class="product-title">${p.titulo}</div>
-            <div class="product-meta">
-              <span class="product-location">📍 ${p.departamento}</span>
-              <span>${time}</span>
-            </div>
-          </div>
-        </div>`;
-    }
-
-    function renderProducts() {
-      const grid = document.getElementById('productsGrid');
-      const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
-      const filtered = state.products.filter(p => {
-        const matchText = p.titulo?.toLowerCase().includes(q) || p.descripcion?.toLowerCase().includes(q);
-        const matchCat = !activeFilter.cat || p.categoria === activeFilter.cat;
-        const matchSub = !activeFilter.sub || p.subcategoria === activeFilter.sub;
-        return matchText && matchCat && matchSub;
-      });
-      if(filtered.length === 0) {
-        grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:3rem; color:var(--fb-text-secondary);"><h3>No hay publicaciones</h3><p>Sé el primero en publicar en esta categoría</p></div>';
-        return;
-      }
-      grid.innerHTML = filtered.map(p => productCardHTML(p)).join('');
-    }
-
-    document.getElementById('searchInput').addEventListener('input', renderProducts);
-
-    // ===== PRODUCT DETAIL =====
-    function openDetail(id) {
-      state.currentProd = state.products.find(p => p.id === id);
-      if(!state.currentProd) return;
-      state.galleryIndex = 0;
-      const p = state.currentProd;
-      const v = p.vendedor || {};
-      
-      const catObj = CATEGORIAS.find(c => c.id === p.categoria);
-      const catLabel = catObj ? catObj.label : '';
-      document.getElementById('detailCatBadge').innerHTML = catLabel
-        ? `<span class="product-cat-badge" style="font-size:0.8rem; padding:3px 10px;">${catLabel}</span>${p.subcategoria ? ` <span class="product-cat-badge" style="font-size:0.8rem; padding:3px 10px;">${p.subcategoria}</span>` : ''}`
-        : '';
-      document.getElementById('detailMainImg').src = p.imagenes?.[0] || '';
-      document.getElementById('detailTitle').textContent = p.titulo;
-      document.getElementById('detailPrice').textContent = `$U${Number(p.precio).toLocaleString('es-UY')}`;
-      document.getElementById('detailLocation').textContent = p.departamento;
-      document.getElementById('detailDesc').textContent = p.descripcion || 'Sin descripción';
-      document.getElementById('sellerName').textContent = `${v.nombre||''} ${v.apellido||''}`.trim();
-      document.getElementById('sellerDept').textContent = v.departamento || '';
-      document.getElementById('sellerHours').textContent = v.horario || 'No especificado';
-      
-      const avatarEl = document.getElementById('sellerAvatar');
-      if(v.photoURL) {
-        avatarEl.innerHTML = `<img src="${v.photoURL}" alt="">`;
-      } else {
-        avatarEl.textContent = v.avatar || 'U';
-      }
-
-      const ts = p.fecha?.toDate ? p.fecha.toDate() : new Date(p.fecha || Date.now());
-      const hours = Math.floor((Date.now() - ts) / 3600000);
-      document.getElementById('detailTime').textContent = `Publicado hace ${hours < 1 ? 'poco' : hours < 24 ? hours+' horas' : Math.floor(hours/24)+' días'}`;
-      
-      const thumbs = document.getElementById('galleryThumbs');
-      thumbs.innerHTML = (p.imagenes||[]).map((img,i) => `<img class="thumb ${i===0?'active':''}" src="${img}" onclick="goToSlide(${i})">`).join('');
-      
-      // Show delete btn if own product
-      const deleteBtn = document.getElementById('deleteProductBtn');
-      deleteBtn.style.display = (state.user && p.uid === state.user.uid) ? '' : 'none';
-      
-      document.getElementById('detailModal').classList.add('active');
-    }
-
-    async function deleteCurrentProduct() {
-      if(!state.currentProd || state.currentProd.uid !== state.user.uid) return;
-      if(!confirm('¿Eliminar esta publicación?')) return;
-      try {
-        await deleteDoc(doc(db, 'marketplace_products', state.currentProd.id));
-        closeModal('detailModal');
-        showToast('Publicación eliminada','success');
-      } catch(e) {
-        showToast('Error: '+e.message,'error');
-      }
-    }
-
-    function navGallery(dir) {
-      const p = state.currentProd;
-      if(!p || !p.imagenes || p.imagenes.length<=1) return;
-      state.galleryIndex = (state.galleryIndex + dir + p.imagenes.length) % p.imagenes.length;
-      updateGallery();
-    }
-    function goToSlide(idx) { state.galleryIndex = idx; updateGallery(); }
-    function updateGallery() {
-      const p = state.currentProd;
-      document.getElementById('detailMainImg').src = p.imagenes[state.galleryIndex];
-      document.querySelectorAll('.thumb').forEach((t,i) => t.classList.toggle('active', i===state.galleryIndex));
-    }
-    document.getElementById('detailMainImg').addEventListener('click', function() { this.classList.toggle('zoomed'); });
-
-    // ===== CONTACT =====
-    function openContactChoice() {
-      closeModal('detailModal');
-      document.getElementById('contactChoiceModal').classList.add('active');
-    }
-    function contactWA() {
-      const p = state.currentProd;
-      const v = p?.vendedor || {};
-      let num = (v.whatsapp||'').replace(/\D/g,'');
-      if(!num) { showToast('El vendedor no tiene WhatsApp registrado','error'); closeModal('contactChoiceModal'); return; }
-      if(!num.startsWith('598')) num = '598'+num;
-      const msg = encodeURIComponent(`Hola, vi "${p.titulo}" en Marketplace UY y me interesa`);
-      window.open(`https://wa.me/${num}?text=${msg}`, '_blank');
-      closeModal('contactChoiceModal');
-    }
-
-    // ===== REALTIME CHAT =====
-    function getChatId(uid1, uid2) {
-      return [uid1,uid2].sort().join('_');
-    }
-
-    function openChat() {
-      if(!state.user) { showToast('Iniciá sesión primero','error'); return; }
-      closeModal('contactChoiceModal');
-      const p = state.currentProd;
-      const v = p?.vendedor || {};
-      const sellerId = p?.uid;
-      
-      if(sellerId === state.user.uid) { showToast('No puedes chatear contigo mismo','error'); return; }
-      
-      const chatId = getChatId(state.user.uid, sellerId);
-      state.currentChatId = chatId;
-      
-      document.getElementById('chatName').textContent = `${v.nombre||''} ${v.apellido||''}`.trim();
-      document.getElementById('chatProduct').textContent = `Sobre: ${p.titulo}`;
-      const avatarEl = document.getElementById('chatAvatar');
-      avatarEl.textContent = v.avatar || 'U';
-      
-      document.getElementById('chatModal').classList.add('active');
-      subscribeToChatMessages(chatId);
-      loadChatList();
-    }
-
-    function subscribeToChatMessages(chatId) {
-      if(state.chatUnsubscribe) state.chatUnsubscribe();
-      const q = query(
-        collection(db, 'marketplace_chats', chatId, 'messages'),
-        orderBy('ts', 'asc')
-      );
-      state.chatUnsubscribe = onSnapshot(q, snap => {
-          const box = document.getElementById('chatMessages');
-          if(snap.empty) {
-            box.innerHTML = '<div style="text-align:center; color:var(--fb-text-secondary); margin-top:2rem; font-size:0.9rem;">Sé el primero en escribir 👋</div>';
-            return;
-          }
-          box.innerHTML = snap.docs.map(d => {
-            const m = d.data();
-            const isMine = m.uid === state.user.uid;
-            const ts = m.ts?.toDate ? m.ts.toDate() : new Date();
-            const timeStr = ts.toLocaleTimeString('es-UY', {hour:'2-digit', minute:'2-digit'});
-            return `
-              <div>
-                <div class="chat-message ${isMine?'sent':'received'}">${m.text}</div>
-                <div class="chat-time" style="${isMine?'text-align:right':'text-align:left'}">${timeStr}</div>
-              </div>`;
-          }).join('');
-          box.scrollTop = box.scrollHeight;
-        });
-    }
-
-    async function sendChat() {
-      const input = document.getElementById('chatInput');
-      const text = input.value.trim();
-      if(!text || !state.currentChatId) return;
-      input.value = '';
-      try {
-        await addDoc(collection(db, 'marketplace_chats', state.currentChatId, 'messages'), {
-            text,
-            uid: state.user.uid,
-            ts: serverTimestamp()
-          });
-        // Update chat metadata
-        await setDoc(doc(db, 'marketplace_chats', state.currentChatId), {
-          participants: state.currentChatId.split('_'),
-          lastMsg: text,
-          lastTs: serverTimestamp()
-        }, {merge:true});
-      } catch(e) {
-        showToast('Error al enviar: '+e.message,'error');
-      }
-    }
-
-    function loadChatList() {
-      const q = query(
-        collection(db, 'marketplace_chats'),
-        where('participants', 'array-contains', state.user.uid),
-        orderBy('lastTs', 'desc'),
-        limit(20)
-      );
-      onSnapshot(q, snap => {
-          const list = document.getElementById('chatList');
-          if(snap.empty) { list.innerHTML = '<div style="padding:1rem; font-size:0.85rem; color:var(--fb-text-secondary);">Sin conversaciones</div>'; return; }
-          list.innerHTML = snap.docs.map(d => {
-            const c = d.data();
-            const otherId = (c.participants||[]).find(uid => uid !== state.user.uid);
-            return `<div class="menu-item" style="border-radius:0; padding:0.8rem 1rem;" onclick="openChatById('${d.id}')">
-              <div class="seller-avatar" style="width:36px;height:36px;font-size:0.9rem;">💬</div>
-              <div class="menu-text">
-                <div class="menu-title" style="font-size:0.85rem;">${d.id}</div>
-                <div class="menu-subtitle">${c.lastMsg || 'Sin mensajes'}</div>
-              </div>
-            </div>`;
-          }).join('');
-        });
-    }
-
-    function openChatById(chatId) {
-      state.currentChatId = chatId;
-      subscribeToChatMessages(chatId);
-    }
-
-    function closeChatModal() {
-      closeModal('chatModal');
-      if(state.chatUnsubscribe) { state.chatUnsubscribe(); state.chatUnsubscribe = null; }
-    }
-
-    // ===== UTILS =====
-    function openPublishModal() {
-      if(!state.profile) { showToast('Completá tu perfil primero','error'); document.getElementById('profileModal').classList.add('active'); return; }
-      document.getElementById('publishModal').classList.add('active');
-    }
-    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-    // ===== CATEGORÍAS =====
-    const CATEGORIAS = [
-      { id: 'electronica', label: '📱 Electrónica', subs: ['Celulares y smartphones','Computadoras y laptops','Tablets','Accesorios tecnológicos','Gaming y consolas','TV y audio','Cámaras y fotografía','Otros electrónicos'] },
-      { id: 'vehiculos', label: '🚗 Vehículos', subs: ['Autos','Motos','Camionetas y SUVs','Camiones','Bicicletas','Repuestos y accesorios','Embarcaciones','Maquinaria agrícola','Otros vehículos'] },
-      { id: 'hogar', label: '🏠 Hogar y muebles', subs: ['Muebles','Electrodomésticos','Decoración','Iluminación','Cocina y comedor','Baño','Jardín y exterior','Herramientas del hogar','Otros hogar'] },
-      { id: 'ropa', label: '👕 Ropa y accesorios', subs: ['Ropa de mujer','Ropa de hombre','Ropa de niños','Calzado','Bolsos y carteras','Joyería y bijouterie','Relojes','Lentes y accesorios','Otros moda'] },
-      { id: 'deportes', label: '⚽ Deportes y fitness', subs: ['Fútbol','Gimnasia y fitness','Ciclismo','Natación','Running','Artes marciales','Deportes de invierno','Pesca y caza','Otros deportes'] },
-      { id: 'juguetes', label: '🧸 Juguetes y niños', subs: ['Juguetes','Ropa de bebé','Cochecitos y sillas','Educación infantil','Videojuegos infantiles','Cunas y muebles de bebé','Otros niños'] },
-      { id: 'belleza', label: '💄 Belleza y cuidado personal', subs: ['Maquillaje','Perfumes','Cuidado de la piel','Cuidado del cabello','Higiene personal','Equipos de estética','Otros belleza'] },
-      { id: 'alimentos', label: '🍎 Alimentos y bebidas', subs: ['Alimentos artesanales','Bebidas','Frutas y verduras','Carnes y lácteos','Dulces y repostería','Plantas y semillas','Otros alimentos'] },
-      { id: 'herramientas', label: '🔧 Herramientas y construcción', subs: ['Herramientas manuales','Herramientas eléctricas','Materiales de construcción','Pinturas','Plomería','Electricidad','Maquinaria industrial','Otros herramientas'] },
-      { id: 'mascotas', label: '🐾 Mascotas', subs: ['Perros','Gatos','Aves','Peces y acuarios','Roedores','Accesorios para mascotas','Alimento para mascotas','Otros mascotas'] },
-      { id: 'servicios', label: '💼 Servicios', subs: ['Diseño y creatividad','Tecnología y programación','Clases y tutorías','Servicios del hogar','Transporte y logística','Salud y bienestar','Eventos y fotografía','Legales y contables','Otros servicios'] },
-      { id: 'inmuebles', label: '🏘️ Inmuebles', subs: ['Casas en venta','Apartamentos en venta','Alquiler de casas','Alquiler de apartamentos','Terrenos','Locales comerciales','Garajes','Otros inmuebles'] },
-      { id: 'empleo', label: '💼 Empleo', subs: ['Tiempo completo','Medio tiempo','Freelance / Remoto','Pasantías','Búsqueda de trabajo','Otros empleo'] },
-      { id: 'arte', label: '🎨 Arte y coleccionables', subs: ['Pintura y dibujo','Fotografía artística','Esculturas','Monedas y billetes','Estampillas','Antigüedades','Cómics y manga','Otros coleccionables'] },
-      { id: 'libros', label: '📚 Libros y educación', subs: ['Libros de texto','Literatura','Cursos y capacitaciones','Material escolar','Idiomas','Revistas','Otros libros'] },
-      { id: 'musica', label: '🎸 Música e instrumentos', subs: ['Guitarras','Teclados y pianos','Percusión','Instrumentos de viento','Equipos de sonido','Vinilos y CDs','Clases de música','Otros música'] },
-      { id: 'viajes', label: '✈️ Viajes y turismo', subs: ['Paquetes turísticos','Alojamiento','Excursiones','Equipaje y accesorios','Otros viajes'] },
-      { id: 'otros', label: '📦 Otros', subs: ['General','Gratis','Permuta / Trueque','Otros'] },
-    ];
-
-    let activeFilter = { cat: '', sub: '' };
-
-    function buildSidebar() {
-      const container = document.getElementById('catSidebar');
-      // "Todos" option
-      let html = `<div class="cat-group-header ${activeFilter.cat===''?'active':''}" onclick="filterCategory('','')">🏪 Todas las categorías</div>`;
-      CATEGORIAS.forEach(cat => {
-        const isOpen = activeFilter.cat === cat.id;
-        html += `
-          <div class="cat-group">
-            <div class="cat-group-header ${isOpen?'active open':''}" onclick="toggleCatGroup('${cat.id}')">
-              ${cat.label}
-              <span class="cat-arrow">▶</span>
-            </div>
-            <div class="cat-sub-list ${isOpen?'open':''}">
-              <div class="cat-sub-item ${isOpen&&activeFilter.sub===''?'active':''}" onclick="filterCategory('${cat.id}','')">Todo en ${cat.label.split(' ').slice(1).join(' ')}</div>
-              ${cat.subs.map(sub => `<div class="cat-sub-item ${isOpen&&activeFilter.sub===sub?'active':''}" onclick="filterCategory('${cat.id}','${sub}')">${sub}</div>`).join('')}
-            </div>
-          </div>`;
-      });
-      container.innerHTML = html;
-    }
-
-    function toggleCatGroup(catId) {
-      if(activeFilter.cat === catId) {
-        filterCategory('','');
-      } else {
-        filterCategory(catId,'');
-      }
-    }
-
-    function filterCategory(cat, sub) {
-      activeFilter = { cat, sub };
-      buildSidebar();
-      renderProducts();
-      // Update section title
-      if(!cat) {
-        document.querySelector('.section-title-main').textContent = 'Sugerencias de hoy';
-      } else {
-        const catObj = CATEGORIAS.find(c => c.id === cat);
-        const label = catObj ? catObj.label.split(' ').slice(1).join(' ') : cat;
-        document.querySelector('.section-title-main').textContent = sub ? sub : label;
-      }
-    }
-
-    function buildCatSelects() {
-      const catSel = document.getElementById('prodCat');
-      catSel.innerHTML = '<option value="">— Seleccioná categoría —</option>';
-      CATEGORIAS.forEach(c => catSel.innerHTML += `<option value="${c.id}">${c.label}</option>`);
-      onCatChange();
-    }
-
-    function onCatChange() {
-      const catId = document.getElementById('prodCat').value;
-      const subSel = document.getElementById('prodSubCat');
-      const cat = CATEGORIAS.find(c => c.id === catId);
-      subSel.innerHTML = '<option value="">— Seleccioná subcategoría —</option>';
-      if(cat) cat.subs.forEach(s => subSel.innerHTML += `<option value="${s}">${s}</option>`);
-    }
-    window.onclick = e => {
-      if(e.target.classList.contains('modal') && !e.target.id.includes('auth')) {
-        e.target.classList.remove('active');
-      }
-    };
-
-    function showToast(msg, type='success') {
-      const t = document.createElement('div');
-      t.className = `toast ${type}`;
-      t.textContent = msg;
-      document.body.appendChild(t);
-      setTimeout(() => t.remove(), 3500);
-    }
-    // ===== EXPOSE TO WINDOW (needed because script is type=module) =====
-    Object.assign(window, {
-      switchAuthTab, loginEmail, registerEmail, loginGoogle, forgotPassword, logout,
-      saveProfile, editProfile, openProfile,
-      openPublishModal, publishProduct, closeModal,
-      openDetail, navGallery, goToSlide, deleteCurrentProduct,
-      openContactChoice, contactWA, openChat, openChatById, sendChat, closeChatModal,
-      showHome, filterCategory, toggleCatGroup, onCatChange
-    });
-  </script>
+    </script>
 </body>
 </html>
