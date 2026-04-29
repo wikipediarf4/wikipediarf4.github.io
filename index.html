@@ -4,246 +4,217 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="origin">
-    <title>Mi Canela TV Clone</title>
+    <title>Canela.TV Clone Pro</title>
     <style>
         :root {
-            --bg-color: #0c0c0c;
-            --text-color: #ffffff;
-            --accent-color: #00b4e4; /* El azul de TMDB de tu imagen */
-            --nav-bg: rgba(0, 0, 0, 0.8);
+            --bg: #0d253f; /* Azul oscuro de tu imagen 1 */
+            --accent: #01b4e4; /* Azul claro de tu imagen 1 */
+            --green: #90cea1; /* Verde de tu imagen 1 */
+            --text: #ffffff;
         }
 
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            font-family: 'Open Sans', Arial, sans-serif;
+            background-color: #050505;
+            color: var(--text);
             margin: 0;
-            padding: 0;
             overflow-x: hidden;
         }
 
-        /* --- MENÚ SUPERIOR (Segunda Imagen) --- */
-        nav {
-            background: var(--nav-bg);
-            padding: 15px 40px;
+        /* --- NAVBAR ESTILO CANELA (Imagen 2) --- */
+        header {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px 50px;
             display: flex;
             align-items: center;
             position: fixed;
-            top: 0;
-            width: 100%;
+            top: 0; width: 100%;
             z-index: 1000;
-            gap: 25px;
+            border-bottom: 1px solid #222;
         }
 
-        .nav-item {
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 16px;
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--accent);
+            margin-right: 40px;
+            text-transform: uppercase;
+        }
+
+        nav { display: flex; gap: 20px; flex-grow: 1; }
+
+        .nav-link {
+            text-decoration: none;
             color: #ccc;
-            transition: color 0.3s;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.3s;
         }
 
-        .nav-item:hover, .nav-item.active {
-            color: white;
-        }
+        .nav-link:hover, .nav-link.active { color: white; border-bottom: 2px solid var(--accent); }
 
-        /* --- BUSCADOR --- */
-        .search-container {
-            margin-top: 100px;
-            padding: 0 50px;
-            display: flex;
-            gap: 10px;
-        }
+        /* --- CONTENIDO --- */
+        main { padding-top: 100px; }
 
-        input {
-            flex: 1;
-            padding: 12px;
-            background: #222;
-            border: 1px solid #444;
-            color: white;
-            border-radius: 4px;
-        }
+        .category-row { margin-bottom: 40px; padding: 0 50px; }
 
-        /* --- SECCIONES DE CATEGORÍAS --- */
-        .section-title {
-            padding: 20px 50px 10px 50px;
-            font-size: 22px;
+        .row-title {
+            font-size: 20px;
             font-weight: bold;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--accent);
+            padding-left: 10px;
         }
 
-        .horizontal-scroll {
+        .scroll-container {
             display: flex;
             overflow-x: auto;
-            padding: 10px 50px 30px 50px;
             gap: 15px;
+            padding-bottom: 10px;
             scroll-behavior: smooth;
         }
 
-        .horizontal-scroll::-webkit-scrollbar { display: none; }
+        .scroll-container::-webkit-scrollbar { height: 5px; }
+        .scroll-container::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
 
-        .card {
-            min-width: 180px;
-            max-width: 180px;
-            background: #1a1a1a;
-            border-radius: 8px;
-            overflow: hidden;
+        .movie-card {
+            min-width: 170px;
+            transition: 0.3s;
             cursor: pointer;
-            transition: transform 0.3s;
+            border-radius: 5px;
+            overflow: hidden;
         }
 
-        .card:hover {
-            transform: scale(1.1);
-            z-index: 5;
-        }
+        .movie-card:hover { transform: scale(1.08); box-shadow: 0 0 20px rgba(1, 180, 228, 0.4); }
 
-        .card img {
-            width: 100%;
-            height: 270px;
-            object-fit: cover;
-        }
+        .movie-card img { width: 100%; height: 250px; object-fit: cover; }
 
-        .card-title {
-            padding: 8px;
-            font-size: 14px;
+        .movie-card p {
+            padding: 10px;
+            font-size: 13px;
             text-align: center;
+            margin: 0;
+            background: #111;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        /* --- REPRODUCTOR INTEGRADO --- */
-        #player-overlay {
+        /* --- REPRODUCTOR (Sin salirse de la web) --- */
+        #video-overlay {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: black;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
             z-index: 2000;
         }
 
-        .close-btn {
+        .close-player {
             position: absolute;
-            top: 20px;
-            right: 30px;
-            font-size: 40px;
-            color: white;
-            cursor: pointer;
-            z-index: 2001;
+            top: 20px; right: 30px;
+            font-size: 40px; color: white;
+            cursor: pointer; z-index: 2001;
         }
 
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
+        iframe { width: 100%; height: 100%; border: none; }
     </style>
 </head>
 <body>
 
-    <nav>
-        <div class="nav-item active" onclick="location.reload()">Inicio</div>
-        <div class="nav-item">Guía de TV</div>
-        <div class="nav-item">Películas</div>
-        <div class="nav-item">Series</div>
-        <div class="nav-item">Clásicos</div>
-        <div class="nav-item">Deportes</div>
-        <div class="nav-item">Música</div>
-        <div class="nav-item">Kids</div>
-        <div class="nav-item">Noticias</div>
-    </nav>
+    <header>
+        <div class="logo">CANELA CLONE</div>
+        <nav>
+            <div class="nav-link active" onclick="loadContent('all')">Inicio</div>
+            <div class="nav-link" onclick="loadContent('movie')">Películas</div>
+            <div class="nav-link" onclick="loadContent('tv')">Series</div>
+            <div class="nav-link" onclick="loadContent('discover', 28)">Acción</div>
+            <div class="nav-link" onclick="loadContent('discover', 35)">Comedia</div>
+            <div class="nav-link" onclick="loadContent('discover', 27)">Terror</div>
+        </nav>
+    </header>
 
-    <div class="search-container">
-        <input type="text" id="search-input" placeholder="Buscar en el catálogo...">
-        <button onclick="buscarManual()" style="padding:10px 20px; background:var(--accent-color); border:none; color:white; font-weight:bold; cursor:pointer;">BUSCAR</button>
-    </div>
+    <main id="app-content">
+        </main>
 
-    <div id="dynamic-content">
-        </div>
-
-    <div id="player-overlay">
-        <div class="close-btn" onclick="cerrarReproductor()">×</div>
-        <iframe id="main-player" src="" allowfullscreen referrerpolicy="origin"></iframe>
+    <div id="video-overlay">
+        <span class="close-player" onclick="closeVideo()">×</span>
+        <iframe id="player-frame" src="" allowfullscreen referrerpolicy="origin"></iframe>
     </div>
 
     <script>
         const API_KEY = 'f663f105c4c1626d23e86d2ac19471a9';
-        
-        // Categorías que queremos mostrar en el inicio
-        const categorias = [
-            { nombre: "Películas Tendencia", url: `https://api.themoviedb.org/3/trending/movie/week?api_key=${API_KEY}&language=es-ES` },
-            { nombre: "Series Más Populares", url: `https://api.themoviedb.org/3/tv/popular?api_key=${API_KEY}&language=es-ES` },
-            { nombre: "Acción y Adrenalina", url: `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=28&language=es-ES` },
-            { nombre: "Comedia para Reír", url: `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=35&language=es-ES` }
-        ];
 
-        async function cargarInicio() {
-            const contenedor = document.getElementById('dynamic-content');
-            contenedor.innerHTML = '';
+        async function loadContent(type, genreId = null) {
+            const main = document.getElementById('app-content');
+            main.innerHTML = '<p style="padding:50px">Cargando catálogo...</p>';
+            
+            // Actualizar estado activo del menú
+            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
 
-            for (const cat of categorias) {
-                const res = await fetch(cat.url);
+            let sections = [];
+
+            if (type === 'all') {
+                sections = [
+                    { t: "Películas Más Populares", u: `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=es-ES` },
+                    { t: "Series de Estreno", u: `https://api.themoviedb.org/3/tv/on_the_air?api_key=${API_KEY}&language=es-ES` }
+                ];
+            } else if (type === 'movie') {
+                sections = [{ t: "Todas las Películas", u: `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&language=es-ES&sort_by=popularity.desc` }];
+            } else if (type === 'tv') {
+                sections = [{ t: "Todas las Series", u: `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&language=es-ES&sort_by=popularity.desc` }];
+            } else if (type === 'discover') {
+                sections = [{ t: "Resultados por Género", u: `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&language=es-ES` }];
+            }
+
+            main.innerHTML = '';
+            for (const s of sections) {
+                const res = await fetch(s.u);
                 const data = await res.json();
-                crearFila(cat.nombre, data.results);
+                renderRow(s.t, data.results, type === 'tv' || s.u.includes('/tv/') ? 'tv' : 'movie');
             }
         }
 
-        function crearFila(titulo, items) {
-            const contenedor = document.getElementById('dynamic-content');
-            
-            const sectionTitle = document.createElement('div');
-            sectionTitle.className = 'section-title';
-            sectionTitle.innerText = titulo;
+        function renderRow(title, items, mediaType) {
+            const main = document.getElementById('app-content');
+            const row = document.createElement('div');
+            row.className = 'category-row';
+            row.innerHTML = `<div class="row-title">${title}</div>`;
             
             const scroll = document.createElement('div');
-            scroll.className = 'horizontal-scroll';
+            scroll.className = 'scroll-container';
 
             items.forEach(item => {
                 if (!item.poster_path) return;
                 const card = document.createElement('div');
-                card.className = 'card';
-                const tipo = item.media_type === 'tv' || item.first_air_date ? 'tv' : 'movie';
-                
+                card.className = 'movie-card';
                 card.innerHTML = `
-                    <img src="https://image.tmdb.org/t/p/w500${item.poster_path}">
-                    <div class="card-title">${item.title || item.name}</div>
+                    <img src="https://image.tmdb.org/p/w500${item.poster_path}">
+                    <p>${item.title || item.name}</p>
                 `;
-                card.onclick = () => abrirReproductor(tipo, item.id);
+                card.onclick = () => playVideo(mediaType, item.id);
                 scroll.appendChild(card);
             });
 
-            contenedor.appendChild(sectionTitle);
-            contenedor.appendChild(scroll);
+            row.appendChild(scroll);
+            main.appendChild(row);
         }
 
-        async function buscarManual() {
-            const query = document.getElementById('search-input').value;
-            if (!query) return;
-            const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&language=es-ES`);
-            const data = await res.json();
-            
-            const contenedor = document.getElementById('dynamic-content');
-            contenedor.innerHTML = '';
-            crearFila(`Resultados para: ${query}`, data.results);
-        }
-
-        function abrirReproductor(tipo, id) {
-            const overlay = document.getElementById('player-overlay');
-            const iframe = document.getElementById('main-player');
-            // Usamos un servidor que permite elegir audio Latino/Español
-            iframe.src = `https://multiembed.mov/?video_id=${id}&tmdb=1`;
+        function playVideo(tipo, id) {
+            const overlay = document.getElementById('video-overlay');
+            const frame = document.getElementById('player-frame');
+            // Multiembed para asegurar español/latino
+            frame.src = `https://multiembed.mov/?video_id=${id}&tmdb=1`;
             overlay.style.display = 'block';
-            document.body.style.overflow = 'hidden';
         }
 
-        function cerrarReproductor() {
-            document.getElementById('player-overlay').style.display = 'none';
-            document.getElementById('main-player').src = '';
-            document.body.style.overflow = 'auto';
+        function closeVideo() {
+            document.getElementById('video-overlay').style.display = 'none';
+            document.getElementById('player-frame').src = '';
         }
 
-        cargarInicio();
+        // Cargar inicio por defecto
+        loadContent('all');
     </script>
 </body>
 </html>
