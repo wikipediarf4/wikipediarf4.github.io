@@ -1,2 +1,0 @@
-function filterShopCat2(btn,cat){document.querySelectorAll('.shop-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');filterShopCat(btn,cat);}
-function initShopCoinsDisplay(){if(!window.currentUser||!window.db)return;var uid=window.currentUser.uid;if(!uid)return;window.getDoc(window.doc(window.db,'users',uid)).then(function(snap){var coins=snap.exists()?(snap.data().coins||0):0;var el=document.getElementById('shopCoinAmount');if(el)el.textContent=coins.toLocaleString('es');}).catch(function(){});}
